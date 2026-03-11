@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Đổi/Trả (RMA) — Nhà Thuốc Minh Giang</title>
+    <link rel="stylesheet" href="css/admin-style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .returns-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border: 1px solid var(--admin-border);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .stat-icon.pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .stat-icon.completed {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .stat-icon.rejected {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .stat-icon.total {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .stat-info p {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .stat-info h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        /* Detail Panel */
+        .rma-detail-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.4);
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.3s;
+        }
+
+        .rma-detail-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .rma-detail-panel {
+            position: fixed;
+            top: 0;
+            right: -550px;
+            width: 500px;
+            height: 100vh;
+            background: #fff;
+            z-index: 1000;
+            box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .rma-detail-panel.active {
+            right: 0;
+        }
+
+        .rma-detail-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--admin-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+        }
+
+        .rma-detail-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .rma-detail-footer {
+            padding: 20px 24px;
+            border-top: 1px solid var(--admin-border);
+            display: flex;
+            gap: 12px;
+            background: #fff;
+        }
+
+        .rma-info-block {
+            background: #f8fafc;
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .rma-info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+
+        .rma-info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .rma-info-label {
+            color: #64748b;
+        }
+
+        .rma-info-value {
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .rma-items-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .rma-items-table th {
+            text-align: left;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--admin-border);
+            color: #64748b;
+        }
+
+        .rma-items-table td {
+            padding: 12px 0;
+            border-bottom: 1px dashed #e2e8f0;
+            vertical-align: top;
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="admin-sidebar"></aside>
+    <header class="admin-header"></header>
+
+    <main class="admin-main">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Quản Lý Đổi/Trả (RMA)</h1>
+                <p class="page-subtitle">Xử lý yêu cầu trả hàng từ Khách Hàng (POS/Web) và gửi trả Nhà Cung Cấp</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn-primary" style="background: #ef4444;" onclick="openNewRmaModal()">
+                    <i class="fa-solid fa-plus"></i> Tạo Phiếu Chuyển Hoàn Mới
+                </button>
+            </div>
+        </div>
+
+        <div class="returns-stats">
+            <div class="stat-card">
+                <div class="stat-icon pending"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                <div class="stat-info">
+                    <p>Yêu cầu chờ duyệt</p>
+                    <h3>12</h3>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon completed"><i class="fa-solid fa-box-archive"></i></div>
+                <div class="stat-info">
+                    <p>Đã nhập lại kho</p>
+                    <h3>48</h3>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon rejected"><i class="fa-solid fa-fire"></i></div>
+                <div class="stat-info">
+                    <p>Đã xuất tiêu huỷ</p>
+                    <h3>5</h3>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon total"><i class="fa-solid fa-money-bill-transfer"></i></div>
+                <div class="stat-info">
+                    <p>Tổng tiền đã hoàn</p>
+                    <h3>14,5M ₫</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs Header -->
+        <div class="tabs-header" style="margin-bottom: 24px; border-bottom: 2px solid #e2e8f0;">
+            <button class="tab-btn active" onclick="switchTab('tab-pos')" id="btn-tab-pos" style="font-size:16px;">
+                <i class="fa-solid fa-cash-register" style="margin-right:8px;"></i> Đơn bán hàng POS
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-onl')" id="btn-tab-onl" style="font-size:16px;">
+                <i class="fa-solid fa-globe" style="margin-right:8px;"></i> Đơn Online
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-ncc')" id="btn-tab-ncc" style="font-size:16px;">
+                <i class="fa-solid fa-truck" style="margin-right:8px;"></i> Trả NCC
+            </button>
+        </div>
+
+        <!-- TAB POS -->
+        <div id="tab-pos" class="tab-content" style="display: block;">
+            <div class="filter-section">
+                <div class="filter-group search">
+                    <label class="filter-label">Tìm kiếm</label>
+                    <input type="text" class="filter-control" placeholder="Tìm theo mã RMA, số điện thoại (POS)...">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Trạng thái (Status)</label>
+                    <select class="filter-control">
+                        <option>Tất cả trạng thái</option>
+                        <option>Chờ xử lý</option>
+                        <option>Đã nhập kho</option>
+                        <option>Đã tiêu hủy</option>
+                        <option>Từ chối</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="inventory-table-container">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Mã RMA</th>
+                            <th>Thời gian tạo</th>
+                            <th>Khách hàng</th>
+                            <th>Lý do & Nguồn</th>
+                            <th>Giá trị</th>
+                            <th>Trạng thái</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span style="font-weight: 600;">RMA-8839</span></td>
+                            <td>
+                                <div>09/03/2026</div>
+                                <div style="font-size: 11px; color: #64748b;">09:15</div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 600;">Nguyễn Văn A</div>
+                                <div style="font-size: 11px; color: #64748b;">Mua trực tiếp</div>
+                            </td>
+                            <td>
+                                <div><span class="badge" style="background:#f1f5f9; color:#475569;"><i
+                                            class="fa-solid fa-cash-register"></i> Đơn POS</span></div>
+                                <div style="font-size: 12px; margin-top: 4px; color: #475569;">Khách đổi ý trả lại
+                                    nguyên
+                                    hộp</div>
+                            </td>
+                            <td style="font-weight: 600;">145,000₫</td>
+                            <td><span class="badge" style="background: #dcfce7; color: #15803d;"><i
+                                        class="fa-solid fa-check"></i> Đã nhập kho</span></td>
+                            <td>
+                                <button class="action-btn" onclick="openRMADetail('RMA-8839', 'completed')"><i
+                                        class="fa-regular fa-eye"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span style="font-weight: 600;">RMA-8821</span></td>
+                            <td>
+                                <div>07/03/2026</div>
+                                <div style="font-size: 11px; color: #64748b;">11:20</div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 600;">Trần Quốc Bảo</div>
+                                <div style="font-size: 11px; color: #64748b;">0982xxx991</div>
+                            </td>
+                            <td>
+                                <div><span class="badge" style="background:#f1f5f9; color:#475569;"><i
+                                            class="fa-solid fa-cash-register"></i> Đơn POS</span></div>
+                                <div style="font-size: 12px; margin-top: 4px; color: #475569;">Thuốc rách vỉ hỏng</div>
+                            </td>
+                            <td style="font-weight: 600;">45,000₫</td>
+                            <td><span class="badge" style="background: #fee2e2; color: #b91c1c;"><i
+                                        class="fa-solid fa-fire"></i> Đã tiêu huỷ</span></td>
+                            <td>
+                                <button class="action-btn" onclick="openRMADetail('RMA-8821', 'destroyed')"><i
+                                        class="fa-regular fa-eye"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB ONLINE -->
+        <div id="tab-onl" class="tab-content" style="display: none;">
+            <div class="filter-section">
+                <div class="filter-group search">
+                    <label class="filter-label">Tìm kiếm</label>
+                    <input type="text" class="filter-control" placeholder="Tìm theo mã RMA, số điện thoại (Web)...">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Trạng thái (Status)</label>
+                    <select class="filter-control">
+                        <option>Tất cả trạng thái</option>
+                        <option>Chờ xử lý</option>
+                        <option>Đã nhập kho</option>
+                        <option>Đã tiêu hủy</option>
+                        <option>Từ chối</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="inventory-table-container">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Mã RMA</th>
+                            <th>Thời gian tạo</th>
+                            <th>Khách hàng</th>
+                            <th>Lý do & Nguồn</th>
+                            <th>Giá trị</th>
+                            <th>Trạng thái</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="new-order-row" style="border-left: 3px solid #f59e0b; background: #fffbeb;">
+                            <td><span style="font-weight: 600; color: #ef4444;">RMA-8842</span></td>
+                            <td>
+                                <div>10/03/2026</div>
+                                <div style="font-size: 11px; color: #64748b;">14:30</div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 600;">Lê Thùy Hương</div>
+                                <div style="font-size: 11px; color: #64748b;">0911xxx334</div>
+                            </td>
+                            <td>
+                                <div><span class="badge" style="background:#e0e7ff; color:#4338ca;"><i
+                                            class="fa-solid fa-globe"></i> Đơn Web</span></div>
+                                <div style="font-size: 12px; margin-top: 4px; color: #475569;">Giao nhầm thuốc (Khách
+                                    báo
+                                    lại)</div>
+                            </td>
+                            <td style="font-weight: 600;">320,000₫</td>
+                            <td><span class="badge" style="background: #fef3c7; color: #d97706;"><i
+                                        class="fa-solid fa-clock"></i> Chờ duyệt</span></td>
+                            <td>
+                                <button class="action-btn" onclick="openRMADetail('RMA-8842', 'pending')"><i
+                                        class="fa-regular fa-eye"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB NCC -->
+        <div id="tab-ncc" class="tab-content" style="display: none;">
+            <div class="filter-section">
+                <div class="filter-group search">
+                    <label class="filter-label">Tìm kiếm</label>
+                    <input type="text" class="filter-control" placeholder="Tìm theo mã RMA, tên đối tác...">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Trạng thái (Status)</label>
+                    <select class="filter-control">
+                        <option>Tất cả trạng thái</option>
+                        <option>Chờ xử lý</option>
+                        <option>Đã xuất & hoàn tiền</option>
+                        <option>Từ chối</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="inventory-table-container">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Mã RMA</th>
+                            <th>Thời gian tạo</th>
+                            <th>Đối tác (NCC)</th>
+                            <th>Lý do & Nguồn</th>
+                            <th>Giá trị</th>
+                            <th>Trạng thái</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span style="font-weight: 600; color: #0284c7;">RMA-SUP-012</span></td>
+                            <td>
+                                <div>08/03/2026</div>
+                                <div style="font-size: 11px; color: #64748b;">16:45</div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 600;"><i class="fa-solid fa-truck"></i> Cty Dược Hậu Giang
+                                </div>
+                            </td>
+                            <td>
+                                <div><span class="badge" style="background:#f3e8ff; color:#7e22ce;"><i
+                                            class="fa-solid fa-arrow-right-arrow-left"></i> Trả NCC</span></div>
+                                <div style="font-size: 12px; margin-top: 4px; color: #475569;">Thuốc cận date < 3
+                                        tháng</div>
+                            </td>
+                            <td style="font-weight: 600;">5,200,000₫</td>
+                            <td><span class="badge" style="background: #dcfce7; color: #15803d;"><i
+                                        class="fa-solid fa-check"></i> Hoàn thành</span></td>
+                            <td>
+                                <button class="action-btn" onclick="openRMADetail('RMA-SUP-012', 'completed')"><i
+                                        class="fa-regular fa-eye"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- RMA Detail Panel -->
+    <div class="rma-detail-overlay" id="rmaOverlay" onclick="closeRMADetail()"></div>
+    <div class="rma-detail-panel" id="rmaPanel">
+        <div class="rma-detail-header">
+            <div>
+                <h3 style="margin:0; font-size: 18px; color: #0f172a;" id="rmaDetailTitle">RMA-8842</h3>
+                <span class="badge" style="background: #fef3c7; color: #d97706; margin-top: 6px; display: inline-block;"
+                    id="rmaDetailStatus">Chờ duyệt</span>
+            </div>
+            <button class="action-btn" onclick="closeRMADetail()" style="font-size: 18px;"><i
+                    class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="rma-detail-body">
+            <h4 style="font-size: 14px; margin-bottom: 12px; color: #1e293b;">Thông Tin Đơn Gốc</h4>
+            <div class="rma-info-block">
+                <div class="rma-info-row">
+                    <span class="rma-info-label">Mã Đơn Hàng</span>
+                    <span class="rma-info-value" style="color: #4f46e5;">WEB-5931 <i
+                            class="fa-solid fa-arrow-up-right-from-square"></i></span>
+                </div>
+                <div class="rma-info-row">
+                    <span class="rma-info-label">Khách Hàng</span>
+                    <span class="rma-info-value">Lê Thùy Hương (0911xxx334)</span>
+                </div>
+                <div class="rma-info-row">
+                    <span class="rma-info-label">Lý Do Đổi/Trả</span>
+                    <span class="rma-info-value" style="color: #ef4444;">Giao nhầm thuốc</span>
+                </div>
+                <div class="rma-info-row">
+                    <span class="rma-info-label">Ghi Chú Khách</span>
+                    <span class="rma-info-value">"Tôi đặt Vitamin D3 nhưng lại giao D3K2"</span>
+                </div>
+            </div>
+
+            <h4 style="font-size: 14px; margin-bottom: 12px; color: #1e293b; margin-top:24px;">Chi Tiết Thuốc Yêu Cầu
+                Hoàn</h4>
+            <table class="rma-items-table">
+                <thead>
+                    <tr>
+                        <th>Sản phẩm bị trả</th>
+                        <th style="text-align:center;">SL Trả</th>
+                        <th style="text-align:right;">Hoàn Tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <strong style="color: #1e293b;">Healthy Care Vitamin D3K2</strong><br>
+                            <span style="font-size:11px; color:#64748b;">Lô: B290-A | HSD: 11/2027</span><br>
+                            <span style="font-size:11px; color:#ef4444;">Cần nhập lại kho / Đổi thuốc mới</span>
+                        </td>
+                        <td style="text-align:center; font-weight:600;">1 Lọ</td>
+                        <td style="text-align:right; font-weight:600; color:#ef4444;">320,000₫</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="margin-top: 24px; text-align: right; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                <p style="font-size:13px; color:#64748b;">Tổng Tiền Khách Rút / Trả Lại Hàng:</p>
+                <h3 style="font-size:22px; color:#ef4444; margin-top:4px;">320,000₫</h3>
+            </div>
+        </div>
+
+        <div class="rma-detail-footer" id="rmaDetailFooter">
+            <!-- Dynamically populated based on status -->
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/admin-components.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAdminLayout('returns');
+        });
+
+        function openRMADetail(rmaId, statusVariant) {
+            document.getElementById('rmaDetailTitle').textContent = rmaId;
+            document.getElementById('rmaOverlay').classList.add('active');
+            document.getElementById('rmaPanel').classList.add('active');
+
+            const footer = document.getElementById('rmaDetailFooter');
+            const statusBadge = document.getElementById('rmaDetailStatus');
+
+            if (statusVariant === 'pending') {
+                statusBadge.style.background = '#fef3c7';
+                statusBadge.style.color = '#d97706';
+                statusBadge.innerHTML = '<i class="fa-solid fa-clock"></i> Chờ duyệt';
+
+                footer.innerHTML = `
+                    <button class="btn-secondary" style="flex:1; border-color:#cbd5e1; color:#475569;" onclick="closeRMADetail()">Từ chối duyệt</button>
+                    <button class="btn-primary" style="flex:2; background:#10b981;" onclick="processApproval()">Duyệt & Nhập Lại Kho</button>
+                `;
+            } else if (statusVariant === 'destroyed') {
+                statusBadge.style.background = '#fee2e2';
+                statusBadge.style.color = '#b91c1c';
+                statusBadge.innerHTML = '<i class="fa-solid fa-fire"></i> Đã tiêu huỷ';
+
+                footer.innerHTML = `
+                    <button class="btn-secondary" style="flex:1;" onclick="closeRMADetail()">Đóng</button>
+                    <button class="btn-secondary" style="flex:1; background:#f8fafc;"><i class="fa-solid fa-print"></i> Biên bản huỷ</button>
+                `;
+            } else {
+                statusBadge.style.background = '#dcfce7';
+                statusBadge.style.color = '#15803d';
+                statusBadge.innerHTML = '<i class="fa-solid fa-check"></i> Đã hoàn thành (Nhập kho)';
+
+                footer.innerHTML = `
+                    <button class="btn-secondary" style="flex:1;" onclick="closeRMADetail()">Đóng</button>
+                    <button class="btn-secondary" style="flex:1; background:#f8fafc;"><i class="fa-solid fa-print"></i> Biên lai nhập</button>
+                `;
+            }
+        }
+
+        function closeRMADetail() {
+            document.getElementById('rmaOverlay').classList.remove('active');
+            document.getElementById('rmaPanel').classList.remove('active');
+        }
+
+        function processApproval() {
+            alert('Phiếu hoàn trả đã được duyệt. Tồn kho thuốc Vitamin D3K2 đã được cộng lại +1. Tiền mặt đã hạch toán trừ quỹ.');
+            closeRMADetail();
+        }
+
+        function openNewRmaModal() {
+            alert('Chức năng Khởi tạo Phiếu chuyển hoàn thủ công (hoặc trả NCC) sẽ mở ra form tương tự Cập nhật Lô.');
+        }
+
+        function switchTab(tabId) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.style.display = 'none';
+            });
+
+            // Show the target tab
+            document.getElementById(tabId).style.display = 'block';
+
+            // Update button active state
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById('btn-' + tabId).classList.add('active');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeRMADetail();
+            }
+        });
+    </script>
+</body>
+
+</html>

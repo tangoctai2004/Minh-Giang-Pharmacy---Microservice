@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tài khoản của tôi — Nhà Thuốc Minh Giang</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f4f6f9;
+        }
+
+        .page-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 16px 15px 48px;
+        }
+
+        .breadcrumb {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+        .breadcrumb a {
+            color: #374151;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            color: #0b7a3e;
+        }
+
+        .breadcrumb span {
+            margin: 0 6px;
+            color: #9ca3af;
+        }
+
+        /* ===== PROFILE LAYOUT ===== */
+        .profile-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        /* ===== LEFT SIDEBAR ===== */
+        .profile-sidebar {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px 20px;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+            position: sticky;
+            top: 20px;
+        }
+
+        .user-avatar-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .user-avatar {
+            width: 54px;
+            height: 54px;
+            background: #0b7a3e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .user-info-text strong {
+            display: block;
+            font-size: 15px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .user-info-text small {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .member-badge {
+            display: inline-block;
+            background: #e5e7eb;
+            color: #374151;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+        }
+
+        .points-text {
+            font-size: 13px;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .points-bar-track {
+            background: #e5e7eb;
+            border-radius: 6px;
+            height: 8px;
+            margin-bottom: 6px;
+            overflow: hidden;
+        }
+
+        .points-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0b7a3e, #17b360);
+            border-radius: 6px;
+            width: 3%;
+        }
+
+        .points-hint {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-bottom: 14px;
+        }
+
+        .points-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #4b5563;
+            margin-bottom: 20px;
+        }
+
+        .points-stats span.label {
+            color: #0b7a3e;
+        }
+
+        .points-stats span.val {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background: #f3f4f6;
+            margin: 14px 0;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-nav li a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            font-size: 14px;
+            color: #374151;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background 0.15s, color 0.15s;
+            cursor: pointer;
+        }
+
+        .sidebar-nav li a:hover {
+            background: #f0faf4;
+            color: #0b7a3e;
+        }
+
+        .sidebar-nav li a.active {
+            background: #f0faf4;
+            color: #0b7a3e;
+            font-weight: 600;
+            border-left: 3px solid #0b7a3e;
+        }
+
+        .sidebar-nav li a i {
+            width: 18px;
+            text-align: center;
+            color: #9ca3af;
+        }
+
+        .sidebar-nav li a.active i {
+            color: #0b7a3e;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .profile-main {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .content-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 28px 32px;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+        }
+
+        .content-card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+            margin: 0 0 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        /* ===== FORM STYLES ===== */
+        .form-section-label {
+            font-size: 15px;
+            font-weight: 700;
+            color: #111827;
+            margin: 24px 0 14px;
+        }
+
+        .form-section-label:first-child {
+            margin-top: 0;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .form-group label .required {
+            color: #ef4444;
+            margin-left: 2px;
+        }
+
+        .form-control {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 14px;
+            color: #374151;
+            background: #fff;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #0b7a3e;
+            box-shadow: 0 0 0 3px rgba(11, 122, 62, 0.1);
+        }
+
+        .form-control-password {
+            position: relative;
+        }
+
+        .form-control-password .form-control {
+            padding-right: 40px;
+        }
+
+        .pw-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            padding: 10px 0;
+        }
+
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 400;
+            color: #374151;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .radio-group input[type="radio"] {
+            accent-color: #0b7a3e;
+            width: 16px;
+            height: 16px;
+        }
+
+        .form-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 13px;
+            color: #374151;
+            margin: 10px 0;
+        }
+
+        .form-checkbox input {
+            accent-color: #0b7a3e;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .form-checkbox a {
+            color: #0b7a3e;
+        }
+
+        .social-login-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 4px;
+        }
+
+        .social-connect-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #374151;
+            cursor: pointer;
+            background: #fff;
+            transition: border-color 0.15s;
+        }
+
+        .social-connect-btn:hover {
+            border-color: #0b7a3e;
+        }
+
+        .social-connect-btn .fa-google {
+            color: #ea4335;
+        }
+
+        .social-connect-btn .fa-facebook-f {
+            color: #1877f2;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .btn-save {
+            background: #0b7a3e;
+            color: #fff;
+            padding: 10px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Roboto', sans-serif;
+            transition: background 0.15s;
+        }
+
+        .btn-save:hover {
+            background: #095c2e;
+        }
+
+        .btn-cancel {
+            background: #f3f4f6;
+            color: #374151;
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Roboto', sans-serif;
+            transition: background 0.15s;
+        }
+
+        .btn-cancel:hover {
+            background: #e5e7eb;
+        }
+
+        /* ===== ORDERS SECTION ===== */
+        .orders-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .orders-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+            margin: 0 0 4px;
+        }
+
+        .orders-header p {
+            font-size: 13px;
+            color: #6b7280;
+            margin: 0;
+        }
+
+        .orders-search {
+            display: flex;
+            align-items: center;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 40px;
+        }
+
+        .orders-search input {
+            border: none;
+            outline: none;
+            padding: 0 14px;
+            font-size: 13px;
+            color: #374151;
+            width: 200px;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .orders-search button {
+            background: #0b7a3e;
+            border: none;
+            padding: 0 14px;
+            height: 100%;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .orders-tabs {
+            display: flex;
+            border-bottom: 2px solid #e5e7eb;
+            margin-bottom: 20px;
+            gap: 0;
+        }
+
+        .tab-btn {
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            cursor: pointer;
+            font-family: 'Roboto', sans-serif;
+            transition: color 0.15s;
+        }
+
+        .tab-btn.active {
+            color: #0b7a3e;
+            border-bottom-color: #0b7a3e;
+            font-weight: 600;
+        }
+
+        .tab-btn:hover {
+            color: #0b7a3e;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 14px;
+            color: #d1d5db;
+            display: block;
+        }
+
+        .empty-state p {
+            font-size: 15px;
+            margin: 0;
+        }
+
+        /* ===== VOUCHERS SECTION ===== */
+        .voucher-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .voucher-card {
+            display: flex;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            align-items: stretch;
+        }
+
+        .voucher-badge {
+            width: 90px;
+            background: linear-gradient(135deg, #f9a8d4, #ec4899);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 800;
+            font-size: 22px;
+            flex-shrink: 0;
+            position: relative;
+            padding: 10px;
+        }
+
+        .voucher-badge span {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .voucher-badge::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 0 4px #e5e7eb;
+        }
+
+        .voucher-info {
+            flex: 1;
+            padding: 14px 20px 14px 24px;
+        }
+
+        .voucher-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+            margin: 0 0 6px;
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+        }
+
+        .voucher-title i {
+            color: #6b7280;
+            font-size: 13px;
+            margin-top: 2px;
+        }
+
+        .voucher-desc {
+            font-size: 12px;
+            color: #6b7280;
+            margin: 0 0 8px;
+        }
+
+        .voucher-expiry {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .voucher-actions {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-end;
+            padding: 14px 16px;
+            gap: 8px;
+        }
+
+        .btn-copy {
+            padding: 7px 16px;
+            border: 1px solid #0b7a3e;
+            border-radius: 6px;
+            color: #0b7a3e;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            background: #fff;
+            font-family: 'Roboto', sans-serif;
+            white-space: nowrap;
+        }
+
+        .btn-copy:hover {
+            background: #f0faf4;
+        }
+
+        .btn-apply {
+            padding: 7px 16px;
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            background: #0b7a3e;
+            font-family: 'Roboto', sans-serif;
+            white-space: nowrap;
+        }
+
+        .btn-apply:hover {
+            background: #095c2e;
+        }
+
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M6 8L0 0h12z' fill='%236b7280'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 36px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div mg-include="includes/header_banner.html"></div>
+    <div mg-include="includes/top_bar.html"></div>
+    <div mg-include="includes/main_header.html"></div>
+
+    <div class="page-wrapper">
+        <div class="breadcrumb">
+            <a href="index.html">Trang chủ</a><span>›</span>
+            <span id="breadcrumbCurrent">Chỉnh sửa hồ sơ</span>
+        </div>
+
+        <div class="profile-layout">
+
+            <!-- LEFT SIDEBAR -->
+            <aside class="profile-sidebar">
+                <div class="user-avatar-row">
+                    <div class="user-avatar">09</div>
+                    <div class="user-info-text">
+                        <strong>0969259650</strong>
+                        <small>0969259650</small>
+                    </div>
+                </div>
+
+                <span class="member-badge">Thành viên</span>
+
+                <p class="points-text">Bạn đang có <strong>0</strong> điểm</p>
+                <div class="points-bar-track">
+                    <div class="points-bar-fill"></div>
+                </div>
+                <p class="points-hint">Mua thêm 4.000.000 điểm để lên hạng Vip</p>
+
+                <div class="points-stats">
+                    <div>
+                        <div class="label">Doanh số tích lũy</div>
+                        <div class="val">0</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div class="label">Điểm có thể dùng online</div>
+                        <div class="val">0</div>
+                    </div>
+                </div>
+
+                <div class="sidebar-divider"></div>
+
+                <ul class="sidebar-nav">
+                    <li>
+                        <a href="#" id="nav-orders-online"
+                            onclick="showSection('orders-online', this, 'Đơn hàng online của tôi')">
+                            <i class="fa-regular fa-file-lines"></i> Đơn hàng online của tôi
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" id="nav-orders-offline"
+                            onclick="showSection('orders-offline', this, 'Đơn hàng tại nhà thuốc')">
+                            <i class="fa-solid fa-store"></i> Đơn hàng của tôi tại nhà thuốc
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" id="nav-profile" class="active"
+                            onclick="showSection('profile', this, 'Chỉnh sửa hồ sơ')">
+                            <i class="fa-regular fa-user"></i> Thông tin cá nhân
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" id="nav-vouchers" onclick="showSection('vouchers', this, 'Ưu đãi & giảm giá')">
+                            <i class="fa-solid fa-ticket"></i> Mã giảm giá
+                        </a>
+                    </li>
+                    <li>
+                        <a href="index.html" style="color: #ef4444;">
+                            <i class="fa-solid fa-right-from-bracket" style="color:#ef4444;"></i> Đăng xuất
+                        </a>
+                    </li>
+                </ul>
+            </aside>
+
+            <!-- MAIN CONTENT -->
+            <div class="profile-main">
+
+                <!-- SECTION: Profile Edit -->
+                <div class="content-section active" id="section-profile">
+                    <div class="content-card">
+                        <h2 class="content-card-title">Hồ sơ chi tiết</h2>
+
+                        <p class="form-section-label">Thông tin Tài khoản Người dùng</p>
+
+                        <div class="form-group">
+                            <label>E-mail <span class="required">*</span></label>
+                            <input type="email" class="form-control" value="0969259650@tscare.vn"
+                                placeholder="Email của bạn">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Mật khẩu <span class="required">*</span></label>
+                            <div class="form-control-password" style="position:relative;">
+                                <input type="password" class="form-control" value="•••••••••••" id="pw">
+                                <i class="fa-regular fa-eye pw-toggle" onclick="togglePW('pw')"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Xác nhận mật khẩu <span class="required">*</span></label>
+                            <div style="position:relative;">
+                                <input type="password" class="form-control" value="•••••••••••" id="pw2">
+                                <i class="fa-regular fa-eye pw-toggle" onclick="togglePW('pw2')"></i>
+                            </div>
+                        </div>
+
+                        <p class="form-section-label">Thông tin liên hệ</p>
+
+                        <div class="form-group">
+                            <label>Giới tính <span class="required">*</span></label>
+                            <div class="radio-group">
+                                <label><input type="radio" name="gender" checked value="anh"> Anh</label>
+                                <label><input type="radio" name="gender" value="chi"> Chị</label>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Họ</label>
+                                <input type="text" class="form-control" placeholder="Họ của bạn">
+                            </div>
+                            <div class="form-group">
+                                <label>Tên</label>
+                                <input type="text" class="form-control" value="0969259650">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Điện thoại <span class="required">*</span></label>
+                            <input type="tel" class="form-control" value="0969259650">
+                        </div>
+
+                        <p class="form-section-label">Địa chỉ nhận hàng</p>
+
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" class="form-control" placeholder="Email nhận hàng">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Họ</label>
+                                <input type="text" class="form-control" placeholder="Họ">
+                            </div>
+                            <div class="form-group">
+                                <label>Tên</label>
+                                <input type="text" class="form-control" value="0969259650">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Bang/Tỉnh</label>
+                            <select class="form-control">
+                                <option>Thành phố Cần Thơ</option>
+                                <option>Hồ Chí Minh</option>
+                                <option>Hà Nội</option>
+                                <option>Đà Nẵng</option>
+                                <option>An Giang</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Quận/Huyện <span class="required">*</span></label>
+                            <select class="form-control">
+                                <option value="">Chọn Quận/Huyện</option>
+                                <option>Ninh Kiều</option>
+                                <option>Bình Thuỷ</option>
+                                <option>Cái Răng</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Phường/Xã <span class="required">*</span></label>
+                            <select class="form-control">
+                                <option value="">Chọn Phường/Xã</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Địa chỉ</label>
+                            <input type="text" class="form-control" placeholder="Số nhà, đường...">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Điện thoại</label>
+                            <input type="tel" class="form-control" placeholder="Điện thoại nhận hàng">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Yêu cầu xuất hóa đơn điện tử</label>
+                            <div class="radio-group">
+                                <label><input type="radio" name="invoice" value="no" checked> Không</label>
+                                <label><input type="radio" name="invoice" value="yes"> Có</label>
+                            </div>
+                        </div>
+
+                        <p class="form-section-label">Thông tin xuất HD VAT</p>
+
+                        <div class="form-group">
+                            <label>Tên công ty</label>
+                            <input type="text" class="form-control" placeholder="Nhập tên công ty">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Mã số thuế</label>
+                            <input type="text" class="form-control" placeholder="Nhập mã số thuế">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Điện thoại</label>
+                            <input type="tel" class="form-control" value="0969259650">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" class="form-control" placeholder="Email xuất hóa đơn">
+                        </div>
+
+                        <div class="form-checkbox">
+                            <input type="checkbox" id="terms">
+                            <label for="terms">Tôi đồng ý với <a href="#">điều khoản dịch vụ, chính sách thu thập và xử
+                                    lý dữ liệu cá nhân</a> <i class="fa-regular fa-circle-question"
+                                    style="color:#9ca3af;"></i></label>
+                        </div>
+
+                        <p class="form-section-label">Tài khoản mạng xã hội</p>
+                        <p style="font-size:13px;color:#6b7280;margin:0 0 12px;">Chỉ định tài khoản mạng xã hội của bạn
+                            và sử dụng nó để đăng nhập</p>
+                        <div class="social-login-row">
+                            <button class="social-connect-btn"><i class="fa-brands fa-google"></i> Google</button>
+                            <button class="social-connect-btn"><i class="fa-brands fa-facebook-f"></i> Facebook</button>
+                        </div>
+
+                        <div class="form-actions">
+                            <button class="btn-save">Lưu</button>
+                            <button class="btn-cancel">Hủy</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION: Online Orders -->
+                <div class="content-section" id="section-orders-online">
+                    <div class="content-card">
+                        <div class="orders-header">
+                            <div>
+                                <h2>Đơn hàng Online của tôi</h2>
+                                <p>Quản lý theo dõi đơn hàng online</p>
+                            </div>
+                            <div class="orders-search">
+                                <input type="text" placeholder="Nhập mã đơn hàng...">
+                                <button><i class="fa-solid fa-magnifying-glass"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="orders-tabs">
+                            <button class="tab-btn active">Tất cả</button>
+                            <button class="tab-btn">Đang xử lý</button>
+                            <button class="tab-btn">Xác nhận đơn</button>
+                            <button class="tab-btn">Hoàn thành</button>
+                            <button class="tab-btn">Hủy đơn</button>
+                        </div>
+
+                        <div class="empty-state">
+                            <i class="fa-regular fa-file-lines"></i>
+                            <p>Không tìm thấy đơn hàng</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION: In-Store Orders -->
+                <div class="content-section" id="section-orders-offline">
+                    <div class="content-card">
+                        <div class="orders-header">
+                            <div>
+                                <h2>Đơn hàng của tôi tại nhà thuốc</h2>
+                                <p>Quản lý theo dõi đơn hàng tại nhà thuốc Minh Giang</p>
+                            </div>
+                            <div class="orders-search">
+                                <input type="text" placeholder="Nhập mã đơn, ngày tháng mua hàng...">
+                                <button><i class="fa-solid fa-magnifying-glass"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="orders-tabs">
+                            <button class="tab-btn active">Tất cả</button>
+                            <button class="tab-btn">Hoàn thành</button>
+                            <button class="tab-btn">Trả hàng/hoàn tiền</button>
+                        </div>
+
+                        <div class="empty-state">
+                            <i class="fa-solid fa-store"></i>
+                            <p>Không tìm thấy đơn hàng</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION: Vouchers -->
+                <div class="content-section" id="section-vouchers">
+                    <div class="content-card">
+                        <h2 class="content-card-title">Ưu đãi dành cho bạn</h2>
+
+                        <div class="voucher-list">
+
+                            <div class="voucher-card">
+                                <div class="voucher-badge" style="background:linear-gradient(135deg,#fca5a5,#ef4444);">
+                                    38k<span>VOUCHER</span>
+                                </div>
+                                <div class="voucher-info">
+                                    <p class="voucher-title">
+                                        [Voucher 38k] đơn hàng từ 399k [Khách hàng lần đầu đăng nhập website]
+                                        <i class="fa-solid fa-circle-info"></i>
+                                    </p>
+                                    <p class="voucher-desc">Áp dụng: Khách hàng lần đầu đăng nhập website<br>Không áp
+                                        dụng cho các sản phẩm thuộc danh mục Flash Sale. Thuốc và danh mục hạn chế...
+                                    </p>
+                                    <p class="voucher-expiry">HSD: 23:59, 31/03/2026</p>
+                                </div>
+                                <div class="voucher-actions">
+                                    <button class="btn-copy">Sao chép mã</button>
+                                    <button class="btn-apply">Áp dụng</button>
+                                </div>
+                            </div>
+
+                            <div class="voucher-card">
+                                <div class="voucher-badge" style="background:linear-gradient(135deg,#fbbf24,#f59e0b);">
+                                    70k<span>VOUCHER</span>
+                                </div>
+                                <div class="voucher-info">
+                                    <p class="voucher-title">
+                                        Voucher 70K [Bill 699K]
+                                        <i class="fa-solid fa-circle-info"></i>
+                                    </p>
+                                    <p class="voucher-desc">Không áp dụng cho các sản phẩm thuộc danh mục Flash Sale.
+                                        Thuốc và danh mục hạn chế...</p>
+                                    <p class="voucher-expiry">HSD: 23:59, 31/03/2026</p>
+                                </div>
+                                <div class="voucher-actions">
+                                    <button class="btn-copy">Sao chép mã</button>
+                                    <button class="btn-apply">Áp dụng</button>
+                                </div>
+                            </div>
+
+                            <div class="voucher-card">
+                                <div class="voucher-badge" style="background:linear-gradient(135deg,#fca5a5,#dc2626);">
+                                    83k<span>VOUCHER</span>
+                                </div>
+                                <div class="voucher-info">
+                                    <p class="voucher-title">
+                                        [Voucher 83k] đơn hàng từ 830K
+                                        <i class="fa-solid fa-circle-info"></i>
+                                    </p>
+                                    <p class="voucher-desc">Không áp dụng cho các sản phẩm thuộc danh mục Flash Sale...
+                                    </p>
+                                    <p class="voucher-expiry">HSD: 23:59, 31/03/2026</p>
+                                </div>
+                                <div class="voucher-actions">
+                                    <button class="btn-copy">Sao chép mã</button>
+                                    <button class="btn-apply">Áp dụng</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- end profile-main -->
+        </div><!-- end profile-layout -->
+
+        <!-- Bottom Sections -->
+        <div class="bottom-sections" style="margin-top: 40px;">
+            <div mg-include="includes/top_searches.html"></div>
+            <div mg-include="includes/featured_products.html"></div>
+        </div>
+    </div>
+
+    <div mg-include="includes/promises.html"></div>
+    <div mg-include="includes/newsletter.html"></div>
+    <div mg-include="includes/main_footer.html"></div>
+
+    <script>
+        function showSection(sectionId, linkEl, breadcrumb) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            // Remove active from all nav links
+            document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+            // Show target
+            document.getElementById('section-' + sectionId).classList.add('active');
+            linkEl.classList.add('active');
+            // Update breadcrumb
+            document.getElementById('breadcrumbCurrent').textContent = breadcrumb;
+            return false;
+        }
+
+        function togglePW(id) {
+            const input = document.getElementById(id);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        // Tab switching for orders
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                this.closest('.orders-tabs').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+    <script src="../assets/js/components.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ hàng — Nhà Thuốc Minh Giang</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f4f6f9;
+        }
+
+        .cart-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 16px 15px 48px;
+        }
+
+        .breadcrumb {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 16px;
+        }
+
+        .breadcrumb a {
+            color: #374151;
+            text-decoration: none;
+        }
+
+        .breadcrumb span {
+            margin: 0 6px;
+            color: #9ca3af;
+        }
+
+        .cart-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 20px;
+        }
+
+        .cart-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 24px;
+            align-items: start;
+        }
+
+        /* === LEFT COLUMN: ITEMS === */
+        .cart-main {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+        }
+
+        .cart-header {
+            display: grid;
+            grid-template-columns: 40px 1fr 120px 120px 120px 40px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #0b7a3e;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 20px;
+        }
+
+        .cart-item {
+            display: grid;
+            grid-template-columns: 40px 1fr 120px 120px 120px 40px;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .cart-item.gift {
+            background: #f0faf4;
+            border: 1px dashed #0b7a3e;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 10px;
+        }
+
+        .item-check input {
+            width: 18px;
+            height: 18px;
+            accent-color: #0b7a3e;
+            cursor: pointer;
+        }
+
+        .item-info {
+            display: flex;
+            gap: 12px;
+            padding-right: 15px;
+        }
+
+        .item-img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            border: 1px solid #f3f4f6;
+            border-radius: 6px;
+            flex-shrink: 0;
+        }
+
+        .item-details h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+            margin: 0 0 4px;
+            line-height: 1.4;
+        }
+
+        .item-details .sku {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .item-details .promo-badge {
+            font-size: 12px;
+            color: #0b7a3e;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 500;
+        }
+
+        .item-unit-price {
+            text-align: right;
+            padding-right: 10px;
+        }
+
+        .price-orig {
+            font-size: 12px;
+            color: #9ca3af;
+            text-decoration: line-through;
+            display: block;
+        }
+
+        .price-now {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0b7a3e;
+        }
+
+        .unit-label {
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        .item-qty {
+            display: flex;
+            justify-content: center;
+        }
+
+        .qty-controls {
+            display: flex;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            overflow: hidden;
+            height: 30px;
+        }
+
+        .qty-btn {
+            width: 30px;
+            border: none;
+            background: #f3f4f6;
+            cursor: pointer;
+            font-size: 16px;
+            color: #374151;
+        }
+
+        .qty-input {
+            width: 40px;
+            border: none;
+            border-left: 1px solid #d1d5db;
+            border-right: 1px solid #d1d5db;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .item-total {
+            text-align: right;
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+            padding-right: 10px;
+        }
+
+        .item-total.free {
+            color: #0b7a3e;
+        }
+
+        .item-delete {
+            text-align: center;
+            color: #9ca3af;
+            cursor: pointer;
+        }
+
+        .item-delete:hover {
+            color: #ef4444;
+        }
+
+        .gift-tag {
+            background: #0b7a3e;
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: inline-block;
+        }
+
+        .cart-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 24px;
+        }
+
+        .btn-secondary {
+            background: none;
+            border: 1px solid #d1d5db;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #ff914d;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn-checkout {
+            background: #0b7a3e;
+            color: #fff;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-clear {
+            background: #d1d5db;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* === RIGHT COLUMN: SUMMARY === */
+        .cart-summary {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .summary-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+        }
+
+        .voucher-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f0faf4;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #ff914d;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        .voucher-input {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .voucher-input input {
+            flex: 1;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+
+        .btn-apply {
+            background: #d1d5db;
+            color: #fff;
+            border: none;
+            padding: 0 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .active-promo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #0b7a3e;
+            padding: 10px;
+            background: #f0faf4;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .points-reward {
+            font-size: 13px;
+            color: #374151;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .reward-val {
+            color: #0b7a3e;
+            font-weight: 600;
+        }
+
+        .price-breakdown {
+            border-top: 1px solid #f3f4f6;
+            padding-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .breakdown-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .breakdown-row.total {
+            border-top: 1px solid #f3f4f6;
+            padding-top: 15px;
+            margin-top: 5px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .total-val {
+            color: #0b7a3e;
+            font-size: 18px;
+        }
+
+        .saving-val {
+            color: #ef4444;
+        }
+
+        .terms-hint {
+            font-size: 11px;
+            color: #9ca3af;
+            line-height: 1.5;
+            margin-top: 15px;
+        }
+
+        .terms-hint a {
+            color: #0b7a3e;
+            text-decoration: none;
+        }
+
+        .shipping-hint {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: #4b5563;
+        }
+
+        .shipping-hint i {
+            color: #0b7a3e;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div mg-include="includes/header_banner.html"></div>
+    <div mg-include="includes/top_bar.html"></div>
+    <div mg-include="includes/main_header.html"></div>
+
+    <div class="cart-wrapper">
+        <div class="breadcrumb">
+            <a href="index.html">Trang chủ</a><span>›</span>
+            <span style="color: #6b7280;">Tiếp tục mua sắm</span>
+        </div>
+
+        <h1 class="cart-title">Giỏ hàng</h1>
+
+        <div class="cart-layout">
+            <!-- LEFT: PRODUCT LIST -->
+            <div class="cart-main">
+                <div class="cart-header">
+                    <div class="item-check"><input type="checkbox" checked></div>
+                    <div>Sản phẩm</div>
+                    <div style="text-align: right;">Đơn giá</div>
+                    <div style="text-align: center;">Số lượng</div>
+                    <div style="text-align: right;">Thành tiền</div>
+                    <div></div>
+                </div>
+
+                <!-- Product 1 -->
+                <div class="cart-item">
+                    <div class="item-check"><input type="checkbox" checked></div>
+                    <div class="item-info">
+                        <img src="../assets/images/cart_product_1.png" alt="Fess Little Noses" class="item-img"
+                            onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><rect width=\'100\' height=\'100\' fill=\'#f3f4f6\'/><text x=\'50\' y=\'50\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-size=\'10\' fill=\'#9ca3af\'>Product</text></svg>'">
+                        <div class="item-details">
+                            <h4>Fess Little Noses Spray - Xịt rửa mũi...</h4>
+                            <span class="sku">SKU: 933739</span>
+                            <div class="promo-badge">
+                                <i class="fa-solid fa-circle-check"></i> Giảm giá 38.000đ
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item-unit-price">
+                        <span class="price-orig">280.000đ</span>
+                        <span class="price-now">242.000đ</span>
+                        <div class="unit-label">/ Chai</div>
+                    </div>
+                    <div class="item-qty">
+                        <div class="qty-controls">
+                            <button class="qty-btn">-</button>
+                            <input type="text" value="1" class="qty-input">
+                            <button class="qty-btn">+</button>
+                        </div>
+                    </div>
+                    <div class="item-total">242.000đ</div>
+                    <div class="item-delete"><i class="fa-regular fa-trash-can"></i></div>
+                </div>
+
+                <!-- Gift Item -->
+                <div class="cart-item gift">
+                    <div class="item-check"></div>
+                    <div class="item-info">
+                        <div style="position:relative;">
+                            <img src="../assets/images/cart_gift.png" alt="Nước súc miệng" class="item-img"
+                                onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><rect width=\'100\' height=\'100\' fill=\'#f3f4f6\'/><text x=\'50\' y=\'50\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-size=\'10\' fill=\'#9ca3af\'>Gift</text></svg>'">
+                            <span class="gift-tag"
+                                style="position:absolute; bottom: -5px; left: 50%; transform: translateX(-50%);">TẶNG</span>
+                        </div>
+                        <div class="item-details">
+                            <h4>Nước Súc Miệng Lisdoub làm sạch...</h4>
+                            <span class="sku">SKU: 932988 - Đã bán: 101</span>
+                        </div>
+                    </div>
+                    <div class="item-unit-price">
+                        <span class="price-orig">29.000đ</span>
+                        <span class="price-now">0đ</span>
+                        <div class="unit-label">/ Chai</div>
+                    </div>
+                    <div class="item-qty">
+                        <span style="font-size: 14px; color: #6b7280;">x1</span>
+                    </div>
+                    <div class="item-total free">Miễn phí</div>
+                    <div class="item-delete"></div>
+                </div>
+
+                <div class="cart-actions">
+                    <div>
+                        <a href="index.html" class="btn-secondary">Tiếp tục mua sắm</a>
+                        <button class="btn-clear" style="margin-left: 10px;">Xóa giỏ hàng</button>
+                    </div>
+                    <button class="btn-checkout">Tiến hành thanh toán</button>
+                </div>
+            </div>
+
+            <!-- RIGHT: SUMMARY -->
+            <aside class="cart-summary">
+                <div class="summary-card">
+                    <div class="voucher-header">
+                        <span><i class="fa-solid fa-ticket"></i> Chọn ưu đãi & giảm giá</span>
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+
+                    <div class="voucher-input">
+                        <input type="text" placeholder="Thẻ quà tặng hoặc mã giảm giá">
+                        <button class="btn-apply">Áp dụng</button>
+                    </div>
+
+                    <div class="active-promo">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Tặng nước súc miệng LISDOUB bill 199K</span>
+                    </div>
+
+                    <div class="points-reward">
+                        <span>Điểm thưởng</span>
+                        <span class="reward-val">+121 điểm</span>
+                    </div>
+
+                    <div class="price-breakdown">
+                        <div class="breakdown-row">
+                            <span>Tổng tiền sản phẩm</span>
+                            <span>280.000đ</span>
+                        </div>
+                        <div class="breakdown-row">
+                            <span>Giảm giá sản phẩm</span>
+                            <span class="saving-val">-38.000đ</span>
+                        </div>
+                        <div class="breakdown-row">
+                            <span>Giảm giá khuyến mãi</span>
+                            <span>0đ</span>
+                        </div>
+                        <div class="breakdown-row">
+                            <div class="shipping-hint">
+                                Phí vận chuyển tham khảo <i class="fa-regular fa-circle-question"></i>
+                            </div>
+                            <span>0đ</span>
+                        </div>
+                        <div class="breakdown-row">
+                            <span>Bạn tiết kiệm</span>
+                            <span class="saving-val">38.000đ</span>
+                        </div>
+
+                        <div class="breakdown-row total">
+                            <span>Tổng tiền:</span>
+                            <span class="total-val">242.000đ</span>
+                        </div>
+                    </div>
+
+                    <p class="terms-hint">
+                        Khi tiến hành đặt mua hàng, bạn đồng ý với <a href="#">Chính sách mua hàng</a> và <a
+                            href="#">Bảo mật</a> của Trung Sơn Pharma
+                    </p>
+                </div>
+            </aside>
+        </div>
+
+        <!-- Bottom Sections -->
+        <div class="bottom-sections" style="margin-top: 40px;">
+            <div mg-include="includes/top_searches.html"></div>
+            <div mg-include="includes/featured_products.html"></div>
+        </div>
+    </div>
+
+    <div mg-include="includes/promises.html"></div>
+    <div mg-include="includes/newsletter.html"></div>
+    <div mg-include="includes/main_footer.html"></div>
+
+    <script src="../assets/js/components.js"></script>
+</body>
+
+</html>

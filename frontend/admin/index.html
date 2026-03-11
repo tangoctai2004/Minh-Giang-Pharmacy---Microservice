@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Chủ Admin — Nhà Thuốc Minh Giang</title>
+    <link rel="stylesheet" href="css/admin-style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="admin-sidebar">
+        <!-- Inject via admin-components.js -->
+    </aside>
+
+    <!-- ============ HEADER ============ -->
+    <header class="admin-header">
+        <!-- Inject via admin-components.js -->
+    </header>
+
+    <!-- ============ MAIN CONTENT ============ -->
+    <main class="admin-main">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Trang Chủ</h1>
+                <p class="page-subtitle">Tổng quan hoạt động kinh doanh — Hôm nay, 05/03/2026</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn-secondary">
+                    <i class="fa-solid fa-download"></i> Xuất báo cáo
+                </button>
+                <button class="btn-primary">
+                    <i class="fa-solid fa-plus"></i> Nhập hàng mới
+                </button>
+            </div>
+        </div>
+
+        <!-- ======== SUMMARY CARDS ======== -->
+        <div class="summary-cards">
+
+            <!-- Card 1: Revenue -->
+            <div class="summary-card">
+                <div class="summary-card-top">
+                    <span class="summary-card-label">Doanh thu hôm nay</span>
+                    <div class="summary-card-icon green">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                </div>
+                <div class="summary-card-value">12.5M</div>
+                <span class="summary-card-trend up">
+                    <i class="fa-solid fa-arrow-up"></i> +12.5% so với hôm qua
+                </span>
+            </div>
+
+            <!-- Card 2: POS Orders -->
+            <div class="summary-card">
+                <div class="summary-card-top">
+                    <span class="summary-card-label">Đơn POS (Kiosk)</span>
+                    <div class="summary-card-icon blue">
+                        <i class="fa-solid fa-cash-register"></i>
+                    </div>
+                </div>
+                <div class="summary-card-value">47</div>
+                <span class="summary-card-trend up">
+                    <i class="fa-solid fa-arrow-up"></i> +5% hôm nay
+                </span>
+            </div>
+
+            <!-- Card 3: Web Orders -->
+            <div class="summary-card">
+                <div class="summary-card-top">
+                    <span class="summary-card-label">Đơn Web Online</span>
+                    <div class="summary-card-icon purple">
+                        <i class="fa-solid fa-globe"></i>
+                    </div>
+                </div>
+                <div class="summary-card-value">18</div>
+                <span class="summary-card-trend down">
+                    <i class="fa-solid fa-arrow-down"></i> -3% hôm nay
+                </span>
+            </div>
+
+            <!-- Card 4: New Customers -->
+            <div class="summary-card">
+                <div class="summary-card-top">
+                    <span class="summary-card-label">Khách hàng mới</span>
+                    <div class="summary-card-icon orange">
+                        <i class="fa-solid fa-user-plus"></i>
+                    </div>
+                </div>
+                <div class="summary-card-value">9</div>
+                <span class="summary-card-trend up">
+                    <i class="fa-solid fa-arrow-up"></i> +28% hôm nay
+                </span>
+            </div>
+
+        </div>
+
+        <!-- ======== REVENUE CHART ======== -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title"><i class="fa-solid fa-chart-column"
+                        style="color:#10b981;margin-right:8px;"></i>Biểu đồ doanh thu</h3>
+                <div class="chart-filters">
+                    <button class="chart-filter-btn active">7 ngày</button>
+                    <button class="chart-filter-btn">30 ngày</button>
+                    <button class="chart-filter-btn">Quý này</button>
+                </div>
+            </div>
+            <div class="chart-placeholder">
+                <div class="chart-bars">
+                    <div class="chart-bar" style="height:120px; background:linear-gradient(180deg,#10b981,#059669);">
+                        <span class="chart-bar-value">8.2M</span>
+                        <span class="chart-bar-label">T2</span>
+                    </div>
+                    <div class="chart-bar" style="height:155px; background:linear-gradient(180deg,#10b981,#059669);">
+                        <span class="chart-bar-value">10.5M</span>
+                        <span class="chart-bar-label">T3</span>
+                    </div>
+                    <div class="chart-bar" style="height:95px; background:linear-gradient(180deg,#10b981,#059669);">
+                        <span class="chart-bar-value">6.8M</span>
+                        <span class="chart-bar-label">T4</span>
+                    </div>
+                    <div class="chart-bar" style="height:175px; background:linear-gradient(180deg,#10b981,#059669);">
+                        <span class="chart-bar-value">12.1M</span>
+                        <span class="chart-bar-label">T5</span>
+                    </div>
+                    <div class="chart-bar" style="height:140px; background:linear-gradient(180deg,#10b981,#059669);">
+                        <span class="chart-bar-value">9.4M</span>
+                        <span class="chart-bar-label">T6</span>
+                    </div>
+                    <div class="chart-bar" style="height:190px; background:linear-gradient(180deg,#10b981,#059669);">
+                        <span class="chart-bar-value">13.8M</span>
+                        <span class="chart-bar-label">T7</span>
+                    </div>
+                    <div class="chart-bar" style="height:160px; background:linear-gradient(180deg,#34d399,#10b981);">
+                        <span class="chart-bar-value">12.5M</span>
+                        <span class="chart-bar-label">CN</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======== ALERT TABLES ======== -->
+        <div class="alerts-grid">
+
+            <!-- Low Stock Alerts -->
+            <div class="alert-card">
+                <div class="alert-card-header">
+                    <span class="alert-card-title">
+                        <span class="alert-dot danger"></span>
+                        Cảnh báo sắp hết hàng
+                    </span>
+                    <span class="alert-count danger">5 sản phẩm</span>
+                </div>
+                <table class="alert-table">
+                    <thead>
+                        <tr>
+                            <th>Tên thuốc</th>
+                            <th>SKU</th>
+                            <th>Tồn kho</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="table-medicine-name">Amoxicillin 500mg</td>
+                            <td class="table-sku">MED-0042</td>
+                            <td><span class="stock-critical">3</span></td>
+                        </tr>
+                        <tr>
+                            <td class="table-medicine-name">Paracetamol 500mg</td>
+                            <td class="table-sku">MED-0015</td>
+                            <td><span class="stock-critical">5</span></td>
+                        </tr>
+                        <tr>
+                            <td class="table-medicine-name">Omeprazole 20mg</td>
+                            <td class="table-sku">MED-0078</td>
+                            <td><span class="stock-critical">7</span></td>
+                        </tr>
+                        <tr>
+                            <td class="table-medicine-name">Nhiệt kế Omron MC-246</td>
+                            <td class="table-sku">DEV-0112</td>
+                            <td><span class="stock-critical">8</span></td>
+                        </tr>
+                        <tr>
+                            <td class="table-medicine-name">Vitamin C DHC 1000mg</td>
+                            <td class="table-sku">SUP-0023</td>
+                            <td><span class="stock-low">12</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Expiring Soon -->
+            <div class="alert-card">
+                <div class="alert-card-header">
+                    <span class="alert-card-title">
+                        <span class="alert-dot warning"></span>
+                        Thuốc sắp hết hạn
+                    </span>
+                    <span class="alert-count warning">4 lô hàng</span>
+                </div>
+                <table class="alert-table">
+                    <thead>
+                        <tr>
+                            <th>Tên thuốc</th>
+                            <th>Mã lô</th>
+                            <th>Hạn sử dụng</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="table-medicine-name">Efferalgan 500mg</td>
+                            <td class="table-sku">LO-2024-0892</td>
+                            <td><span class="expiry-badge urgent"><i class="fa-solid fa-triangle-exclamation"></i>
+                                    12/03/2026</span></td>
+                            <td><button class="btn-restock"><i class="fa-solid fa-rotate"></i> Nhập thêm</button></td>
+                        </tr>
+                        <tr>
+                            <td class="table-medicine-name">Thuốc ho Prospan</td>
+                            <td class="table-sku">LO-2024-1105</td>
+                            <td><span class="expiry-badge urgent"><i class="fa-solid fa-triangle-exclamation"></i>
+                                    20/03/2026</span></td>
+                            <td><button class="btn-restock"><i class="fa-solid fa-rotate"></i> Nhập thêm</button></td>
+                        </tr>
+                        <tr>
+                            <td class="table-medicine-name">Smecta hương cam</td>
+                            <td class="table-sku">LO-2025-0034</td>
+                            <td><span class="expiry-badge soon"><i class="fa-regular fa-clock"></i> 15/04/2026</span>
+                            </td>
+                            <td><button class="btn-restock"><i class="fa-solid fa-rotate"></i> Nhập thêm</button></td>
+                        </tr>
+                        <tr>
+                            <td class="table-medicine-name">Betadine 10%</td>
+                            <td class="table-sku">LO-2025-0087</td>
+                            <td><span class="expiry-badge soon"><i class="fa-regular fa-clock"></i> 01/05/2026</span>
+                            </td>
+                            <td><button class="btn-restock"><i class="fa-solid fa-rotate"></i> Nhập thêm</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- ============ SCRIPTS ============ -->
+    <script>
+        // Chart filter toggle
+        document.querySelectorAll('.chart-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.chart-filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        // Sidebar active state
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            const href = link.getAttribute('href');
+            if (href === currentPage) {
+                link.classList.add('active');
+            } else if (href !== currentPage) {
+                // Keep the one we set in HTML
+            }
+        });
+
+        // Animate summary card values on load
+        document.querySelectorAll('.summary-card').forEach((card, idx) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(16px)';
+            card.style.transition = 'all 0.4s ease';
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 100 + idx * 80);
+        });
+
+        // Animate chart bars on load
+        document.querySelectorAll('.chart-bar').forEach((bar, idx) => {
+            const targetHeight = bar.style.height;
+            bar.style.height = '0';
+            bar.style.transition = `height 0.6s cubic-bezier(0.4, 0, 0.2, 1) ${idx * 0.08}s`;
+            setTimeout(() => {
+                bar.style.height = targetHeight;
+            }, 200);
+        });
+    </script>
+
+
+    <!-- Shared Layout Components -->
+    <script src="js/admin-components.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAdminLayout('dashboard');
+        });
+    </script>
+</body>
+
+</html>

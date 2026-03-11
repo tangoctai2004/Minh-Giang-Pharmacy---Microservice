@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiểm Kê Tồn Kho — Nhà Thuốc Minh Giang</title>
+    <link rel="stylesheet" href="css/admin-style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="admin-sidebar">
+        <!-- Inject via admin-components.js -->
+    </aside>
+
+    <!-- ============ HEADER ============ -->
+    <header class="admin-header">
+        <!-- Inject via admin-components.js -->
+    </header>
+
+    <!-- ============ MAIN CONTENT ============ -->
+    <main class="admin-main">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Kiểm Kê Tồn Kho (Stocktake)</h1>
+                <p class="page-subtitle">Quản lý và đối soát số lượng tồn kho thực tế so với hệ thống.</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn-primary" onclick="openAuditModal()">
+                    <i class="fa-solid fa-plus"></i> Tạo Phiếu Kiểm Kê
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="filter-group">
+                <label class="filter-label">Khu vực kiểm kê</label>
+                <select class="filter-control">
+                    <option value="">Tất cả khu vực</option>
+                    <option value="">Khu Thuốc Kê Đơn (Rx)</option>
+                    <option value="">Khu Thuốc Không Kê Đơn (OTC)</option>
+                    <option value="">Khu Thực Phẩm Chức Năng</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Trạng thái</label>
+                <select class="filter-control">
+                    <option value="">Tất cả</option>
+                    <option value="">Đang kiểm (Draft)</option>
+                    <option value="">Đã đối soát (Reconciled)</option>
+                </select>
+            </div>
+            <div class="filter-group" style="flex:1;">
+                <label class="filter-label">Tháng</label>
+                <input type="month" class="filter-control" value="2026-03">
+            </div>
+        </div>
+
+        <!-- Data Table (Audit History) -->
+        <div class="inventory-table-container">
+            <table class="inventory-table">
+                <thead>
+                    <tr>
+                        <th width="15%">Mã Phiếu</th>
+                        <th width="20%">Thời gian / Người tạo</th>
+                        <th width="20%">Phạm vi kiểm kê</th>
+                        <th width="15%">Số mã hàng lệch</th>
+                        <th width="15%">Giá trị chênh lệch</th>
+                        <th width="15%" style="text-align:right;">Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="table-sku"
+                                style="font-size:14px;font-weight:700;color:#1e293b;">AUD-260228</span></td>
+                        <td>
+                            <div class="inv-name" style="font-size:14px;">Trần Minh Giang</div>
+                            <div style="font-size:12px;color:#6b7280;">28/02/2026 - 22:30</div>
+                        </td>
+                        <td>
+                            <div style="font-size:13px;font-weight:600;color:#1e293b;">Khu Thuốc Kê Đơn (Rx)</div>
+                            <div style="font-size:12px;color:#6b7280;">Tủ A, Tủ B</div>
+                        </td>
+                        <td><span style="font-size:14px;font-weight:700;color:#ef4444;">12 mã</span></td>
+                        <td><span style="font-size:14px;font-weight:700;color:#ef4444;">-850,000₫</span></td>
+                        <td>
+                            <div class="action-btns" style="justify-content:flex-end;">
+                                <span class="status-badge active"
+                                    style="background:#f0fdf4;color:#15803d;border-color:#bbf7d0;">Đã đối soát</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="table-sku"
+                                style="font-size:14px;font-weight:700;color:#1e293b;">AUD-260215</span></td>
+                        <td>
+                            <div class="inv-name" style="font-size:14px;">Nguyễn Văn A</div>
+                            <div style="font-size:12px;color:#6b7280;">15/02/2026 - 21:00</div>
+                        </td>
+                        <td>
+                            <div style="font-size:13px;font-weight:600;color:#1e293b;">Khu TPCN</div>
+                            <div style="font-size:12px;color:#6b7280;">Toàn bộ tủ</div>
+                        </td>
+                        <td><span style="font-size:14px;font-weight:700;color:#10b981;">3 mã</span></td>
+                        <td><span style="font-size:14px;font-weight:700;color:#10b981;">+120,000₫</span></td>
+                        <td>
+                            <div class="action-btns" style="justify-content:flex-end;">
+                                <span class="status-badge active"
+                                    style="background:#f0fdf4;color:#15803d;border-color:#bbf7d0;">Đã đối soát</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="table-sku"
+                                style="font-size:14px;font-weight:700;color:#1e293b;">AUD-260131</span></td>
+                        <td>
+                            <div class="inv-name" style="font-size:14px;">Lê Thị B</div>
+                            <div style="font-size:12px;color:#6b7280;">31/01/2026 - 15:45</div>
+                        </td>
+                        <td>
+                            <div style="font-size:13px;font-weight:600;color:#1e293b;">Toàn bộ nhà thuốc</div>
+                            <div style="font-size:12px;color:#6b7280;">Kiểm kê tổng định kỳ</div>
+                        </td>
+                        <td><span style="font-size:14px;font-weight:700;color:#ef4444;">8 mã</span></td>
+                        <td><span style="font-size:14px;font-weight:700;color:#ef4444;">-450,000₫</span></td>
+                        <td>
+                            <div class="action-btns" style="justify-content:flex-end;">
+                                <span class="status-badge active"
+                                    style="background:#f0fdf4;color:#15803d;border-color:#bbf7d0;">Đã đối soát</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- ============ FULL SCREEN AUDIT MODAL ============ -->
+    <div class="fullscreen-modal-overlay" id="auditModal">
+        <!-- Header -->
+        <div class="fs-modal-header">
+            <div>
+                <h2 style="font-size:20px;font-weight:800;color:#1e293b;letter-spacing:-0.5px;"><i
+                        class="fa-solid fa-clipboard-check" style="color:#10b981;margin-right:8px;"></i>Phiếu Kiểm Kê
+                    Mới</h2>
+                <div style="display:flex;gap:12px;margin-top:8px;">
+                    <select class="form-select" style="width:250px;font-size:13px;padding:6px 12px;height:32px;">
+                        <option value="">Chọn khu vực kiểm kê...</option>
+                        <option value="rx">Khu Thuốc Kế Đơn (Rx)</option>
+                        <option value="otc" selected>Khu Thuốc OTC - Tủ B2</option>
+                    </select>
+                    <button class="btn-secondary" style="height:32px;font-size:12px;padding:0 12px;"><i
+                            class="fa-solid fa-cloud-arrow-down"></i> Tải dữ liệu hệ thống</button>
+                    <button class="btn-secondary" style="height:32px;font-size:12px;padding:0 12px;"><i
+                            class="fa-solid fa-barcode"></i> Quét mã vạch đếm</button>
+                </div>
+            </div>
+            <button class="slide-close" onclick="closeAuditModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <!-- Body (Data Table) -->
+        <div class="fs-modal-body">
+            <div
+                style="background:white;border-radius:10px;border:1px solid var(--admin-border);box-shadow:0 1px 2px rgba(0,0,0,0.05);overflow:hidden;">
+                <table class="inventory-table" style="margin:0;">
+                    <thead style="background:#f8fafc;">
+                        <tr>
+                            <th width="15%">Mã Hàng (SKU)</th>
+                            <th width="35%">Thuốc (Medicine Name)</th>
+                            <th width="10%" style="text-align:right;">Mã Lô</th>
+                            <th width="10%" style="text-align:right;">SL Hệ thống</th>
+                            <th width="15%" style="text-align:right;">SL Kiểm thực tế</th>
+                            <th width="15%" style="text-align:right;">Chênh lệch (+/-)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="auditTableBody">
+                        <!-- Row 1 (Negative Discrepancy) -->
+                        <tr>
+                            <td style="font-size:13px;font-weight:600;color:#6b7280;">SKU-A001</td>
+                            <td style="font-size:14px;font-weight:700;color:#1e293b;">Panadol Extra (Hộp 12 viên)</td>
+                            <td style="font-size:12px;color:#6b7280;text-align:right;">L2603-A</td>
+                            <td style="font-size:15px;font-weight:600;color:#1e293b;text-align:right;" class="sys-qty">
+                                150</td>
+                            <td style="text-align:right;">
+                                <input type="number" class="audit-input" value="145"
+                                    oninput="calculateRowDiscrepancy(this)">
+                            </td>
+                            <td style="text-align:right;" class="discrepancy-cell">
+                                <span class="discrepancy-negative">-5</span>
+                            </td>
+                        </tr>
+                        <!-- Row 2 (Match) -->
+                        <tr>
+                            <td style="font-size:13px;font-weight:600;color:#6b7280;">SKU-A025</td>
+                            <td style="font-size:14px;font-weight:700;color:#1e293b;">Amoxicillin 500mg</td>
+                            <td style="font-size:12px;color:#6b7280;text-align:right;">L2512-C</td>
+                            <td style="font-size:15px;font-weight:600;color:#1e293b;text-align:right;" class="sys-qty">
+                                80</td>
+                            <td style="text-align:right;">
+                                <input type="number" class="audit-input" value="80"
+                                    oninput="calculateRowDiscrepancy(this)">
+                            </td>
+                            <td style="text-align:right;" class="discrepancy-cell">
+                                <span style="color:#9ca3af;font-weight:600;">0</span>
+                            </td>
+                        </tr>
+                        <!-- Row 3 (Positive Discrepancy) -->
+                        <tr>
+                            <td style="font-size:13px;font-weight:600;color:#6b7280;">SKU-A099</td>
+                            <td style="font-size:14px;font-weight:700;color:#1e293b;">Vitamin C DHC 1000mg</td>
+                            <td style="font-size:12px;color:#6b7280;text-align:right;">L2601-B</td>
+                            <td style="font-size:15px;font-weight:600;color:#1e293b;text-align:right;" class="sys-qty">
+                                45</td>
+                            <td style="text-align:right;">
+                                <input type="number" class="audit-input" value="48"
+                                    oninput="calculateRowDiscrepancy(this)">
+                            </td>
+                            <td style="text-align:right;" class="discrepancy-cell">
+                                <span class="discrepancy-positive">+3</span>
+                            </td>
+                        </tr>
+                        <!-- Row 4 (Empty) -->
+                        <tr>
+                            <td style="font-size:13px;font-weight:600;color:#6b7280;">SKU-B102</td>
+                            <td style="font-size:14px;font-weight:700;color:#1e293b;">Dầu gió xanh Thiên Ân</td>
+                            <td style="font-size:12px;color:#6b7280;text-align:right;">L2508-A</td>
+                            <td style="font-size:15px;font-weight:600;color:#1e293b;text-align:right;" class="sys-qty">
+                                20</td>
+                            <td style="text-align:right;">
+                                <input type="number" class="audit-input" placeholder="0"
+                                    oninput="calculateRowDiscrepancy(this)">
+                            </td>
+                            <td style="text-align:right;" class="discrepancy-cell">
+                                <span style="color:#9ca3af;font-weight:600;">--</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="fs-modal-footer">
+            <div style="flex:1;display:flex;gap:32px;align-items:center;">
+                <div>
+                    <span style="font-size:12px;color:#6b7280;display:block;">Tổng hàng lệch (âm):</span>
+                    <span style="font-size:16px;font-weight:800;color:#ef4444;" id="totalMissing">-5</span>
+                </div>
+                <div>
+                    <span style="font-size:12px;color:#6b7280;display:block;">Tổng hàng dôi (dương):</span>
+                    <span style="font-size:16px;font-weight:800;color:#10b981;" id="totalSurplus">+3</span>
+                </div>
+                <div>
+                    <span style="font-size:12px;color:#6b7280;display:block;">Ước tính giá trị thiệt hại:</span>
+                    <span style="font-size:16px;font-weight:800;color:#1e293b;">-325,000₫</span>
+                </div>
+            </div>
+
+            <button class="btn-secondary" onclick="closeAuditModal()">Huỷ & Đóng</button>
+            <button class="btn-secondary" onclick="alert('Đã lưu nháp!');"><i class="fa-solid fa-floppy-disk"></i> Lưu
+                Nháp</button>
+            <button class="btn-primary" onclick="submitAudit()">
+                <i class="fa-solid fa-check-double"></i> Hoàn tất Đối Soát & Cập nhật Kho
+            </button>
+        </div>
+    </div>
+
+    <!-- ============ SCRIPTS ============ -->
+    <script>
+        function openAuditModal() {
+            document.getElementById('auditModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAuditModal() {
+            if (confirm("Khép lại phiếu kiểm kê? Mọi dữ liệu chưa 'Lưu Nháp' sẽ bị mất.")) {
+                document.getElementById('auditModal').classList.remove('open');
+                document.body.style.overflow = '';
+            }
+        }
+
+        function submitAudit() {
+            if (confirm("Xác nhận: Hệ thống sẽ tự động cập nhật số lượng tồn kho theo 'SL Kiểm thực tế'. Bạn có chắc chắn muốn hoàn tất?")) {
+                alert("Kiểm kê hoàn tất. Tồn kho đã được điều chỉnh!");
+                document.getElementById('auditModal').classList.remove('open');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Live calculation logic for individual rows
+        function calculateRowDiscrepancy(inputElement) {
+            const row = inputElement.closest('tr');
+            const sysQtyText = row.querySelector('.sys-qty').innerText;
+            const sysQty = parseInt(sysQtyText, 10);
+            const actualQty = inputElement.value === '' ? sysQty : parseInt(inputElement.value, 10);
+
+            const diff = actualQty - sysQty;
+            const discCell = row.querySelector('.discrepancy-cell');
+
+            if (inputElement.value === '') {
+                discCell.innerHTML = `<span style="color:#9ca3af;font-weight:600;">--</span>`;
+            } else if (diff === 0) {
+                discCell.innerHTML = `<span style="color:#9ca3af;font-weight:600;">0</span>`;
+            } else if (diff > 0) {
+                discCell.innerHTML = `<span class="discrepancy-positive">+${diff}</span>`;
+            } else {
+                discCell.innerHTML = `<span class="discrepancy-negative">${diff}</span>`;
+            }
+            // A real app would then loop all rows to update the total footers.
+        }
+    </script>
+
+    <!-- Shared Layout Components -->
+    <script src="js/admin-components.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAdminLayout('audits');
+        });
+    </script>
+</body>
+
+</html>

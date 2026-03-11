@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tra cứu thông tin bệnh lý — Nhà Thuốc Minh Giang</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ====== DISEASE PAGE STYLES ====== */
+
+        /* Hero Search Banner */
+        .disease-hero {
+            background: linear-gradient(135deg, #0b7a3e 0%, #10a854 50%, #0d8f47 100%);
+            padding: 28px 0;
+            margin-bottom: 24px;
+        }
+
+        .disease-hero .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .disease-hero-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            white-space: nowrap;
+        }
+
+        .disease-search-box {
+            flex: 1;
+            max-width: 500px;
+            display: flex;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+        }
+
+        .disease-search-box input {
+            flex: 1;
+            border: none;
+            padding: 12px 16px;
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+            color: #333;
+        }
+
+        .disease-search-box input::placeholder {
+            color: #9ca3af;
+        }
+
+        .disease-search-box button {
+            width: 48px;
+            border: none;
+            background: #0b7a3e;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background .15s;
+        }
+
+        .disease-search-box button:hover {
+            background: #095e30;
+        }
+
+        /* Lookup Section */
+        .disease-lookup {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+
+        .lookup-box {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px 24px;
+        }
+
+        .lookup-box h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0 0 16px;
+        }
+
+        /* Alphabet Grid */
+        .alpha-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .alpha-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: all .15s;
+            font-family: inherit;
+        }
+
+        .alpha-btn.red {
+            background: #dc2626;
+            color: #fff;
+        }
+
+        .alpha-btn.red:hover {
+            background: #b91c1c;
+            transform: scale(1.08);
+        }
+
+        .alpha-btn.green {
+            background: #f0fdf4;
+            color: #0b7a3e;
+            border: 1px solid #bbf7d0;
+        }
+
+        .alpha-btn.green:hover {
+            background: #0b7a3e;
+            color: #fff;
+            transform: scale(1.08);
+        }
+
+        /* Popular Articles */
+        .popular-article-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .popular-article-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            cursor: pointer;
+            transition: color .15s;
+        }
+
+        .popular-article-list li:last-child {
+            border-bottom: none;
+        }
+
+        .popular-article-list li:hover {
+            color: #0b7a3e;
+        }
+
+        .popular-article-list li .article-title {
+            font-size: 14px;
+            color: #374151;
+            line-height: 1.4;
+            flex: 1;
+        }
+
+        .popular-article-list li:hover .article-title {
+            color: #0b7a3e;
+        }
+
+        .popular-article-list li .article-icon {
+            color: #0b7a3e;
+            font-size: 12px;
+            margin-top: 4px;
+            flex-shrink: 0;
+        }
+
+        /* Alphabet Results */
+        .alpha-results {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+
+        .alpha-results-header {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #0b7a3e;
+            margin-bottom: 16px;
+        }
+
+        .alpha-results-empty {
+            font-size: 14px;
+            color: #9ca3af;
+            font-style: italic;
+        }
+
+        .alpha-results-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .alpha-results-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .alpha-results-list li a {
+            font-size: 15px;
+            color: #0b7a3e;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color .15s;
+        }
+
+        .alpha-results-list li a:hover {
+            color: #095e30;
+            text-decoration: underline;
+        }
+
+        .alpha-results-list li a i {
+            font-size: 10px;
+            color: #9ca3af;
+        }
+
+        /* Disease Group Section */
+        .disease-groups {
+            margin-bottom: 30px;
+        }
+
+        .disease-groups h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0 0 20px;
+        }
+
+        .disease-groups-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .disease-group-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 24px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .disease-group-card:hover {
+            border-color: #0b7a3e;
+            box-shadow: 0 6px 20px rgba(11, 122, 62, .12);
+            transform: translateY(-3px);
+        }
+
+        .disease-group-card img {
+            width: 72px;
+            height: 72px;
+            object-fit: contain;
+            margin-bottom: 12px;
+        }
+
+        .disease-group-card h4 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0 0 4px;
+        }
+
+        .disease-group-card p {
+            font-size: 13px;
+            color: #6b7280;
+            margin: 0;
+        }
+
+        /* Top Searches */
+        .top-searches {
+            margin-top: 30px;
+            padding: 20px 0;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .top-searches h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 14px;
+        }
+
+        .top-search-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .top-search-links a {
+            display: inline-block;
+            padding: 6px 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            font-size: 14px;
+            color: #4b5563;
+            text-decoration: none;
+            transition: all .15s;
+        }
+
+        .top-search-links a:hover {
+            border-color: #0b7a3e;
+            color: #0b7a3e;
+            background: #ecfdf5;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header Banner -->
+    <div mg-include="includes/header_banner.html"></div>
+
+    <!-- Top Bar -->
+    <div mg-include="includes/top_bar.html"></div>
+
+    <!-- Main Header -->
+    <div mg-include="includes/main_header.html"></div>
+
+    <!-- ====== DISEASE PAGE ====== -->
+
+    <!-- Green Hero Search Bar -->
+    <div class="disease-hero">
+        <div class="container">
+            <div class="disease-hero-title"><i class="fa-solid fa-book-medical"></i> Tra cứu thông tin bệnh lý</div>
+            <div class="disease-search-box">
+                <input type="text" placeholder="Nhập tên bệnh hoặc triệu chứng" id="diseaseSearch">
+                <button onclick="searchDisease()"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <main class="container">
+        <!-- Lookup Row: Alphabet + Popular Articles -->
+        <div class="disease-lookup">
+            <div class="lookup-box">
+                <h3><i class="fa-solid fa-font" style="color:#0b7a3e"></i> Tra cứu phổ biến</h3>
+                <div class="alpha-grid">
+                    <button class="alpha-btn red" onclick="filterByLetter('A')">A</button>
+                    <button class="alpha-btn red" onclick="filterByLetter('B')">B</button>
+                    <button class="alpha-btn red" onclick="filterByLetter('C')">C</button>
+                    <button class="alpha-btn red" onclick="filterByLetter('D')">D</button>
+                    <button class="alpha-btn red" onclick="filterByLetter('E')">E</button>
+                    <button class="alpha-btn red" onclick="filterByLetter('F')">F</button>
+                    <button class="alpha-btn red" onclick="filterByLetter('G')">G</button>
+                    <button class="alpha-btn green" onclick="filterByLetter('H')">H</button>
+                    <button class="alpha-btn green" onclick="filterByLetter('I')">I</button>
+                    <button class="alpha-btn green" onclick="filterByLetter('J')">J</button>
+                    <button class="alpha-btn green" onclick="filterByLetter('K')">K</button>
+                    <button class="alpha-btn green" onclick="filterByLetter('L')">L</button>
+                    <button class="alpha-btn green" onclick="filterByLetter('M')">M</button>
+                    <button class="alpha-btn green" onclick="filterByLetter('N')">N</button>
+                    <button class="alpha-btn green" onclick="filterByLetter('O')">O</button>
+                    <button class="alpha-btn green" onclick="filterByLetter('P')">P</button>
+                    <button class="alpha-btn green" onclick="filterByLetter('Q')">Q</button>
+                    <button class="alpha-btn green" onclick="filterByLetter('R')">R</button>
+                    <button class="alpha-btn green" onclick="filterByLetter('S')">S</button>
+                    <button class="alpha-btn green" onclick="filterByLetter('T')">T</button>
+                    <button class="alpha-btn green" onclick="filterByLetter('U')">U</button>
+                    <button class="alpha-btn green" onclick="filterByLetter('V')">V</button>
+                    <button class="alpha-btn green" onclick="filterByLetter('W')">W</button>
+                    <button class="alpha-btn green" onclick="filterByLetter('X')">X</button>
+                    <button class="alpha-btn green" onclick="filterByLetter('Y')">Y</button>
+                    <button class="alpha-btn green" onclick="filterByLetter('Z')">Z</button>
+                </div>
+            </div>
+
+            <div class="lookup-box">
+                <h3><i class="fa-solid fa-fire" style="color:#dc2626"></i> Tra cứu phổ biến</h3>
+                <ul class="popular-article-list">
+                    <li onclick="window.location.href='#'">
+                        <span class="article-title">Bướu cổ: Nguyên nhân, Triệu Chứng Và Cách Điều Trị Hiệu Quả</span>
+                        <span class="article-icon"><i class="fa-solid fa-chevron-right"></i></span>
+                    </li>
+                    <li onclick="window.location.href='#'">
+                        <span class="article-title">Nhức đầu: Nguyên nhân, triệu chứng và cách điều trị hiệu quả</span>
+                        <span class="article-icon"><i class="fa-solid fa-chevron-right"></i></span>
+                    </li>
+                    <li onclick="window.location.href='#'">
+                        <span class="article-title">Nhiệt miệng: Nguyên nhân, triệu chứng và cách điều trị hiệu quả nhất
+                            2026</span>
+                        <span class="article-icon"><i class="fa-solid fa-chevron-right"></i></span>
+                    </li>
+                    <li onclick="window.location.href='#'">
+                        <span class="article-title">Huyết áp thấp là gì? Huyết Áp 100/60 Là Cao Hay Thấp?</span>
+                        <span class="article-icon"><i class="fa-solid fa-chevron-right"></i></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Alphabet Results Panel -->
+        <div class="alpha-results" id="alphaResults">
+            <div class="alpha-results-header" id="alphaLetter">A</div>
+            <p class="alpha-results-empty" id="alphaEmpty">Chưa có dữ liệu cho mục này.</p>
+            <ul class="alpha-results-list" id="alphaList" style="display:none">
+            </ul>
+        </div>
+
+        <!-- Disease Groups -->
+        <div mg-include="includes/disease_groups.html"></div>
+
+        <!-- Top Searches -->
+        <div mg-include="includes/top_searches.html"></div>
+    </main>
+
+    <!-- Pre-Footer Promises -->
+    <div mg-include="includes/promises.html"></div>
+
+    <!-- Newsletter -->
+    <div mg-include="includes/newsletter.html"></div>
+
+    <!-- Main Footer -->
+    <div mg-include="includes/main_footer.html"></div>
+
+    <script>
+        // Disease data for alphabet lookup
+        const diseaseData = {
+            'A': ['Alzheimer', 'Amidan viêm', 'Áp xe phổi', 'Áp xe gan'],
+            'B': ['Bạch hầu', 'Bại liệt', 'Béo phì', 'Bệnh gout', 'Bướu cổ', 'Bệnh Parkinson'],
+            'C': ['Cảm cúm', 'Cận thị', 'Chàm (Eczema)', 'Cholesterol cao', 'Cúm A'],
+            'D': ['Dạ dày viêm', 'Dị ứng', 'Đái tháo đường', 'Đau đầu migraine', 'Đau lưng'],
+            'H': ['Huyết áp cao', 'Huyết áp thấp', 'Ho mãn tính', 'Hen suyễn'],
+            'K': ['Khô mắt', 'Ký sinh trùng', 'Kiết lỵ'],
+            'N': ['Nhức đầu', 'Nhiệt miệng', 'Ngộ độc thực phẩm', 'Nấm da'],
+            'S': ['Sốt xuất huyết', 'Sởi', 'Suy thận', 'Sỏi thận', 'Sốt rét'],
+            'T': ['Tay chân miệng', 'Tiểu đường', 'Tim mạch', 'Trĩ', 'Thoái hóa khớp', 'Thủy đậu'],
+            'V': ['Viêm gan B', 'Viêm phổi', 'Viêm xoang', 'Viêm họng', 'Viêm da cơ địa'],
+            'X': ['Xơ gan', 'Xương khớp'],
+        };
+
+        let activeLetter = 'A';
+
+        function filterByLetter(letter) {
+            activeLetter = letter;
+            // Update all buttons
+            document.querySelectorAll('.alpha-btn').forEach(b => {
+                if (b.textContent === letter) {
+                    b.className = 'alpha-btn red';
+                } else {
+                    b.className = 'alpha-btn green';
+                }
+            });
+
+            // Update results
+            document.getElementById('alphaLetter').textContent = letter;
+            const diseases = diseaseData[letter];
+            const listEl = document.getElementById('alphaList');
+            const emptyEl = document.getElementById('alphaEmpty');
+
+            if (diseases && diseases.length > 0) {
+                emptyEl.style.display = 'none';
+                listEl.style.display = 'block';
+                listEl.innerHTML = diseases.map(d =>
+                    `<li><a href="#"><i class="fa-solid fa-angle-right"></i> ${d}</a></li>`
+                ).join('');
+            } else {
+                emptyEl.style.display = 'block';
+                listEl.style.display = 'none';
+                listEl.innerHTML = '';
+            }
+        }
+
+        function searchDisease() {
+            const q = document.getElementById('diseaseSearch').value.trim().toLowerCase();
+            if (!q) return;
+
+            // Search through all diseases
+            const results = [];
+            for (const [letter, diseases] of Object.entries(diseaseData)) {
+                for (const d of diseases) {
+                    if (d.toLowerCase().includes(q)) {
+                        results.push(d);
+                    }
+                }
+            }
+
+            const listEl = document.getElementById('alphaList');
+            const emptyEl = document.getElementById('alphaEmpty');
+            document.getElementById('alphaLetter').textContent = `Kết quả tìm kiếm: "${document.getElementById('diseaseSearch').value}"`;
+
+            if (results.length > 0) {
+                emptyEl.style.display = 'none';
+                listEl.style.display = 'block';
+                listEl.innerHTML = results.map(d =>
+                    `<li><a href="#"><i class="fa-solid fa-angle-right"></i> ${d}</a></li>`
+                ).join('');
+            } else {
+                emptyEl.style.display = 'block';
+                emptyEl.textContent = 'Không tìm thấy kết quả phù hợp.';
+                listEl.style.display = 'none';
+            }
+
+            // Scroll to results
+            document.getElementById('alphaResults').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Allow search on Enter key
+        document.getElementById('diseaseSearch').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') searchDisease();
+        });
+
+        // Initialize with A
+        filterByLetter('A');
+    </script>
+    <script src="../assets/js/components.js"></script>
+</body>
+
+</html>

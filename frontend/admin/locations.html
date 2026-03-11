@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ & Lưu trữ (Pharmacy Layout & Storage) — Nhà Thuốc Minh Giang</title>
+    <link rel="stylesheet" href="css/admin-style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="admin-sidebar">
+        <!-- Inject via admin-components.js -->
+    </aside>
+
+    <!-- ============ HEADER ============ -->
+    <header class="admin-header">
+        <!-- Inject via admin-components.js -->
+    </header>
+
+    <!-- ============ MAIN CONTENT ============ -->
+    <main class="admin-main">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Pharmacy Layout & Storage</h1>
+                <p class="page-subtitle">Quản lý không gian vật lý, thiết lập Khu vực (Zones), Tủ (Cabinets) và Kệ
+                    (Shelves).</p>
+            </div>
+        </div>
+
+        <!-- 3-Column Cascading Panels -->
+        <div class="storage-panels-container">
+
+            <!-- PANEL 1: ZONES -->
+            <div class="storage-panel">
+                <div class="panel-header">
+                    <div class="panel-title">Khu vực (Zones) <span class="panel-count">3</span></div>
+                    <button class="btn-add-small" onclick="alert('Thêm Khu vực mới')"><i class="fa-solid fa-plus"></i>
+                        Thêm</button>
+                </div>
+                <div class="panel-body" id="zones-list">
+
+                    <div class="storage-item active" onclick="selectZone(this, 'rx')">
+                        <div class="item-info">
+                            <div class="item-icon"><i class="fa-solid fa-prescription-bottle-medical"></i></div>
+                            <div class="item-text">
+                                <span class="item-name">Khu Thuốc Kê Đơn (Rx)</span>
+                                <span class="item-desc">4 Tủ đang hoạt động</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right item-arrow"></i>
+                    </div>
+
+                    <div class="storage-item" onclick="selectZone(this, 'otc')">
+                        <div class="item-info">
+                            <div class="item-icon"><i class="fa-solid fa-pills"></i></div>
+                            <div class="item-text">
+                                <span class="item-name">Khu Thuốc Không Kê Đơn (OTC)</span>
+                                <span class="item-desc">6 Tủ đang hoạt động</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right item-arrow"></i>
+                    </div>
+
+                    <div class="storage-item" onclick="selectZone(this, 'sup')">
+                        <div class="item-info">
+                            <div class="item-icon"><i class="fa-solid fa-leaf"></i></div>
+                            <div class="item-text">
+                                <span class="item-name">Thực phẩm chức năng</span>
+                                <span class="item-desc">2 Tủ đang hoạt động</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right item-arrow"></i>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- PANEL 2: CABINETS -->
+            <div class="storage-panel">
+                <div class="panel-header">
+                    <div class="panel-title">Tủ thuốc (Cabinets) <span class="panel-count" id="cabinet-count">4</span>
+                    </div>
+                    <button class="btn-add-small" onclick="alert('Thêm Tủ mới vào khu vực này')"><i
+                            class="fa-solid fa-plus"></i> Thêm</button>
+                </div>
+                <div class="panel-body" id="cabinets-list">
+                    <!-- Default content (Rx Zone) -->
+                    <div class="storage-item active" onclick="selectCabinet(this, 't1')">
+                        <div class="item-info">
+                            <div class="item-icon"><i class="fa-solid fa-door-closed"></i></div>
+                            <div class="item-text">
+                                <span class="item-name">Tủ Rx - Kháng sinh</span>
+                                <span class="item-desc">Mã: CAB-RX-01 • 5 Kệ</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right item-arrow"></i>
+                    </div>
+
+                    <div class="storage-item" onclick="selectCabinet(this, 't2')">
+                        <div class="item-info">
+                            <div class="item-icon"><i class="fa-solid fa-door-closed"></i></div>
+                            <div class="item-text">
+                                <span class="item-name">Tủ Rx - Tim mạch & Huyết áp</span>
+                                <span class="item-desc">Mã: CAB-RX-02 • 4 Kệ</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right item-arrow"></i>
+                    </div>
+                    <div class="storage-item" onclick="selectCabinet(this, 't3')">
+                        <div class="item-info">
+                            <div class="item-icon"><i class="fa-solid fa-door-closed"></i></div>
+                            <div class="item-text">
+                                <span class="item-name">Tủ Rx - Tiểu đường</span>
+                                <span class="item-desc">Mã: CAB-RX-03 • 3 Kệ</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right item-arrow"></i>
+                    </div>
+                    <div class="storage-item" onclick="selectCabinet(this, 't4')">
+                        <div class="item-info">
+                            <div class="item-icon" style="color:#b91c1c;background:#fef2f2;"><i
+                                    class="fa-solid fa-snowflake"></i></div>
+                            <div class="item-text">
+                                <span class="item-name">Tủ Lạnh (Bảo quản 2-8°C)</span>
+                                <span class="item-desc">Mã: CAB-RX-04 • 2 Kệ</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right item-arrow"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL 3: SHELVES -->
+            <div class="storage-panel">
+                <div class="panel-header">
+                    <div class="panel-title">Kệ chứa (Shelves) <span class="panel-count" id="shelf-count">5</span></div>
+                    <button class="btn-add-small" onclick="alert('Thêm Kệ mới vào tủ này')"><i
+                            class="fa-solid fa-plus"></i> Thêm</button>
+                </div>
+                <div class="panel-body" id="shelves-list">
+                    <!-- Default content (Cabinet T1) -->
+                    <div class="storage-item">
+                        <div class="item-info">
+                            <div class="item-icon"><i class="fa-solid fa-list-ol"></i></div>
+                            <div class="item-text">
+                                <span class="item-name">Kệ 1 (Cao nhất)</span>
+                                <span class="item-desc">Nhóm Penicillin • 12 SP</span>
+                            </div>
+                        </div>
+                        <button class="btn-add-small" style="height:24px;border:none;background:transparent;"><i
+                                class="fa-solid fa-pen"></i></button>
+                    </div>
+
+                    <div class="storage-item">
+                        <div class="item-info">
+                            <div class="item-icon"><i class="fa-solid fa-list-ol"></i></div>
+                            <div class="item-text">
+                                <span class="item-name">Kệ 2</span>
+                                <span class="item-desc">Nhóm Cephalosporin • 18 SP</span>
+                            </div>
+                        </div>
+                        <button class="btn-add-small" style="height:24px;border:none;background:transparent;"><i
+                                class="fa-solid fa-pen"></i></button>
+                    </div>
+
+                    <div class="storage-item">
+                        <div class="item-info">
+                            <div class="item-icon"><i class="fa-solid fa-list-ol"></i></div>
+                            <div class="item-text">
+                                <span class="item-name">Kệ 3</span>
+                                <span class="item-desc">Nhóm Macrolid • 8 SP</span>
+                            </div>
+                        </div>
+                        <button class="btn-add-small" style="height:24px;border:none;background:transparent;"><i
+                                class="fa-solid fa-pen"></i></button>
+                    </div>
+
+                    <div class="storage-item">
+                        <div class="item-info">
+                            <div class="item-icon"><i class="fa-solid fa-list-ol"></i></div>
+                            <div class="item-text">
+                                <span class="item-name">Kệ 4</span>
+                                <span class="item-desc">Nhóm Quinolon • 15 SP</span>
+                            </div>
+                        </div>
+                        <button class="btn-add-small" style="height:24px;border:none;background:transparent;"><i
+                                class="fa-solid fa-pen"></i></button>
+                    </div>
+
+                    <div class="storage-item">
+                        <div class="item-info">
+                            <div class="item-icon"><i class="fa-solid fa-list-ol"></i></div>
+                            <div class="item-text">
+                                <span class="item-name">Kệ 5 (Thấp nhất)</span>
+                                <span class="item-desc">Hàng tồn kho dự trữ • 40 Hộp</span>
+                            </div>
+                        </div>
+                        <button class="btn-add-small" style="height:24px;border:none;background:transparent;"><i
+                                class="fa-solid fa-pen"></i></button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- ============ SCRIPTS ============ -->
+    <script>
+        // Mock Data for cascading view demonstration
+        const mockCabinets = {
+            'rx': [
+                { id: 't1', name: 'Tủ Rx - Kháng sinh', code: 'CAB-RX-01', shelves: 5, icon: 'fa-door-closed' },
+                { id: 't2', name: 'Tủ Rx - Tim mạch & Huyết áp', code: 'CAB-RX-02', shelves: 4, icon: 'fa-door-closed' },
+                { id: 't3', name: 'Tủ Rx - Tiểu đường', code: 'CAB-RX-03', shelves: 3, icon: 'fa-door-closed' },
+                { id: 't4', name: 'Tủ Lạnh (Bảo quản 2-8°C)', code: 'CAB-RX-04', shelves: 2, icon: 'fa-snowflake', danger: true }
+            ],
+            'otc': [
+                { id: 'o1', name: 'Tủ OTC - Giảm đau, hạ sốt', code: 'CAB-OTC-01', shelves: 6, icon: 'fa-door-open' },
+                { id: 'o2', name: 'Tủ OTC - Tiêu hoá', code: 'CAB-OTC-02', shelves: 5, icon: 'fa-door-open' },
+                { id: 'o3', name: 'Tủ OTC - Hô hấp', code: 'CAB-OTC-03', shelves: 5, icon: 'fa-door-open' }
+            ],
+            'sup': [
+                { id: 's1', name: 'Kệ trưng bày TPCN', code: 'CAB-SUP-01', shelves: 4, icon: 'fa-layer-group' },
+                { id: 's2', name: 'Tủ kính Dược mỹ phẩm', code: 'CAB-SUP-02', shelves: 3, icon: 'fa-box-open' }
+            ]
+        };
+
+        const mockShelves = {
+            't2': [
+                { name: 'Kệ 1', desc: 'Nhóm chẹn Beta • 10 SP' },
+                { name: 'Kệ 2', desc: 'Nhóm lợi tiểu • 8 SP' },
+                { name: 'Kệ 3', desc: 'Nhóm ức chế men chuyển • 12 SP' },
+                { name: 'Kệ 4', desc: 'Khác • 15 SP' }
+            ],
+            'o1': [
+                { name: 'Kệ 1', desc: 'Paracetamol các loại • 20 SP' },
+                { name: 'Kệ 2', desc: 'Ibuprofen • 15 SP' },
+                { name: 'Kệ 3', desc: 'Thuốc dán, xoa bóp ngoài da • 25 SP' }
+            ]
+        };
+
+        function selectZone(element, zoneId) {
+            // Update active styling
+            document.querySelectorAll('#zones-list .storage-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+
+            // Render Cabinets
+            const cabinets = mockCabinets[zoneId] || [];
+            document.getElementById('cabinet-count').innerText = cabinets.length;
+
+            const cabinetsHtml = cabinets.map((c, index) => `
+                <div class="storage-item ${index === 0 ? 'active' : ''}" onclick="selectCabinet(this, '${c.id}')">
+                    <div class="item-info">
+                        <div class="item-icon" ${c.danger ? 'style="color:#b91c1c;background:#fef2f2;"' : ''}><i class="fa-solid ${c.icon}"></i></div>
+                        <div class="item-text">
+                            <span class="item-name">${c.name}</span>
+                            <span class="item-desc">Mã: ${c.code} • ${c.shelves} Kệ</span>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right item-arrow"></i>
+                </div>
+            `).join('');
+
+            document.getElementById('cabinets-list').innerHTML = cabinetsHtml || `<div class="panel-empty"><i class="fa-solid fa-box-open"></i><p>Khu vực này chưa có tủ thuốc nào</p></div>`;
+
+            // Auto Select First Cabinet to render shelves if available
+            if (cabinets.length > 0) {
+                // Call render shelves directly since DOM update is fast enough in this mock
+                renderShelves(cabinets[0].id);
+            } else {
+                renderShelves('none');
+            }
+        }
+
+        function selectCabinet(element, cabinetId) {
+            // Update active styling
+            document.querySelectorAll('#cabinets-list .storage-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+
+            renderShelves(cabinetId);
+        }
+
+        function renderShelves(cabinetId) {
+            const shelves = mockShelves[cabinetId] || [
+                { name: 'Kệ 1', desc: 'Chưa phân loại • 0 SP' },
+                { name: 'Kệ 2', desc: 'Chưa phân loại • 0 SP' }
+            ]; // Default mock for demo
+
+            if (cabinetId === 'none') {
+                document.getElementById('shelf-count').innerText = '0';
+                document.getElementById('shelves-list').innerHTML = `<div class="panel-empty"><i class="fa-solid fa-bars-staggered"></i><p>Chọn tủ để xem kệ</p></div>`;
+                return;
+            }
+
+            document.getElementById('shelf-count').innerText = shelves.length;
+
+            const shelvesHtml = shelves.map(s => `
+                <div class="storage-item">
+                    <div class="item-info">
+                        <div class="item-icon"><i class="fa-solid fa-list-ol"></i></div>
+                        <div class="item-text">
+                            <span class="item-name">${s.name}</span>
+                            <span class="item-desc">${s.desc}</span>
+                        </div>
+                    </div>
+                    <button class="btn-add-small" style="height:24px;border:none;background:transparent;"><i class="fa-solid fa-pen"></i></button>
+                </div>
+            `).join('');
+
+            document.getElementById('shelves-list').innerHTML = shelvesHtml;
+        }
+    </script>
+
+    <!-- Shared Layout Components -->
+    <script src="js/admin-components.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAdminLayout('locations');
+        });
+    </script>
+</body>
+
+</html>

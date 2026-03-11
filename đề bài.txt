@@ -1,0 +1,10 @@
+2. Bài tập 2 (chiếm 70% điểm): 
+    - Các nhóm chọn 1 chủ đề, công nghệ không giới hạn các nhóm tùy chọn, nhưng cần triển khai theo mô hình MicroService. Phạm vi bài toán không yêu cầu phải đầy đủ hết mà chỉ cần chọn 2-3 thành phần để triển khai thành các service. Ví dụ nếu chọn bài toán rạp chiếu phim thì có thể chỉ cần quản lý user, film, đặt vé,....
+   - Sau Tết thầy sẽ có buổi trao đổi với từng nhóm về chủ đề chọn, để góp ý, sau đó các nhóm chủ động làm
+    - Buổi cuối hoặc gần cuối môn học thầy xem kết quả 1 lần
+    - Hôm thi Thầy xem kết quả lần cuối. 
+    - Điểm chấm sẽ phụ thuộc:
+          + chủ đề và qui mô của nhóm, độ khó của bài toán
+           + kết quả triển khai
+            + Kết quả trình bày
+             + Điểm thành viên trong nhóm có thể khác nhau tùy theo đóng góp

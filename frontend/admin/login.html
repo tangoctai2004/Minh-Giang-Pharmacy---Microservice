@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Nhập Quản Trị — Nhà Thuốc Minh Giang</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f1f5f9;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 440px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .auth-header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            padding: 32px 24px;
+            text-align: center;
+        }
+
+        .auth-logo-box {
+            width: 72px;
+            height: 72px;
+            background: #ffffff;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .auth-logo-box img {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+        }
+
+        .auth-header h1 {
+            color: #f8fafc;
+            font-size: 24px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .auth-header p {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .auth-body {
+            padding: 32px 32px 40px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+
+        .input-field {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 15px;
+            transition: color 0.2s;
+        }
+
+        .input-field input {
+            width: 100%;
+            height: 46px;
+            padding: 0 40px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 15px;
+            color: #0f172a;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .input-field input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .input-field input:focus+.input-icon {
+            color: #3b82f6;
+        }
+
+        .pwd-toggle {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 15px;
+            transition: color 0.2s;
+        }
+
+        .pwd-toggle:hover {
+            color: #475569;
+        }
+
+        .auth-options {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            font-size: 13px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: #475569;
+            font-weight: 500;
+        }
+
+        .checkbox-container input {
+            width: 16px;
+            height: 16px;
+            accent-color: #3b82f6;
+            cursor: pointer;
+        }
+
+        .forgot-link {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .forgot-link:hover {
+            color: #2563eb;
+            text-decoration: underline;
+        }
+
+        .auth-submitBtn {
+            width: 100%;
+            height: 48px;
+            background: #3b82f6;
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .auth-submitBtn:hover {
+            background: #2563eb;
+        }
+
+        .auth-submitBtn.loading {
+            background: #93c5fd;
+            cursor: not-allowed;
+        }
+
+        .auth-submitBtn i.fa-spinner {
+            display: none;
+            animation: spin 1s linear infinite;
+        }
+
+        .auth-submitBtn.loading i.fa-spinner {
+            display: inline-block;
+        }
+
+        .auth-submitBtn.loading span {
+            display: none;
+        }
+
+        .auth-footer {
+            margin-top: 24px;
+            text-align: center;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Error Alert */
+        .auth-alert {
+            display: none;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #ef4444;
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .auth-alert.show {
+            display: flex;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="auth-logo-box">
+                <img src="../assets/images/logo_Minh_Giang_Pharmacy.png" alt="Minh Giang Logo">
+            </div>
+            <h1>Minh Giang Admin</h1>
+            <p>Hệ thống Quản trị Nhà Thuốc & E-commerce</p>
+        </div>
+
+        <div class="auth-body">
+            <form id="adminLoginForm" onsubmit="handleLogin(event)">
+
+                <div class="auth-alert" id="authError">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span id="errorMessage">Thông tin đăng nhập không chính xác.</span>
+                </div>
+
+                <div class="input-group">
+                    <label for="username">Tên đăng nhập / Số điện thoại</label>
+                    <div class="input-field">
+                        <input type="text" id="username" placeholder="Nhập tên đăng nhập của bạn" required>
+                        <i class="fa-solid fa-user input-icon"></i>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Mật khẩu</label>
+                    <div class="input-field">
+                        <input type="password" id="password" placeholder="Nhập mật khẩu" required>
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <button type="button" class="pwd-toggle" onclick="togglePassword()">
+                            <i class="fa-regular fa-eye" id="toggleIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="auth-options">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="rememberMe">
+                        Lưu phiên đăng nhập
+                    </label>
+                    <a href="#" class="forgot-link" onclick="handleForgotPwd()">Quên mật khẩu?</a>
+                </div>
+
+                <button type="submit" class="auth-submitBtn" id="submitBtn">
+                    <span>Đăng Nhập Quản Trị</span>
+                    <i class="fa-solid fa-spinner"></i>
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                &copy; 2026 Hệ thống nội bộ Nhà Thuốc Minh Giang.<br>Nghiêm cấm truy cập trái phép.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const pwdInput = document.getElementById('password');
+            const icon = document.getElementById('toggleIcon');
+
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                pwdInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const errorBox = document.getElementById('authError');
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+
+            // Loading state
+            btn.classList.add('loading');
+            errorBox.classList.remove('show');
+
+            // Simulate API Call
+            setTimeout(() => {
+                btn.classList.remove('loading');
+
+                // Simple validation mock
+                if (u === 'admin' && p === 'admin123') {
+                    window.location.href = 'index.html';
+                } else {
+                    document.getElementById('errorMessage').textContent = "Sai tên đăng nhập hoặc mật khẩu. Vui lòng thử lại.";
+                    errorBox.classList.add('show');
+                }
+            }, 1000);
+        }
+
+        function handleForgotPwd() {
+            alert('Vui lòng liên hệ IT Support (098xxxxxx) để cấp lại mật khẩu cho tài khoản Admin nội bộ.');
+        }
+    </script>
+</body>
+
+</html>

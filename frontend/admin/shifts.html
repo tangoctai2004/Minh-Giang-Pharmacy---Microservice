@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo Cáo Ca & Khớp Quỹ — Nhà Thuốc Minh Giang</title>
+    <link rel="stylesheet" href="css/admin-style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="admin-sidebar">
+        <!-- Inject via admin-components.js -->
+    </aside>
+
+    <!-- ============ HEADER ============ -->
+    <header class="admin-header">
+        <!-- Inject via admin-components.js -->
+    </header>
+
+    <!-- ============ MAIN CONTENT ============ -->
+    <main class="admin-main">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Báo Cáo Ca & Khớp Quỹ</h1>
+                <p class="page-subtitle">Kiểm soát giao ca, đối soát tiền mặt và lịch sử đăng nhập Kiosk</p>
+            </div>
+
+            <div class="page-actions" style="align-items:center;">
+                <!-- Date Range Picker Style Input -->
+                <div
+                    style="background:#fff;border:1.5px solid var(--admin-border);border-radius:var(--admin-radius);height:40px;display:flex;align-items:center;padding:0 14px;gap:12px;cursor:pointer;">
+                    <i class="fa-regular fa-calendar" style="color:#6b7280;font-size:14px;"></i>
+                    <span style="font-size:13px;font-weight:600;color:#374151;">01/03/2026 - 05/03/2026</span>
+                    <i class="fa-solid fa-chevron-down" style="color:#9ca3af;font-size:11px;"></i>
+                </div>
+
+                <button class="btn-primary" style="background:#0f172a;box-shadow:none;">
+                    <i class="fa-solid fa-file-excel"></i> Xuất ra Excel
+                </button>
+            </div>
+        </div>
+
+        <!-- Data Table: Shifts History -->
+        <div class="inventory-table-container">
+            <table class="inventory-table">
+                <thead>
+                    <tr>
+                        <th width="15%">Thu ngân</th>
+                        <th width="18%">Thời gian mở/đóng ca</th>
+                        <th width="12%">Hệ thống tính</th>
+                        <th width="12%">Thu ngân đếm</th>
+                        <th width="15%">Chênh lệch</th>
+                        <th width="12%">Trạng thái</th>
+                        <th width="16%" style="text-align:right;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="inv-name">Nguyễn Văn A</div>
+                            <div style="font-size:12px;color:#6b7280;">Kiosk #01 (Ca Sáng)</div>
+                        </td>
+                        <td>
+                            <div style="font-weight:600;color:#1f2937;">Hôm nay</div>
+                            <div style="font-size:12px;color:#6b7280;">
+                                <span style="color:#10b981;">07:05 AM</span> <i class="fa-solid fa-arrow-right-long"
+                                    style="margin:0 4px;font-size:10px;"></i> <span style="color:#ef4444;">15:02
+                                    PM</span>
+                            </div>
+                        </td>
+                        <td><span class="inv-price" style="font-size:14px;color:#4b5563;">5,250,000₫</span></td>
+                        <td><span class="inv-price" style="font-size:14px;color:#0f172a;">5,250,000₫</span></td>
+                        <td>
+                            <span style="font-size:14px;font-weight:800;color:#10b981;"><i
+                                    class="fa-solid fa-check"></i> 0 ₫ (Khớp)</span>
+                        </td>
+                        <td><span class="status-badge active"
+                                style="background:#f0fdf4;color:#15803d;border-color:#bbf7d0;">Đã khớp</span></td>
+                        <td>
+                            <div class="action-btns" style="justify-content:flex-end;">
+                                <button class="btn-icon" title="Xem chi tiết doanh thu"><i
+                                        class="fa-solid fa-chart-line"></i></button>
+                                <button class="btn-icon" title="In báo cáo giao ca"><i
+                                        class="fa-solid fa-print"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="inv-name">Trần Thị B</div>
+                            <div style="font-size:12px;color:#6b7280;">Kiosk #02 (Ca Sáng)</div>
+                        </td>
+                        <td>
+                            <div style="font-weight:600;color:#1f2937;">Hôm nay</div>
+                            <div style="font-size:12px;color:#6b7280;">
+                                <span style="color:#10b981;">07:15 AM</span> <i class="fa-solid fa-arrow-right-long"
+                                    style="margin:0 4px;font-size:10px;"></i> <span style="color:#ef4444;">15:10
+                                    PM</span>
+                            </div>
+                        </td>
+                        <td><span class="inv-price" style="font-size:14px;color:#4b5563;">3,420,000₫</span></td>
+                        <td><span class="inv-price" style="font-size:14px;color:#0f172a;">3,400,000₫</span></td>
+                        <td>
+                            <span style="font-size:14px;font-weight:800;color:#dc2626;"><i
+                                    class="fa-solid fa-arrow-down"></i> -20,000 ₫ (Thiếu)</span>
+                        </td>
+                        <td><span class="status-badge inactive"
+                                style="background:#fffbeb;color:#b45309;border-color:#fde68a;">Chờ xử lý</span></td>
+                        <td>
+                            <div class="action-btns" style="justify-content:flex-end;">
+                                <button class="btn-secondary"
+                                    style="height:32px;font-size:12px;padding:0 12px;color:#047857;border-color:#10b981;">Duyệt
+                                    bù tiền</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="inv-name">Lê Minh C</div>
+                            <div style="font-size:12px;color:#6b7280;">Kiosk #01 (Ca Chiều)</div>
+                        </td>
+                        <td>
+                            <div style="font-weight:600;color:#1f2937;">Hôm qua, 04/03</div>
+                            <div style="font-size:12px;color:#6b7280;">
+                                <span style="color:#10b981;">14:55 PM</span> <i class="fa-solid fa-arrow-right-long"
+                                    style="margin:0 4px;font-size:10px;"></i> <span style="color:#ef4444;">22:05
+                                    PM</span>
+                            </div>
+                        </td>
+                        <td><span class="inv-price" style="font-size:14px;color:#4b5563;">8,150,000₫</span></td>
+                        <td><span class="inv-price" style="font-size:14px;color:#0f172a;">8,160,000₫</span></td>
+                        <td>
+                            <span style="font-size:14px;font-weight:800;color:#059669;"><i
+                                    class="fa-solid fa-arrow-up"></i> +10,000 ₫ (Dư)</span>
+                        </td>
+                        <td><span class="status-badge inactive"
+                                style="background:#fffbeb;color:#b45309;border-color:#fde68a;">Chờ xử lý</span></td>
+                        <td>
+                            <div class="action-btns" style="justify-content:flex-end;">
+                                <button class="btn-secondary"
+                                    style="height:32px;font-size:12px;padding:0 12px;color:#047857;border-color:#10b981;">Duyệt
+                                    thu dư</button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <div class="inv-name">Phạm Hoàng D</div>
+                            <div style="font-size:12px;color:#6b7280;">Kiosk #02 (Ca Chiều)</div>
+                        </td>
+                        <td>
+                            <div style="font-weight:600;color:#1f2937;">Hôm qua, 04/03</div>
+                            <div style="font-size:12px;color:#6b7280;">
+                                <span style="color:#10b981;">15:00 PM</span> <i class="fa-solid fa-arrow-right-long"
+                                    style="margin:0 4px;font-size:10px;"></i> <span style="color:#ef4444;">22:15
+                                    PM</span>
+                            </div>
+                        </td>
+                        <td><span class="inv-price" style="font-size:14px;color:#4b5563;">4,780,000₫</span></td>
+                        <td><span class="inv-price" style="font-size:14px;color:#0f172a;">4,780,000₫</span></td>
+                        <td>
+                            <span style="font-size:14px;font-weight:800;color:#10b981;"><i
+                                    class="fa-solid fa-check"></i> 0 ₫ (Khớp)</span>
+                        </td>
+                        <td><span class="status-badge active"
+                                style="background:#f0fdf4;color:#15803d;border-color:#bbf7d0;">Đã khớp</span></td>
+                        <td>
+                            <div class="action-btns" style="justify-content:flex-end;">
+                                <button class="btn-icon" title="Xem chi tiết doanh thu"><i
+                                        class="fa-solid fa-chart-line"></i></button>
+                                <button class="btn-icon" title="In báo cáo giao ca"><i
+                                        class="fa-solid fa-print"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <span class="page-info">Hiển thị 1 - 4 trên 68 báo cáo giao ca</span>
+                <div class="page-controls">
+                    <button class="btn-page" disabled><i class="fa-solid fa-chevron-left"></i></button>
+                    <button class="btn-page active">1</button>
+                    <button class="btn-page">2</button>
+                    <button class="btn-page">...</button>
+                    <button class="btn-page">17</button>
+                    <button class="btn-page"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ============ SCRIPTS ============ -->
+    <script>
+        // Set active sidebar link safely without erroring if missing
+        const activeLink = document.querySelector('.sidebar-link[href="shifts.html"]');
+        if (activeLink) {
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+            activeLink.classList.add('active');
+        }
+    </script>
+
+    <!-- Shared Layout Components -->
+    <script src="js/admin-components.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAdminLayout('shifts');
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Khách hàng & Tích điểm — Nhà Thuốc Minh Giang</title>
+    <link rel="stylesheet" href="css/admin-style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="admin-sidebar">
+        <!-- Inject via admin-components.js -->
+    </aside>
+
+    <!-- ============ HEADER ============ -->
+    <header class="admin-header">
+        <!-- Inject via admin-components.js -->
+    </header>
+
+    <!-- ============ MAIN CONTENT ============ -->
+    <main class="admin-main">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Quản lý Khách hàng (Customer Management)</h1>
+                <p class="page-subtitle">Theo dõi hạng thành viên, lịch sử mua hàng và quản lý điểm tích luỹ chương
+                    trình Loyalty.</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn-secondary">
+                    <i class="fa-solid fa-file-export"></i> Xuất Excel
+                </button>
+                <button class="btn-primary" onclick="alert('Tính năng Thêm thủ công khách hàng đang phát triển')">
+                    <i class="fa-solid fa-user-plus"></i> Thêm Khách Hàng
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="filter-group">
+                <label class="filter-label">Hạng thành viên (Tier)</label>
+                <select class="filter-control">
+                    <option value="">Tất cả các hạng</option>
+                    <option value="bronze">Thành Viên (Bronze)</option>
+                    <option value="silver">Bạc (Silver)</option>
+                    <option value="gold">Vàng (Gold)</option>
+                    <option value="platinum">Bạch Kim (Platinum)</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Sắp xếp theo</label>
+                <select class="filter-control">
+                    <option value="">Chi tiêu nhiều nhất</option>
+                    <option value="">Thành viên mới nhất</option>
+                    <option value="">Điểm thưởng giảm dần</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="inventory-table-container">
+            <table class="inventory-table">
+                <thead>
+                    <tr>
+                        <th width="5%">ID</th>
+                        <th width="20%">Khách Hàng (Tên - SĐT)</th>
+                        <th width="15%">Tổng Chi Tiêu (VND)</th>
+                        <th width="15%">Điểm Hiện Tại (Points)</th>
+                        <th width="15%">Hạng Thành Viên (Tier)</th>
+                        <th width="20%">Gần Cập Nhật Nhất</th>
+                        <th width="10%" style="text-align:right;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr onclick="openCustomerProfile('CUST-802', 'Lê Văn Nam', '0912345678', '4,250,000₫', '85', 'gold')"
+                        style="cursor:pointer;">
+                        <td style="font-size:12px;color:#6b7280;">#802</td>
+                        <td>
+                            <div class="inv-name" style="font-size:14px;">Lê Văn Nam</div>
+                            <div style="font-size:12px;color:#6b7280;"><i class="fa-solid fa-phone"
+                                    style="font-size:10px;margin-right:4px;"></i> 0912 345 678</div>
+                        </td>
+                        <td><span style="font-size:14px;font-weight:700;color:#1e293b;">4,250,000₫</span></td>
+                        <td><span style="font-size:15px;font-weight:800;color:#10b981;">85</span> <span
+                                style="font-size:12px;color:#6b7280;">Điểm</span></td>
+                        <td><span class="tier-badge gold"><i class="fa-solid fa-crown"></i> Gold</span></td>
+                        <td>
+                            <div style="font-size:13px;color:#1e293b;">Hôm nay</div>
+                            <div style="font-size:11px;color:#6b7280;">Từ đơn hàng: WEB-9021</div>
+                        </td>
+                        <td>
+                            <div class="action-btns" style="justify-content:flex-end;">
+                                <button class="btn-icon" title="Xem hồ sơ"
+                                    onclick="event.stopPropagation(); openCustomerProfile('CUST-802', 'Lê Văn Nam', '0912345678', '4,250,000₫', '85', 'gold')"><i
+                                        class="fa-solid fa-address-card"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr onclick="openCustomerProfile('CUST-751', 'Nguyễn Thị Hoa', '0988123456', '12,500,000₫', '250', 'platinum')"
+                        style="cursor:pointer;">
+                        <td style="font-size:12px;color:#6b7280;">#751</td>
+                        <td>
+                            <div class="inv-name" style="font-size:14px;">Nguyễn Thị Hoa</div>
+                            <div style="font-size:12px;color:#6b7280;"><i class="fa-solid fa-phone"
+                                    style="font-size:10px;margin-right:4px;"></i> 0988 123 456</div>
+                        </td>
+                        <td><span style="font-size:14px;font-weight:700;color:#1e293b;">12,500,000₫</span></td>
+                        <td><span style="font-size:15px;font-weight:800;color:#10b981;">250</span> <span
+                                style="font-size:12px;color:#6b7280;">Điểm</span></td>
+                        <td><span class="tier-badge platinum"><i class="fa-regular fa-gem"></i> Platinum</span></td>
+                        <td>
+                            <div style="font-size:13px;color:#1e293b;">Hôm nay</div>
+                            <div style="font-size:11px;color:#6b7280;">Từ đơn hàng: WEB-9020</div>
+                        </td>
+                        <td>
+                            <div class="action-btns" style="justify-content:flex-end;">
+                                <button class="btn-icon" title="Xem hồ sơ"
+                                    onclick="event.stopPropagation(); openCustomerProfile('CUST-751', 'Nguyễn Thị Hoa', '0988123456', '12,500,000₫', '250', 'platinum')"><i
+                                        class="fa-solid fa-address-card"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr onclick="openCustomerProfile('CUST-910', 'Trần Bảo Phúc', '0977111222', '850,000₫', '17', 'bronze')"
+                        style="cursor:pointer;">
+                        <td style="font-size:12px;color:#6b7280;">#910</td>
+                        <td>
+                            <div class="inv-name" style="font-size:14px;">Trần Bảo Phúc</div>
+                            <div style="font-size:12px;color:#6b7280;"><i class="fa-solid fa-phone"
+                                    style="font-size:10px;margin-right:4px;"></i> 0977 111 222</div>
+                        </td>
+                        <td><span style="font-size:14px;font-weight:700;color:#1e293b;">850,000₫</span></td>
+                        <td><span style="font-size:15px;font-weight:800;color:#10b981;">17</span> <span
+                                style="font-size:12px;color:#6b7280;">Điểm</span></td>
+                        <td><span class="tier-badge bronze"><i class="fa-solid fa-medal"></i> Bronze</span></td>
+                        <td>
+                            <div style="font-size:13px;color:#1e293b;">01/03/2026</div>
+                            <div style="font-size:11px;color:#6b7280;">Từ đơn hàng: POS-260301-042</div>
+                        </td>
+                        <td>
+                            <div class="action-btns" style="justify-content:flex-end;">
+                                <button class="btn-icon" title="Xem hồ sơ"
+                                    onclick="event.stopPropagation(); openCustomerProfile('CUST-910', 'Trần Bảo Phúc', '0977111222', '850,000₫', '17', 'bronze')"><i
+                                        class="fa-solid fa-address-card"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr onclick="openCustomerProfile('CUST-522', 'Phạm Tố Ny', '0909999888', '1,800,000₫', '36', 'silver')"
+                        style="cursor:pointer;">
+                        <td style="font-size:12px;color:#6b7280;">#522</td>
+                        <td>
+                            <div class="inv-name" style="font-size:14px;">Phạm Tố Ny</div>
+                            <div style="font-size:12px;color:#6b7280;"><i class="fa-solid fa-phone"
+                                    style="font-size:10px;margin-right:4px;"></i> 0909 999 888</div>
+                        </td>
+                        <td><span style="font-size:14px;font-weight:700;color:#1e293b;">1,800,000₫</span></td>
+                        <td><span style="font-size:15px;font-weight:800;color:#10b981;">36</span> <span
+                                style="font-size:12px;color:#6b7280;">Điểm</span></td>
+                        <td><span class="tier-badge silver"><i class="fa-solid fa-medal"></i> Silver</span></td>
+                        <td>
+                            <div style="font-size:13px;color:#1e293b;">Hôm qua</div>
+                            <div style="font-size:11px;color:#6b7280;">Từ đơn hàng: WEB-9019</div>
+                        </td>
+                        <td>
+                            <div class="action-btns" style="justify-content:flex-end;">
+                                <button class="btn-icon" title="Xem hồ sơ"
+                                    onclick="event.stopPropagation(); openCustomerProfile('CUST-522', 'Phạm Tố Ny', '0909999888', '1,800,000₫', '36', 'silver')"><i
+                                        class="fa-solid fa-address-card"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <!-- Pagination -->
+            <div class="pagination">
+                <span class="page-info">Hiển thị 1 - 4 trên 1,024 khách hàng có hồ sơ mua sắm</span>
+                <div class="page-controls">
+                    <button class="btn-page" disabled><i class="fa-solid fa-chevron-left"></i></button>
+                    <button class="btn-page active">1</button>
+                    <button class="btn-page">...</button>
+                    <button class="btn-page">256</button>
+                    <button class="btn-page"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ============ SLIDE-OVER MODAL (CUSTOMER PROFILE) ============ -->
+    <div class="slide-over-overlay" id="customerProfileSlide">
+        <div class="slide-over-panel" style="width: 450px;">
+            <div class="slide-header" style="background:#f8fafc;">
+                <div>
+                    <h2 class="slide-title" id="profileName">Hồ sơ khách hàng</h2>
+                    <p style="font-size:13px;color:#6b7280;margin-top:4px;" id="profilePhone">0900000000</p>
+                </div>
+                <button class="slide-close" onclick="closeCustomerProfile()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="slide-body" style="padding:24px;">
+                <!-- Loyalty summary card -->
+                <div
+                    style="background:var(--admin-primary);border-radius:12px;padding:20px;color:white;margin-bottom:24px;position:relative;overflow:hidden;">
+                    <!-- Decorative background element -->
+                    <i class="fa-solid fa-crown"
+                        style="position:absolute;right:-20px;bottom:-20px;font-size:120px;opacity:0.1;"></i>
+
+                    <div
+                        style="display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1;">
+                        <div>
+                            <div style="font-size:13px;opacity:0.8;margin-bottom:4px;">Tổng điểm Loyalty</div>
+                            <div style="font-size:32px;font-weight:800;letter-spacing:-1px;" id="profilePoints">0</div>
+                        </div>
+                        <div id="profileBadgeContainer">
+                            <!-- Injected badge -->
+                        </div>
+                    </div>
+
+                    <div
+                        style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.2);display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1;">
+                        <div>
+                            <div style="font-size:12px;opacity:0.8;">Tổng chi tiêu (LTL)</div>
+                            <div style="font-size:14px;font-weight:700;" id="profileSpent">0₫</div>
+                        </div>
+                        <button
+                            style="background:rgba(255,255,255,0.2);color:white;border:none;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:background 0.2s;"
+                            onmouseover="this.style.background='rgba(255,255,255,0.3)'"
+                            onmouseout="this.style.background='rgba(255,255,255,0.2)'"
+                            onclick="alert('Mở hộp thoại điều chỉnh điểm thủ công')">
+                            <i class="fa-solid fa-pen-to-square"></i> Điều chỉnh điểm
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Last 5 Purchases -->
+                <h3 style="font-size:14px;font-weight:700;color:#1e293b;">5 Giao dịch mua hàng gần nhất (Last 5
+                    Purchases)</h3>
+
+                <div class="profile-purchase-list">
+                    <div class="profile-purchase-item">
+                        <div>
+                            <div style="font-size:14px;font-weight:600;color:#1e293b;">WEB-9021</div>
+                            <div style="font-size:12px;color:#6b7280;margin-top:2px;">Hôm nay, 10:45 AM</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:14px;font-weight:700;color:#1e293b;">350,000₫</div>
+                            <div style="font-size:12px;font-weight:600;color:#10b981;margin-top:2px;"><i
+                                    class="fa-solid fa-arrow-up"></i> 7 Điểm</div>
+                        </div>
+                    </div>
+
+                    <div class="profile-purchase-item">
+                        <div>
+                            <div style="font-size:14px;font-weight:600;color:#1e293b;">POS-260228-095</div>
+                            <div style="font-size:12px;color:#6b7280;margin-top:2px;">28/02/2026, 16:20 PM</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:14px;font-weight:700;color:#1e293b;">120,000₫</div>
+                            <div style="font-size:12px;font-weight:600;color:#10b981;margin-top:2px;"><i
+                                    class="fa-solid fa-arrow-up"></i> 2 Điểm</div>
+                        </div>
+                    </div>
+
+                    <div class="profile-purchase-item">
+                        <div>
+                            <div style="font-size:14px;font-weight:600;color:#1e293b;">POS-260115-021</div>
+                            <div style="font-size:12px;color:#6b7280;margin-top:2px;">15/01/2026, 09:10 AM</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:14px;font-weight:700;color:#1e293b;">2,150,000₫</div>
+                            <div style="font-size:12px;font-weight:600;color:#10b981;margin-top:2px;"><i
+                                    class="fa-solid fa-arrow-up"></i> 43 Điểm</div>
+                        </div>
+                    </div>
+
+                    <div class="profile-purchase-item">
+                        <div>
+                            <div style="font-size:14px;font-weight:600;color:#1e293b;">WEB-8512</div>
+                            <div style="font-size:12px;color:#6b7280;margin-top:2px;">20/12/2025, 11:30 AM</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:14px;font-weight:700;color:#1e293b;">980,000₫</div>
+                            <div style="font-size:12px;font-weight:600;color:#10b981;margin-top:2px;"><i
+                                    class="fa-solid fa-arrow-up"></i> 19 Điểm</div>
+                        </div>
+                    </div>
+
+                    <div class="profile-purchase-item">
+                        <div>
+                            <div style="font-size:14px;font-weight:600;color:#1e293b;">POS-251105-112</div>
+                            <div style="font-size:12px;color:#6b7280;margin-top:2px;">05/11/2025, 14:00 PM</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:14px;font-weight:700;color:#1e293b;">650,000₫</div>
+                            <div style="font-size:12px;font-weight:600;color:#10b981;margin-top:2px;"><i
+                                    class="fa-solid fa-arrow-up"></i> 13 Điểm</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide-footer" style="justify-content:flex-end;">
+                <button class="btn-secondary" onclick="closeCustomerProfile()">Đóng lại</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ SCRIPTS ============ -->
+    <script>
+        function openCustomerProfile(id, name, phone, spent, points, tier) {
+            // Update modal header texts
+            document.getElementById('profileName').innerText = `${name} (${id})`;
+            document.getElementById('profilePhone').innerText = phone;
+            document.getElementById('profilePoints').innerText = points;
+            document.getElementById('profileSpent').innerText = spent;
+
+            // Render correct badge inside the loyalty card
+            const badgeContainer = document.getElementById('profileBadgeContainer');
+            // Background is green so we use inverse/white styles for the badges inside the card
+            let badgeHTML = '';
+            if (tier === 'gold') {
+                badgeHTML = `<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:4px 10px;border-radius:12px;background:#fef9c3;color:#ca8a04;border:1px solid #fde047;"><i class="fa-solid fa-crown"></i> Gold V.I.P</span>`;
+            } else if (tier === 'platinum') {
+                badgeHTML = `<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:4px 10px;border-radius:12px;background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;"><i class="fa-regular fa-gem"></i> Platinum V.I.P</span>`;
+            } else if (tier === 'silver') {
+                badgeHTML = `<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:4px 10px;border-radius:12px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;"><i class="fa-solid fa-medal"></i> Silver</span>`;
+            } else {
+                badgeHTML = `<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:4px 10px;border-radius:12px;background:#fffbeb;color:#92400e;border:1px solid #fde68a;"><i class="fa-solid fa-medal"></i> Bronze</span>`;
+            }
+            badgeContainer.innerHTML = badgeHTML;
+
+            // Open Modal
+            document.getElementById('customerProfileSlide').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCustomerProfile() {
+            document.getElementById('customerProfileSlide').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+    </script>
+
+    <!-- Shared Layout Components -->
+    <script src="js/admin-components.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAdminLayout('customers');
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khai Trương Nhà Thuốc Minh Giang — Ưu Đãi Lớn</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ====== GRAND OPENING PAGE STYLES ====== */
+
+        /* Hero Banner */
+        .opening-hero {
+            background: linear-gradient(135deg, #0b7a3e 0%, #10a854 40%, #f59e0b 100%);
+            padding: 60px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .opening-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, .08) 0%, transparent 60%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: .4;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: .8;
+            }
+        }
+
+        .opening-hero .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        .opening-hero-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, .2);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, .3);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 6px 20px;
+            border-radius: 20px;
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+        }
+
+        .opening-hero h1 {
+            font-size: 42px;
+            font-weight: 900;
+            color: #fff;
+            margin: 0 0 8px;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, .15);
+            line-height: 1.2;
+        }
+
+        .opening-hero h1 span {
+            color: #fbbf24;
+        }
+
+        .opening-hero-subtitle {
+            font-size: 18px;
+            color: rgba(255, 255, 255, .9);
+            margin-bottom: 24px;
+        }
+
+        .opening-hero-date {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+            color: #0b7a3e;
+            font-size: 18px;
+            font-weight: 700;
+            padding: 12px 28px;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, .15);
+        }
+
+        .opening-hero-date i {
+            font-size: 22px;
+            color: #dc2626;
+        }
+
+        /* Countdown */
+        .countdown-section {
+            background: #fff;
+            padding: 30px 0;
+            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .countdown-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #6b7280;
+            margin-bottom: 16px;
+        }
+
+        .countdown-boxes {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .countdown-box {
+            background: linear-gradient(135deg, #0b7a3e, #10a854);
+            color: #fff;
+            width: 80px;
+            height: 90px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(11, 122, 62, .25);
+        }
+
+        .countdown-box .num {
+            font-size: 32px;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .countdown-box .unit {
+            font-size: 12px;
+            font-weight: 500;
+            opacity: .85;
+            margin-top: 4px;
+        }
+
+        /* Store Info */
+        .store-info-section {
+            padding: 40px 0;
+            background: #f9fafb;
+        }
+
+        .store-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .store-map {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, .1);
+            background: #e5e7eb;
+            height: 340px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .store-map iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .store-details {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 28px;
+        }
+
+        .store-details h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0 0 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .store-details h2 img {
+            width: 36px;
+            height: 36px;
+        }
+
+        .store-detail-row {
+            display: flex;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 15px;
+        }
+
+        .store-detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .store-detail-row i {
+            color: #0b7a3e;
+            width: 20px;
+            text-align: center;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .store-detail-row strong {
+            color: #1f2937;
+        }
+
+        .store-detail-row span {
+            color: #4b5563;
+        }
+
+        /* Highlights */
+        .highlights-section {
+            padding: 40px 0;
+        }
+
+        .highlights-section h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1f2937;
+            text-align: center;
+            margin: 0 0 8px;
+        }
+
+        .highlights-subtitle {
+            font-size: 15px;
+            color: #6b7280;
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .highlights-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .highlight-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 24px 16px;
+            text-align: center;
+            transition: all .2s;
+        }
+
+        .highlight-card:hover {
+            border-color: #0b7a3e;
+            box-shadow: 0 6px 20px rgba(11, 122, 62, .1);
+            transform: translateY(-3px);
+        }
+
+        .highlight-card img {
+            width: 56px;
+            height: 56px;
+            object-fit: contain;
+            margin-bottom: 14px;
+        }
+
+        .highlight-card .hl-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #f0fdf4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 14px;
+            font-size: 24px;
+            color: #0b7a3e;
+        }
+
+        .highlight-card h4 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0 0 6px;
+        }
+
+        .highlight-card p {
+            font-size: 13px;
+            color: #6b7280;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* Promotions */
+        .promos-section {
+            padding: 40px 0;
+            background: #f0fdf4;
+        }
+
+        .promos-section h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1f2937;
+            text-align: center;
+            margin: 0 0 8px;
+        }
+
+        .promos-subtitle {
+            font-size: 15px;
+            color: #6b7280;
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .promos-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .promo-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all .2s;
+        }
+
+        .promo-card:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, .08);
+            transform: translateY(-2px);
+        }
+
+        .promo-banner {
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            position: relative;
+        }
+
+        .promo-banner.bg-red {
+            background: linear-gradient(135deg, #dc2626, #f87171);
+        }
+
+        .promo-banner.bg-orange {
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+        }
+
+        .promo-banner.bg-green {
+            background: linear-gradient(135deg, #0b7a3e, #34d399);
+        }
+
+        .promo-banner .promo-percent {
+            font-size: 52px;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, .15);
+        }
+
+        .promo-banner .promo-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, .25);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 12px;
+        }
+
+        .promo-card-body {
+            padding: 16px;
+        }
+
+        .promo-card-body h4 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0 0 6px;
+        }
+
+        .promo-card-body p {
+            font-size: 14px;
+            color: #6b7280;
+            margin: 0 0 12px;
+            line-height: 1.5;
+        }
+
+        .promo-card-body .promo-cta {
+            display: inline-block;
+            padding: 8px 20px;
+            background: #0b7a3e;
+            color: #fff;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background .15s;
+        }
+
+        .promo-card-body .promo-cta:hover {
+            background: #095e30;
+        }
+
+        /* Gallery */
+        .gallery-section {
+            padding: 40px 0;
+        }
+
+        .gallery-section h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1f2937;
+            text-align: center;
+            margin: 0 0 8px;
+        }
+
+        .gallery-subtitle {
+            font-size: 15px;
+            color: #6b7280;
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .gallery-item {
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            aspect-ratio: 16/10;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform .3s;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .gallery-item .gallery-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, .6));
+            padding: 16px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* CTA */
+        .cta-section {
+            background: linear-gradient(135deg, #0b7a3e 0%, #10a854 50%, #0d8f47 100%);
+            padding: 50px 0;
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #fff;
+            margin: 0 0 10px;
+        }
+
+        .cta-section p {
+            font-size: 16px;
+            color: rgba(255, 255, 255, .9);
+            margin: 0 0 24px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+        }
+
+        .cta-btn {
+            padding: 14px 32px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all .2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cta-btn.primary {
+            background: #fff;
+            color: #0b7a3e;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .12);
+        }
+
+        .cta-btn.primary:hover {
+            background: #f0fdf4;
+            transform: translateY(-2px);
+        }
+
+        .cta-btn.secondary {
+            background: rgba(255, 255, 255, .15);
+            color: #fff;
+            border: 2px solid rgba(255, 255, 255, .4);
+        }
+
+        .cta-btn.secondary:hover {
+            background: rgba(255, 255, 255, .25);
+            transform: translateY(-2px);
+        }
+
+        /* Top Searches */
+        .top-searches {
+            margin-top: 30px;
+            padding: 20px 0;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .top-searches h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 14px;
+        }
+
+        .top-search-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .top-search-links a {
+            display: inline-block;
+            padding: 6px 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            font-size: 14px;
+            color: #4b5563;
+            text-decoration: none;
+            transition: all .15s;
+        }
+
+        .top-search-links a:hover {
+            border-color: #0b7a3e;
+            color: #0b7a3e;
+            background: #ecfdf5;
+        }
+
+        /* Confetti animation */
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .confetti {
+            position: fixed;
+            top: 0;
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            z-index: 999;
+            pointer-events: none;
+            animation: confetti-fall linear forwards;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header Banner -->
+    <div mg-include="includes/header_banner.html"></div>
+
+    <!-- Top Bar -->
+    <div mg-include="includes/top_bar.html"></div>
+
+    <!-- Main Header -->
+    <div mg-include="includes/main_header.html"></div>
+
+    <!-- ====== GRAND OPENING PAGE ====== -->
+
+    <!-- Hero Banner -->
+    <section class="opening-hero">
+        <div class="container">
+            <div class="opening-hero-badge"><i class="fa-solid fa-star"></i> SỰ KIỆN ĐẶC BIỆT</div>
+            <h1>KHAI TRƯƠNG <span>NHÀ THUỐC MINH GIANG</span></h1>
+            <p class="opening-hero-subtitle">Chi nhánh mới — Mang sức khỏe đến gần bạn hơn!</p>
+            <div class="opening-hero-date">
+                <i class="fa-solid fa-calendar-days"></i>
+                Ngày 15/03/2026 — 08:00 sáng
+            </div>
+        </div>
+    </section>
+
+    <!-- Countdown Timer -->
+    <section class="countdown-section">
+        <div class="container">
+            <div class="countdown-label"><i class="fa-solid fa-clock" style="color:#dc2626"></i> ĐẾM NGƯỢC KHAI TRƯƠNG
+            </div>
+            <div class="countdown-boxes">
+                <div class="countdown-box"><span class="num" id="cd-days">08</span><span class="unit">Ngày</span></div>
+                <div class="countdown-box"><span class="num" id="cd-hours">12</span><span class="unit">Giờ</span></div>
+                <div class="countdown-box"><span class="num" id="cd-mins">34</span><span class="unit">Phút</span></div>
+                <div class="countdown-box"><span class="num" id="cd-secs">56</span><span class="unit">Giây</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Store Info -->
+    <section class="store-info-section">
+        <div class="container">
+            <div class="store-info-grid">
+                <div class="store-map">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3929.053!2d105.756!3d10.031!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTDCsDAx!5e0!3m2!1svi!2s!4v1234567890"
+                        allowfullscreen loading="lazy"></iframe>
+                </div>
+                <div class="store-details">
+                    <h2><img src="../assets/images/icon_he_thong_nha_thuoc.png" alt=""> Thông tin chi nhánh mới</h2>
+                    <div class="store-detail-row">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <div><strong>Địa chỉ:</strong> <span>Tầng 4, Tòa nhà Minh Giang, 42 đường Mai Chí Thọ, KĐC 586,
+                                Phường Hưng Phú, TP Cần Thơ</span></div>
+                    </div>
+                    <div class="store-detail-row">
+                        <i class="fa-solid fa-phone"></i>
+                        <div><strong>Hotline:</strong> <span>1800 55 88 98</span></div>
+                    </div>
+                    <div class="store-detail-row">
+                        <i class="fa-solid fa-clock"></i>
+                        <div><strong>Giờ mở cửa:</strong> <span>07h30 — 21h30 hàng ngày</span></div>
+                    </div>
+                    <div class="store-detail-row">
+                        <i class="fa-solid fa-user-doctor"></i>
+                        <div><strong>Dược sĩ trực:</strong> <span>Đội ngũ 5 dược sĩ đại học tư vấn chuyên nghiệp</span>
+                        </div>
+                    </div>
+                    <div class="store-detail-row">
+                        <i class="fa-solid fa-truck-fast"></i>
+                        <div><strong>Giao hàng:</strong> <span>Miễn phí trong bán kính 5km, giao nhanh 30 phút</span>
+                        </div>
+                    </div>
+                    <div class="store-detail-row">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <div><strong>Cam kết:</strong> <span>100% thuốc chính hãng, nguồn gốc rõ ràng</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Highlights -->
+    <section class="highlights-section">
+        <div class="container">
+            <h2><i class="fa-solid fa-sparkles" style="color:#f59e0b"></i> Điểm nổi bật</h2>
+            <p class="highlights-subtitle">Những giá trị tốt nhất dành cho khách hàng</p>
+            <div class="highlights-grid">
+                <div class="highlight-card">
+                    <img src="../assets/images/icon_thuoc_mua_theo_don.png" alt="Thuốc theo đơn">
+                    <h4>Thuốc theo đơn</h4>
+                    <p>Hơn 10,000 loại thuốc kê đơn đầy đủ, đúng chuẩn BYT</p>
+                </div>
+                <div class="highlight-card">
+                    <img src="../assets/images/icon_duoc_si_tu_van.png" alt="Dược sĩ tư vấn">
+                    <h4>Dược sĩ tư vấn 24/7</h4>
+                    <p>Đội ngũ dược sĩ giàu kinh nghiệm, tận tầm hỗ trợ</p>
+                </div>
+                <div class="highlight-card">
+                    <img src="../assets/images/icon_suc_khoe_tong_quat.png" alt="Sức khỏe tổng quát">
+                    <h4>Kiểm tra sức khỏe</h4>
+                    <p>Đo huyết áp, đường huyết miễn phí ngay tại quầy</p>
+                </div>
+                <div class="highlight-card">
+                    <img src="../assets/images/icon_deal_sieu_hot.png" alt="Deal siêu hot">
+                    <h4>Giá ưu đãi nhất</h4>
+                    <p>Cam kết giá rẻ nhất với chương trình tích điểm hấp dẫn</p>
+                </div>
+                <div class="highlight-card">
+                    <img src="../assets/images/icon_he_thong_nha_thuoc.png" alt="Hệ thống nhà thuốc">
+                    <h4>Hệ thống chuỗi</h4>
+                    <p>Chi nhánh thứ 12 trong hệ thống Nhà Thuốc Minh Giang</p>
+                </div>
+                <div class="highlight-card">
+                    <img src="../assets/images/icon_category_vitamin_va_khoang_chat.png" alt="Vitamin">
+                    <h4>TPCN & Vitamin</h4>
+                    <p>Đa dạng thực phẩm chức năng, vitamin nhập khẩu chính ngạch</p>
+                </div>
+                <div class="highlight-card">
+                    <img src="../assets/images/icon_category_cham_soc_da_mat.png" alt="Dược mỹ phẩm">
+                    <h4>Dược mỹ phẩm</h4>
+                    <p>Các thương hiệu uy tín: La Roche-Posay, Eucerin, Bioderma...</p>
+                </div>
+                <div class="highlight-card">
+                    <img src="../assets/images/icon_danh_muc_san_pham.png" alt="Danh mục sản phẩm">
+                    <h4>Đầy đủ danh mục</h4>
+                    <p>Thiết bị y tế, chăm sóc mẹ & bé, vệ sinh cá nhân...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Promotions -->
+    <section class="promos-section">
+        <div class="container">
+            <h2><i class="fa-solid fa-gift" style="color:#dc2626"></i> Ưu đãi khai trương</h2>
+            <p class="promos-subtitle">Chỉ duy nhất trong 3 ngày khai trương (15-17/03/2026)</p>
+            <div class="promos-grid">
+                <div class="promo-card">
+                    <div class="promo-banner bg-red">
+                        <span class="promo-tag">HOT</span>
+                        <span class="promo-percent">-50%</span>
+                    </div>
+                    <div class="promo-card-body">
+                        <h4>Giảm đến 50% toàn bộ Thuốc</h4>
+                        <p>Áp dụng cho hơn 500 sản phẩm thuốc OTC & dược phẩm phổ thông. Mua càng nhiều — giảm càng sâu!
+                        </p>
+                        <a href="category.html" class="promo-cta"><i class="fa-solid fa-tags"></i> Xem ngay</a>
+                    </div>
+                </div>
+                <div class="promo-card">
+                    <div class="promo-banner bg-orange">
+                        <span class="promo-tag">MỚI</span>
+                        <span class="promo-percent">-40%</span>
+                    </div>
+                    <div class="promo-card-body">
+                        <h4>Giảm 40% Thực phẩm chức năng</h4>
+                        <p>Vitamin, khoáng chất, bổ sung dinh dưỡng từ các thương hiệu hàng đầu Hàn Quốc, Mỹ, Nhật.</p>
+                        <a href="category.html" class="promo-cta"><i class="fa-solid fa-tags"></i> Khám phá</a>
+                    </div>
+                </div>
+                <div class="promo-card">
+                    <div class="promo-banner bg-green">
+                        <span class="promo-tag">FREESHIP</span>
+                        <span class="promo-percent"><i class="fa-solid fa-truck" style="font-size:36px"></i></span>
+                    </div>
+                    <div class="promo-card-body">
+                        <h4>Miễn phí giao hàng toàn thành phố</h4>
+                        <p>Không giới hạn đơn hàng tối thiểu. Giao nhanh trong 1 giờ khu vực nội thành Cần Thơ.</p>
+                        <a href="#" class="promo-cta"><i class="fa-solid fa-circle-info"></i> Tìm hiểu</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Photo Gallery -->
+    <section class="gallery-section">
+        <div class="container">
+            <h2><i class="fa-solid fa-images" style="color:#0b7a3e"></i> Hình ảnh nhà thuốc</h2>
+            <p class="gallery-subtitle">Không gian hiện đại, sạch sẽ & thân thiện</p>
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <img src="../assets/images/banner_slide_1.png" alt="Ngoại thất nhà thuốc">
+                    <div class="gallery-overlay">Mặt tiền nhà thuốc Minh Giang</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="../assets/images/banner_slide_2.png" alt="Nội thất quầy thuốc">
+                    <div class="gallery-overlay">Quầy tư vấn dược phẩm</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="../assets/images/banner_slide_3.png" alt="Khu vực trưng bày">
+                    <div class="gallery-overlay">Khu trưng bày sản phẩm</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="../assets/images/banner_slide_4.png" alt="Dược sĩ tư vấn">
+                    <div class="gallery-overlay">Dược sĩ tư vấn chuyên nghiệp</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="../assets/images/banner_slide_5.png" alt="Sản phẩm đa dạng">
+                    <div class="gallery-overlay">Sản phẩm phong phú & đa dạng</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="../assets/images/banner_slide_6.png" alt="Khu vực kiểm tra sức khỏe">
+                    <div class="gallery-overlay">Góc kiểm tra sức khỏe miễn phí</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>🎉 Đến ngay nhà thuốc Minh Giang!</h2>
+            <p>Nhận quà tặng hấp dẫn cho 200 khách đầu tiên trong ngày khai trương</p>
+            <div class="cta-buttons">
+                <a href="#" class="cta-btn primary"><i class="fa-solid fa-map-location-dot"></i> Xem bản đồ</a>
+                <a href="index.html" class="cta-btn secondary"><i class="fa-solid fa-bag-shopping"></i> Mua sắm
+                    online</a>
+            </div>
+        </div>
+    </section>
+
+    <main class="container">
+        <!-- Top Searches -->
+        <div class="top-searches">
+            <h3>Tìm kiếm hàng đầu</h3>
+            <div class="top-search-links">
+                <a href="#">Nước hồng sâm</a><a href="#">Nước thảo mộc</a><a href="#">Keo sâm</a><a href="#">Vitamin
+                    nhóm B</a><a href="#">Vitamin tổng hợp</a><a href="#">Bổ sung canxi</a><a href="#">Tiêu hoá</a><a
+                    href="#">Chức năng gan</a><a href="#">Ngủ ngon</a><a href="#">Bảo vệ tim mạch</a>
+                <a href="#">Giảm cân</a><a href="#">Xương khớp</a><a href="#">Giảm ho</a><a href="#">Tiểu đường</a><a
+                    href="#">Tăng cường đề kháng</a><a href="#">Nhân sâm</a><a href="#">Siro nhỏ mắt</a><a
+                    href="#">Serum</a><a href="#">Kem dưỡng ẩm</a><a href="#">Kem chống nắng</a><a href="#">Trị gàu</a>
+                <a href="#">Dưỡng tóc</a><a href="#">Dưỡng mắt</a><a href="#">Trị mụn</a><a href="#">Trị sẹo</a><a
+                    href="#">Viêm da cơ địa</a><a href="#">Khẩu trang</a><a href="#">Dung dịch vệ sinh</a><a
+                    href="#">Men vi sinh</a><a href="#">Máy đo huyết áp</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Pre-Footer Promises -->
+    <div mg-include="includes/promises.html"></div>
+
+    <!-- Newsletter -->
+    <div mg-include="includes/newsletter.html"></div>
+
+    <!-- Main Footer -->
+    <div mg-include="includes/main_footer.html"></div>
+
+    <script>
+        // Countdown Timer — target: March 15, 2026, 08:00 AM
+        const targetDate = new Date('2026-03-15T08:00:00+07:00').getTime();
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const diff = targetDate - now;
+
+            if (diff <= 0) {
+                document.getElementById('cd-days').textContent = '00';
+                document.getElementById('cd-hours').textContent = '00';
+                document.getElementById('cd-mins').textContent = '00';
+                document.getElementById('cd-secs').textContent = '00';
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+            document.getElementById('cd-days').textContent = String(days).padStart(2, '0');
+            document.getElementById('cd-hours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('cd-mins').textContent = String(mins).padStart(2, '0');
+            document.getElementById('cd-secs').textContent = String(secs).padStart(2, '0');
+        }
+
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+
+        // Confetti on page load
+        function createConfetti() {
+            const colors = ['#dc2626', '#f59e0b', '#0b7a3e', '#3b82f6', '#8b5cf6', '#ec4899'];
+            for (let i = 0; i < 30; i++) {
+                const el = document.createElement('div');
+                el.className = 'confetti';
+                el.style.left = Math.random() * 100 + 'vw';
+                el.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                el.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                el.style.animationDelay = (Math.random() * 2) + 's';
+                el.style.width = (Math.random() * 8 + 6) + 'px';
+                el.style.height = (Math.random() * 8 + 6) + 'px';
+                document.body.appendChild(el);
+
+                // Remove after animation
+                setTimeout(() => el.remove(), 6000);
+            }
+        }
+        createConfetti();
+    </script>
+    <script src="../assets/js/components.js"></script>
+</body>
+
+</html>

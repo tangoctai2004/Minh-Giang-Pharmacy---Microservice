@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Ký Thành Viên — Nhà Thuốc Minh Giang</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* CSS Reuse from login.html */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f8fafc;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .auth-wrapper {
+            display: flex;
+            width: 100%;
+            max-width: 960px;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            margin: 20px;
+        }
+
+        .auth-banner {
+            flex: 1;
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            padding: 40px;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-banner::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .auth-banner h2 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        .auth-banner p {
+            font-size: 16px;
+            color: #d1fae5;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .auth-features {
+            list-style: none;
+        }
+
+        .auth-features li {
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .auth-features i {
+            width: 28px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+        }
+
+        .auth-form-container {
+            width: 440px;
+            padding: 40px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .auth-tabs {
+            display: flex;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 32px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 12px 0;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            color: #94a3b8;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .auth-tab.active {
+            color: #059669;
+        }
+
+        .auth-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #059669;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+
+        .input-field {
+            position: relative;
+        }
+
+        .input-field input {
+            width: 100%;
+            height: 44px;
+            padding: 0 16px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #0f172a;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .input-field input:focus {
+            border-color: #059669;
+            box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
+        }
+
+        .submit-btn {
+            width: 100%;
+            height: 48px;
+            background: #059669;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        .submit-btn:hover {
+            background: #047857;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+        }
+
+        .terms-text {
+            font-size: 12px;
+            color: #64748b;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .terms-text a {
+            color: #059669;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-home {
+            text-align: center;
+            margin-top: auto;
+            padding-top: 16px;
+        }
+
+        .back-home a {
+            color: #64748b;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .back-home a:hover {
+            color: #059669;
+        }
+
+        /* Validation Helper */
+        .password-reqs {
+            display: none;
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 6px;
+        }
+
+        .password-reqs.active {
+            display: block;
+        }
+
+        .req-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 2px;
+        }
+
+        .req-item i {
+            font-size: 10px;
+            color: #cbd5e1;
+        }
+
+        .req-item.valid i {
+            color: #10b981;
+        }
+
+        .req-item.valid span {
+            color: #10b981;
+        }
+
+        @media (max-width: 768px) {
+            .auth-wrapper {
+                flex-direction: column;
+                margin: 0;
+                border-radius: 0;
+                min-height: 100vh;
+            }
+
+            .auth-banner {
+                padding: 30px 24px;
+                flex: none;
+                display: none;
+            }
+
+            .auth-form-container {
+                width: 100%;
+                padding: 32px 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="auth-wrapper">
+        <div class="auth-banner">
+            <div>
+                <h2>Tham gia cùng Minh Giang</h2>
+                <p>Khởi tạo tài khoản miễn phí chỉ trong 1 phút để quản lý hiệu quả tủ thuốc gia đình và nhận cực nhiều
+                    ưu đãi thẻ thành viên.</p>
+                <ul class="auth-features">
+                    <li><i class="fa-solid fa-gift"></i> Tặng ngay Voucher 50K cho đơn đầu tiên</li>
+                    <li><i class="fa-solid fa-user-doctor"></i> Lưu trữ lịch sử khám bệnh/toa gốc</li>
+                    <li><i class="fa-solid fa-bell"></i> Nhắc nhở lịch uống thuốc tiện lợi qua App/Zalo</li>
+                </ul>
+            </div>
+            <img src="../assets/logo_Minh_Giang_Pharmacy.png" alt="Logo"
+                style="width: 80px; position: absolute; bottom: 30px; right: 40px; opacity: 0.2; filter: grayscale(1) invert(1);">
+        </div>
+
+        <div class="auth-form-container">
+            <div class="auth-tabs">
+                <a href="login.html" class="auth-tab">Đăng Nhập</a>
+                <a href="register.html" class="auth-tab active">Đăng Ký</a>
+            </div>
+
+            <form id="registerForm" onsubmit="handleRegister(event)">
+
+                <div style="display: flex; gap: 12px;">
+                    <div class="input-group" style="flex:1;">
+                        <label>Họ và Tên</label>
+                        <div class="input-field">
+                            <input type="text" placeholder="Nguyễn Văn A" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Số điện thoại</label>
+                    <div class="input-field">
+                        <input type="tel" id="mobile" placeholder="09xx xxx xxx" required pattern="[0-9]{10}"
+                            title="Vui lòng nhập 10 số điện thoại hợp lệ">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Email (Không bắt buộc)</label>
+                    <div class="input-field">
+                        <input type="email" placeholder="example@gmail.com">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Mật khẩu</label>
+                    <div class="input-field">
+                        <input type="password" id="regPassword" placeholder="Ít nhất 8 ký tự..." required
+                            oninput="checkPasswordStrength()">
+                    </div>
+                    <div class="password-reqs" id="pwdReqs">
+                        <div class="req-item" id="req-length"><i class="fa-solid fa-circle"></i> <span>Từ 8 ký tự trở
+                                lên</span></div>
+                        <div class="req-item" id="req-number"><i class="fa-solid fa-circle"></i> <span>Chứa ít nhất 1
+                                chữ số</span></div>
+                        <div class="req-item" id="req-uppercase"><i class="fa-solid fa-circle"></i> <span>Chứa chữ in
+                                hoa</span></div>
+                    </div>
+                </div>
+
+                <p class="terms-text">Bằng việc đăng ký, bạn đã đồng ý với <a href="#">Điều khoản Dịch vụ</a> và <a
+                        href="#">Chính sách Bảo mật</a> của Minh Giang.</p>
+
+                <button type="submit" class="submit-btn">Tạo Tài Khoản Mới</button>
+            </form>
+
+            <div class="back-home">
+                <a href="index.html"><i class="fa-solid fa-arrow-left"></i> Quay lại trang chủ</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('regPassword').addEventListener('focus', function () {
+            document.getElementById('pwdReqs').classList.add('active');
+        });
+
+        document.getElementById('regPassword').addEventListener('blur', function () {
+            if (this.value.length === 0) {
+                document.getElementById('pwdReqs').classList.remove('active');
+            }
+        });
+
+        function checkPasswordStrength() {
+            const pwd = document.getElementById('regPassword').value;
+
+            // Checks
+            const hasLength = pwd.length >= 8;
+            const hasNumber = /\d/.test(pwd);
+            const hasUppercase = /[A-Z]/.test(pwd);
+
+            // Update UI
+            updateReqUI('req-length', hasLength);
+            updateReqUI('req-number', hasNumber);
+            updateReqUI('req-uppercase', hasUppercase);
+        }
+
+        function updateReqUI(id, isValid) {
+            const el = document.getElementById(id);
+            if (isValid) {
+                el.classList.add('valid');
+                el.querySelector('i').classList.replace('fa-circle', 'fa-check-circle');
+            } else {
+                el.classList.remove('valid');
+                el.querySelector('i').classList.replace('fa-check-circle', 'fa-circle');
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+
+            const pwd = document.getElementById('regPassword').value;
+            if (pwd.length < 8 || !/\d/.test(pwd) || !/[A-Z]/.test(pwd)) {
+                alert('Vui lòng tạo mật khẩu thoả mãn tất cả các điều kiện bảo mật đính kèm!');
+                return;
+            }
+
+            // Simulating success
+            alert('Đăng ký tài khoản nội bộ trải nghiệm thành công! Hệ thống sẽ điều hướng sang trang Đăng nhập.');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+
+</html>

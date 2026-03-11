@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cấu Hình Giao Diện Web — Nhà Thuốc Minh Giang</title>
+    <link rel="stylesheet" href="css/admin-style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .sf-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .sf-stat-card {
+            background: #fff;
+            border: 1px solid var(--admin-border);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .sf-stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .sf-stat-info p {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .sf-stat-info h3 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .sf-stat-info small {
+            font-size: 11px;
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .section-card {
+            background: #fff;
+            border: 1px solid var(--admin-border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .section-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        .section-card-header h2 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-card-body {
+            padding: 20px;
+        }
+
+        /* Banner */
+        .banner-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 16px;
+        }
+
+        .banner-item {
+            border: 1px solid var(--admin-border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .banner-preview {
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            position: relative;
+        }
+
+        .banner-preview .banner-order {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(0, 0, 0, .6);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .banner-meta {
+            padding: 12px;
+        }
+
+        .banner-meta h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 3px;
+        }
+
+        .banner-meta p {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-bottom: 8px;
+        }
+
+        .banner-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        /* Delivery zone map-like card */
+        .zone-visual {
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .zone-circle-outer {
+            width: 180px;
+            height: 180px;
+            border: 3px dashed #93c5fd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            position: relative;
+        }
+
+        .zone-circle-inner {
+            width: 80px;
+            height: 80px;
+            background: #3b82f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 22px;
+        }
+
+        .zone-label-outer {
+            position: absolute;
+            bottom: -10px;
+            right: -10px;
+            background: #1d4ed8;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 10px;
+        }
+
+        /* Delivery staff list */
+        .staff-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        .staff-item:last-child {
+            border-bottom: none;
+        }
+
+        .staff-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #eff6ff;
+            color: #3b82f6;
+            font-weight: 700;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .staff-info {
+            flex: 1;
+        }
+
+        .staff-info h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 1px;
+        }
+
+        .staff-info p {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        /* Form */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 5px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            color: #1e293b;
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color .2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--admin-primary);
+        }
+
+        .form-group .form-hint {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 3px;
+        }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        .toggle-row:last-child {
+            border-bottom: none;
+        }
+
+        .toggle-row label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .toggle-row .toggle-desc {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .toggle-switch {
+            width: 44px;
+            height: 24px;
+            background: #d1d5db;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: background .3s;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch.on {
+            background: #10b981;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: #fff;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: transform .3s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .15);
+        }
+
+        .toggle-switch.on::after {
+            transform: translateX(20px);
+        }
+
+        /* Time slot */
+        .time-slot-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .time-slot {
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all .15s;
+        }
+
+        .time-slot.active {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .time-slot h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .time-slot p {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .time-slot.active h4,
+        .time-slot.active p {
+            color: #1d4ed8;
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="admin-sidebar"></aside>
+    <header class="admin-header"></header>
+
+    <main class="admin-main">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Cấu Hình Giao Diện Web</h1>
+                <p class="page-subtitle">Quản lý Banner, Giao Hàng Nội Bộ và Cài Đặt Website Nhà Thuốc</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn-secondary"><i class="fa-solid fa-rotate-left"></i> Hoàn tác</button>
+                <button class="btn-primary" onclick="alert('Đã lưu tất cả thay đổi!')"><i
+                        class="fa-solid fa-floppy-disk"></i> Lưu tất cả</button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="sf-summary-grid">
+            <div class="sf-stat-card">
+                <div class="sf-stat-icon" style="background:#eff6ff;color:#3b82f6;"><i class="fa-solid fa-images"></i>
+                </div>
+                <div class="sf-stat-info">
+                    <p>Banner đang chạy</p>
+                    <h3>5</h3><small>2 vị trí trang chủ</small>
+                </div>
+            </div>
+            <div class="sf-stat-card">
+                <div class="sf-stat-icon" style="background:#f0fdf4;color:#16a34a;"><i
+                        class="fa-solid fa-person-biking"></i></div>
+                <div class="sf-stat-info">
+                    <p>Bán kính giao hàng</p>
+                    <h3>8 km</h3><small>Giao hàng nội bộ</small>
+                </div>
+            </div>
+            <div class="sf-stat-card">
+                <div class="sf-stat-icon" style="background:#fff7ed;color:#ea580c;"><i class="fa-solid fa-users"></i>
+                </div>
+                <div class="sf-stat-info">
+                    <p>Người giao hàng</p>
+                    <h3>3</h3><small>Thành viên gia đình</small>
+                </div>
+            </div>
+            <div class="sf-stat-card">
+                <div class="sf-stat-icon" style="background:#fdf4ff;color:#9333ea;"><i class="fa-solid fa-gear"></i>
+                </div>
+                <div class="sf-stat-info">
+                    <p>Cài đặt hoạt động</p>
+                    <h3>8</h3><small>Tính năng đã bật</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABS -->
+        <div class="page-tabs">
+            <button class="page-tab-btn active" onclick="switchPageTab('tab-banners')"><i
+                    class="fa-solid fa-images"></i> Banner & Slider</button>
+            <button class="page-tab-btn" onclick="switchPageTab('tab-delivery')"><i
+                    class="fa-solid fa-person-biking"></i> Giao Hàng Nội Bộ</button>
+            <button class="page-tab-btn" onclick="switchPageTab('tab-storeinfo')"><i class="fa-solid fa-store"></i>
+                Thông Tin Nhà Thuốc</button>
+            <button class="page-tab-btn" onclick="switchPageTab('tab-settings')"><i class="fa-solid fa-sliders"></i> Cài
+                Đặt Chung</button>
+        </div>
+
+        <!-- ===== TAB 1: BANNERS ===== -->
+        <div id="tab-banners" class="page-tab-content active">
+            <div class="section-card">
+                <div class="section-card-header">
+                    <h2><i class="fa-solid fa-panorama" style="color:#3b82f6;"></i> Hero Slider (Trang Chủ)</h2>
+                    <button class="btn-primary" style="height:34px;font-size:13px;padding:0 14px;"
+                        onclick="openBannerModal()"><i class="fa-solid fa-plus"></i> Thêm slide</button>
+                </div>
+                <div class="section-card-body">
+                    <div class="banner-grid">
+                        <div class="banner-item">
+                            <div class="banner-preview" style="background:linear-gradient(135deg,#667eea,#764ba2);">
+                                <span style="font-size:40px;">🏥</span>
+                                <span class="banner-order">1</span>
+                            </div>
+                            <div class="banner-meta">
+                                <h4>Nhà Thuốc Minh Giang – Chào Mừng</h4>
+                                <p>Link: / (Trang chủ)</p>
+                                <div class="banner-actions">
+                                    <button class="btn-icon" title="Sửa" onclick="openBannerModal()"><i
+                                            class="fa-solid fa-pencil"></i></button>
+                                    <button class="btn-icon" title="Lên"><i class="fa-solid fa-arrow-up"></i></button>
+                                    <button class="btn-icon" title="Xuống"><i
+                                            class="fa-solid fa-arrow-down"></i></button>
+                                    <button class="btn-icon" title="Ẩn"
+                                        onclick="this.closest('.banner-item').style.opacity='.45'"><i
+                                            class="fa-solid fa-eye-slash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="banner-item">
+                            <div class="banner-preview" style="background:linear-gradient(135deg,#11998e,#38ef7d);">
+                                <span style="font-size:40px;">💊</span>
+                                <span class="banner-order">2</span>
+                            </div>
+                            <div class="banner-meta">
+                                <h4>Vitamin & Thực Phẩm Chức Năng</h4>
+                                <p>Link: /category.html?cat=vitamin</p>
+                                <div class="banner-actions">
+                                    <button class="btn-icon" title="Sửa" onclick="openBannerModal()"><i
+                                            class="fa-solid fa-pencil"></i></button>
+                                    <button class="btn-icon" title="Lên"><i class="fa-solid fa-arrow-up"></i></button>
+                                    <button class="btn-icon" title="Xuống"><i
+                                            class="fa-solid fa-arrow-down"></i></button>
+                                    <button class="btn-icon" title="Ẩn"
+                                        onclick="this.closest('.banner-item').style.opacity='.45'"><i
+                                            class="fa-solid fa-eye-slash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="banner-item">
+                            <div class="banner-preview" style="background:linear-gradient(135deg,#f093fb,#f5576c);">
+                                <span style="font-size:40px;">🎁</span>
+                                <span class="banner-order">3</span>
+                            </div>
+                            <div class="banner-meta">
+                                <h4>Ưu Đãi Thành Viên – Tích Điểm</h4>
+                                <p>Link: /user-profile.html</p>
+                                <div class="banner-actions">
+                                    <button class="btn-icon" title="Sửa" onclick="openBannerModal()"><i
+                                            class="fa-solid fa-pencil"></i></button>
+                                    <button class="btn-icon" title="Lên"><i class="fa-solid fa-arrow-up"></i></button>
+                                    <button class="btn-icon" title="Xuống"><i
+                                            class="fa-solid fa-arrow-down"></i></button>
+                                    <button class="btn-icon" title="Ẩn"
+                                        onclick="this.closest('.banner-item').style.opacity='.45'"><i
+                                            class="fa-solid fa-eye-slash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="banner-item"
+                            style="border-style:dashed;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:160px;"
+                            onclick="openBannerModal()">
+                            <i class="fa-solid fa-plus-circle"
+                                style="font-size:28px;color:#cbd5e1;margin-bottom:8px;"></i>
+                            <span style="font-size:13px;color:#9ca3af;font-weight:500;">Thêm Slide Mới</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mini promo banners -->
+            <div class="section-card">
+                <div class="section-card-header">
+                    <h2><i class="fa-solid fa-rectangle-ad" style="color:#9333ea;"></i> Banner Khuyến Mãi (Giữa Trang
+                        Chủ)</h2>
+                    <button class="btn-secondary" style="height:34px;font-size:13px;" onclick="openBannerModal()"><i
+                            class="fa-solid fa-pencil"></i> Cập nhật</button>
+                </div>
+                <div class="section-card-body">
+                    <div class="two-col">
+                        <div>
+                            <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px;">Banner Trái
+                                (Flash Sale)</div>
+                            <div style="height:80px;background:linear-gradient(135deg,#ffecd2,#fcb69f);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:8px;cursor:pointer;"
+                                onclick="openBannerModal()">⚡</div>
+                            <div class="form-group" style="margin-bottom:0;"><label>Link khi click</label><input
+                                    type="text" value="/category.html?tag=sale"></div>
+                        </div>
+                        <div>
+                            <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px;">Banner Phải
+                                (Thuốc mới về)</div>
+                            <div style="height:80px;background:linear-gradient(135deg,#a1c4fd,#c2e9fb);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:8px;cursor:pointer;"
+                                onclick="openBannerModal()">🆕</div>
+                            <div class="form-group" style="margin-bottom:0;"><label>Link khi click</label><input
+                                    type="text" value="/category.html?new=1"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TAB 2: DELIVERY ===== -->
+        <div id="tab-delivery" class="page-tab-content">
+            <div class="two-col">
+                <!-- Left: Zone config -->
+                <div>
+                    <div class="section-card" style="margin-bottom:16px;">
+                        <div class="section-card-header">
+                            <h2><i class="fa-solid fa-circle-dot" style="color:#3b82f6;"></i> Phạm Vi Giao Hàng</h2>
+                        </div>
+                        <div class="section-card-body">
+                            <!-- Visual zone -->
+                            <div class="zone-visual">
+                                <div class="zone-circle-outer">
+                                    <div class="zone-circle-inner"><i class="fa-solid fa-store"></i></div>
+                                    <span class="zone-label-outer">8 km</span>
+                                </div>
+                                <div style="font-size:14px;font-weight:700;color:#1e40af;">Nhà Thuốc Minh Giang</div>
+                                <div style="font-size:12px;color:#6b7280;margin-top:4px;">123 Nguyễn Thị Minh Khai, Q.1,
+                                    TP.HCM</div>
+                                <div
+                                    style="margin-top:12px;display:inline-flex;align-items:center;gap:6px;background:#dbeafe;color:#1d4ed8;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;">
+                                    <i class="fa-solid fa-person-biking"></i> Bán kính giao hàng: 8 km
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Bán kính giao hàng tối đa (km)</label>
+                                <input type="number" value="8" min="1" max="30">
+                                <div class="form-hint">Khách hàng ngoài bán kính này sẽ thấy thông báo "Chưa hỗ trợ giao
+                                    hàng".</div>
+                            </div>
+                            <div class="form-group">
+                                <label>Phí giao hàng nội bộ (₫)</label>
+                                <input type="number" value="15000">
+                                <div class="form-hint">Phí mặc định cho các đơn trong bán kính 8km.</div>
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>Miễn phí giao hàng cho đơn từ (₫)</label>
+                                <input type="number" value="300000">
+                                <div class="form-hint">Đơn ≥ 300,000₫ sẽ được freeship.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Delivery time slots -->
+                    <div class="section-card">
+                        <div class="section-card-header">
+                            <h2><i class="fa-regular fa-clock" style="color:#ea580c;"></i> Khung Giờ Giao Hàng</h2>
+                        </div>
+                        <div class="section-card-body">
+                            <div style="font-size:12px;color:#6b7280;margin-bottom:12px;">Chọn các khung giờ nhà thuốc
+                                hỗ trợ giao hàng trong ngày:</div>
+                            <div class="time-slot-grid">
+                                <div class="time-slot active" onclick="this.classList.toggle('active')">
+                                    <h4>Sáng sớm</h4>
+                                    <p>07:00 – 10:00</p>
+                                </div>
+                                <div class="time-slot active" onclick="this.classList.toggle('active')">
+                                    <h4>Buổi trưa</h4>
+                                    <p>10:00 – 14:00</p>
+                                </div>
+                                <div class="time-slot active" onclick="this.classList.toggle('active')">
+                                    <h4>Chiều sớm</h4>
+                                    <p>14:00 – 17:00</p>
+                                </div>
+                                <div class="time-slot active" onclick="this.classList.toggle('active')">
+                                    <h4>Chiều tối</h4>
+                                    <p>17:00 – 20:00</p>
+                                </div>
+                                <div class="time-slot" onclick="this.classList.toggle('active')">
+                                    <h4>Tối muộn</h4>
+                                    <p>20:00 – 22:00</p>
+                                </div>
+                                <div class="time-slot" onclick="this.classList.toggle('active')">
+                                    <h4>Giao ngay</h4>
+                                    <p>Express (30–60 phút)</p>
+                                </div>
+                            </div>
+                            <div
+                                style="margin-top:14px;padding:12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;font-size:12px;color:#92400e;">
+                                <i class="fa-solid fa-triangle-exclamation"></i> Khung giờ "Giao ngay" chỉ áp dụng khi
+                                có người giao đang ở trạng thái <strong>Sẵn sàng</strong>.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Delivery staff -->
+                <div>
+                    <div class="section-card" style="margin-bottom:16px;">
+                        <div class="section-card-header">
+                            <h2><i class="fa-solid fa-users" style="color:#16a34a;"></i> Người Giao Hàng (Nội Bộ)</h2>
+                            <button class="btn-primary" style="height:34px;font-size:13px;padding:0 12px;"
+                                onclick="openStaffModal()"><i class="fa-solid fa-plus"></i> Thêm</button>
+                        </div>
+                        <div>
+                            <!-- Staff 1 -->
+                            <div class="staff-item">
+                                <div class="staff-avatar">MG</div>
+                                <div class="staff-info">
+                                    <h4>Trần Minh Giang <span style="font-size:11px;font-weight:400;color:#9ca3af;">(Chủ
+                                            nhà thuốc)</span></h4>
+                                    <p>📱 0912 345 678 &nbsp;|&nbsp; Xe máy</p>
+                                </div>
+                                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+                                    <span class="status-badge active" style="font-size:11px;">Sẵn sàng</span>
+                                    <button class="btn-icon" onclick="openStaffModal('edit')"><i
+                                            class="fa-solid fa-pencil"></i></button>
+                                </div>
+                            </div>
+                            <!-- Staff 2 -->
+                            <div class="staff-item">
+                                <div class="staff-avatar" style="background:#fdf4ff;color:#9333ea;">LH</div>
+                                <div class="staff-info">
+                                    <h4>Lê Thị Hoa <span
+                                            style="font-size:11px;font-weight:400;color:#9ca3af;">(Vợ)</span></h4>
+                                    <p>📱 0988 765 432 &nbsp;|&nbsp; Xe máy</p>
+                                </div>
+                                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+                                    <span class="status-badge active" style="font-size:11px;">Sẵn sàng</span>
+                                    <button class="btn-icon" onclick="openStaffModal('edit')"><i
+                                            class="fa-solid fa-pencil"></i></button>
+                                </div>
+                            </div>
+                            <!-- Staff 3 -->
+                            <div class="staff-item">
+                                <div class="staff-avatar" style="background:#fff7ed;color:#ea580c;">TN</div>
+                                <div class="staff-info">
+                                    <h4>Trần Anh Nguyên <span style="font-size:11px;font-weight:400;color:#9ca3af;">(Con
+                                            trai)</span></h4>
+                                    <p>📱 0977 111 222 &nbsp;|&nbsp; Xe máy</p>
+                                </div>
+                                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+                                    <span class="status-badge"
+                                        style="background:#fee2e2;color:#ef4444;font-size:11px;">Bận</span>
+                                    <button class="btn-icon" onclick="openStaffModal('edit')"><i
+                                            class="fa-solid fa-pencil"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- COD settings -->
+                    <div class="section-card">
+                        <div class="section-card-header">
+                            <h2><i class="fa-solid fa-money-bill-wave" style="color:#16a34a;"></i> Thanh Toán Khi Nhận
+                                (COD)</h2>
+                        </div>
+                        <div class="section-card-body">
+                            <div class="toggle-row">
+                                <div><label>Cho phép thanh toán COD</label>
+                                    <div class="toggle-desc">Khách trả tiền mặt khi nhận hàng</div>
+                                </div>
+                                <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                            </div>
+                            <div class="toggle-row">
+                                <div><label>Yêu cầu đặt cọc khi đặt đơn lớn</label>
+                                    <div class="toggle-desc">Đơn ≥ 2,000,000₫ cần cọc trước 30%</div>
+                                </div>
+                                <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
+                            </div>
+                            <div style="margin-top:14px;">
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label>Giá trị đơn tối đa cho COD (₫)</label>
+                                    <input type="number" value="5000000">
+                                    <div class="form-hint">Đơn trên 5 triệu cần thanh toán online trước.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TAB 3: STORE INFO ===== -->
+        <div id="tab-storeinfo" class="page-tab-content">
+            <div class="two-col">
+                <div class="section-card">
+                    <div class="section-card-header">
+                        <h2><i class="fa-solid fa-store" style="color:#ea580c;"></i> Thông Tin Nhà Thuốc</h2>
+                    </div>
+                    <div class="section-card-body">
+                        <div class="form-group"><label>Tên nhà thuốc <span style="color:#ef4444;">*</span></label><input
+                                type="text" value="Nhà Thuốc Minh Giang"></div>
+                        <div class="form-group"><label>Địa chỉ <span style="color:#ef4444;">*</span></label><textarea
+                                style="min-height:60px;">123 Nguyễn Thị Minh Khai, Phường Đa Kao, Quận 1, TP. Hồ Chí Minh</textarea>
+                        </div>
+                        <div class="form-group"><label>Số Giấy phép kinh doanh</label><input type="text"
+                                value="4101234567890" placeholder="MST / SĐK GPKD"></div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Số điện thoại</label><input type="tel"
+                                    value="(028) 3822 9999"></div>
+                            <div class="form-group"><label>Hotline / Zalo</label><input type="tel" value="0912 345 678">
+                            </div>
+                        </div>
+                        <div class="form-group"><label>Email</label><input type="email"
+                                value="minggiang.pharmacy@gmail.com"></div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Giờ mở cửa</label><input type="time" value="07:00"></div>
+                            <div class="form-group"><label>Giờ đóng cửa</label><input type="time" value="22:00"></div>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Ngày hoạt động trong tuần</label>
+                            <select>
+                                <option>Thứ Hai đến Chủ Nhật (7 ngày)</option>
+                                <option>Thứ Hai đến Thứ Bảy (6 ngày)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="section-card" style="margin-bottom:16px;">
+                        <div class="section-card-header">
+                            <h2><i class="fa-solid fa-map-location-dot" style="color:#3b82f6;"></i> Vị Trí Bản Đồ
+                                (Google Maps)</h2>
+                        </div>
+                        <div class="section-card-body">
+                            <!-- Map placeholder -->
+                            <div style="height:160px;background:#e2e8f0;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;flex-direction:column;gap:8px;cursor:pointer;"
+                                onclick="alert('Tích hợp Google Maps Embed...')">
+                                <i class="fa-solid fa-map-location-dot" style="font-size:28px;color:#94a3b8;"></i>
+                                <span style="font-size:13px;color:#94a3b8;font-weight:500;">Nhấn để cài đặt Google Maps
+                                    Embed</span>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group" style="margin-bottom:0;"><label>Vĩ độ (Lat)</label><input
+                                        type="text" value="10.7769" placeholder="10.7769..."></div>
+                                <div class="form-group" style="margin-bottom:0;"><label>Kinh độ (Lng)</label><input
+                                        type="text" value="106.7009" placeholder="106.7009..."></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section-card">
+                        <div class="section-card-header">
+                            <h2><i class="fa-solid fa-share-nodes" style="color:#9333ea;"></i> Mạng Xã Hội</h2>
+                        </div>
+                        <div class="section-card-body">
+                            <div class="form-group"><label><i class="fa-brands fa-facebook"
+                                        style="color:#1877f2;margin-right:6px;"></i>Facebook Page</label><input
+                                    type="url" value="https://facebook.com/NhaThuocMinhGiang"></div>
+                            <div class="form-group"><label><i class="fa-brands fa-tiktok"
+                                        style="margin-right:6px;"></i>TikTok</label><input type="url"
+                                    placeholder="https://tiktok.com/@..."></div>
+                            <div class="form-group" style="margin-bottom:0;"><label><i class="fa-brands fa-youtube"
+                                        style="color:#ff0000;margin-right:6px;"></i>YouTube</label><input type="url"
+                                    placeholder="https://youtube.com/..."></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TAB 4: SETTINGS ===== -->
+        <div id="tab-settings" class="page-tab-content">
+            <div class="two-col">
+                <div class="section-card">
+                    <div class="section-card-header">
+                        <h2><i class="fa-solid fa-toggle-on" style="color:#10b981;"></i> Bật / Tắt Tính Năng Website
+                        </h2>
+                    </div>
+                    <div class="section-card-body">
+                        <div class="toggle-row">
+                            <div><label>Hiển thị Giá Bán trên Web</label>
+                                <div class="toggle-desc">Tắt để ẩn giá, chỉ hiện "Liên hệ"</div>
+                            </div>
+                            <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                        </div>
+                        <div class="toggle-row">
+                            <div><label>Cho phép Đặt Hàng Online</label>
+                                <div class="toggle-desc">Tắt khi nhà thuốc đóng cửa / bảo trì</div>
+                            </div>
+                            <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                        </div>
+                        <div class="toggle-row">
+                            <div><label>Hiển thị Số Lượng Tồn Kho</label>
+                                <div class="toggle-desc">Hiện "Còn X sản phẩm" cho khách</div>
+                            </div>
+                            <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                        </div>
+                        <div class="toggle-row">
+                            <div><label>Cho phép Khách Đánh Giá</label>
+                                <div class="toggle-desc">Khách mua hàng được viết review</div>
+                            </div>
+                            <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                        </div>
+                        <div class="toggle-row">
+                            <div><label>Chương Trình Tích Điểm</label>
+                                <div class="toggle-desc">Khách tích điểm đổi quà khi mua</div>
+                            </div>
+                            <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                        </div>
+                        <div class="toggle-row">
+                            <div><label>Phím Zalo Chat nổi</label>
+                                <div class="toggle-desc">Nút chat Zalo góc phải màn hình</div>
+                            </div>
+                            <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                        </div>
+                        <div class="toggle-row">
+                            <div><label>Thông Báo Đơn Mới cho Zalo</label>
+                                <div class="toggle-desc">Gửi tin Zalo OA khi có đơn online mới</div>
+                            </div>
+                            <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                        </div>
+                        <div class="toggle-row">
+                            <div><label style="color:#ef4444;">Chế Độ Bảo Trì</label>
+                                <div class="toggle-desc">Web hiện thông báo nghỉ, không đặt được</div>
+                            </div>
+                            <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="section-card" style="margin-bottom:16px;">
+                        <div class="section-card-header">
+                            <h2><i class="fa-solid fa-credit-card" style="color:#1d4ed8;"></i> Phương Thức Thanh Toán
+                            </h2>
+                        </div>
+                        <div class="section-card-body">
+                            <div class="toggle-row">
+                                <div><label>Tiền Mặt Khi Nhận (COD)</label></div>
+                                <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                            </div>
+                            <div class="toggle-row">
+                                <div><label>VNPay (Thẻ ATM / QR)</label></div>
+                                <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                            </div>
+                            <div class="toggle-row">
+                                <div><label>Ví MoMo</label></div>
+                                <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                            </div>
+                            <div class="toggle-row">
+                                <div><label>Ví ZaloPay</label></div>
+                                <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section-card">
+                        <div class="section-card-header">
+                            <h2><i class="fa-solid fa-bell" style="color:#f59e0b;"></i> Thông Báo (Notification)</h2>
+                        </div>
+                        <div class="section-card-body">
+                            <div class="form-group"><label>Số điện thoại nhận thông báo đơn mới</label><input type="tel"
+                                    value="0912 345 678">
+                                <div class="form-hint">SMS / Zalo gửi đến số này khi có khách đặt hàng.</div>
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;"><label>Email nhận đơn hàng</label><input
+                                    type="email" value="minggiang.pharmacy@gmail.com"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL: BANNER -->
+    <div class="standard-modal-overlay" id="bannerModal">
+        <div class="standard-modal-container" style="max-width:560px;">
+            <div class="standard-modal-header">
+                <div>
+                    <h2 class="slide-title">Chỉnh sửa / Thêm Banner</h2>
+                    <p style="font-size:13px;color:#6b7280;margin-top:4px;">Upload ảnh và điền thông tin banner.</p>
+                </div>
+                <button class="slide-close" onclick="closeBannerModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="standard-modal-body" style="padding:24px;">
+                <div class="form-group">
+                    <label>Hình ảnh banner</label>
+                    <div
+                        style="border:2px dashed #cbd5e1;border-radius:10px;padding:28px;text-align:center;cursor:pointer;background:#f8fafc;">
+                        <i class="fa-solid fa-cloud-arrow-up"
+                            style="font-size:28px;color:#94a3b8;display:block;margin-bottom:8px;"></i>
+                        <div style="font-size:13px;font-weight:600;color:#475569;">Kéo thả hoặc click chọn ảnh</div>
+                        <div style="font-size:11px;color:#9ca3af;margin-top:4px;">JPG, PNG, WebP – Khuyến nghị
+                            1200×400px</div>
+                    </div>
+                </div>
+                <div class="form-group"><label>Tiêu đề / Mô tả (Alt text)</label><input type="text"
+                        placeholder="VD: Ưu đãi tháng 3..."></div>
+                <div class="form-group"><label>Đường dẫn khi click</label><input type="url"
+                        placeholder="/category.html?..."></div>
+                <div class="form-row">
+                    <div class="form-group" style="margin-bottom:0;"><label>Từ ngày</label><input type="date"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>Đến ngày</label><input type="date"></div>
+                </div>
+            </div>
+            <div class="standard-modal-footer" style="background:#fff;">
+                <button class="btn-secondary" onclick="closeBannerModal()">Hủy</button>
+                <button class="btn-primary" onclick="alert('Đã lưu banner!'); closeBannerModal();"
+                    style="width:160px;justify-content:center;"><i class="fa-solid fa-floppy-disk"></i> Lưu
+                    Banner</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: STAFF -->
+    <div class="standard-modal-overlay" id="staffModal">
+        <div class="standard-modal-container" style="max-width:480px;">
+            <div class="standard-modal-header">
+                <div>
+                    <h2 class="slide-title">Thêm / Sửa Người Giao Hàng</h2>
+                </div>
+                <button class="slide-close" onclick="closeStaffModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="standard-modal-body" style="padding:24px;">
+                <div class="form-group"><label>Họ tên <span style="color:#ef4444;">*</span></label><input type="text"
+                        placeholder="VD: Trần Văn A"></div>
+                <div class="form-group"><label>Quan hệ với chủ nhà thuốc</label><input type="text"
+                        placeholder="VD: Vợ, Con trai, Em gái..."></div>
+                <div class="form-group"><label>Số điện thoại / Zalo</label><input type="tel"
+                        placeholder="VD: 0912 345 678"></div>
+                <div class="form-group"><label>Phương tiện</label><select>
+                        <option>Xe máy</option>
+                        <option>Xe đạp điện</option>
+                        <option>Ô tô</option>
+                    </select></div>
+                <div class="form-group" style="margin-bottom:0;"><label>Trạng thái ban đầu</label><select>
+                        <option>Sẵn sàng giao</option>
+                        <option>Bận / Không giao được</option>
+                    </select></div>
+            </div>
+            <div class="standard-modal-footer" style="background:#fff;">
+                <button class="btn-secondary" onclick="closeStaffModal()">Hủy</button>
+                <button class="btn-primary" onclick="alert('Đã lưu!'); closeStaffModal();"
+                    style="width:180px;justify-content:center;"><i class="fa-solid fa-floppy-disk"></i> Lưu</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchPageTab(tabId) {
+            document.querySelectorAll('.page-tab-btn').forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.querySelectorAll('.page-tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+        }
+        function openBannerModal() { document.getElementById('bannerModal').classList.add('open'); document.body.style.overflow = 'hidden'; }
+        function closeBannerModal() { document.getElementById('bannerModal').classList.remove('open'); document.body.style.overflow = ''; }
+        function openStaffModal() { document.getElementById('staffModal').classList.add('open'); document.body.style.overflow = 'hidden'; }
+        function closeStaffModal() { document.getElementById('staffModal').classList.remove('open'); document.body.style.overflow = ''; }
+    </script>
+
+    <script src="js/admin-components.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', () => { renderAdminLayout('storefront'); });</script>
+</body>
+
+</html>

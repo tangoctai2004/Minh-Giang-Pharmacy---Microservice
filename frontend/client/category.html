@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thuốc — Nhà Thuốc Minh Giang</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ====== CATEGORY PAGE STYLES ====== */
+        .breadcrumb {
+            padding: 12px 0;
+            font-size: 15px;
+            color: #666;
+        }
+
+        .breadcrumb a {
+            color: #0b7a3e;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb span {
+            margin: 0 6px;
+            color: #999;
+        }
+
+        .category-layout {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 24px;
+            padding-bottom: 40px;
+        }
+
+        /* --- SIDEBAR --- */
+        .cat-sidebar {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 15px;
+            align-self: start;
+            position: sticky;
+            top: 20px;
+        }
+
+        .cat-sidebar h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0 0 12px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #0b7a3e;
+        }
+
+        .sidebar-section {
+            margin-bottom: 20px;
+        }
+
+        .sidebar-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .sidebar-section h4 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #374151;
+            margin: 0 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sidebar-section h4 i {
+            color: #0b7a3e;
+            font-size: 14px;
+        }
+
+        .price-range-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .price-range-list li {
+            padding: 6px 0;
+            cursor: pointer;
+            color: #4b5563;
+            transition: color 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .price-range-list li:hover {
+            color: #0b7a3e;
+        }
+
+        .price-range-list li input[type="radio"] {
+            accent-color: #0b7a3e;
+        }
+
+        .filter-check-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .filter-check-list li {
+            padding: 4px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #4b5563;
+            font-size: 15px;
+        }
+
+        .filter-check-list li input[type="checkbox"] {
+            accent-color: #0b7a3e;
+        }
+
+        /* --- MAIN CONTENT --- */
+        .cat-main {
+            min-width: 0;
+        }
+
+        .cat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .cat-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .cat-sort-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .sort-btn {
+            padding: 6px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+
+        .sort-btn:hover,
+        .sort-btn.active {
+            background: #0b7a3e;
+            color: #fff;
+            border-color: #0b7a3e;
+        }
+
+        .cat-subcategories {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .cat-sub-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 20px;
+            background: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-decoration: none;
+        }
+
+        .cat-sub-chip:hover,
+        .cat-sub-chip.active {
+            background: #ecfdf5;
+            border-color: #0b7a3e;
+            color: #0b7a3e;
+        }
+
+        .cat-sub-chip img {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+        }
+
+        /* --- PRODUCT GRID --- */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .product-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+        }
+
+        .product-card:hover {
+            border-color: #0b7a3e;
+            box-shadow: 0 4px 16px rgba(11, 122, 62, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .product-card-img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: contain;
+            padding: 12px;
+            background: #fafafa;
+        }
+
+        .product-card-body {
+            padding: 12px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card-name {
+            font-size: 15px;
+            font-weight: 500;
+            color: #1f2937;
+            line-height: 1.4;
+            margin-bottom: 6px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-card-unit {
+            font-size: 13px;
+            color: #9ca3af;
+            margin-bottom: 8px;
+        }
+
+        .product-card-price {
+            font-size: 15px;
+            font-weight: 700;
+            color: #dc2626;
+            margin-bottom: 4px;
+        }
+
+        .product-card-old-price {
+            font-size: 13px;
+            color: #9ca3af;
+            text-decoration: line-through;
+        }
+
+        .product-card-footer {
+            padding: 8px 12px;
+            border-top: 1px solid #f3f4f6;
+            display: flex;
+            gap: 6px;
+            margin-top: auto;
+        }
+
+        .btn-add-cart {
+            flex: 1;
+            padding: 6px 0;
+            background: #0b7a3e;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.15s;
+        }
+
+        .btn-add-cart:hover {
+            background: #095e30;
+        }
+
+        .btn-view-detail {
+            flex: 1;
+            padding: 6px 0;
+            background: #fff;
+            color: #0b7a3e;
+            border: 1px solid #0b7a3e;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.15s;
+        }
+
+        .btn-view-detail:hover {
+            background: #ecfdf5;
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: #dc2626;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .product-card {
+            position: relative;
+        }
+
+        /* --- PAGINATION --- */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            margin-top: 30px;
+            padding-bottom: 20px;
+        }
+
+        .page-btn {
+            min-width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: #fff;
+            font-size: 15px;
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+
+        .page-btn:hover,
+        .page-btn.active {
+            background: #0b7a3e;
+            color: #fff;
+            border-color: #0b7a3e;
+        }
+
+        /* --- TOP SEARCHES --- */
+        .top-searches {
+            margin-top: 30px;
+            padding: 20px 0;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .top-searches h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 14px;
+        }
+
+        .top-search-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .top-search-links a {
+            display: inline-block;
+            padding: 6px 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            font-size: 14px;
+            color: #4b5563;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+
+        .top-search-links a:hover {
+            border-color: #0b7a3e;
+            color: #0b7a3e;
+            background: #ecfdf5;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header Banner -->
+    <div mg-include="includes/header_banner.html"></div>
+
+    <!-- Top Bar -->
+    <div mg-include="includes/top_bar.html"></div>
+
+    <!-- Main Header -->
+    <div mg-include="includes/main_header.html"></div>
+
+    <!-- ====== CATEGORY PAGE CONTENT ====== -->
+    <main class="container">
+
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="index.html">Trang chủ</a> <span>›</span> <strong style="color:#1f2937;">Thuốc</strong>
+        </div>
+
+        <div class="category-layout">
+
+            <!-- === LEFT SIDEBAR === -->
+            <aside class="cat-sidebar">
+                <h3><i class="fa-solid fa-filter"></i> Bộ lọc nâng cao</h3>
+
+                <!-- Price Range -->
+                <div class="sidebar-section">
+                    <h4><i class="fa-solid fa-tag"></i> Khoảng giá</h4>
+                    <ul class="price-range-list">
+                        <li><input type="radio" name="price" id="p1"><label for="p1">Dưới 100,000₫</label></li>
+                        <li><input type="radio" name="price" id="p2"><label for="p2">100,000₫ - 300,000₫</label></li>
+                        <li><input type="radio" name="price" id="p3"><label for="p3">300,000₫ - 500,000₫</label></li>
+                        <li><input type="radio" name="price" id="p4"><label for="p4">500,000₫ - 1,000,000₫</label></li>
+                        <li><input type="radio" name="price" id="p5"><label for="p5">Trên 1,000,000₫</label></li>
+                    </ul>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="sidebar-section">
+                    <h4><i class="fa-solid fa-pills"></i> Nhóm thuốc</h4>
+                    <ul class="filter-check-list">
+                        <li><input type="checkbox" id="c1"><label for="c1">Thuốc giảm đau, hạ sốt</label></li>
+                        <li><input type="checkbox" id="c2"><label for="c2">Thuốc ho, cảm lạnh</label></li>
+                        <li><input type="checkbox" id="c3"><label for="c3">Thuốc kháng sinh</label></li>
+                        <li><input type="checkbox" id="c4"><label for="c4">Thuốc tiêu hóa, dạ dày</label></li>
+                        <li><input type="checkbox" id="c5"><label for="c5">Thuốc tim mạch</label></li>
+                        <li><input type="checkbox" id="c6"><label for="c6">Thuốc thần kinh, giấc ngủ</label></li>
+                        <li><input type="checkbox" id="c7"><label for="c7">Thuốc dị ứng</label></li>
+                        <li><input type="checkbox" id="c8"><label for="c8">Thuốc nhỏ mắt</label></li>
+                    </ul>
+                </div>
+
+                <!-- Brand Filter -->
+                <div class="sidebar-section">
+                    <h4><i class="fa-solid fa-building"></i> Thương hiệu</h4>
+                    <ul class="filter-check-list">
+                        <li><input type="checkbox" id="b1"><label for="b1">Abbott</label></li>
+                        <li><input type="checkbox" id="b2"><label for="b2">Sanofi</label></li>
+                        <li><input type="checkbox" id="b3"><label for="b3">DHG Pharma</label></li>
+                        <li><input type="checkbox" id="b4"><label for="b4">Traphaco</label></li>
+                        <li><input type="checkbox" id="b5"><label for="b5">Imexpharm</label></li>
+                        <li><input type="checkbox" id="b6"><label for="b6">Dược Hậu Giang</label></li>
+                        <li><input type="checkbox" id="b7"><label for="b7">Actavis</label></li>
+                        <li><input type="checkbox" id="b8"><label for="b8">GlaxoSmithKline</label></li>
+                    </ul>
+                </div>
+
+                <!-- Origin Filter -->
+                <div class="sidebar-section">
+                    <h4><i class="fa-solid fa-earth-americas"></i> Xuất xứ</h4>
+                    <ul class="filter-check-list">
+                        <li><input type="checkbox" id="o1"><label for="o1">Việt Nam</label></li>
+                        <li><input type="checkbox" id="o2"><label for="o2">Pháp</label></li>
+                        <li><input type="checkbox" id="o3"><label for="o3">Mỹ</label></li>
+                        <li><input type="checkbox" id="o4"><label for="o4">Hàn Quốc</label></li>
+                        <li><input type="checkbox" id="o5"><label for="o5">Ấn Độ</label></li>
+                        <li><input type="checkbox" id="o6"><label for="o6">Nhật Bản</label></li>
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- === MAIN CONTENT === -->
+            <div class="cat-main">
+                <div class="cat-header">
+                    <h1 class="cat-title">Thuốc</h1>
+                    <div class="cat-sort-bar">
+                        <span style="font-size:13px;color:#6b7280;">Sắp xếp:</span>
+                        <button class="sort-btn active">Phổ biến</button>
+                        <button class="sort-btn">Bán chạy</button>
+                        <button class="sort-btn">Giá thấp → cao</button>
+                        <button class="sort-btn">Giá cao → thấp</button>
+                        <button class="sort-btn">Mới nhất</button>
+                    </div>
+                </div>
+
+                <!-- Sub-categories (chip pills) -->
+                <div class="cat-subcategories">
+                    <a href="#" class="cat-sub-chip active">Tất cả</a>
+                    <a href="#" class="cat-sub-chip">Thuốc giảm đau, hạ sốt</a>
+                    <a href="#" class="cat-sub-chip">Thuốc kháng sinh</a>
+                    <a href="#" class="cat-sub-chip">Thuốc ho, cảm, sổ mũi</a>
+                    <a href="#" class="cat-sub-chip">Thuốc tiêu hóa</a>
+                    <a href="#" class="cat-sub-chip">Thuốc nhỏ mắt, tai, mũi</a>
+                    <a href="#" class="cat-sub-chip">Thuốc da liễu</a>
+                    <a href="#" class="cat-sub-chip">Thuốc tim mạch</a>
+                </div>
+
+                <!-- Product Grid -->
+                <div class="product-grid">
+
+                    <!-- Product 1 -->
+                    <div class="product-card">
+                        <span class="product-badge">-20%</span>
+                        <img src="../assets/images/product_frame.png" alt="Thuốc" class="product-card-img">
+                        <div class="product-card-body">
+                            <div class="product-card-name">Thuốc Hapacol Extra giảm đau, hạ sốt (Hộp 10 vỉ x 10 viên)
+                            </div>
+                            <div class="product-card-unit">Hộp 10 vỉ x 10 viên</div>
+                            <div class="product-card-price">68,000₫</div>
+                            <div class="product-card-old-price">85,000₫</div>
+                        </div>
+                        <div class="product-card-footer">
+                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
+                            <button class="btn-view-detail">Xem chi tiết</button>
+                        </div>
+                    </div>
+
+                    <!-- Product 2 -->
+                    <div class="product-card">
+                        <img src="../assets/images/product_frame_2.png" alt="Thuốc" class="product-card-img">
+                        <div class="product-card-body">
+                            <div class="product-card-name">Thuốc Efferalgan 500mg giảm đau hạ sốt (Hộp 16 viên nén sủi)
+                            </div>
+                            <div class="product-card-unit">Hộp 16 viên</div>
+                            <div class="product-card-price">42,000₫</div>
+                        </div>
+                        <div class="product-card-footer">
+                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
+                            <button class="btn-view-detail">Xem chi tiết</button>
+                        </div>
+                    </div>
+
+                    <!-- Product 3 -->
+                    <div class="product-card">
+                        <span class="product-badge">-15%</span>
+                        <img src="../assets/images/product_frame.png" alt="Thuốc" class="product-card-img">
+                        <div class="product-card-body">
+                            <div class="product-card-name">Thuốc Amoxicillin 500mg kháng sinh điều trị nhiễm khuẩn</div>
+                            <div class="product-card-unit">Hộp 20 viên</div>
+                            <div class="product-card-price">35,000₫</div>
+                            <div class="product-card-old-price">41,000₫</div>
+                        </div>
+                        <div class="product-card-footer">
+                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
+                            <button class="btn-view-detail">Xem chi tiết</button>
+                        </div>
+                    </div>
+
+                    <!-- Product 4 -->
+                    <div class="product-card">
+                        <img src="../assets/images/product_frame_2.png" alt="Thuốc" class="product-card-img">
+                        <div class="product-card-body">
+                            <div class="product-card-name">Thuốc Phosphalugel giảm triệu chứng viêm dạ dày</div>
+                            <div class="product-card-unit">Hộp 20 gói</div>
+                            <div class="product-card-price">95,000₫</div>
+                        </div>
+                        <div class="product-card-footer">
+                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
+                            <button class="btn-view-detail">Xem chi tiết</button>
+                        </div>
+                    </div>
+
+                    <!-- Product 5 -->
+                    <div class="product-card">
+                        <span class="product-badge">-10%</span>
+                        <img src="../assets/images/product_frame.png" alt="Thuốc" class="product-card-img">
+                        <div class="product-card-body">
+                            <div class="product-card-name">Thuốc Cetirizin 10mg chống dị ứng mề đay, viêm mũi</div>
+                            <div class="product-card-unit">Hộp 10 vỉ x 10 viên</div>
+                            <div class="product-card-price">18,000₫</div>
+                            <div class="product-card-old-price">20,000₫</div>
+                        </div>
+                        <div class="product-card-footer">
+                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
+                            <button class="btn-view-detail">Xem chi tiết</button>
+                        </div>
+                    </div>
+
+                    <!-- Product 6 -->
+                    <div class="product-card">
+                        <img src="../assets/images/product_frame_2.png" alt="Thuốc" class="product-card-img">
+                        <div class="product-card-body">
+                            <div class="product-card-name">Viên uống bổ mắt Vision Pharma với Lutein & Zeaxanthin</div>
+                            <div class="product-card-unit">Hộp 30 viên</div>
+                            <div class="product-card-price">245,000₫</div>
+                        </div>
+                        <div class="product-card-footer">
+                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
+                            <button class="btn-view-detail">Xem chi tiết</button>
+                        </div>
+                    </div>
+
+                    <!-- Product 7 -->
+                    <div class="product-card">
+                        <span class="product-badge">-30%</span>
+                        <img src="../assets/images/product_frame.png" alt="Thuốc" class="product-card-img">
+                        <div class="product-card-body">
+                            <div class="product-card-name">Thuốc Semistra điều trị viêm xoang, giảm viêm mũi dị ứng
+                            </div>
+                            <div class="product-card-unit">Hộp 30 viên</div>
+                            <div class="product-card-price">120,000₫</div>
+                            <div class="product-card-old-price">170,000₫</div>
+                        </div>
+                        <div class="product-card-footer">
+                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
+                            <button class="btn-view-detail">Xem chi tiết</button>
+                        </div>
+                    </div>
+
+                    <!-- Product 8 -->
+                    <div class="product-card">
+                        <img src="../assets/images/product_frame_2.png" alt="Thuốc" class="product-card-img">
+                        <div class="product-card-body">
+                            <div class="product-card-name">Thuốc dạ dày Kremil-S trung hoà acid, giảm đau dạ dày</div>
+                            <div class="product-card-unit">Hộp 25 vỉ x 4 viên</div>
+                            <div class="product-card-price">75,000₫</div>
+                        </div>
+                        <div class="product-card-footer">
+                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
+                            <button class="btn-view-detail">Xem chi tiết</button>
+                        </div>
+                    </div>
+
+                    <!-- Product 9 -->
+                    <div class="product-card">
+                        <img src="../assets/images/product_frame.png" alt="Thuốc" class="product-card-img">
+                        <div class="product-card-body">
+                            <div class="product-card-name">Dung dịch sát khuẩn Betadine 10% dùng ngoài da</div>
+                            <div class="product-card-unit">Chai 125ml</div>
+                            <div class="product-card-price">72,000₫</div>
+                        </div>
+                        <div class="product-card-footer">
+                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
+                            <button class="btn-view-detail">Xem chi tiết</button>
+                        </div>
+                    </div>
+
+                    <!-- Product 10 -->
+                    <div class="product-card">
+                        <span class="product-badge">-25%</span>
+                        <img src="../assets/images/product_frame_2.png" alt="Thuốc" class="product-card-img">
+                        <div class="product-card-body">
+                            <div class="product-card-name">Thuốc Magne B6 giúp giảm stress, lo âu, mệt mỏi</div>
+                            <div class="product-card-unit">Hộp 50 viên</div>
+                            <div class="product-card-price">105,000₫</div>
+                            <div class="product-card-old-price">140,000₫</div>
+                        </div>
+                        <div class="product-card-footer">
+                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
+                            <button class="btn-view-detail">Xem chi tiết</button>
+                        </div>
+                    </div>
+
+                    <!-- Product 11 -->
+                    <div class="product-card">
+                        <img src="../assets/images/product_frame.png" alt="Thuốc" class="product-card-img">
+                        <div class="product-card-body">
+                            <div class="product-card-name">Thuốc Medrol 4mg điều trị viêm khớp, dị ứng nặng</div>
+                            <div class="product-card-unit">Hộp 30 viên</div>
+                            <div class="product-card-price">48,000₫</div>
+                        </div>
+                        <div class="product-card-footer">
+                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
+                            <button class="btn-view-detail">Xem chi tiết</button>
+                        </div>
+                    </div>
+
+                    <!-- Product 12 -->
+                    <div class="product-card">
+                        <span class="product-badge">-18%</span>
+                        <img src="../assets/images/product_frame_2.png" alt="Thuốc" class="product-card-img">
+                        <div class="product-card-body">
+                            <div class="product-card-name">Thuốc Ferrovit bổ sung sắt, acid folic cho bà bầu</div>
+                            <div class="product-card-unit">Hộp 100 viên</div>
+                            <div class="product-card-price">115,000₫</div>
+                            <div class="product-card-old-price">140,000₫</div>
+                        </div>
+                        <div class="product-card-footer">
+                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
+                            <button class="btn-view-detail">Xem chi tiết</button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination">
+                    <button class="page-btn"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">4</button>
+                    <button class="page-btn">5</button>
+                    <button class="page-btn">...</button>
+                    <button class="page-btn">12</button>
+                    <button class="page-btn"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Top Searches -->
+        <div class="top-searches">
+            <h3>Tìm kiếm hàng đầu</h3>
+            <div class="top-search-links">
+                <a href="#">Bệnh tim mạch</a>
+                <a href="#">Thuốc tiểu đường</a>
+                <a href="#">Vitamin tổng hợp</a>
+                <a href="#">Thuốc bổ não</a>
+                <a href="#">Bệnh tiêu hóa</a>
+                <a href="#">Thuốc giảm cân</a>
+                <a href="#">Dầu cá Omega 3</a>
+                <a href="#">Thuốc ho</a>
+                <a href="#">Người cao tuổi</a>
+                <a href="#">Bổ gan</a>
+                <a href="#">Thuốc xương khớp</a>
+                <a href="#">Thuốc dạ dày</a>
+                <a href="#">Chăm sóc tóc</a>
+                <a href="#">Thuốc mỡ máu</a>
+                <a href="#">Kem chống nắng</a>
+                <a href="#">Thuốc đau đầu</a>
+                <a href="#">Men tiêu hóa</a>
+                <a href="#">Collagen</a>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Pre-Footer Promises -->
+    <div mg-include="includes/promises.html"></div>
+
+    <!-- Newsletter -->
+    <div mg-include="includes/newsletter.html"></div>
+
+    <!-- Main Footer -->
+    <div mg-include="includes/main_footer.html"></div>
+
+    <script>
+        // Sort button toggle
+        document.querySelectorAll('.sort-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        // Sub-category chip toggle
+        document.querySelectorAll('.cat-sub-chip').forEach(chip => {
+            chip.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.cat-sub-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+            });
+        });
+
+        // Page button toggle
+        document.querySelectorAll('.page-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.page-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+    </script>
+
+    <script src="../assets/js/components.js"></script>
+</body>
+
+</html>

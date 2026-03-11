@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POS Kiosk — Nhà Thuốc Minh Giang</title>
+    <link rel="stylesheet" href="css/pos-style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes pulse-red {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ============ TOP NAV BAR ============ -->
+    <header class="pos-topbar">
+        <div class="pos-topbar-left">
+            <div class="pos-topbar-logo">
+                <img src="../assets/images/logo_Minh_Giang_Pharmacy.png" alt="Logo">
+                <span>Minh Giang POS</span>
+            </div>
+            <span class="pos-topbar-badge">KIOSK #01</span>
+        </div>
+        <div class="pos-topbar-right">
+            <!-- Online Orders Notification -->
+            <button class="pos-online-orders-btn" onclick="openOnlineDrawer()"
+                style="position:relative;background:none;border:none;color:#fff;font-size:18px;cursor:pointer;margin-right:8px;transition:opacity 0.2s;"
+                onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                <i class="fa-solid fa-bell"></i>
+                <span class="online-pulse"
+                    style="position:absolute;top:-4px;right:-6px;background:#ef4444;color:white;font-size:10px;font-weight:700;padding:2px 5px;border-radius:10px;line-height:1;animation: pulse-red 2s infinite;">2</span>
+            </button>
+            <div class="pos-topbar-time">
+                <i class="fa-regular fa-clock"></i>
+                <span id="posTime">15:30 — 05/03/2026</span>
+            </div>
+            <a href="history.html"
+                style="color:#fff;text-decoration:none;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.12);padding:6px 14px;border-radius:9999px;font-size:13px;font-weight:600;transition:background 0.2s;"
+                onmouseover="this.style.background='rgba(255,255,255,0.22)'"
+                onmouseout="this.style.background='rgba(255,255,255,0.12)'">
+                <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử
+            </a>
+            <div class="pos-topbar-user">
+                <span class="avatar"><i class="fa-solid fa-user"></i></span>
+                <span>Nguyễn Văn A</span>
+            </div>
+            <button onclick="openCloseShiftModal()"
+                style="display:flex;align-items:center;gap:6px;background:rgba(239,68,68,0.8);color:#fff;border:none;padding:6px 14px;border-radius:9999px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:background 0.2s;"
+                onmouseover="this.style.background='rgba(239,68,68,1)'"
+                onmouseout="this.style.background='rgba(239,68,68,0.8)'">
+                <i class="fa-solid fa-right-from-bracket"></i> Đóng ca
+            </button>
+        </div>
+    </header>
+
+    <!-- ============ MAIN LAYOUT ============ -->
+    <div class="pos-layout">
+
+        <!-- ======== LEFT: PRODUCTS ======== -->
+        <div class="pos-products">
+
+            <!-- Search Bar -->
+            <div class="pos-search-wrapper">
+                <i class="fa-solid fa-barcode pos-search-icon"></i>
+                <input type="text" class="pos-search-input"
+                    placeholder="Quét mã vạch hoặc tìm thuốc theo tên / hoạt chất...">
+                <span class="pos-search-shortcut">F2</span>
+            </div>
+
+            <!-- Category Filters -->
+            <div class="pos-categories">
+                <button class="pos-cat-pill active">
+                    <i class="fa-solid fa-border-all"></i>&nbsp; Tất cả
+                </button>
+                <button class="pos-cat-pill">
+                    <i class="fa-solid fa-prescription"></i>&nbsp; Thuốc kê đơn
+                </button>
+                <button class="pos-cat-pill">
+                    <i class="fa-solid fa-pills"></i>&nbsp; Giảm đau
+                </button>
+                <button class="pos-cat-pill">
+                    <i class="fa-solid fa-capsules"></i>&nbsp; Vitamin & TPCN
+                </button>
+                <button class="pos-cat-pill">
+                    <i class="fa-solid fa-syringe"></i>&nbsp; Dụng cụ y tế
+                </button>
+                <button class="pos-cat-pill">
+                    <i class="fa-solid fa-baby"></i>&nbsp; Mẹ & Bé
+                </button>
+                <button class="pos-cat-pill">
+                    <i class="fa-solid fa-pump-soap"></i>&nbsp; Chăm sóc cá nhân
+                </button>
+            </div>
+
+            <!-- Product Grid -->
+            <div class="pos-product-grid">
+
+                <!-- Product 1 -->
+                <div class="pos-product-card" onclick="addToCart('Panadol Extra', 65000)">
+                    <img src="../assets/images/product_frame.png" alt="Panadol Extra" class="pos-product-img">
+                    <div class="pos-product-name">Panadol Extra (Hộp 12 viên)</div>
+                    <div class="pos-product-price">65,000₫</div>
+                    <div class="pos-product-meta">
+                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ A2</span>
+                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 45</span>
+                    </div>
+                </div>
+
+                <!-- Product 2 -->
+                <div class="pos-product-card" onclick="addToCart('Vitamin C DHC', 120000)">
+                    <img src="../assets/images/product_frame_2.png" alt="Vitamin C" class="pos-product-img">
+                    <div class="pos-product-name">Vitamin C DHC 1000mg (60 ngày)</div>
+                    <div class="pos-product-price">120,000₫</div>
+                    <div class="pos-product-meta">
+                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ B1</span>
+                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 28</span>
+                    </div>
+                </div>
+
+                <!-- Product 3 -->
+                <div class="pos-product-card" onclick="addToCart('Amoxicillin 500mg', 35000)">
+                    <img src="../assets/images/product_frame.png" alt="Amoxicillin" class="pos-product-img">
+                    <div class="pos-product-name">Amoxicillin 500mg (Hộp 20 viên)</div>
+                    <div class="pos-product-price">35,000₫</div>
+                    <div class="pos-product-meta">
+                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ A5</span>
+                        <span class="pos-meta-badge pos-meta-stock low"><i class="fa-solid fa-box"></i> SL: 5</span>
+                    </div>
+                </div>
+
+                <!-- Product 4 -->
+                <div class="pos-product-card" onclick="addToCart('Omeprazole 20mg', 48000)">
+                    <img src="../assets/images/product_frame_2.png" alt="Omeprazole" class="pos-product-img">
+                    <div class="pos-product-name">Omeprazole 20mg (Hộp 30 viên)</div>
+                    <div class="pos-product-price">48,000₫</div>
+                    <div class="pos-product-meta">
+                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ C3</span>
+                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 67</span>
+                    </div>
+                </div>
+
+                <!-- Product 5 -->
+                <div class="pos-product-card" onclick="addToCart('Dầu gió xanh', 25000)">
+                    <img src="../assets/images/product_frame.png" alt="Dầu gió" class="pos-product-img">
+                    <div class="pos-product-name">Dầu gió xanh Eagle Brand 24ml</div>
+                    <div class="pos-product-price">25,000₫</div>
+                    <div class="pos-product-meta">
+                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ D1</span>
+                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 120</span>
+                    </div>
+                </div>
+
+                <!-- Product 6 -->
+                <div class="pos-product-card" onclick="addToCart('Thuốc ho Prospan', 95000)">
+                    <img src="../assets/images/product_frame_2.png" alt="Prospan" class="pos-product-img">
+                    <div class="pos-product-name">Thuốc ho Prospan (Chai 100ml)</div>
+                    <div class="pos-product-price">95,000₫</div>
+                    <div class="pos-product-meta">
+                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ B4</span>
+                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 15</span>
+                    </div>
+                </div>
+
+                <!-- Product 7 - OUT OF STOCK -->
+                <div class="pos-product-card out-of-stock" onclick="openAltDrawer()">
+                    <div class="pos-oos-overlay">
+                        <span class="pos-oos-label"><i class="fa-solid fa-ban"></i> Hết hàng</span>
+                    </div>
+                    <img src="../assets/images/product_frame.png" alt="Thuốc" class="pos-product-img">
+                    <div class="pos-product-name">Efferalgan 500mg (Hộp 16 viên)</div>
+                    <div class="pos-product-price">42,000₫</div>
+                    <div class="pos-product-meta">
+                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ A1</span>
+                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 0</span>
+                    </div>
+                </div>
+
+                <!-- Product 8 -->
+                <div class="pos-product-card" onclick="addToCart('Smecta', 55000)">
+                    <img src="../assets/images/product_frame_2.png" alt="Smecta" class="pos-product-img">
+                    <div class="pos-product-name">Smecta bột hương cam (Hộp 30 gói)</div>
+                    <div class="pos-product-price">55,000₫</div>
+                    <div class="pos-product-meta">
+                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ C1</span>
+                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 33</span>
+                    </div>
+                </div>
+
+                <!-- Product 9 -->
+                <div class="pos-product-card" onclick="addToCart('Betadine 10%', 72000)">
+                    <img src="../assets/images/product_frame.png" alt="Betadine" class="pos-product-img">
+                    <div class="pos-product-name">Dung dịch sát khuẩn Betadine 10%</div>
+                    <div class="pos-product-price">72,000₫</div>
+                    <div class="pos-product-meta">
+                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ E2</span>
+                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 21</span>
+                    </div>
+                </div>
+
+                <!-- Product 10 -->
+                <div class="pos-product-card" onclick="addToCart('Nhiệt kế điện tử', 85000)">
+                    <img src="../assets/images/product_frame_2.png" alt="Nhiệt kế" class="pos-product-img">
+                    <div class="pos-product-name">Nhiệt kế điện tử Omron MC-246</div>
+                    <div class="pos-product-price">85,000₫</div>
+                    <div class="pos-product-meta">
+                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ F1</span>
+                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 8</span>
+                    </div>
+                </div>
+
+                <!-- Product 11 -->
+                <div class="pos-product-card" onclick="addToCart('Bông băng urgo', 18000)">
+                    <img src="../assets/images/product_frame.png" alt="Urgo" class="pos-product-img">
+                    <div class="pos-product-name">Bông băng cá nhân Urgo (Hộp 100)</div>
+                    <div class="pos-product-price">18,000₫</div>
+                    <div class="pos-product-meta">
+                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ E3</span>
+                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 55</span>
+                    </div>
+                </div>
+
+                <!-- Product 12 -->
+                <div class="pos-product-card" onclick="addToCart('Sữa Ensure Gold', 520000)">
+                    <img src="../assets/images/product_frame_2.png" alt="Ensure" class="pos-product-img">
+                    <div class="pos-product-name">Sữa Ensure Gold 850g (Hương Vani)</div>
+                    <div class="pos-product-price">520,000₫</div>
+                    <div class="pos-product-meta">
+                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ G1</span>
+                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 12</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ======== RIGHT: CART ======== -->
+        <div class="pos-cart">
+
+            <!-- Cart Header -->
+            <div class="pos-cart-header">
+                <div class="pos-cart-title">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    Đơn hàng
+                    <span class="pos-cart-count" id="cartCount">3</span>
+                </div>
+                <div class="pos-customer-input">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" placeholder="Nhập SĐT khách hàng để tích điểm...">
+                </div>
+            </div>
+
+            <!-- Cart Items -->
+            <div class="pos-cart-items" id="cartItems">
+
+                <!-- Item 1 -->
+                <div class="pos-cart-item" data-price-box="130000" data-price-blister="13000" data-price-pill="1300">
+                    <div class="pos-cart-item-top">
+                        <div style="flex:1;">
+                            <div class="pos-cart-item-name">Panadol Extra (Hộp 12 viên)</div>
+                            <div style="font-size: 11px; color: #6b7280; margin-top: 2px;"><i class="fa-solid fa-tag"
+                                    style="margin-right:4px;"></i>Lô: L-2025</div>
+                        </div>
+                        <button class="pos-cart-item-delete"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                    <div class="pos-cart-item-bottom">
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <div class="pos-qty-stepper">
+                                <button class="pos-qty-btn on-decrement">−</button>
+                                <div class="pos-qty-value">2</div>
+                                <button class="pos-qty-btn on-increment">+</button>
+                            </div>
+                            <select class="pos-uom-select on-uom-change"
+                                style="font-size: 13px; padding: 4px 24px 4px 8px; border: 1px solid #e5e7eb; border-radius: 6px; background: #f8fafc; color: #334155; outline: none; cursor: pointer; height: 32px; font-weight: 500; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010l5%205%205-5z%22%20fill%3D%22%2364748b%22%20%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 4px center; background-size: 20px;">
+                                <option value="box" selected>Hộp</option>
+                                <option value="blister">Vỉ</option>
+                                <option value="pill">Viên</option>
+                            </select>
+                        </div>
+                        <div class="pos-cart-item-price">130,000₫</div>
+                    </div>
+                </div>
+
+                <!-- Item 2 - Prescription Alert -->
+                <div class="pos-cart-item prescription-alert" data-price-box="35000" data-price-blister="3500"
+                    data-price-pill="350">
+                    <div class="pos-cart-item-top">
+                        <div style="flex:1;">
+                            <div class="pos-cart-item-name">Amoxicillin 500mg (Hộp 20 viên)</div>
+                            <div style="font-size: 11px; color: #6b7280; margin-top: 2px;"><i class="fa-solid fa-tag"
+                                    style="margin-right:4px;"></i>Lô: L-1049</div>
+                        </div>
+                        <button class="pos-cart-item-delete"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                    <div class="pos-rx-alert">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        Thuốc kê đơn — Cần nhập tên bác sĩ
+                    </div>
+                    <div class="pos-cart-item-bottom">
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <div class="pos-qty-stepper">
+                                <button class="pos-qty-btn on-decrement">−</button>
+                                <div class="pos-qty-value">3</div>
+                                <button class="pos-qty-btn on-increment">+</button>
+                            </div>
+                            <select class="pos-uom-select on-uom-change"
+                                style="font-size: 13px; padding: 4px 24px 4px 8px; border: 1px solid #e5e7eb; border-radius: 6px; background: #f8fafc; color: #334155; outline: none; cursor: pointer; height: 32px; font-weight: 500; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010l5%205%205-5z%22%20fill%3D%22%2364748b%22%20%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 4px center; background-size: 20px;">
+                                <option value="box">Hộp</option>
+                                <option value="blister" selected>Vỉ</option>
+                                <option value="pill">Viên</option>
+                            </select>
+                        </div>
+                        <div class="pos-cart-item-price">10,500₫</div>
+                    </div>
+                </div>
+
+                <!-- Item 3 -->
+                <div class="pos-cart-item" data-price-box="120000" data-price-pill="2000">
+                    <div class="pos-cart-item-top">
+                        <div style="flex:1;">
+                            <div class="pos-cart-item-name">Vitamin C DHC 1000mg (60 ngày)</div>
+                            <div style="font-size: 11px; color: #6b7280; margin-top: 2px;"><i class="fa-solid fa-tag"
+                                    style="margin-right:4px;"></i>Lô: L-9382</div>
+                        </div>
+                        <button class="pos-cart-item-delete"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                    <div class="pos-cart-item-bottom">
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <div class="pos-qty-stepper">
+                                <button class="pos-qty-btn on-decrement">−</button>
+                                <div class="pos-qty-value">1</div>
+                                <button class="pos-qty-btn on-increment">+</button>
+                            </div>
+                            <select class="pos-uom-select on-uom-change"
+                                style="font-size: 13px; padding: 4px 24px 4px 8px; border: 1px solid #e5e7eb; border-radius: 6px; background: #f8fafc; color: #334155; outline: none; cursor: pointer; height: 32px; font-weight: 500; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010l5%205%205-5z%22%20fill%3D%22%2364748b%22%20%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 4px center; background-size: 20px;">
+                                <option value="box" selected>Gói</option>
+                                <option value="pill">Viên</option>
+                            </select>
+                        </div>
+                        <div class="pos-cart-item-price">120,000₫</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Checkout -->
+            <div class="pos-checkout">
+                <div class="pos-checkout-row">
+                    <span class="pos-checkout-label">Tạm tính (4 sản phẩm)</span>
+                    <span class="pos-checkout-value">285,000₫</span>
+                </div>
+                <div class="pos-checkout-row">
+                    <span class="pos-checkout-label">Giảm giá</span>
+                    <span class="pos-checkout-value pos-checkout-discount">-15,000₫</span>
+                </div>
+
+                <div class="pos-checkout-total">
+                    <span class="label">TỔNG THANH TOÁN</span>
+                    <span class="amount">270,000₫</span>
+                </div>
+
+                <div class="pos-checkout-actions">
+                    <button class="pos-btn-secondary" onclick="openHoldDrawer()">
+                        <i class="fa-solid fa-pause"></i> Giữ đơn
+                    </button>
+                    <button class="pos-btn-secondary">
+                        <i class="fa-solid fa-trash"></i> Xoá đơn
+                    </button>
+                </div>
+
+                <button class="pos-btn-payment" onclick="attemptCheckout()">
+                    <i class="fa-solid fa-credit-card"></i>
+                    THANH TOÁN
+                    <span class="shortcut">F12</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ============ CHECKOUT MODAL ============ -->
+    <div class="modal-overlay" id="checkoutModal">
+        <div class="modal-box checkout-modal">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-cash-register"></i> Thanh Toán Đơn Hàng</h2>
+                <button class="modal-close" onclick="closeCheckoutModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body checkout-body">
+                <!-- Left: Order Summary -->
+                <div class="checkout-left">
+                    <h3 class="checkout-section-title">Chi tiết đơn hàng</h3>
+                    <div class="checkout-summary-list">
+                        <div class="checkout-summary-item">
+                            <span>Panadol Extra × 2</span>
+                            <span>130,000₫</span>
+                        </div>
+                        <div class="checkout-summary-item">
+                            <span>Amoxicillin 500mg × 1</span>
+                            <span>35,000₫</span>
+                        </div>
+                        <div class="checkout-summary-item">
+                            <span>Vitamin C DHC × 1</span>
+                            <span>120,000₫</span>
+                        </div>
+                    </div>
+                    <div class="checkout-summary-divider"></div>
+
+                    <!-- VOUCHER & LOYALTY -->
+                    <div style="margin-bottom:16px;">
+                        <div style="display:flex;gap:8px;margin-bottom:8px;">
+                            <div style="position:relative;flex:1;">
+                                <i class="fa-solid fa-ticket"
+                                    style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:12px;"></i>
+                                <input type="text" id="voucherCodeInput" placeholder="Mã ưu đãi / Voucher..."
+                                    style="width:100%;height:32px;padding:0 10px 0 30px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;outline:none;"
+                                    onfocus="this.style.borderColor='#10b981'"
+                                    onblur="this.style.borderColor='#e5e7eb'">
+                            </div>
+                            <button onclick="applyVoucher()"
+                                style="background:#f1f5f9;border:1px solid #cbd5e1;border-radius:6px;padding:0 12px;font-size:12px;font-weight:600;color:#475569;cursor:pointer;transition:background 0.2s;"
+                                onmouseover="this.style.background='#e2e8f0'"
+                                onmouseout="this.style.background='#f1f5f9'">ÁP DỤNG</button>
+                        </div>
+
+                        <!-- Simulated Loyalty Info -->
+                        <div id="loyaltyPointsBox"
+                            style="background:#fffbeb;border:1px dashed #fde047;border-radius:6px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;">
+                            <div style="font-size:12px;color:#854d0e;"><i class="fa-solid fa-star"
+                                    style="color:#eab308;margin-right:4px;"></i> KH có <strong>25,000 điểm</strong> khả
+                                dụng</div>
+                            <label
+                                style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:#15803d;cursor:pointer;">
+                                <input type="checkbox" id="usePointsCheckbox" onchange="togglePoints()"
+                                    style="accent-color:#10b981;cursor:pointer;width:14px;height:14px;"> Quy đổi tiền
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="checkout-summary-item">
+                        <span>Tạm tính</span>
+                        <span>285,000₫</span>
+                    </div>
+                    <div class="checkout-summary-item discount">
+                        <span>Giảm giá</span>
+                        <span>-15,000₫</span>
+                    </div>
+                    <div class="checkout-summary-divider"></div>
+                    <div class="checkout-summary-total">
+                        <span>TỔNG CỘNG</span>
+                        <span>270,000₫</span>
+                    </div>
+                </div>
+
+                <!-- Right: Payment Methods -->
+                <div class="checkout-right">
+                    <h3 class="checkout-section-title">Phương thức thanh toán</h3>
+                    <div class="payment-methods">
+                        <button class="payment-method-btn active" onclick="selectPayment(this, 'cash')">
+                            <i class="fa-solid fa-money-bills"></i>
+                            <span>Tiền mặt</span>
+                        </button>
+                        <button class="payment-method-btn" onclick="selectPayment(this, 'qr')">
+                            <i class="fa-solid fa-qrcode"></i>
+                            <span>QR Code</span>
+                        </button>
+                        <button class="payment-method-btn" onclick="selectPayment(this, 'card')">
+                            <i class="fa-solid fa-credit-card"></i>
+                            <span>Thẻ</span>
+                        </button>
+                        <button class="payment-method-btn" onclick="selectPayment(this, 'debt')"
+                            style="color:#ea580c; border-color:#fed7aa; background:#fff7ed;">
+                            <i class="fa-solid fa-book-journal-whills"></i>
+                            <span>Ghi Nợ</span>
+                        </button>
+                    </div>
+
+                    <!-- Cash Payment Section -->
+                    <div class="cash-payment-section" id="cashPaySection">
+                        <label class="checkout-field-label">Tiền khách đưa</label>
+                        <div class="checkout-cash-input-wrapper">
+                            <input type="text" class="checkout-cash-input" id="cashReceived" value="300,000"
+                                oninput="calcChange()">
+                            <span class="checkout-cash-suffix">₫</span>
+                        </div>
+                        <div class="quick-cash-grid">
+                            <button class="quick-cash-chip" onclick="setQuickCash(270000)">270K<br><small>Đúng
+                                    tiền</small></button>
+                            <button class="quick-cash-chip" onclick="setQuickCash(300000)">300K</button>
+                            <button class="quick-cash-chip" onclick="setQuickCash(500000)">500K</button>
+                            <button class="quick-cash-chip" onclick="setQuickCash(1000000)">1,000K</button>
+                        </div>
+                        <div class="change-display" id="changeDisplay">
+                            <span class="change-label">Tiền thối lại:</span>
+                            <span class="change-amount" id="changeAmount">30,000₫</span>
+                        </div>
+                    </div>
+
+                    <!-- QR Payment Section (hidden by default) -->
+                    <div class="qr-payment-section" id="qrPaySection" style="display:none;">
+                        <div class="qr-placeholder">
+                            <i class="fa-solid fa-qrcode"></i>
+                            <p>Quét mã QR để thanh toán</p>
+                            <span class="qr-amount">270,000₫</span>
+                        </div>
+                    </div>
+
+                    <!-- Card Payment Section (hidden by default) -->
+                    <div class="card-payment-section" id="cardPaySection" style="display:none;">
+                        <div class="card-placeholder">
+                            <i class="fa-solid fa-credit-card"></i>
+                            <p>Đưa thẻ vào máy đọc thẻ</p>
+                            <span class="card-status"><i class="fa-solid fa-spinner fa-spin"></i> Đang chờ...</span>
+                        </div>
+                    </div>
+
+                    <!-- Store Credit / Debt Section (hidden by default) -->
+                    <div class="debt-payment-section" id="debtPaySection" style="display:none;">
+                        <!-- Validation warning (Simulated state where customer info is MISSING) -->
+                        <div id="debtMissingCustomerWarning"
+                            style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:16px; display:flex; gap:12px; align-items:flex-start; margin-bottom:16px;">
+                            <i class="fa-solid fa-circle-exclamation"
+                                style="color:#ef4444; font-size:20px; margin-top:2px;"></i>
+                            <div>
+                                <div style="font-size:14px; font-weight:700; color:#b91c1c;">Customer profile must be
+                                    linked to allow Store Credit.</div>
+                                <div style="font-size:13px; color:#ef4444; margin-top:4px;">Vui lòng nhập số điện thoại
+                                    khách hàng ở màn hình trước để ghi nợ.</div>
+                            </div>
+                        </div>
+
+                        <!-- Info when customer IS linked (Hidden by default to show the warning above for the prompt, toggleable via JS if needed) -->
+                        <div id="debtLinkedCustomerInfo" style="display:none;">
+                            <div
+                                style="background:#fff7ed; border:1px solid #fed7aa; border-radius:8px; padding:16px; margin-bottom:16px;">
+                                <div style="font-size:14px; font-weight:600; color:#9a3412;">Adding <span
+                                        style="font-weight:800;">270,000₫</span> to Customer Tab:</div>
+                                <div style="font-size:16px; font-weight:700; color:#ea580c; margin-top:4px;"><i
+                                        class="fa-solid fa-user"></i> Nguyễn Văn A (090xxxx123)</div>
+                            </div>
+
+                            <label class="checkout-field-label">Debt Note / Reason</label>
+                            <input type="text" id="debtNote" placeholder="VD: Khách quen thanh toán cuối tháng..."
+                                style="width:100%; height:44px; padding:0 14px; border:1.5px solid #e5e7eb; border-radius:8px; font-size:14px; outline:none; transition:0.2s;"
+                                onfocus="this.style.borderColor='#ea580c'">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn-cancel" onclick="closeCheckoutModal()">Huỷ</button>
+                <button class="modal-btn-primary" onclick="completeSale()">
+                    <i class="fa-solid fa-print"></i>
+                    IN HOÁ ĐƠN & HOÀN TẤT
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ ONLINE ORDERS DRAWER (PICK & PACK) ============ -->
+    <div class="drawer-overlay" id="onlineDrawerOverlay" onclick="closeOnlineDrawer()"></div>
+    <div class="hold-drawer" id="onlineDrawer">
+        <div class="drawer-header" style="background:#fff7ed; border-bottom-color:#fed7aa;">
+            <h2 style="color:#ea580c;"><i class="fa-solid fa-truck-fast"></i> Đơn Web Chờ Xử Lý</h2>
+            <button class="modal-close" style="color:#ea580c;" onclick="closeOnlineDrawer()"><i
+                    class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="drawer-body" style="background:#fffaf5;">
+
+            <!-- Online Order 1 -->
+            <div class="hold-order-card" style="border-left:4px solid #f97316;">
+                <div class="hold-order-top" style="margin-bottom:8px;">
+                    <div class="hold-order-id" style="color:#c2410c;font-size:14px;">
+                        <i class="fa-solid fa-globe"></i> WEB-5931
+                    </div>
+                    <div class="hold-order-time" style="color:#ea580c;font-weight:600;">
+                        <i class="fa-regular fa-clock"></i> 5 phút trước
+                    </div>
+                </div>
+                <div class="hold-order-items" style="color:#334155;">
+                    <span>Khách: <strong>Trần Quốc Bảo</strong> (0982xxx991)</span><br>
+                    <span style="color:#10b981;font-size:12px;font-weight:600;"><i
+                            class="fa-solid fa-money-check-dollar"></i> Đã thanh toán ZaloPay</span>
+                </div>
+                <div class="hold-order-bottom">
+                    <div class="hold-order-total">340,000₫</div>
+                    <div class="hold-order-actions">
+                        <button class="hold-btn-resume" style="background:#f97316;color:white;border-color:#ea580c;"
+                            onclick="processOnlineOrder(this)"><i class="fa-solid fa-box-open"></i> Nhận đơn lấy
+                            hàng</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Online Order 2 -->
+            <div class="hold-order-card" style="border-left:4px solid #f97316;">
+                <div class="hold-order-top" style="margin-bottom:8px;">
+                    <div class="hold-order-id" style="color:#c2410c;font-size:14px;">
+                        <i class="fa-solid fa-globe"></i> WEB-5928
+                    </div>
+                    <div class="hold-order-time" style="color:#ea580c;font-weight:600;">
+                        <i class="fa-regular fa-clock"></i> 12 phút trước
+                    </div>
+                </div>
+                <div class="hold-order-items" style="color:#334155;">
+                    <span>Khách: <strong>Lê Thùy Hương</strong> (0911xxx334)</span><br>
+                    <span style="color:#6b7280;font-size:12px;font-weight:600;"><i
+                            class="fa-solid fa-hand-holding-dollar"></i> COD (Thu tiền hộ)</span>
+                </div>
+                <div class="hold-order-bottom">
+                    <div class="hold-order-total">125,000₫</div>
+                    <div class="hold-order-actions">
+                        <button class="hold-btn-resume" style="background:#f97316;color:white;border-color:#ea580c;"
+                            onclick="processOnlineOrder(this)"><i class="fa-solid fa-box-open"></i> Nhận đơn lấy
+                            hàng</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="drawer-footer" style="background:#fff7ed; border-top-color:#fed7aa;">
+            <span class="drawer-footer-text" style="color:#ea580c;"><i class="fa-solid fa-bolt"></i> Vui lòng xử lý đơn
+                Web trong vòng 15 phút</span>
+        </div>
+    </div>
+
+    <!-- ============ HOLD ORDERS DRAWER ============ -->
+    <div class="drawer-overlay" id="holdDrawerOverlay" onclick="closeHoldDrawer()"></div>
+    <div class="hold-drawer" id="holdDrawer">
+        <div class="drawer-header">
+            <h2><i class="fa-solid fa-clock-rotate-left"></i> Đơn hàng đang giữ</h2>
+            <button class="modal-close" onclick="closeHoldDrawer()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="drawer-body">
+
+            <!-- Hold Order 1 -->
+            <div class="hold-order-card">
+                <div class="hold-order-top">
+                    <div class="hold-order-id">
+                        <i class="fa-solid fa-receipt"></i> ĐƠN #0041
+                    </div>
+                    <div class="hold-order-time">
+                        <i class="fa-regular fa-clock"></i> 14:23 — 05/03
+                    </div>
+                </div>
+                <div class="hold-order-items">
+                    <span>Panadol Extra × 1, Betadine × 2</span>
+                </div>
+                <div class="hold-order-bottom">
+                    <div class="hold-order-total">209,000₫</div>
+                    <div class="hold-order-actions">
+                        <button class="hold-btn-resume" onclick="resumeOrder(this)"><i class="fa-solid fa-play"></i>
+                            Tiếp tục</button>
+                        <button class="hold-btn-discard" onclick="discardOrder(this)"><i
+                                class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hold Order 2 -->
+            <div class="hold-order-card">
+                <div class="hold-order-top">
+                    <div class="hold-order-id">
+                        <i class="fa-solid fa-receipt"></i> ĐƠN #0039
+                    </div>
+                    <div class="hold-order-time">
+                        <i class="fa-regular fa-clock"></i> 13:05 — 05/03
+                    </div>
+                </div>
+                <div class="hold-order-items">
+                    <span>Vitamin C DHC × 3, Smecta × 1</span>
+                </div>
+                <div class="hold-order-bottom">
+                    <div class="hold-order-total">415,000₫</div>
+                    <div class="hold-order-actions">
+                        <button class="hold-btn-resume" onclick="resumeOrder(this)"><i class="fa-solid fa-play"></i>
+                            Tiếp tục</button>
+                        <button class="hold-btn-discard" onclick="discardOrder(this)"><i
+                                class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hold Order 3 -->
+            <div class="hold-order-card">
+                <div class="hold-order-top">
+                    <div class="hold-order-id">
+                        <i class="fa-solid fa-receipt"></i> ĐƠN #0037
+                    </div>
+                    <div class="hold-order-time">
+                        <i class="fa-regular fa-clock"></i> 11:48 — 05/03
+                    </div>
+                </div>
+                <div class="hold-order-items">
+                    <span>Sữa Ensure Gold × 1, Dầu gió × 2</span>
+                </div>
+                <div class="hold-order-bottom">
+                    <div class="hold-order-total">570,000₫</div>
+                    <div class="hold-order-actions">
+                        <button class="hold-btn-resume" onclick="resumeOrder(this)"><i class="fa-solid fa-play"></i>
+                            Tiếp tục</button>
+                        <button class="hold-btn-discard" onclick="discardOrder(this)"><i
+                                class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="drawer-footer">
+            <span class="drawer-footer-text"><i class="fa-solid fa-circle-info"></i> Đơn giữ sẽ tự động huỷ sau 4
+                giờ</span>
+        </div>
+    </div>
+
+    <!-- ============ CLOSE SHIFT MODAL ============ -->
+    <div class="modal-overlay" id="closeShiftModal">
+        <div class="modal-box" style="max-width:600px;">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-cash-register"></i> Đóng Ca Làm Việc</h2>
+                <button class="modal-close" onclick="closeCloseShiftModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" style="padding:24px;">
+
+                <!-- Shift Summary -->
+                <div style="margin-bottom:24px;">
+                    <div
+                        style="font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:14px;">
+                        Tổng kết ca làm việc</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+                        <div
+                            style="background:linear-gradient(135deg,#005824,#10b981);color:#fff;padding:20px 16px;border-radius:12px;text-align:center;">
+                            <div style="font-size:24px;font-weight:800;line-height:1;">5,250,000₫</div>
+                            <div
+                                style="font-size:11px;font-weight:600;opacity:0.8;margin-top:6px;text-transform:uppercase;letter-spacing:0.5px;">
+                                Tổng doanh thu</div>
+                        </div>
+                        <div
+                            style="background:#ecfdf5;border:1.5px solid #a7f3d0;padding:20px 16px;border-radius:12px;text-align:center;">
+                            <div style="font-size:20px;font-weight:800;color:#005824;line-height:1;">3,780,000₫</div>
+                            <div style="font-size:11px;font-weight:600;color:#6b7280;margin-top:6px;"><i
+                                    class="fa-solid fa-money-bills" style="color:#10b981;"></i> Tiền mặt</div>
+                        </div>
+                        <div
+                            style="background:#eff6ff;border:1.5px solid #bfdbfe;padding:20px 16px;border-radius:12px;text-align:center;">
+                            <div style="font-size:20px;font-weight:800;color:#1e40af;line-height:1;">1,470,000₫</div>
+                            <div style="font-size:11px;font-weight:600;color:#6b7280;margin-top:6px;"><i
+                                    class="fa-solid fa-qrcode" style="color:#3b82f6;"></i> CK / QR</div>
+                        </div>
+                    </div>
+                    <!-- Shift Stats Row -->
+                    <div style="display:flex;gap:16px;margin-top:14px;">
+                        <div
+                            style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;">
+                            <i class="fa-solid fa-receipt" style="color:#10b981;font-size:16px;"></i>
+                            <div>
+                                <div style="font-size:16px;font-weight:800;color:#1f2937;">24</div>
+                                <div style="font-size:10px;color:#9ca3af;font-weight:600;">ĐƠN HÀNG</div>
+                            </div>
+                        </div>
+                        <div
+                            style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;">
+                            <i class="fa-solid fa-rotate-left" style="color:#ef4444;font-size:16px;"></i>
+                            <div>
+                                <div style="font-size:16px;font-weight:800;color:#1f2937;">1</div>
+                                <div style="font-size:10px;color:#9ca3af;font-weight:600;">HOÀN TRẢ</div>
+                            </div>
+                        </div>
+                        <div
+                            style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;">
+                            <i class="fa-solid fa-clock" style="color:#3b82f6;font-size:16px;"></i>
+                            <div>
+                                <div style="font-size:16px;font-weight:800;color:#1f2937;">8h 15p</div>
+                                <div style="font-size:10px;color:#9ca3af;font-weight:600;">THỜI GIAN CA</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div style="height:1px;background:#e5e7eb;margin:0 0 20px;"></div>
+
+                <!-- Cash Drawer Reconciliation -->
+                <div>
+                    <div
+                        style="font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:14px;">
+                        <i class="fa-solid fa-vault"></i> Đối soát tiền mặt ngăn kéo
+                    </div>
+                    <div style="display:flex;gap:12px;margin-bottom:14px;">
+                        <div style="flex:1;">
+                            <div style="font-size:11px;font-weight:600;color:#9ca3af;margin-bottom:6px;">Tiền đầu ca
+                            </div>
+                            <div
+                                style="height:44px;padding:0 14px;background:#f3f4f6;border-radius:8px;border:1px solid #e5e7eb;display:flex;align-items:center;font-size:15px;font-weight:700;color:#6b7280;">
+                                500,000₫</div>
+                        </div>
+                        <div style="flex:1;">
+                            <div style="font-size:11px;font-weight:600;color:#9ca3af;margin-bottom:6px;">Tiền mặt thu
+                            </div>
+                            <div
+                                style="height:44px;padding:0 14px;background:#f3f4f6;border-radius:8px;border:1px solid #e5e7eb;display:flex;align-items:center;font-size:15px;font-weight:700;color:#059669;">
+                                +3,780,000₫</div>
+                        </div>
+                    </div>
+                    <div
+                        style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#f0fdf4;border-radius:8px;border:1px solid #a7f3d0;margin-bottom:16px;">
+                        <span style="font-size:13px;font-weight:600;color:#6b7280;">Số tiền phải có:</span>
+                        <span style="font-size:18px;font-weight:800;color:#005824;">4,280,000₫</span>
+                    </div>
+
+                    <div style="margin-bottom:8px;">
+                        <label
+                            style="font-size:12px;font-weight:600;color:#6b7280;display:block;margin-bottom:6px;">Tiền
+                            mặt thực tế trong ngăn kéo</label>
+                        <div style="position:relative;">
+                            <i class="fa-solid fa-coins"
+                                style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#10b981;font-size:16px;"></i>
+                            <input type="text" id="actualCashInput" value="4,300,000" oninput="calcDiscrepancy()"
+                                style="width:100%;height:52px;padding:0 50px 0 42px;border:2px solid #e5e7eb;border-radius:8px;font-size:20px;font-weight:700;font-family:Inter,sans-serif;color:#1f2937;outline:none;transition:border-color 0.2s;"
+                                onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#e5e7eb'">
+                            <span
+                                style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:14px;font-weight:600;color:#9ca3af;">VNĐ</span>
+                        </div>
+                    </div>
+
+                    <!-- Discrepancy Display -->
+                    <div id="discrepancyDisplay"
+                        style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#ecfdf5;border:1.5px solid #a7f3d0;border-radius:8px;margin-top:12px;">
+                        <span style="font-size:13px;font-weight:600;color:#6b7280;">Chênh lệch:</span>
+                        <span id="discrepancyAmount" style="font-size:20px;font-weight:800;color:#059669;">+20,000₫
+                            (Thừa)</span>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer" style="flex-direction:column;gap:10px;">
+                <button onclick="printShiftReport()"
+                    style="width:100%;height:52px;background:linear-gradient(135deg,#005824 0%,#10b981 100%);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 14px rgba(0,88,36,0.3);transition:all 0.2s;"
+                    onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(0,88,36,0.4)'"
+                    onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(0,88,36,0.3)'">
+                    <i class="fa-solid fa-print"></i> IN BÁO CÁO CA & ĐĂNG XUẤT
+                </button>
+                <button onclick="closeCloseShiftModal()"
+                    style="width:100%;height:38px;border:1.5px solid #e5e7eb;border-radius:8px;background:#fff;font-size:13px;font-weight:600;color:#6b7280;cursor:pointer;font-family:inherit;transition:all 0.15s;"
+                    onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='#fff'">
+                    Quay lại bán hàng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ ALTERNATIVE MEDICINES SLIDE-OVER ============ -->
+    <div class="hold-drawer-overlay" id="altDrawerOverlay" onclick="closeAltDrawer()"></div>
+    <div class="hold-drawer" id="altDrawer">
+        <div class="hold-drawer-header">
+            <div>
+                <h2>Thay Thế Hết Hàng</h2>
+                <div style="font-size:13px;color:#cbd5e1;margin-top:2px;">
+                    <i class="fa-solid fa-flask" style="margin-right:4px;"></i>Hoạt chất: Paracetamol 500mg
+                </div>
+            </div>
+            <button class="modal-close" style="color:white;opacity:0.8;" onclick="closeAltDrawer()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="hold-drawer-body" style="background:#f8fafc;padding:0;">
+            <div
+                style="padding:16px;background:#fff1f2;border-bottom:1px solid #ffe4e6;display:flex;align-items:center;gap:12px;">
+                <i class="fa-solid fa-circle-exclamation" style="font-size:20px;color:#e11d48;"></i>
+                <div>
+                    <div style="font-size:14px;font-weight:700;color:#9f1239;">Efferalgan 500mg (Hộp 16 viên) đã hết
+                        hàng.</div>
+                    <div style="font-size:12px;color:#e11d48;margin-top:2px;">Vui lòng tư vấn các sản phẩm thay thế cùng
+                        thành phần bên dưới:</div>
+                </div>
+            </div>
+
+            <div style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+
+                <!-- Alt 1 -->
+                <div
+                    style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:12px;display:flex;gap:16px;align-items:center;">
+                    <img src="../assets/images/product_frame_2.png"
+                        style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #f3f4f6;">
+                    <div style="flex:1;">
+                        <div style="font-size:14px;font-weight:700;color:#1e293b;">Panadol Extra (Hộp 12 viên)</div>
+                        <div style="font-size:15px;font-weight:800;color:#059669;margin-top:4px;">65,000₫</div>
+                        <div
+                            style="font-size:12px;color:#047857;margin-top:4px;display:flex;align-items:center;gap:4px;">
+                            <i class="fa-solid fa-boxes-stacked"></i> Tồn kho: <span style="font-weight:700;">45
+                                Hộp</span>
+                        </div>
+                    </div>
+                    <button
+                        style="height:40px;padding:0 16px;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;"
+                        onclick="closeAltDrawer(); setTimeout(() => addToCart('Panadol Extra', 65000), 300)">
+                        <i class="fa-solid fa-plus" style="margin-right:6px;"></i>THÊM
+                    </button>
+                </div>
+
+                <!-- Alt 2 -->
+                <div
+                    style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:12px;display:flex;gap:16px;align-items:center;">
+                    <img src="../assets/images/product_frame.png"
+                        style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #f3f4f6;">
+                    <div style="flex:1;">
+                        <div style="font-size:14px;font-weight:700;color:#1e293b;">Hapacol 500 (Hộp 10 vỉ)</div>
+                        <div style="font-size:15px;font-weight:800;color:#059669;margin-top:4px;">32,000₫</div>
+                        <div
+                            style="font-size:12px;color:#047857;margin-top:4px;display:flex;align-items:center;gap:4px;">
+                            <i class="fa-solid fa-boxes-stacked"></i> Tồn kho: <span style="font-weight:700;">112
+                                Hộp</span>
+                        </div>
+                    </div>
+                    <button
+                        style="height:40px;padding:0 16px;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;"
+                        onclick="closeAltDrawer(); setTimeout(() => addToCart('Hapacol 500', 32000), 300)">
+                        <i class="fa-solid fa-plus" style="margin-right:6px;"></i>THÊM
+                    </button>
+                </div>
+
+                <!-- Alt 3 -->
+                <div
+                    style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:12px;display:flex;gap:16px;align-items:center;">
+                    <img src="../assets/images/product_frame_2.png"
+                        style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #f3f4f6;">
+                    <div style="flex:1;">
+                        <div style="font-size:14px;font-weight:700;color:#1e293b;">Tylenol 500mg (Hộp 100 viên)</div>
+                        <div style="font-size:15px;font-weight:800;color:#059669;margin-top:4px;">210,000₫</div>
+                        <div
+                            style="font-size:12px;color:#047857;margin-top:4px;display:flex;align-items:center;gap:4px;">
+                            <i class="fa-solid fa-boxes-stacked"></i> Tồn kho: <span style="font-weight:700;">8
+                                Lọ</span>
+                        </div>
+                    </div>
+                    <button
+                        style="height:40px;padding:0 16px;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;"
+                        onclick="closeAltDrawer(); setTimeout(() => addToCart('Tylenol 500mg', 210000), 300)">
+                        <i class="fa-solid fa-plus" style="margin-right:6px;"></i>THÊM
+                    </button>
+                </div>
+
+            </div>
+        </div>
+        <!-- ============ PRESCRIPTION MODAL ============ -->
+        <div class="modal-overlay" id="rxModal">
+            <div class="modal-box" style="max-width:500px; padding:0;">
+                <div class="modal-header"
+                    style="background:#fef2f2; border-bottom:1px solid #fee2e2; border-radius:12px 12px 0 0; padding:16px 24px;">
+                    <h2 style="color:#dc2626; display:flex; align-items:center; gap:10px; margin:0; font-size:18px;">
+                        <i class="fa-solid fa-triangle-exclamation" style="font-size:20px;"></i> Yêu Cầu Lưu Toa Thuốc
+                        (GPP)
+                    </h2>
+                    <button class="modal-close"
+                        style="color:#ef4444; opacity:0.8; background:transparent; border:none; font-size:18px; cursor:pointer;"
+                        onclick="closeRxModal()"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="modal-body" style="padding:24px;">
+                    <p style="font-size:14px; color:#4b5563; margin-top:0; margin-bottom:20px; line-height:1.5;">
+                        Đơn hàng có chứa <strong>Thuốc Kê Đơn</strong>. Theo chuẩn GPP, Dược sĩ vui lòng điền thông tin
+                        người kê đơn hoặc lưu ảnh chụp toa thuốc.
+                    </p>
+
+                    <div style="margin-bottom:16px;">
+                        <label
+                            style="font-size:13px; font-weight:600; color:#374151; display:block; margin-bottom:6px;">Tên
+                            Bác sĩ / Cơ sở y tế <span style="color:#dc2626;">*</span></label>
+                        <input type="text" id="rxDoctorName" placeholder="Ví dụ: BS. Nguyễn Văn A - Viện E..."
+                            oninput="checkRxForm()"
+                            style="width:100%; height:44px; padding:0 14px; border:1px solid #d1d5db; border-radius:8px; font-size:14px; outline:none; transition:0.2s;"
+                            onfocus="this.style.borderColor='#059669'">
+                    </div>
+
+                    <div style="margin-bottom:20px;">
+                        <label
+                            style="font-size:13px; font-weight:600; color:#374151; display:block; margin-bottom:6px;">Mã
+                            số toa thuốc (Nếu có)</label>
+                        <input type="text" id="rxId" placeholder="Nhập mã số toa điện tử..."
+                            style="width:100%; height:44px; padding:0 14px; border:1px solid #d1d5db; border-radius:8px; font-size:14px; outline:none; transition:0.2s;"
+                            onfocus="this.style.borderColor='#059669'">
+                    </div>
+
+                    <div style="width:100%; height:140px; background:#f9fafb; border:2px dashed #d1d5db; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; color:#6b7280; transition:0.2s;"
+                        onmouseover="this.style.borderColor='#9ca3af'; this.style.color='#4b5563'"
+                        onmouseout="this.style.borderColor='#d1d5db'; this.style.color='#6b7280'">
+                        <i class="fa-solid fa-camera"
+                            style="font-size:28px; margin-bottom:12px; color:#9ca3af; transition:0.2s;"></i>
+                        <span style="font-size:13px; font-weight:600;">Click để Mở Webcam Chụp Ảnh</span>
+                        <span style="font-size:12px; margin-top:4px;">Hoặc kéo thả file ảnh toa thuốc vào đây</span>
+                    </div>
+
+                </div>
+                <div class="modal-footer"
+                    style="padding:16px 24px; background:#f8fafc; border-top:1px solid #e5e7eb; border-radius:0 0 12px 12px; display:flex; gap:12px; align-items:center;">
+                    <button onclick="closeRxModal()"
+                        style="flex:1; height:44px; background:white; border:1px solid #ef4444; color:#ef4444; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; transition:0.2s;"
+                        onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='white'">
+                        Quay Lại
+                    </button>
+                    <button id="rxVerifyBtn" onclick="verifyRxAndContinue()" disabled
+                        style="flex:1; height:44px; background:#10b981; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:not-allowed; opacity:0.6; transition:all 0.2s;">
+                        LƯU & TIẾP TỤC THANH TOÁN
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <footer class="pos-statusbar">
+            <div class="pos-statusbar-left">
+                <span><span class="pos-status-dot"></span> Hệ thống hoạt động</span>
+                <span><i class="fa-solid fa-print"></i>&nbsp; Máy in: Sẵn sàng</span>
+                <span><i class="fa-solid fa-barcode"></i>&nbsp; Scanner: Đã kết nối</span>
+            </div>
+            <div class="pos-statusbar-right">
+                <span class="pos-shortcut-hint"><kbd>F2</kbd> Tìm kiếm</span>
+                <span class="pos-shortcut-hint"><kbd>F5</kbd> Khách hàng</span>
+                <span class="pos-shortcut-hint"><kbd>F12</kbd> Thanh toán</span>
+                <span class="pos-shortcut-hint"><kbd>ESC</kbd> Huỷ</span>
+            </div>
+        </footer>
+
+        <!-- ============ SCRIPTS ============ -->
+        <script>
+            // Update clock
+            function updateClock() {
+                const now = new Date();
+                const time = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                const date = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                document.getElementById('posTime').textContent = `${time} — ${date}`;
+            }
+            updateClock();
+            setInterval(updateClock, 1000);
+
+            // Category pill toggle
+            document.querySelectorAll('.pos-cat-pill').forEach(pill => {
+                pill.addEventListener('click', () => {
+                    document.querySelectorAll('.pos-cat-pill').forEach(p => p.classList.remove('active'));
+                    pill.classList.add('active');
+                });
+            });
+
+            // Cart Update Logic
+            function updateCartTotal() {
+                let subtotal = 0;
+                let count = 0;
+
+                document.querySelectorAll('.pos-cart-item').forEach(item => {
+                    const qtyNode = item.querySelector('.pos-qty-value');
+                    const uomNode = item.querySelector('.pos-uom-select');
+                    if (!qtyNode || !uomNode) return;
+
+                    const qty = parseInt(qtyNode.textContent) || 0;
+                    const uom = uomNode.value;
+                    const priceAttr = item.getAttribute('data-price-' + uom);
+                    const price = priceAttr ? parseInt(priceAttr) : 0;
+
+                    const itemTotal = qty * price;
+                    subtotal += itemTotal;
+                    count += qty;
+
+                    item.querySelector('.pos-cart-item-price').textContent = itemTotal.toLocaleString('vi-VN') + '₫';
+                });
+
+                const discount = 15000;
+                const total = Math.max(0, subtotal - discount);
+
+                // Update Sidebar Checkout UI
+                const checkoutRows = document.querySelectorAll('.pos-checkout-row');
+                if (checkoutRows.length > 0) {
+                    checkoutRows[0].querySelector('.pos-checkout-label').textContent = `Tạm tính (${count} sản phẩm)`;
+                    checkoutRows[0].querySelector('.pos-checkout-value').textContent = subtotal.toLocaleString('vi-VN') + '₫';
+                }
+                const totalEl = document.querySelector('.pos-checkout-total .amount');
+                if (totalEl) totalEl.textContent = total.toLocaleString('vi-VN') + '₫';
+
+                // Update Cart Header Count
+                const cartCountEl = document.getElementById('cartCount');
+                if (cartCountEl) cartCountEl.textContent = count;
+            }
+
+            // Initialize Cart Interactivity
+            document.querySelectorAll('.pos-cart-item').forEach(item => {
+                const btnMinus = item.querySelector('.pos-qty-stepper .pos-qty-btn:first-child');
+                const btnPlus = item.querySelector('.pos-qty-stepper .pos-qty-btn:last-child');
+                const valEl = item.querySelector('.pos-qty-value');
+                const uomSelect = item.querySelector('.pos-uom-select');
+                const deleteBtn = item.querySelector('.pos-cart-item-delete');
+
+                if (btnMinus) {
+                    btnMinus.addEventListener('click', () => {
+                        let val = parseInt(valEl.textContent);
+                        if (val > 1) {
+                            valEl.textContent = val - 1;
+                            updateCartTotal();
+                        }
+                    });
+                }
+                if (btnPlus) {
+                    btnPlus.addEventListener('click', () => {
+                        let val = parseInt(valEl.textContent);
+                        valEl.textContent = val + 1;
+                        updateCartTotal();
+                    });
+                }
+                if (uomSelect) {
+                    uomSelect.addEventListener('change', () => {
+                        updateCartTotal();
+                    });
+                }
+                if (deleteBtn) {
+                    deleteBtn.addEventListener('click', () => {
+                        item.style.transform = 'translateX(100%)';
+                        item.style.opacity = '0';
+                        item.style.transition = 'all 0.3s ease';
+                        setTimeout(() => {
+                            item.remove();
+                            updateCartTotal();
+                        }, 300);
+                    });
+                }
+            });
+
+            // Initial Calculation
+            updateCartTotal();
+
+            // ========== PRESCRIPTION VALIDATION ==========
+            function attemptCheckout() {
+                const cartItems = document.getElementById('cartItems');
+                const hasRx = cartItems.querySelector('.prescription-alert');
+
+                if (hasRx) {
+                    openRxModal();
+                } else {
+                    openCheckoutModal();
+                }
+            }
+
+            function openRxModal() {
+                document.getElementById('rxModal').classList.add('open');
+                document.body.style.overflow = 'hidden';
+                document.getElementById('rxDoctorName').value = '';
+                document.getElementById('rxId').value = '';
+                checkRxForm();
+                setTimeout(() => document.getElementById('rxDoctorName').focus(), 100);
+            }
+
+            function closeRxModal() {
+                document.getElementById('rxModal').classList.remove('open');
+                document.body.style.overflow = '';
+            }
+
+            function checkRxForm() {
+                const docName = document.getElementById('rxDoctorName').value.trim();
+                const btn = document.getElementById('rxVerifyBtn');
+                if (docName.length > 0) {
+                    btn.disabled = false;
+                    btn.style.cursor = 'pointer';
+                    btn.style.opacity = '1';
+                    btn.style.background = '#059669';
+                    btn.onmouseover = function () { this.style.background = '#047857' };
+                    btn.onmouseout = function () { this.style.background = '#059669' };
+                } else {
+                    btn.disabled = true;
+                    btn.style.cursor = 'not-allowed';
+                    btn.style.opacity = '0.6';
+                    btn.style.background = '#10b981';
+                    btn.onmouseover = null;
+                    btn.onmouseout = null;
+                }
+            }
+
+            function verifyRxAndContinue() {
+                closeRxModal();
+                setTimeout(() => {
+                    openCheckoutModal();
+                }, 300);
+            }
+
+            // ========== CHECKOUT MODAL ==========
+            function openCheckoutModal() {
+                document.getElementById('checkoutModal').classList.add('open');
+                document.body.style.overflow = 'hidden';
+            }
+            function closeCheckoutModal() {
+                document.getElementById('checkoutModal').classList.remove('open');
+                document.body.style.overflow = '';
+            }
+
+            function selectPayment(btn, method) {
+                document.querySelectorAll('.payment-method-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                document.getElementById('cashPaySection').style.display = method === 'cash' ? 'block' : 'none';
+                document.getElementById('qrPaySection').style.display = method === 'qr' ? 'block' : 'none';
+                document.getElementById('cardPaySection').style.display = method === 'card' ? 'block' : 'none';
+                document.getElementById('debtPaySection').style.display = method === 'debt' ? 'block' : 'none';
+
+                // Swap Checkout Button
+                const completeBtn = document.querySelector('.modal-btn-primary');
+                if (method === 'debt') {
+                    completeBtn.innerHTML = '<i class="fa-solid fa-book-journal-whills"></i> GHI NỢ & HOÀN TẤT';
+                    completeBtn.style.background = 'linear-gradient(135deg, #c2410c 0%, #ea580c 100%)';
+                    completeBtn.style.boxShadow = '0 4px 14px rgba(194, 65, 12, 0.3)';
+                    completeBtn.onmouseover = function () { this.style.boxShadow = '0 6px 20px rgba(194, 65, 12, 0.4)'; this.style.transform = 'translateY(-1px)' };
+                    completeBtn.onmouseout = function () { this.style.boxShadow = '0 4px 14px rgba(194, 65, 12, 0.3)'; this.style.transform = '' };
+                } else {
+                    completeBtn.innerHTML = '<i class="fa-solid fa-print"></i> IN HOÁ ĐƠN & HOÀN TẤT';
+                    completeBtn.style.background = 'linear-gradient(135deg, #005824 0%, #10b981 100%)';
+                    completeBtn.style.boxShadow = '0 4px 14px rgba(0, 88, 36, 0.3)';
+                    completeBtn.onmouseover = function () { this.style.boxShadow = '0 6px 20px rgba(0, 88, 36, 0.4)'; this.style.transform = 'translateY(-1px)' };
+                    completeBtn.onmouseout = function () { this.style.boxShadow = '0 4px 14px rgba(0, 88, 36, 0.3)'; this.style.transform = '' };
+                }
+            }
+
+            function setQuickCash(amount) {
+                document.getElementById('cashReceived').value = amount.toLocaleString('vi-VN');
+                calcChange();
+            }
+
+            function calcChange() {
+                const totalAmount = 270000;
+                const raw = document.getElementById('cashReceived').value.replace(/[^0-9]/g, '');
+                const received = parseInt(raw) || 0;
+                const change = received - totalAmount;
+                const el = document.getElementById('changeAmount');
+                const display = document.getElementById('changeDisplay');
+                if (change >= 0) {
+                    el.textContent = change.toLocaleString('vi-VN') + '₫';
+                    el.style.color = '#059669';
+                    display.style.background = '#ecfdf5';
+                    display.style.borderColor = '#a7f3d0';
+                } else {
+                    el.textContent = 'Thiếu ' + Math.abs(change).toLocaleString('vi-VN') + '₫';
+                    el.style.color = '#dc2626';
+                    display.style.background = '#fef2f2';
+                    display.style.borderColor = '#fecaca';
+                }
+            }
+
+            function completeSale() {
+                closeCheckoutModal();
+                // Show a quick success feedback
+                const toast = document.createElement('div');
+                toast.className = 'pos-toast';
+                toast.innerHTML = '<i class="fa-solid fa-circle-check"></i> Thanh toán thành công! Đang in hoá đơn...';
+                document.body.appendChild(toast);
+                setTimeout(() => { toast.classList.add('show'); }, 10);
+                setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3000);
+            }
+
+            // ========== HOLD ORDERS DRAWER ==========
+            function openHoldDrawer() {
+                document.getElementById('holdDrawer').classList.add('open');
+                document.getElementById('holdDrawerOverlay').classList.add('open');
+            }
+            function closeHoldDrawer() {
+                document.getElementById('holdDrawer').classList.remove('open');
+                document.getElementById('holdDrawerOverlay').classList.remove('open');
+            }
+
+            function resumeOrder(btn) {
+                const card = btn.closest('.hold-order-card');
+                card.style.background = '#ecfdf5';
+                card.style.borderColor = '#10b981';
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Đã tải';
+                btn.disabled = true;
+                setTimeout(() => closeHoldDrawer(), 600);
+            }
+
+            function discardOrder(btn) {
+                const card = btn.closest('.hold-order-card');
+                card.style.transition = 'all 0.3s ease';
+                card.style.transform = 'translateX(100%)';
+                card.style.opacity = '0';
+                setTimeout(() => card.remove(), 300);
+            }
+
+            // ========== CLOSE SHIFT MODAL ==========
+            function openCloseShiftModal() {
+                document.getElementById('closeShiftModal').classList.add('open');
+                document.body.style.overflow = 'hidden';
+                calcDiscrepancy();
+            }
+            function closeCloseShiftModal() {
+                document.getElementById('closeShiftModal').classList.remove('open');
+                document.body.style.overflow = '';
+            }
+
+            function calcDiscrepancy() {
+                const expectedCash = 4280000;
+                const raw = document.getElementById('actualCashInput').value.replace(/[^0-9]/g, '');
+                const actual = parseInt(raw) || 0;
+                const diff = actual - expectedCash;
+                const el = document.getElementById('discrepancyAmount');
+                const display = document.getElementById('discrepancyDisplay');
+                if (diff > 0) {
+                    el.textContent = '+' + diff.toLocaleString('vi-VN') + '₫ (Thừa)';
+                    el.style.color = '#059669';
+                    display.style.background = '#ecfdf5';
+                    display.style.borderColor = '#a7f3d0';
+                } else if (diff < 0) {
+                    el.textContent = Math.abs(diff).toLocaleString('vi-VN') + '₫ (Thiếu)';
+                    el.style.color = '#dc2626';
+                    display.style.background = '#fef2f2';
+                    display.style.borderColor = '#fecaca';
+                } else {
+                    el.textContent = '0₫ — Khớp hoàn toàn ✓';
+                    el.style.color = '#059669';
+                    display.style.background = '#ecfdf5';
+                    display.style.borderColor = '#a7f3d0';
+                }
+            }
+
+            function printShiftReport() {
+                closeCloseShiftModal();
+                const toast = document.createElement('div');
+                toast.className = 'pos-toast';
+                toast.innerHTML = '<i class="fa-solid fa-circle-check"></i> Đã in báo cáo ca. Đang đăng xuất...';
+                document.body.appendChild(toast);
+                setTimeout(() => { toast.classList.add('show'); }, 10);
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => { toast.remove(); window.location.href = 'login.html'; }, 300);
+                }, 2000);
+            }
+
+            // ========== ONLINE ORDERS DRAWER ==========
+            function openOnlineDrawer() {
+                document.getElementById('onlineDrawer').classList.add('open');
+                document.getElementById('onlineDrawerOverlay').classList.add('open');
+            }
+
+            function closeOnlineDrawer() {
+                document.getElementById('onlineDrawer').classList.remove('open');
+                document.getElementById('onlineDrawerOverlay').classList.remove('open');
+            }
+
+            function processOnlineOrder(btn) {
+                alert('Nhận đơn thành công! Cửa sổ xử lý Pick & Pack sẽ được mở ra (tích hợp sau).');
+                // Xoá card khỏi drawer
+                btn.closest('.hold-order-card').remove();
+
+                // Giảm số trên chuông thông báo
+                const bell = document.querySelector('.online-pulse');
+                if (bell) {
+                    let current = parseInt(bell.innerText, 10);
+                    if (current > 1) {
+                        bell.innerText = current - 1;
+                    } else {
+                        bell.remove();
+                    }
+                }
+
+                // Đóng drawer nếu hết đơn
+                const remainingOrders = document.querySelectorAll('#onlineDrawer .hold-order-card').length;
+                if (remainingOrders === 0) {
+                    closeOnlineDrawer();
+                }
+            }
+
+            // ========== CHECKOUT PROMO LOGIC ==========
+            function applyVoucher() {
+                const code = document.getElementById('voucherCodeInput').value.trim().toUpperCase();
+                if (code === '') {
+                    alert('Vui lòng nhập mã Voucher!');
+                    return;
+                }
+                alert(`Đã áp dụng thành công mã ưu đãi: ${code}! (Giả lập giảm 10%)`);
+                // Trong thực tế sẽ call API tính toán lại tổng tiền.
+            }
+
+            function togglePoints() {
+                const isChecked = document.getElementById('usePointsCheckbox').checked;
+                if (isChecked) {
+                    alert('Đã trừ 25,000 điểm tương ứng -25,000₫ vào hóa đơn.');
+                } else {
+                    alert('Đã hoàn lại điểm. Tính lại tỷ giá hoá đơn gốc.');
+                }
+            }
+
+            // ========== KEYBOARD SHORTCUTS ==========
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'F2') {
+                    e.preventDefault();
+                    document.querySelector('.pos-search-input').focus();
+                }
+                if (e.key === 'F5') {
+                    e.preventDefault();
+                    document.querySelector('.pos-customer-input input').focus();
+                }
+                if (e.key === 'F12') {
+                    e.preventDefault();
+                    openCheckoutModal();
+                }
+                if (e.key === 'Escape') {
+                    closeCheckoutModal();
+                    closeHoldDrawer();
+                    closeCloseShiftModal();
+                }
+            });
+        </script>
+
+</body>
+
+</html>

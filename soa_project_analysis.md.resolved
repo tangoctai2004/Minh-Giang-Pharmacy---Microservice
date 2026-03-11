@@ -1,0 +1,201 @@
+# 🏥 Phân Tích Dự Án SOA — Hệ Thống Quản Lý Nhà Thuốc Minh Giang
+
+## I. Đánh Giá Cách Tiếp Cận Hiện Tại
+
+### ✅ Những điểm TỐT trong roadmap của bạn:
+1. **Thiết kế UI trước** → thống kê API → rồi mới code → Đây là hướng đi chuẩn Top-Down, rất tốt
+2. **Phân công rõ ràng** — bạn làm nhóm trưởng config hệ thống, thành viên phát triển
+3. **Phân bổ độ ưu tiên** — Kiosk 80%, Web 20%, App nếu kịp → thực tế, không ôm đồm
+
+### ⚠️ Những điểm CẦN BỔ SUNG (quan trọng):
+
+| # | Thiếu sót | Tại sao quan trọng | Giảng viên sẽ hỏi |
+|---|-----------|--------------------|--------------------|
+| 1 | **Chưa có bước thiết kế kiến trúc Microservice** | Đề bài yêu cầu triển khai theo MicroService — bạn cần vẽ sơ đồ kiến trúc TRƯỚC khi code | "Các service giao tiếp với nhau như nào?" |
+| 2 | **Chưa xác định service nào** | Cần tách rõ domain → service ngay từ đầu | "Bạn có bao nhiêu service? Mỗi service làm gì?" |
+| 3 | **Thiếu bước thiết kế Database** | Mỗi service cần database riêng (Database per Service) | "Service A truy cập data Service B như thế nào?" |
+| 4 | **Chưa có API Gateway** | Microservice cần 1 điểm truy cập chung | "Client gọi API vào đâu?" |
+| 5 | **Chưa có Service Discovery** | Khi có nhiều service, cần biết service nào đang chạy ở đâu | "Nếu scale 1 service lên 2 instance thì sao?" |
+| 6 | **Thiếu bước Testing & CI/CD** | Điểm cộng lớn nếu có Docker + auto deploy | "Làm sao deploy và test?" |
+
+---
+
+## II. Roadmap Đề Xuất (Cải Tiến)
+
+```
+1. Chốt chủ đề + Phạm vi bài toán
+2. Thiết kế kiến trúc Microservice (sơ đồ tổng thể)     ← MỚI
+3. Xác định các Service + Database riêng cho từng service ← MỚI  
+4. Thiết kế UI toàn bộ các trang (Figma)
+5. Thống kê API cho từng service
+6. Config hạ tầng (Docker, API Gateway, Message Queue)    ← MỚI
+7. Phát triển FE + BE song song
+8. Tích hợp + Testing
+9. Deploy + Demo
+```
+
+---
+
+## III. Đề Xuất Các Microservice
+
+Dựa trên bài toán "Quản lý nhà thuốc dân sinh 1 cơ sở", mình đề xuất **5 service chính + 2 service hạ tầng**:
+
+### 🔵 Core Services (bắt buộc)
+
+#### 1. **User Service** — Quản lý người dùng & phân quyền
+- Đăng ký / Đăng nhập (JWT Authentication)
+- Phân quyền: Admin, Nhân viên bán hàng, Khách hàng
+- Quản lý thông tin nhân viên, profile khách
+- **Database**: `user_db` (MySQL/PostgreSQL)
+
+#### 2. **Product Service** — Quản lý sản phẩm thuốc
+- CRUD sản phẩm (tên, giá, danh mục, hình ảnh, hoạt chất, nhà sản xuất...)
+- Quản lý danh mục thuốc
+- Tìm kiếm, filter, phân trang
+- Quản lý tồn kho (số lượng, cảnh báo hết hàng)
+- **Database**: `product_db`
+
+#### 3. **Order Service** — Quản lý đơn hàng & bán hàng
+- Tạo đơn hàng (từ Kiosk hoặc Web)
+- Quản lý giỏ hàng
+- Xử lý thanh toán (tiền mặt, chuyển khoản, QR)
+- Lịch sử đơn hàng
+- In hóa đơn
+- **Database**: `order_db`
+
+### 🟢 Service nâng cao (điểm cộng lớn)
+
+#### 4. **Notification Service** — Thông báo
+- Gửi email xác nhận đơn hàng
+- Thông báo hết hàng cho admin
+- Thông báo khuyến mãi cho khách
+- Sử dụng **Message Queue** (RabbitMQ/Kafka) → thể hiện giao tiếp bất đồng bộ giữa các service
+- **Database**: `notification_db`
+
+#### 5. **Report Service** — Báo cáo & thống kê
+- Doanh thu theo ngày/tuần/tháng
+- Sản phẩm bán chạy
+- Thống kê khách hàng
+- Export báo cáo PDF/Excel
+- **Database**: đọc data từ các service khác qua API
+
+### 🔴 Infrastructure Services (hạ tầng)
+
+#### 6. **API Gateway** (Kong / Spring Cloud Gateway / Nginx)
+- Điểm truy cập duy nhất cho tất cả client
+- Load balancing, rate limiting
+- Routing request đến đúng service
+
+#### 7. **Service Registry** (Eureka / Consul) — *nếu dùng Spring Cloud*
+- Đăng ký và khám phá service
+- Health check
+
+---
+
+## IV. Sơ Đồ Kiến Trúc Tổng Thể
+
+```mermaid
+graph TB
+    subgraph Clients
+        A[🖥️ Kiosk - Nhân viên bán hàng]
+        B[🌐 Web - Khách hàng]
+        C[📱 App - Nếu kịp]
+    end
+
+    subgraph API Gateway
+        GW[API Gateway<br/>Kong / Nginx]
+    end
+
+    subgraph Microservices
+        US[👤 User Service<br/>Auth + Phân quyền]
+        PS[💊 Product Service<br/>Sản phẩm + Tồn kho]
+        OS[🛒 Order Service<br/>Đơn hàng + Thanh toán]
+        NS[🔔 Notification Service<br/>Email + Thông báo]
+        RS[📊 Report Service<br/>Thống kê + Báo cáo]
+    end
+
+    subgraph Message Queue
+        MQ[RabbitMQ / Kafka]
+    end
+
+    subgraph Databases
+        DB1[(user_db)]
+        DB2[(product_db)]
+        DB3[(order_db)]
+        DB4[(notification_db)]
+    end
+
+    A --> GW
+    B --> GW
+    C --> GW
+    GW --> US
+    GW --> PS
+    GW --> OS
+    GW --> NS
+    GW --> RS
+    US --- DB1
+    PS --- DB2
+    OS --- DB3
+    NS --- DB4
+    OS -->|Đơn hàng mới| MQ
+    MQ -->|Gửi thông báo| NS
+    PS -->|Hết hàng| MQ
+```
+
+---
+
+## V. Công Nghệ Đề Xuất
+
+| Thành phần | Công nghệ | Lý do |
+|------------|-----------|-------|
+| **Backend** | Spring Boot (Java) hoặc Node.js (Express) | Phổ biến, tài liệu nhiều |
+| **Frontend Web** | HTML/CSS/JS (hiện tại) hoặc React/Vue | Bạn đang có sẵn FE |
+| **Frontend Kiosk** | React hoặc Vue (SPA) | Tương tác nhanh, UX tốt |
+| **Database** | MySQL hoặc PostgreSQL | Quen thuộc, ổn định |
+| **API Gateway** | Nginx hoặc Kong | Đơn giản, hiệu quả |
+| **Message Queue** | RabbitMQ | Dễ setup, UI quản lý sẵn |
+| **Container** | Docker + Docker Compose | Mỗi service 1 container → demo dễ |
+| **Auth** | JWT (JSON Web Token) | Chuẩn công nghiệp |
+
+---
+
+## VI. Tiêu Chí Chấm & Cách Ghi Điểm Cao
+
+Theo đề bài, điểm phụ thuộc vào 4 yếu tố:
+
+### 1. Chủ đề + Quy mô + Độ khó ⭐⭐⭐
+- ✅ Nhà thuốc là chủ đề thực tế, có ứng dụng rõ ràng
+- 💡 **Để tăng điểm**: Thêm tính năng nâng cao như quét barcode, cảnh báo thuốc hết hạn, tích điểm khách hàng
+
+### 2. Kết quả triển khai ⭐⭐⭐⭐
+- ✅ Có **tối thiểu 3 service** chạy được độc lập
+- ✅ Có **API Gateway** làm điểm truy cập chung
+- ✅ Có **Message Queue** thể hiện giao tiếp bất đồng bộ
+- ✅ **Docker Compose** — 1 lệnh chạy toàn bộ hệ thống
+- 💡 **Điểm cộng cực lớn**: Mỗi service có database riêng (Database per Service pattern)
+
+### 3. Kết quả trình bày ⭐⭐⭐
+- Chuẩn bị slide đẹp, sơ đồ kiến trúc rõ ràng
+- Demo live hoạt động mượt mà
+- Giải thích được TẠI SAO tách service như vậy
+
+### 4. Đóng góp thành viên ⭐⭐
+- Dùng Git, mỗi người commit rõ ràng
+- Phân công theo service (mỗi người phụ trách 1 service)
+
+---
+
+## VII. Phân Công Nhóm Gợi Ý
+
+| Thành viên | Phụ trách | Output |
+|------------|-----------|--------|
+| **Bạn (Nhóm trưởng)** | Kiến trúc tổng thể, API Gateway, Docker, FE Kiosk | Config hạ tầng + Kiosk UI |
+| **Thành viên 2** | User Service + Auth | Login/Register + JWT |
+| **Thành viên 3** | Product Service | CRUD sản phẩm + tồn kho |
+| **Thành viên 4** | Order Service | Đơn hàng + thanh toán |
+| **Thành viên 5** | FE Web + Notification Service | Giao diện web khách hàng |
+
+---
+
+> [!IMPORTANT]
+> **Điểm mấu chốt để điểm cao**: Thầy sẽ đánh giá cao nhất việc bạn **thực sự triển khai được mô hình Microservice** — tức là các service chạy độc lập, giao tiếp qua API/Message Queue, mỗi service có database riêng, và có API Gateway. Đừng chỉ tập trung vào UI đẹp mà quên phần kiến trúc.

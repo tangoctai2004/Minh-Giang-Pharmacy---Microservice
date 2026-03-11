@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bệnh theo đối tượng — Nhà Thuốc Minh Giang</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+
+
+        /* Container and Structure */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .breadcrumb {
+            padding: 14px 0;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .breadcrumb a {
+            color: #0b7a3e;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb span {
+            margin: 0 6px;
+            color: #9ca3af;
+        }
+
+        .page-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: #0b7a3e;
+            margin: 0 0 24px;
+        }
+
+        .page-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        /* Left Sidebar: Danh sách bệnh chuyên khoa */
+        .sidebar {
+            padding-top: 10px;
+        }
+
+        .sidebar-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #374151;
+            margin: 0 0 16px;
+        }
+
+        .specialty-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .specialty-list li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #8a9bb2;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .specialty-list li a:hover,
+        .specialty-list li a.active {
+            background: #fff;
+            color: #8a9bb2;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .specialty-list li a img {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+        }
+
+        /* Main Content: Article Cards */
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .content-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+        }
+
+        .content-card h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #374151;
+            margin: 0 0 20px;
+        }
+
+        .article-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px 24px;
+        }
+
+        .article-grid a {
+            font-size: 13px;
+            color: #111827;
+            line-height: 1.5;
+            text-decoration: none;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            transition: color 0.15s;
+        }
+
+        .article-grid a:hover {
+            color: #0b7a3e;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header Banner -->
+    <div mg-include="includes/header_banner.html"></div>
+
+    <!-- Top Bar -->
+    <div mg-include="includes/top_bar.html"></div>
+
+    <!-- Main Header -->
+    <div mg-include="includes/main_header.html"></div>
+
+    <!-- Content -->
+    <main class="container">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="index.html">Trang chủ</a><span>›</span>
+            <a href="disease.html">Bệnh lý</a><span>›</span>
+            <strong style="color:#0b7a3e">Bệnh theo đối tượng</strong>
+        </div>
+
+        <h1 class="page-title">Bệnh theo đối tượng</h1>
+
+        <div class="page-layout">
+            <!-- Left Sidebar -->
+            <aside class="sidebar">
+                <h3 class="sidebar-title">Phân loại theo đối tượng</h3>
+
+                <ul class="specialty-list" id="specialtyNav">
+                    <li><a href="#nam-gioi" class="active"><img
+                                src="../assets/images/benh-ly/benh-theo-doi-tuong/icon-nam-gioi.png" alt="">Nam giới</a></li>
+                    <li><a href="#nu-gioi"><img src="../assets/images/benh-ly/benh-theo-doi-tuong/icon-nu-gioi.png" alt="">Nữ
+                            giới</a></li>
+                    <li><a href="#tre-em"><img src="../assets/images/benh-ly/benh-theo-doi-tuong/icon-tre-em.png" alt="">Trẻ
+                            em</a></li>
+                    <li><a href="#nguoi-cao-tuoi"><img src="../assets/images/benh-ly/benh-theo-doi-tuong/icon-nguoi-cao-tuoi.png"
+                                alt="">Người cao tuổi</a></li>
+                </ul>
+
+            </aside>
+
+            <!-- Main Content Area -->
+
+            <div class="content-area">
+
+                <div class="content-card specialty-card-content" id="nam-gioi">
+                    <h2>Nam giới</h2>
+                    <div class="article-grid">
+                        <a href="#">Rối loạn cương dương: Nguyên nhân, Triệu chứng, Cách điều trị an toàn</a>
+                        <a href="#">Viêm tuyến tiền liệt: Dấu hiệu nhận biết và Các phương pháp chữa trị</a>
+                        <a href="#">Xuất tinh sớm: Đâu là nguyên nhân và cách khắc phục hiệu quả nhất?</a>
+                        <a href="#">Hói đầu ở nam giới: Nguyên nhân do di truyền hay thói quen sinh hoạt?</a>
+                        <a href="#">Yếu sinh lý nam: Chế độ ăn uống và các bài tập cải thiện sức khỏe</a>
+                        <a href="#">Ung thư tuyến tiền liệt: Tầm soát và nhận biết sớm triệu chứng</a>
+                    </div>
+                </div>
+
+                <div class="content-card specialty-card-content" id="nu-gioi">
+                    <h2>Nữ giới</h2>
+                    <div class="article-grid">
+                        <a href="#">Rối loạn kinh nguyệt: Nguyên nhân do nội tiết và cách khắc phục</a>
+                        <a href="#">Viêm âm đạo: Triệu chứng điển hình, cách phòng ngừa và điều trị</a>
+                        <a href="#">Hội chứng buồng trứng đa nang (PCOS): Nhận biết sớm và hướng điều trị</a>
+                        <a href="#">Ung thư cổ tử cung: Tầm quan trọng của việc tiêm ngừa HPV và tầm soát định kỳ</a>
+                        <a href="#">Viêm lộ tuyến cổ tử cung: Dấu hiệu, Mức độ nguy hiểm và Cách chữa</a>
+                        <a href="#">Khô âm đạo ở phụ nữ tiền mãn kinh: Nguyên nhân và Các giải pháp làm giảm</a>
+                        <a href="#">Lạc nội mạc tử cung: Nhận diện triệu chứng đau bất thường</a>
+                    </div>
+                </div>
+
+                <div class="content-card specialty-card-content" id="tre-em">
+                    <h2>Trẻ em</h2>
+                    <div class="article-grid">
+                        <a href="#">Sốt phát ban ở trẻ em: Cách nhận biết, phân biệt và chăm sóc tại nhà</a>
+                        <a href="#">Tay chân miệng: Nguyên nhân, Dấu hiệu nguy hiểm và Cách phòng bệnh</a>
+                        <a href="#">Suy dinh dưỡng ở trẻ: Đánh giá thể trạng và Chế độ dinh dưỡng phục hồi</a>
+                        <a href="#">Viêm tai giữa cấp tính ở trẻ nhỏ: Xử trí thế nào để tránh biến chứng?</a>
+                        <a href="#">Bệnh sởi: Triệu chứng điển hình, Biến chứng và Lịch tiêm phòng cho bé</a>
+                        <a href="#">Tiêu chảy cấp ở trẻ em: Hướng dẫn bù nước và chăm sóc đúng cách</a>
+                        <a href="#">Thủy đậu: Dấu hiệu khởi phát, Diễn tiến bệnh và Cách chăm sóc giảm sẹo</a>
+                        <a href="#">Rối loạn tiêu hóa ở trẻ sơ sinh: Dấu hiệu và giải pháp khắc phục an toàn</a>
+                    </div>
+                </div>
+
+                <div class="content-card specialty-card-content" id="nguoi-cao-tuoi">
+                    <h2>Người cao tuổi</h2>
+                    <div class="article-grid">
+                        <a href="#">Tăng huyết áp ở người già: Nguyên tắc kiểm soát và Phòng ngừa đột quỵ</a>
+                        <a href="#">Đái tháo đường type 2: Biến chứng nguy hiểm và Cách quản lý đường huyết</a>
+                        <a href="#">Loãng xương: Nguyên nhân thoái hóa, Biến chứng gãy xương và Cách bổ sung Canxi</a>
+                        <a href="#">Bệnh Alzheimer và sa sút trí tuệ: Nhận biết dấu hiệu sớm ở người cao tuổi</a>
+                        <a href="#">Thoái hóa khớp gối: Nguyên nhân gây đau nhức và Các phương pháp giảm đau</a>
+                        <a href="#">Bệnh Parkinson: Triệu chứng run tay chân và Hướng điều trị cải thiện chất lượng
+                            sống</a>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Extracted Bottom Sections -->
+        <div class="bottom-sections">
+
+            <!-- Tra cứu theo nhóm bệnh -->
+            <div mg-include="includes/disease_groups.html"></div>
+
+            <!-- Tìm kiếm hàng đầu -->
+            <div mg-include="includes/top_searches.html"></div>
+
+            <!-- SẢN PHẨM ĐANG THU HÚT -->
+            <div mg-include="includes/featured_products.html"></div>
+
+        </div>
+    </main>
+
+    <!-- Pre-Footer Promises -->
+    <div mg-include="includes/promises.html"></div>
+
+    <!-- Newsletter -->
+    <div mg-include="includes/newsletter.html"></div>
+
+    <!-- Main Footer -->
+    <div mg-include="includes/main_footer.html"></div>
+
+    <script>
+        // Smooth scrolling for sidebar links
+        document.querySelectorAll('.specialty-list a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetEl = document.getElementById(targetId);
+                if (targetEl) {
+                    targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Intersection Observer logic to highlight active sidebar link
+        const cards = document.querySelectorAll('.specialty-card-content');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    document.querySelectorAll('.specialty-list a').forEach(a => a.classList.remove('active'));
+                    const navLink = document.querySelector(`.specialty-list a[href="#${entry.target.id}"]`);
+                    if (navLink) navLink.classList.add('active');
+                }
+            });
+        }, { rootMargin: '-10% 0px -80% 0px' });
+
+        cards.forEach(card => observer.observe(card));
+    </script>
+    <script src="../assets/js/components.js"></script>
+</body>
+
+</html>

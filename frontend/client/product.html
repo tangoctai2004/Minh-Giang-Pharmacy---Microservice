@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thuốc Phosphalugel giảm đổ axit của dạ dày — Nhà Thuốc Minh Giang</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .breadcrumb {
+            padding: 12px 0;
+            font-size: 15px;
+            color: #666
+        }
+
+        .breadcrumb a {
+            color: #0b7a3e;
+            text-decoration: none
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline
+        }
+
+        .breadcrumb span {
+            margin: 0 6px;
+            color: #999
+        }
+
+        /* PRODUCT DETAIL */
+        .pd-layout {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 24px;
+            padding-bottom: 40px
+        }
+
+        .pd-left {}
+
+        .pd-top {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 24px;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px
+        }
+
+        /* Image Gallery */
+        .pd-gallery {}
+
+        .pd-main-img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: contain;
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            background: #fafafa
+        }
+
+        .pd-thumbs {
+            display: flex;
+            gap: 8px
+        }
+
+        .pd-thumb {
+            width: 64px;
+            height: 64px;
+            object-fit: contain;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            padding: 4px;
+            background: #fafafa;
+            transition: border-color .15s
+        }
+
+        .pd-thumb:hover,
+        .pd-thumb.active {
+            border-color: #0b7a3e
+        }
+
+        /* Product Info */
+        .pd-info {}
+
+        .pd-brand {
+            font-size: 14px;
+            color: #0b7a3e;
+            font-weight: 500;
+            margin-bottom: 4px
+        }
+
+        .pd-brand a {
+            color: #0b7a3e;
+            text-decoration: none
+        }
+
+        .pd-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1f2937;
+            line-height: 1.4;
+            margin-bottom: 8px
+        }
+
+        .pd-rating-line {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+            color: #6b7280;
+            margin-bottom: 12px
+        }
+
+        .pd-stars {
+            color: #f59e0b;
+            font-size: 15px
+        }
+
+        .pd-price-box {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 16px
+        }
+
+        .pd-price {
+            font-size: 26px;
+            font-weight: 700;
+            color: #dc2626
+        }
+
+        .pd-price-unit {
+            font-size: 15px;
+            color: #6b7280;
+            font-weight: 400;
+            margin-left: 4px
+        }
+
+        .pd-old-price {
+            font-size: 15px;
+            color: #9ca3af;
+            text-decoration: line-through;
+            margin-left: 12px
+        }
+
+        .pd-discount-tag {
+            background: #dc2626;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 8px
+        }
+
+        .pd-short-desc {
+            font-size: 15px;
+            color: #4b5563;
+            line-height: 1.6;
+            margin-bottom: 16px
+        }
+
+        .pd-qty-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px
+        }
+
+        .pd-qty-label {
+            font-size: 15px;
+            font-weight: 500;
+            color: #374151
+        }
+
+        .pd-qty-ctrl {
+            display: flex;
+            align-items: center;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            overflow: hidden
+        }
+
+        .pd-qty-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #f9fafb;
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #374151
+        }
+
+        .pd-qty-btn:hover {
+            background: #e5e7eb
+        }
+
+        .pd-qty-input {
+            width: 40px;
+            height: 32px;
+            border: none;
+            border-left: 1px solid #d1d5db;
+            border-right: 1px solid #d1d5db;
+            text-align: center;
+            font-size: 15px;
+            font-family: inherit
+        }
+
+        .pd-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px
+        }
+
+        .pd-btn-buy {
+            flex: 1;
+            padding: 12px;
+            background: #0b7a3e;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background .15s
+        }
+
+        .pd-btn-buy:hover {
+            background: #095e30
+        }
+
+        .pd-btn-cart {
+            flex: 1;
+            padding: 12px;
+            background: #fff;
+            color: #0b7a3e;
+            border: 2px solid #0b7a3e;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all .15s
+        }
+
+        .pd-btn-cart:hover {
+            background: #ecfdf5
+        }
+
+        /* Spec Table */
+        .pd-specs {
+            margin-bottom: 0
+        }
+
+        .pd-specs table {
+            width: 100%;
+            font-size: 15px;
+            border-collapse: collapse
+        }
+
+        .pd-specs td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f3f4f6
+        }
+
+        .pd-specs td:first-child {
+            width: 35%;
+            color: #6b7280;
+            font-weight: 500;
+            background: #f9fafb
+        }
+
+        .pd-specs td:last-child {
+            color: #1f2937
+        }
+
+        /* Right Sidebar */
+        .pd-sidebar {
+            position: sticky;
+            top: 20px;
+            align-self: start
+        }
+
+        .pd-sidebar-box {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px
+        }
+
+        .pd-sidebar-box h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0 0 12px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #0b7a3e
+        }
+
+        .pd-related-item {
+            display: flex;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f3f4f6;
+            cursor: pointer;
+            transition: background .1s
+        }
+
+        .pd-related-item:last-child {
+            border-bottom: none
+        }
+
+        .pd-related-item:hover {
+            background: #f9fafb;
+            border-radius: 6px
+        }
+
+        .pd-related-img {
+            width: 56px;
+            height: 56px;
+            object-fit: contain;
+            border: 1px solid #f0f0f0;
+            border-radius: 4px;
+            flex-shrink: 0
+        }
+
+        .pd-related-info {
+            flex: 1;
+            min-width: 0
+        }
+
+        .pd-related-name {
+            font-size: 14px;
+            color: #1f2937;
+            line-height: 1.3;
+            margin-bottom: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden
+        }
+
+        .pd-related-price {
+            font-size: 15px;
+            font-weight: 700;
+            color: #dc2626
+        }
+
+        /* Tabs */
+        .pd-tabs-section {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px
+        }
+
+        .pd-tab-nav {
+            display: flex;
+            gap: 0;
+            border-bottom: 2px solid #e5e7eb;
+            margin-bottom: 16px
+        }
+
+        .pd-tab-btn {
+            padding: 10px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #6b7280;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all .15s;
+            margin-bottom: -2px
+        }
+
+        .pd-tab-btn:hover {
+            color: #0b7a3e
+        }
+
+        .pd-tab-btn.active {
+            color: #0b7a3e;
+            border-bottom-color: #0b7a3e
+        }
+
+        .pd-tab-content {
+            display: none;
+            font-size: 15px;
+            color: #4b5563;
+            line-height: 1.8
+        }
+
+        .pd-tab-content.active {
+            display: block
+        }
+
+        .pd-tab-content h4 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 16px 0 8px
+        }
+
+        .pd-tab-content p {
+            margin-bottom: 12px
+        }
+
+        .pd-desc-banner {
+            width: 100%;
+            border-radius: 8px;
+            margin: 16px 0
+        }
+
+        /* Rating Section */
+        .pd-rating-section {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px
+        }
+
+        .pd-rating-section h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0 0 16px
+        }
+
+        .pd-rating-overview {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 20px
+        }
+
+        .pd-rating-big {
+            text-align: center;
+            min-width: 100px
+        }
+
+        .pd-rating-big .score {
+            font-size: 40px;
+            font-weight: 700;
+            color: #f59e0b
+        }
+
+        .pd-rating-big .stars {
+            color: #f59e0b;
+            font-size: 16px;
+            margin: 4px 0
+        }
+
+        .pd-rating-big .count {
+            font-size: 14px;
+            color: #9ca3af
+        }
+
+        .pd-rating-bars {
+            flex: 1
+        }
+
+        .pd-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #6b7280
+        }
+
+        .pd-bar-row span:first-child {
+            width: 14px;
+            text-align: right
+        }
+
+        .pd-bar-track {
+            flex: 1;
+            height: 8px;
+            background: #f3f4f6;
+            border-radius: 4px;
+            overflow: hidden
+        }
+
+        .pd-bar-fill {
+            height: 100%;
+            background: #f59e0b;
+            border-radius: 4px
+        }
+
+        .pd-bar-row span:last-child {
+            width: 30px
+        }
+
+        .pd-review-form {
+            border-top: 1px solid #e5e7eb;
+            padding-top: 16px
+        }
+
+        .pd-review-form h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0 0 10px;
+            color: #1f2937
+        }
+
+        .pd-review-stars {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 12px
+        }
+
+        .pd-review-stars i {
+            font-size: 20px;
+            color: #d1d5db;
+            cursor: pointer;
+            transition: color .15s
+        }
+
+        .pd-review-stars i:hover,
+        .pd-review-stars i.active {
+            color: #f59e0b
+        }
+
+        .pd-review-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 15px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 60px;
+            margin-bottom: 10px
+        }
+
+        .pd-review-submit {
+            padding: 8px 20px;
+            background: #0b7a3e;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit
+        }
+
+        .pd-review-submit:hover {
+            background: #095e30
+        }
+
+        .pd-review-list {
+            margin-top: 16px
+        }
+
+        .pd-review-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #f3f4f6
+        }
+
+        .pd-review-item:last-child {
+            border-bottom: none
+        }
+
+        .pd-review-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px
+        }
+
+        .pd-review-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: #6b7280
+        }
+
+        .pd-review-meta {
+            font-size: 14px
+        }
+
+        .pd-review-meta strong {
+            color: #1f2937
+        }
+
+        .pd-review-meta span {
+            color: #9ca3af;
+            margin-left: 8px
+        }
+
+        .pd-review-text {
+            font-size: 15px;
+            color: #4b5563;
+            line-height: 1.5;
+            margin-top: 4px
+        }
+
+        /* Related Products Carousel */
+        .pd-popular-section {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px
+        }
+
+        .pd-popular-section h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0 0 16px
+        }
+
+        .pd-popular-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px
+        }
+
+        .pd-pop-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all .2s;
+            cursor: pointer
+        }
+
+        .pd-pop-card:hover {
+            border-color: #0b7a3e;
+            box-shadow: 0 4px 12px rgba(11, 122, 62, .1);
+            transform: translateY(-2px)
+        }
+
+        .pd-pop-card img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: contain;
+            padding: 8px;
+            background: #fafafa
+        }
+
+        .pd-pop-card-body {
+            padding: 10px
+        }
+
+        .pd-pop-card-name {
+            font-size: 14px;
+            color: #1f2937;
+            line-height: 1.3;
+            margin-bottom: 6px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            height: 32px
+        }
+
+        .pd-pop-card-price {
+            font-size: 15px;
+            font-weight: 700;
+            color: #dc2626
+        }
+
+        /* Top Searches */
+        .top-searches {
+            margin-top: 30px;
+            padding: 20px 0;
+            border-top: 1px solid #e5e7eb
+        }
+
+        .top-searches h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 14px
+        }
+
+        .top-search-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px
+        }
+
+        .top-search-links a {
+            display: inline-block;
+            padding: 6px 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            font-size: 14px;
+            color: #4b5563;
+            text-decoration: none;
+            transition: all .15s
+        }
+
+        .top-search-links a:hover {
+            border-color: #0b7a3e;
+            color: #0b7a3e;
+            background: #ecfdf5
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header Banner -->
+    <div mg-include="includes/header_banner.html"></div>
+
+    <!-- Top Bar -->
+    <div mg-include="includes/top_bar.html"></div>
+
+    <!-- Main Header -->
+    <div mg-include="includes/main_header.html"></div>
+
+    <!-- ====== PRODUCT DETAIL PAGE ====== -->
+    <main class="container">
+        <div class="breadcrumb">
+            <a href="index.html">Trang chủ</a><span>›</span><a href="category.html">Thuốc</a><span>›</span><a
+                href="#">Thuốc dạ dày – tiêu hóa</a><span>›</span><strong style="color:#1f2937;">Thuốc Phosphalugel giảm
+                đổ axit dạ dày</strong>
+        </div>
+
+        <div class="pd-layout">
+            <div class="pd-left">
+                <!-- Product Top: Gallery + Info -->
+                <div class="pd-top">
+                    <div class="pd-gallery">
+                        <img src="../assets/images/product_frame.png" alt="Phosphalugel" class="pd-main-img" id="pdMainImg">
+                        <div class="pd-thumbs">
+                            <img src="../assets/images/product_frame.png" alt="Thumb 1" class="pd-thumb active"
+                                onclick="changeImg(this)">
+                            <img src="../assets/images/product_frame_2.png" alt="Thumb 2" class="pd-thumb"
+                                onclick="changeImg(this)">
+                            <img src="../assets/images/product_frame.png" alt="Thumb 3" class="pd-thumb"
+                                onclick="changeImg(this)">
+                            <img src="../assets/images/product_frame_2.png" alt="Thumb 4" class="pd-thumb"
+                                onclick="changeImg(this)">
+                        </div>
+                    </div>
+                    <div class="pd-info">
+                        <div class="pd-brand">Thương hiệu: <a href="#">Sanofi (Pháp)</a></div>
+                        <h1 class="pd-name">Thuốc Phosphalugel giảm đổ axit của dạ dày (26 gói x 20g)</h1>
+                        <div class="pd-rating-line">
+                            <div class="pd-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                    class="fa-solid fa-star-half-stroke"></i></div>
+                            <span>4.5</span><span>|</span><span>5 đánh giá</span><span>|</span><span>Đã bán 15</span>
+                        </div>
+                        <div class="pd-price-box">
+                            <span class="pd-price">124,800₫<span class="pd-price-unit">/ Hộp</span></span>
+                            <span class="pd-old-price">156,000₫</span>
+                            <span class="pd-discount-tag">-20%</span>
+                        </div>
+                        <div class="pd-short-desc">
+                            Thuốc Phosphalugel là sản phẩm của Pharmatis (Pháp) với thành phần chính là Aluminium
+                            phosphate 20%. Thuốc có tác dụng trung hoà bớt acid trong dạ dày, bao phủ niêm mạc dạ dày
+                            giúp giảm đau và bảo vệ thành dạ dày.
+                        </div>
+                        <div class="pd-qty-row">
+                            <span class="pd-qty-label">Số lượng:</span>
+                            <div class="pd-qty-ctrl">
+                                <button class="pd-qty-btn" onclick="changeQty(-1)">−</button>
+                                <input type="text" value="1" class="pd-qty-input" id="pdQty">
+                                <button class="pd-qty-btn" onclick="changeQty(1)">+</button>
+                            </div>
+                        </div>
+                        <div class="pd-actions">
+                            <button class="pd-btn-buy"><i class="fa-solid fa-bag-shopping"></i> Mua ngay</button>
+                            <button class="pd-btn-cart"><i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ</button>
+                        </div>
+
+                        <!-- Specs Table -->
+                        <div class="pd-specs">
+                            <table>
+                                <tr>
+                                    <td>SKU</td>
+                                    <td>PH-DA-001</td>
+                                </tr>
+                                <tr>
+                                    <td>Danh mục</td>
+                                    <td>Thuốc dạ dày – tiêu hóa</td>
+                                </tr>
+                                <tr>
+                                    <td>Thương hiệu</td>
+                                    <td>Sanofi (Pháp)</td>
+                                </tr>
+                                <tr>
+                                    <td>Dạng bào chế</td>
+                                    <td>Hỗn dịch</td>
+                                </tr>
+                                <tr>
+                                    <td>Quy cách</td>
+                                    <td>Hộp 26 gói x 20g</td>
+                                </tr>
+                                <tr>
+                                    <td>Thành phần</td>
+                                    <td>Aluminium phosphate 20%</td>
+                                </tr>
+                                <tr>
+                                    <td>Xuất xứ</td>
+                                    <td>Pháp</td>
+                                </tr>
+                                <tr>
+                                    <td>Số đăng ký</td>
+                                    <td>VN-12345-18</td>
+                                </tr>
+                                <tr>
+                                    <td>Thuốc cần mua theo</td>
+                                    <td>Đơn thuốc</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs Section -->
+                <div class="pd-tabs-section">
+                    <div class="pd-tab-nav">
+                        <button class="pd-tab-btn active" onclick="switchTab('tab-desc')">Thành phần</button>
+                        <button class="pd-tab-btn" onclick="switchTab('tab-usage')">Công dụng</button>
+                        <button class="pd-tab-btn" onclick="switchTab('tab-dosage')">Liều dùng</button>
+                        <button class="pd-tab-btn" onclick="switchTab('tab-storage')">Bảo quản</button>
+                    </div>
+                    <div class="pd-tab-content active" id="tab-desc">
+                        <h4>Thành phần</h4>
+                        <p>Thuốc Phosphalugel là sản phẩm của Pharmatis (Pháp) với thành phần chính là Aluminium
+                            phosphate gel 12,38g (tương đương Aluminium phosphate 2,476g). Sản phẩm được bào chế dưới
+                            dạng hỗn dịch uống, đóng gói trong từng gói nhỏ tiện lợi.</p>
+                        <p>Phosphalugel tác dụng trung hoà acid dạ dày nhanh chóng, tạo lớp bảo vệ niêm mạc dạ dày và
+                            thực quản. Phosphalugel là thuốc kháng acid không gây kiềm hoá dịch dạ dày, giúp giảm acid
+                            dạ dày mà không ảnh hưởng đến quá trình tiêu hoá.</p>
+                        <img src="../assets/images/banner_san_pham_ban_chay.png" alt="Phosphalugel" class="pd-desc-banner">
+                        <p><strong>Thương hiệu:</strong> Phosphalugel thuộc thương hiệu Sanofi – tập đoàn dược phẩm hàng
+                            đầu thế giới có trụ sở tại Pháp, với hơn 100 năm kinh nghiệm trong ngành y dược.</p>
+                    </div>
+                    <div class="pd-tab-content" id="tab-usage">
+                        <h4>Công dụng</h4>
+                        <p>Phosphalugel được sử dụng để điều trị các triệu chứng sau:</p>
+                        <p>• Ợ nóng, ợ chua, trào ngược dạ dày thực quản<br>• Viêm dạ dày cấp và mạn tính<br>• Loét dạ
+                            dày, tá tràng<br>• Viêm thực quản do trào ngược<br>• Đau dạ dày do tăng tiết acid<br>• Rối
+                            loạn tiêu hóa, khó tiêu</p>
+                    </div>
+                    <div class="pd-tab-content" id="tab-dosage">
+                        <h4>Liều dùng</h4>
+                        <p><strong>Người lớn:</strong> dùng 1-2 gói/lần, 2-3 lần/ngày. Uống sau bữa ăn 1-2 giờ hoặc khi
+                            có triệu chứng.</p>
+                        <p><strong>Trẻ em trên 6 tháng:</strong> dùng 1/2 gói – 1 gói/lần, 2-3 lần/ngày theo chỉ dẫn bác
+                            sĩ.</p>
+                        <p><strong>Cách dùng:</strong> Bóp nhẹ gói thuốc để trộn đều trước khi dùng. Có thể uống trực
+                            tiếp hoặc pha với nước.</p>
+                    </div>
+                    <div class="pd-tab-content" id="tab-storage">
+                        <h4>Bảo quản</h4>
+                        <p>Bảo quản nơi khô ráo, thoáng mát, nhiệt độ dưới 30°C. Tránh ánh nắng trực tiếp. Để xa tầm tay
+                            trẻ em.</p>
+                        <p>Hạn sử dụng: 36 tháng kể từ ngày sản xuất (xem trên bao bì).</p>
+                    </div>
+                </div>
+
+                <!-- Rating Section -->
+                <div class="pd-rating-section">
+                    <h3>Đánh giá sản phẩm</h3>
+                    <div class="pd-rating-overview">
+                        <div class="pd-rating-big">
+                            <div class="score">4.5</div>
+                            <div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                    class="fa-solid fa-star-half-stroke"></i></div>
+                            <div class="count">5 đánh giá</div>
+                        </div>
+                        <div class="pd-rating-bars">
+                            <div class="pd-bar-row"><span>5</span><i class="fa-solid fa-star"
+                                    style="color:#f59e0b;font-size:10px"></i>
+                                <div class="pd-bar-track">
+                                    <div class="pd-bar-fill" style="width:60%"></div>
+                                </div><span>60%</span>
+                            </div>
+                            <div class="pd-bar-row"><span>4</span><i class="fa-solid fa-star"
+                                    style="color:#f59e0b;font-size:10px"></i>
+                                <div class="pd-bar-track">
+                                    <div class="pd-bar-fill" style="width:20%"></div>
+                                </div><span>20%</span>
+                            </div>
+                            <div class="pd-bar-row"><span>3</span><i class="fa-solid fa-star"
+                                    style="color:#f59e0b;font-size:10px"></i>
+                                <div class="pd-bar-track">
+                                    <div class="pd-bar-fill" style="width:20%"></div>
+                                </div><span>20%</span>
+                            </div>
+                            <div class="pd-bar-row"><span>2</span><i class="fa-solid fa-star"
+                                    style="color:#f59e0b;font-size:10px"></i>
+                                <div class="pd-bar-track">
+                                    <div class="pd-bar-fill" style="width:0%"></div>
+                                </div><span>0%</span>
+                            </div>
+                            <div class="pd-bar-row"><span>1</span><i class="fa-solid fa-star"
+                                    style="color:#f59e0b;font-size:10px"></i>
+                                <div class="pd-bar-track">
+                                    <div class="pd-bar-fill" style="width:0%"></div>
+                                </div><span>0%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Review List -->
+                    <div class="pd-review-list">
+                        <div class="pd-review-item">
+                            <div class="pd-review-user">
+                                <div class="pd-review-avatar">NL</div>
+                                <div class="pd-review-meta"><strong>Nguyễn Lan</strong> <span>17/02/2026, 21:30</span>
+                                </div>
+                            </div>
+                            <div style="color:#f59e0b;font-size:12px;margin-bottom:4px"><i
+                                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                    class="fa-solid fa-star"></i></div>
+                            <div class="pd-review-text">Thuốc PHOSPHALUGEL HỘP/26 rất tốt. Đã mua lần 2. Giá cả hợp lý,
+                                giao hàng nhanh. Rất hài lòng!</div>
+                        </div>
+                        <div class="pd-review-item">
+                            <div class="pd-review-user">
+                                <div class="pd-review-avatar">TH</div>
+                                <div class="pd-review-meta"><strong>Trần Hùng</strong> <span>10/01/2026, 15:42</span>
+                                </div>
+                            </div>
+                            <div style="color:#f59e0b;font-size:12px;margin-bottom:4px"><i
+                                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                    class="fa-regular fa-star"></i></div>
+                            <div class="pd-review-text">Sản phẩm chính hãng, đóng gói cẩn thận. Uống giảm đau dạ dày
+                                hiệu quả, sẽ mua thêm.</div>
+                        </div>
+                    </div>
+                    <!-- Review Form -->
+                    <div class="pd-review-form">
+                        <h4><i class="fa-solid fa-pen"></i> Viết đánh giá</h4>
+                        <div class="pd-review-stars" id="reviewStars">
+                            <i class="fa-solid fa-star" data-val="1"></i>
+                            <i class="fa-solid fa-star" data-val="2"></i>
+                            <i class="fa-solid fa-star" data-val="3"></i>
+                            <i class="fa-solid fa-star" data-val="4"></i>
+                            <i class="fa-solid fa-star" data-val="5"></i>
+                        </div>
+                        <textarea class="pd-review-input"
+                            placeholder="Chia sẻ nhận xét của bạn về sản phẩm..."></textarea>
+                        <button class="pd-review-submit"><i class="fa-solid fa-paper-plane"></i> Gửi đánh giá</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT SIDEBAR -->
+            <div class="pd-sidebar">
+                <div class="pd-sidebar-box">
+                    <h3><i class="fa-solid fa-shuffle"></i> Sản phẩm tương tự</h3>
+                    <div class="pd-related-item">
+                        <img src="../assets/images/product_frame.png" alt="" class="pd-related-img">
+                        <div class="pd-related-info">
+                            <div class="pd-related-name">Thuốc Maalox dạ dày trung hòa acid, bảo vệ niêm mạc</div>
+                            <div class="pd-related-price">89,000₫</div>
+                        </div>
+                    </div>
+                    <div class="pd-related-item">
+                        <img src="../assets/images/product_frame_2.png" alt="" class="pd-related-img">
+                        <div class="pd-related-info">
+                            <div class="pd-related-name">Thuốc Yumangel giảm đau dạ dày, bao phủ niêm mạc</div>
+                            <div class="pd-related-price">72,000₫</div>
+                        </div>
+                    </div>
+                    <div class="pd-related-item">
+                        <img src="../assets/images/product_frame.png" alt="" class="pd-related-img">
+                        <div class="pd-related-info">
+                            <div class="pd-related-name">Thuốc Gaviscon Advance bạc hà chống trào ngược</div>
+                            <div class="pd-related-price">168,000₫</div>
+                        </div>
+                    </div>
+                    <div class="pd-related-item">
+                        <img src="../assets/images/product_frame_2.png" alt="" class="pd-related-img">
+                        <div class="pd-related-info">
+                            <div class="pd-related-name">Thuốc Mylanta hỗn dịch trung hòa acid dạ dày</div>
+                            <div class="pd-related-price">55,000₫</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pd-sidebar-box">
+                    <h3><i class="fa-solid fa-pills"></i> Sản phẩm phổ biến</h3>
+                    <div class="pd-related-item">
+                        <img src="../assets/images/product_frame_2.png" alt="" class="pd-related-img">
+                        <div class="pd-related-info">
+                            <div class="pd-related-name">Thuốc Nyzylam Gel trị dạ dày, viêm loét thực quản</div>
+                            <div class="pd-related-price">78,000₫</div>
+                        </div>
+                    </div>
+                    <div class="pd-related-item">
+                        <img src="../assets/images/product_frame.png" alt="" class="pd-related-img">
+                        <div class="pd-related-info">
+                            <div class="pd-related-name">Thuốc dạ dày Gaviscon Duo giảm trào ngược</div>
+                            <div class="pd-related-price">145,000₫</div>
+                        </div>
+                    </div>
+                    <div class="pd-related-item">
+                        <img src="../assets/images/product_frame_2.png" alt="" class="pd-related-img">
+                        <div class="pd-related-info">
+                            <div class="pd-related-name">Thuốc Omeprazol Stada 20mg điều trị viêm loét dạ dày</div>
+                            <div class="pd-related-price">35,000₫</div>
+                        </div>
+                    </div>
+                    <div class="pd-related-item">
+                        <img src="../assets/images/product_frame.png" alt="" class="pd-related-img">
+                        <div class="pd-related-info">
+                            <div class="pd-related-name">Viên uống Gastropulgite Ipsen hỗ trợ dạ dày</div>
+                            <div class="pd-related-price">92,000₫</div>
+                        </div>
+                    </div>
+                    <div class="pd-related-item">
+                        <img src="../assets/images/product_frame_2.png" alt="" class="pd-related-img">
+                        <div class="pd-related-info">
+                            <div class="pd-related-name">Thuốc Sucralfate điều trị loét dạ dày, tá tràng</div>
+                            <div class="pd-related-price">62,000₫</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popular Products -->
+        <div class="pd-popular-section">
+            <h3><i class="fa-solid fa-fire" style="color:#dc2626"></i> SẢN PHẨM ĐƯỢC MUA NHIỀU NHẤT</h3>
+            <div class="pd-popular-grid">
+                <div class="pd-pop-card"><img src="../assets/images/product_frame.png" alt="">
+                    <div class="pd-pop-card-body">
+                        <div class="pd-pop-card-name">Ống Biotech DK42 Phụ nữ tiền mãn kinh</div>
+                        <div class="pd-pop-card-price">52,000₫</div>
+                    </div>
+                </div>
+                <div class="pd-pop-card"><img src="../assets/images/product_frame_2.png" alt="">
+                    <div class="pd-pop-card-body">
+                        <div class="pd-pop-card-name">Siro bổ Ensure Gold Phục hồi thể lực</div>
+                        <div class="pd-pop-card-price">189,000₫</div>
+                    </div>
+                </div>
+                <div class="pd-pop-card"><img src="../assets/images/product_frame.png" alt="">
+                    <div class="pd-pop-card-body">
+                        <div class="pd-pop-card-name">Thuốc Vitamin D3 Aquadetrim cho trẻ sơ sinh</div>
+                        <div class="pd-pop-card-price">98,000₫</div>
+                    </div>
+                </div>
+                <div class="pd-pop-card"><img src="../assets/images/product_frame_2.png" alt="">
+                    <div class="pd-pop-card-body">
+                        <div class="pd-pop-card-name">Sữa bột Abbott Glucerna dành cho người tiểu đường</div>
+                        <div class="pd-pop-card-price">425,000₫</div>
+                    </div>
+                </div>
+                <div class="pd-pop-card"><img src="../assets/images/product_frame.png" alt="">
+                    <div class="pd-pop-card-body">
+                        <div class="pd-pop-card-name">Viên uống Calcium D3 Pharma bổ sung canxi</div>
+                        <div class="pd-pop-card-price">115,000₫</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Searches -->
+        <div class="top-searches">
+            <h3>Tìm kiếm hàng đầu</h3>
+            <div class="top-search-links">
+                <a href="#">Bệnh tim mạch</a><a href="#">Thuốc tiểu đường</a><a href="#">Vitamin tổng hợp</a><a
+                    href="#">Thuốc bổ não</a><a href="#">Bệnh tiêu hóa</a><a href="#">Thuốc giảm cân</a><a href="#">Dầu
+                    cá Omega 3</a><a href="#">Người cao tuổi</a><a href="#">Thuốc ho</a><a href="#">Bổ gan</a><a
+                    href="#">Thuốc xương khớp</a><a href="#">Thuốc dạ dày</a><a href="#">Chăm sóc tóc</a><a
+                    href="#">Thuốc mỡ máu</a><a href="#">Kem chống nắng</a><a href="#">Thuốc đau đầu</a><a href="#">Men
+                    tiêu hóa</a><a href="#">Collagen</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Pre-Footer Promises -->
+    <div mg-include="includes/promises.html"></div>
+
+    <!-- Newsletter -->
+    <div mg-include="includes/newsletter.html"></div>
+
+    <!-- Main Footer -->
+    <div mg-include="includes/main_footer.html"></div>
+
+    <script>
+        function changeImg(thumb) {
+            document.getElementById('pdMainImg').src = thumb.src;
+            document.querySelectorAll('.pd-thumb').forEach(t => t.classList.remove('active'));
+            thumb.classList.add('active');
+        }
+        function changeQty(delta) {
+            const inp = document.getElementById('pdQty');
+            let v = parseInt(inp.value) || 1;
+            v = Math.max(1, v + delta);
+            inp.value = v;
+        }
+        function switchTab(tabId) {
+            document.querySelectorAll('.pd-tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.pd-tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+        // Review stars
+        document.querySelectorAll('#reviewStars i').forEach(star => {
+            star.addEventListener('click', () => {
+                const val = parseInt(star.dataset.val);
+                document.querySelectorAll('#reviewStars i').forEach((s, i) => {
+                    s.classList.toggle('active', i < val);
+                });
+            });
+        });
+    </script>
+    <script src="../assets/js/components.js"></script>
+</body>
+
+</html>

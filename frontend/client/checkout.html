@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán — Nhà Thuốc Minh Giang</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f4f6f9;
+        }
+
+        .checkout-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 16px 15px 48px;
+        }
+
+        .breadcrumb {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+        .breadcrumb a {
+            color: #374151;
+            text-decoration: none;
+        }
+
+        .breadcrumb span {
+            margin: 0 6px;
+            color: #9ca3af;
+        }
+
+        .checkout-layout {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 24px;
+            align-items: start;
+        }
+
+        /* === LEFT COLUMN === */
+        .checkout-main {
+            background: #fff;
+            border-radius: 12px;
+            padding: 28px 32px;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+        }
+
+        .checkout-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+            margin: 0 0 24px;
+        }
+
+        /* Gender selector */
+        .gender-selector {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 16px;
+        }
+
+        .gender-selector label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #374151;
+            cursor: pointer;
+        }
+
+        .gender-selector input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #0b7a3e;
+        }
+
+        /* Form Controls */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .form-control {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 11px 14px;
+            font-size: 14px;
+            color: #374151;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .form-control::placeholder {
+            color: #9ca3af;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #0b7a3e;
+        }
+
+        .input-error {
+            border-color: #ef4444;
+        }
+
+        .error-msg {
+            color: #ef4444;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .select-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M6 8L0 0h12z' fill='%236b7280'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 36px;
+        }
+
+        /* Delivery Options */
+        .delivery-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 20px 0 24px;
+        }
+
+        .delivery-box {
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .delivery-box.active {
+            border-color: #0b7a3e;
+            background: #f0faf4;
+        }
+
+        .delivery-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .delivery-box.active .delivery-title {
+            color: #0b7a3e;
+        }
+
+        .delivery-hint {
+            font-size: 11px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        /* Store Selection */
+        .store-selector-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .store-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .store-meta {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        /* Notes & Invoice */
+        .section-subtitle {
+            font-size: 16px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 14px;
+        }
+
+        .textarea-notes {
+            width: 100%;
+            height: 100px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 14px;
+            font-family: 'Roboto', sans-serif;
+            resize: none;
+            margin-bottom: 20px;
+        }
+
+        .invoice-toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .invoice-toggle-row span {
+            font-size: 14px;
+            color: #374151;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #d1d5db;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: #0b7a3e;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Payment Methods */
+        .payment-methods {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .payment-box {
+            border: 1px solid #d8e2ef;
+            border-radius: 12px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fff;
+            min-height: 90px;
+        }
+
+        .payment-box.active {
+            /* No blue border for the box itself as per sample */
+            border-color: #d8e2ef;
+        }
+
+        .payment-toggle {
+            width: 52px;
+            height: 28px;
+            background: #e5e7eb;
+            border-radius: 14px;
+            position: relative;
+            flex-shrink: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .payment-toggle::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: #fff;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+        }
+
+        .payment-box.active .payment-toggle {
+            background: #1a94ff;
+        }
+
+        .payment-box.active .payment-toggle::after {
+            transform: translateX(24px);
+        }
+
+        .payment-icon {
+            height: 100px;
+            display: block;
+            flex-shrink: 0;
+            object-fit: contain;
+        }
+
+        .payment-text {
+            flex: 1;
+        }
+
+        .payment-text strong {
+            display: block;
+            font-size: 18px;
+            color: #2eb135;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .payment-text small {
+            font-size: 14px;
+            color: #6b7280;
+            font-weight: 400;
+            line-height: 1.3;
+        }
+
+        .btn-order {
+            width: 100%;
+            background: #0b7a3e;
+            color: #fff;
+            border: none;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-order:hover {
+            background: #095c2e;
+        }
+
+        /* === RIGHT COLUMN: ORDER SUMMARY === */
+        .order-summary {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+            position: sticky;
+            top: 20px;
+        }
+
+        .summary-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 20px;
+        }
+
+        .summary-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .summary-img {
+            width: 44px;
+            height: 44px;
+            border-radius: 6px;
+            border: 1px solid #f3f4f6;
+            object-fit: contain;
+        }
+
+        .summary-info {
+            flex: 1;
+        }
+
+        .summary-info h4 {
+            font-size: 13px;
+            color: #374151;
+            font-weight: 400;
+            margin: 0 0 4px;
+            line-height: 1.4;
+        }
+
+        .summary-info .qty-price {
+            font-size: 13px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .summary-info .price-orig {
+            font-size: 11px;
+            color: #9ca3af;
+            text-decoration: line-through;
+            margin-left: 6px;
+        }
+
+        .promo-selector {
+            background: #f0faf4;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: #ff914d;
+            margin-bottom: 12px;
+            cursor: pointer;
+        }
+
+        .voucher-input-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .voucher-input-row input {
+            flex: 1;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+
+        .voucher-input-row button {
+            background: #f3f4f6;
+            border: none;
+            padding: 0 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            cursor: pointer;
+        }
+
+        .applied-promo {
+            font-size: 12px;
+            color: #0b7a3e;
+            background: #f0faf4;
+            padding: 8px 10px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .applied-promo i {
+            border-bottom: 1px dashed #0b7a3e;
+        }
+
+        .summary-details {
+            border-top: 1px solid #f3f4f6;
+            padding-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .summary-row.total {
+            margin-top: 12px;
+            border-top: 1px solid #f3f4f6;
+            padding-top: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .val-total {
+            color: #0b7a3e;
+            font-size: 18px;
+        }
+
+        .val-savings {
+            color: #ef4444;
+        }
+
+        .footer-legal {
+            font-size: 11px;
+            color: #9ca3af;
+            line-height: 1.5;
+            margin-top: 20px;
+        }
+
+        .footer-legal a {
+            color: #0b7a3e;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div mg-include="includes/header_banner.html"></div>
+    <div mg-include="includes/top_bar.html"></div>
+    <div mg-include="includes/main_header.html"></div>
+
+    <div class="checkout-wrapper">
+        <div class="breadcrumb">
+            <a href="index.html">Trang chủ</a> › <a href="cart.html">Giỏ hàng</a>
+        </div>
+
+        <div class="checkout-layout">
+
+            <!-- LEFT: CHECKOUT FORM -->
+            <form class="checkout-main">
+                <h1 class="checkout-title">Thanh toán</h1>
+
+                <div class="gender-selector">
+                    <label><input type="radio" name="gender" checked> Anh</label>
+                    <label><input type="radio" name="gender"> Chị</label>
+                </div>
+
+                <div class="form-row">
+                    <div>
+                        <input type="text" class="form-control" placeholder="Họ và tên *">
+                        <p class="error-msg">Họ tên không hợp lệ</p>
+                    </div>
+                    <input type="tel" class="form-control" value="0969259650" placeholder="Điện thoại *">
+                    <input type="email" class="form-control" value="0969259650@tscare.vn" placeholder="Email">
+                </div>
+
+                <div class="select-row">
+                    <select class="form-control">
+                        <option>Thành phố Cần Thơ</option>
+                    </select>
+                    <select class="form-control">
+                        <option>Chọn Quận/Huyện (*)</option>
+                    </select>
+                </div>
+
+                <div class="select-row">
+                    <select class="form-control">
+                        <option>Chọn Phường/Xã (*)</option>
+                    </select>
+                    <input type="text" class="form-control" placeholder="Địa chỉ *">
+                </div>
+
+                <!-- Shipping Method -->
+                <div class="delivery-options">
+                    <div class="delivery-box">
+                        <div class="delivery-title">Giao hàng tận nơi — 18,000đ</div>
+                        <div class="delivery-hint">(Miễn phí vận chuyển cho đơn hàng từ 300.000đ trở lên)</div>
+                    </div>
+                    <div class="delivery-box active">
+                        <div class="delivery-title">Nhận tại nhà thuốc — Miễn phí</div>
+                        <div class="delivery-hint">(Đến Nhà Thuốc Minh Giang gần nhất để nhận hàng)</div>
+                    </div>
+                </div>
+
+                <div class="section-subtitle">Chọn địa chỉ nhận hàng</div>
+                <div class="store-selector-card">
+                    <strong class="store-name">Nhà Thuốc Minh Giang</strong>
+                    <span class="store-meta">6h30 - 22h - 1800 55 88 98</span>
+                </div>
+
+                <div class="section-subtitle">Ghi chú (Không bắt buộc điền)</div>
+                <textarea class="textarea-notes"
+                    placeholder="Ví dụ: Hãy gọi điện thoại cho tôi 30p trước khi giao."></textarea>
+
+                <div class="invoice-toggle-row">
+                    <span>Yêu cầu xuất hóa đơn điện tử</span>
+                    <label class="switch">
+                        <input type="checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="section-subtitle">Hình thức thanh toán</div>
+                <div class="payment-methods">
+                    <!-- Cash -->
+                    <div class="payment-box active">
+                        <div class="payment-toggle"></div>
+                        <img src="../assets/images/cod.png" alt="Tiền mặt" class="payment-icon">
+                        <div class="payment-text">
+                            <strong>Tiền mặt (C.O.D)</strong>
+                            <small>Thanh toán tiền mặt khi nhận hàng</small>
+                        </div>
+                    </div>
+                    <!-- VNPay -->
+                    <div class="payment-box">
+                        <div class="payment-toggle"></div>
+                        <img src="../assets/images/vnpay.png" alt="VNPay" class="payment-icon">
+                        <div class="payment-text">
+                            <strong>Thanh toán qua VNPay</strong>
+                            <small>Thẻ ATM/Visa/Master/JCB/QR Pay</small>
+                        </div>
+                    </div>
+                    <!-- MoMo -->
+                    <div class="payment-box">
+                        <div class="payment-toggle"></div>
+                        <img src="../assets/images/momo.png" alt="MoMo" class="payment-icon">
+                        <div class="payment-text">
+                            <strong>Ví MoMo hoặc Chuyển khoản</strong>
+                            <small>Chạm 1 giây thanh toán xong ngay</small>
+                        </div>
+                    </div>
+                    <!-- ZaloPay -->
+                    <div class="payment-box">
+                        <div class="payment-toggle"></div>
+                        <img src="../assets/images/zalopay.png" alt="ZaloPay" class="payment-icon">
+                        <div class="payment-text">
+                            <strong>Ví Zalopay QRCode</strong>
+                            <small>Thanh toán nhanh trong 2 giây</small>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-order">Đặt hàng ( 242,000đ )</button>
+            </form>
+
+            <!-- RIGHT: ORDER SUMMARY -->
+            <aside class="order-summary">
+                <h3 class="summary-title">Giỏ hàng</h3>
+
+                <div class="summary-list">
+                    <!-- Item 1 -->
+                    <div class="summary-item">
+                        <img src="../assets/images/cart_product_1.png" alt="Item" class="summary-img"
+                            onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'50\' height=\'50\'><rect width=\'50\' height=\'50\' fill=\'#f3f4f6\'/></svg>'">
+                        <div class="summary-info">
+                            <h4>Fess Little Noses Spray - Xịt rửa mũi cho trẻ sơ sinh kèm bóng hú...</h4>
+                            <div class="qty-price">1 x 242,000đ <span class="price-orig">280,000đ</span></div>
+                        </div>
+                    </div>
+                    <!-- Gift -->
+                    <div class="summary-item">
+                        <img src="../assets/images/cart_gift.png" alt="Gift" class="summary-img"
+                            onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'50\' height=\'50\'><rect width=\'50\' height=\'50\' fill=\'#f3f4f6\'/></svg>'">
+                        <div class="summary-info">
+                            <h4>Nước Súc Miệng Lisdoub làm sạch răng miệng và họng, giúp hơi thở...</h4>
+                            <div class="qty-price">1 x 0đ <span class="price-orig">29,000đ</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="promo-selector">
+                    <span><i class="fa-solid fa-ticket"></i> Chọn ưu đãi & giảm giá</span>
+                    <i class="fa-solid fa-chevron-right"></i>
+                </div>
+
+                <div class="voucher-input-row">
+                    <input type="text" placeholder="Thẻ quà tặng hoặc mã giảm giá">
+                    <button>Áp dụng</button>
+                </div>
+
+                <div class="applied-promo">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>Tặng nước súc miệng LISDOUB bill <i style="border-bottom: 1px dashed #0b7a3e;">199K</i></span>
+                </div>
+
+                <div class="summary-details">
+                    <div class="summary-row">
+                        <span>Điểm thưởng</span>
+                        <span style="color: #0b7a3e;">+121 điểm</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tổng tiền sản phẩm</span>
+                        <span>280,000đ</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Giảm giá sản phẩm</span>
+                        <span class="val-savings">-38,000đ</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Giảm giá khuyến mãi</span>
+                        <span>0đ</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Phí vận chuyển tham khảo</span>
+                        <span>0đ</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Bạn tiết kiệm</span>
+                        <span class="val-savings">38,000đ</span>
+                    </div>
+
+                    <div class="summary-row total">
+                        <span>Tổng tiền:</span>
+                        <span class="val-total">242,000đ</span>
+                    </div>
+                </div>
+
+                <p class="footer-legal">
+                    Khi tiến hành đặt mua hàng, bạn đồng ý với <a href="#">Chính sách mua hàng</a> và <a href="#">bảo
+                        mật</a> của Trung Sơn Pharma
+                </p>
+            </aside>
+
+        </div>
+    </div>
+
+    <!-- Bottom Reusable -->
+    <div mg-include="includes/promises.html"></div>
+    <div mg-include="includes/newsletter.html"></div>
+    <div mg-include="includes/main_footer.html"></div>
+
+    <script src="../assets/js/components.js"></script>
+    <script>
+        // Simple UI Toggle for Delivery Options
+        document.querySelectorAll('.delivery-box').forEach(box => {
+            box.addEventListener('click', () => {
+                document.querySelectorAll('.delivery-box').forEach(b => b.classList.remove('active'));
+                box.classList.add('active');
+            });
+        });
+
+        // Simple UI Toggle for Payment Methods
+        document.querySelectorAll('.payment-box').forEach(box => {
+            box.addEventListener('click', () => {
+                document.querySelectorAll('.payment-box').forEach(b => b.classList.remove('active'));
+                box.classList.add('active');
+            });
+        });
+    </script>
+</body>
+
+</html>

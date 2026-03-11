@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khách Hàng & Loyalty (CRM) — Nhà Thuốc Minh Giang</title>
+    <link rel="stylesheet" href="css/admin-style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ===== CRM SPECIFIC ===== */
+        .crm-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .crm-stat {
+            background: #fff;
+            border: 1px solid var(--admin-border);
+            border-radius: 12px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .crm-stat-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 19px;
+            flex-shrink: 0;
+        }
+
+        .crm-stat-info p {
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 3px;
+        }
+
+        .crm-stat-info h3 {
+            font-size: 21px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .crm-stat-info small {
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* Customer table */
+        .customer-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .tier-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 10px;
+        }
+
+        .tier-bronze {
+            background: #fef3c7;
+            color: #78350f;
+        }
+
+        .tier-silver {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .tier-gold {
+            background: #fffbeb;
+            color: #854d0e;
+        }
+
+        .tier-diamond {
+            background: #ede9fe;
+            color: #4c1d95;
+        }
+
+        .points-bar {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            margin-top: 4px;
+        }
+
+        .points-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width .5s;
+        }
+
+        /* Customer detail modal */
+        .modal-two-col {
+            display: grid;
+            grid-template-columns: 2fr 1.5fr;
+            gap: 0;
+        }
+
+        .modal-left {
+            padding: 20px;
+            border-right: 1px solid var(--admin-border);
+            overflow-y: auto;
+            max-height: 60vh;
+        }
+
+        .modal-right {
+            padding: 20px;
+            background: #f8fafc;
+            overflow-y: auto;
+            max-height: 60vh;
+        }
+
+        .customer-hero {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 18px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        .customer-hero-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .customer-hero-name {
+            font-size: 17px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .customer-hero-sub {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+
+        /* Points history */
+        .point-entry {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        .point-entry:last-child {
+            border-bottom: none;
+        }
+
+        .point-entry .pe-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .point-entry .pe-info {
+            flex: 1;
+        }
+
+        .point-entry .pe-info h4 {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .point-entry .pe-info p {
+            font-size: 10px;
+            color: #9ca3af;
+        }
+
+        .point-entry .pe-pts {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        /* Purchase history */
+        .purchase-row {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 10px;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        .purchase-row:last-child {
+            border-bottom: none;
+        }
+
+        /* Tier thresholds visual */
+        .tier-visual {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tier-card {
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: transform .15s;
+        }
+
+        .tier-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .tier-card h3 {
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .tier-card p {
+            font-size: 11px;
+            opacity: .75;
+        }
+
+        .tier-card .tier-count {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 8px 0 4px;
+        }
+
+        /* Form helpers */
+        .form-group {
+            margin-bottom: 13px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: 'Inter';
+            color: #1e293b;
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color .2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--admin-primary);
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="admin-sidebar"></aside>
+    <header class="admin-header"></header>
+
+    <main class="admin-main">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Khách Hàng & Loyalty (CRM)</h1>
+                <p class="page-subtitle">Quản lý thành viên, điểm tích lũy, hạng và lịch sử mua hàng</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn-secondary"><i class="fa-solid fa-file-export"></i> Xuất Excel</button>
+                <button class="btn-primary" onclick="openCustomerModal('new')"><i class="fa-solid fa-plus"></i> Thêm
+                    khách hàng</button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="crm-stats">
+            <div class="crm-stat">
+                <div class="crm-stat-icon" style="background:#eff6ff;color:#3b82f6;"><i class="fa-solid fa-users"></i>
+                </div>
+                <div class="crm-stat-info">
+                    <p>Tổng thành viên</p>
+                    <h3>1,248</h3><small style="color:#10b981;">↑ 42 tháng này</small>
+                </div>
+            </div>
+            <div class="crm-stat">
+                <div class="crm-stat-icon" style="background:#fdf4ff;color:#9333ea;"><i class="fa-solid fa-star"></i>
+                </div>
+                <div class="crm-stat-info">
+                    <p>Điểm đang lưu hành</p>
+                    <h3>847,200</h3><small style="color:#6b7280;">≈ 84.7 triệu giá trị</small>
+                </div>
+            </div>
+            <div class="crm-stat">
+                <div class="crm-stat-icon" style="background:#f0fdf4;color:#16a34a;"><i class="fa-solid fa-coins"></i>
+                </div>
+                <div class="crm-stat-info">
+                    <p>Đã quy đổi tháng này</p>
+                    <h3>12,400 đ</h3><small style="color:#10b981;">↑ 18% so tháng trước</small>
+                </div>
+            </div>
+            <div class="crm-stat">
+                <div class="crm-stat-icon" style="background:#fff7ed;color:#ea580c;"><i
+                        class="fa-solid fa-user-minus"></i></div>
+                <div class="crm-stat-info">
+                    <p>Khách không hoạt động</p>
+                    <h3>89</h3><small style="color:#ea580c;">30+ ngày chưa mua</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tier Overview -->
+        <div class="tier-visual">
+            <div class="tier-card" style="background:linear-gradient(135deg,#fef3c7,#fbbf24);border-color:#f59e0b;">
+                <div style="font-size:22px;">🥉</div>
+                <h3 style="color:#78350f;">Đồng</h3>
+                <p style="color:#78350f;">0 – 2,000,000₫</p>
+                <div class="tier-count" style="color:#78350f;">654</div>
+                <div style="font-size:11px;color:#92400e;">thành viên</div>
+            </div>
+            <div class="tier-card" style="background:linear-gradient(135deg,#f1f5f9,#94a3b8);border-color:#94a3b8;">
+                <div style="font-size:22px;">🥈</div>
+                <h3 style="color:#334155;">Bạc</h3>
+                <p style="color:#334155;">2M – 5,000,000₫</p>
+                <div class="tier-count" style="color:#334155;">381</div>
+                <div style="font-size:11px;color:#475569;">thành viên</div>
+            </div>
+            <div class="tier-card" style="background:linear-gradient(135deg,#fffbeb,#fcd34d);border-color:#f59e0b;">
+                <div style="font-size:22px;">🥇</div>
+                <h3 style="color:#854d0e;">Vàng</h3>
+                <p style="color:#854d0e;">5M – 15,000,000₫</p>
+                <div class="tier-count" style="color:#854d0e;">178</div>
+                <div style="font-size:11px;color:#92400e;">thành viên</div>
+            </div>
+            <div class="tier-card" style="background:linear-gradient(135deg,#ede9fe,#a78bfa);border-color:#8b5cf6;">
+                <div style="font-size:22px;">💎</div>
+                <h3 style="color:#4c1d95;">Kim Cương</h3>
+                <p style="color:#4c1d95;">Trên 15,000,000₫</p>
+                <div class="tier-count" style="color:#4c1d95;">35</div>
+                <div style="font-size:11px;color:#5b21b6;">thành viên</div>
+            </div>
+        </div>
+
+        <!-- TABS -->
+        <div class="page-tabs">
+            <button class="page-tab-btn active" onclick="switchPageTab('tab-members')"><i class="fa-solid fa-users"></i>
+                Danh Sách Thành Viên</button>
+            <button class="page-tab-btn" onclick="switchPageTab('tab-points')"><i class="fa-solid fa-coins"></i> Lịch Sử
+                Điểm Thưởng</button>
+            <button class="page-tab-btn" onclick="switchPageTab('tab-segments')"><i class="fa-solid fa-chart-pie"></i>
+                Phân Khúc & Báo Cáo</button>
+        </div>
+
+        <!-- ===== TAB 1: MEMBERS ===== -->
+        <div id="tab-members" class="page-tab-content active">
+            <div style="display:flex;gap:12px;margin-bottom:14px;">
+                <div class="header-search" style="flex:1;">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Tìm theo tên, SĐT, mã thành viên...">
+                </div>
+                <select
+                    style="height:38px;border:1px solid var(--admin-border);border-radius:8px;padding:0 12px;font-size:13px;color:#374151;">
+                    <option>Tất cả hạng</option>
+                    <option>Đồng</option>
+                    <option>Bạc</option>
+                    <option>Vàng</option>
+                    <option>Kim Cương</option>
+                </select>
+                <select
+                    style="height:38px;border:1px solid var(--admin-border);border-radius:8px;padding:0 12px;font-size:13px;color:#374151;">
+                    <option>Chi tiêu nhiều nhất</option>
+                    <option>Mới đăng ký</option>
+                    <option>Điểm nhiều nhất</option>
+                </select>
+            </div>
+
+            <div class="inventory-table-container">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Thành viên</th>
+                            <th>Hạng</th>
+                            <th>Tổng chi tiêu</th>
+                            <th>Điểm hiện tại</th>
+                            <th>Đơn gần nhất</th>
+                            <th>Tiến độ lên hạng</th>
+                            <th style="text-align:right;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customerTableBody">
+                        <!-- JS render -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="pagination">
+                <span class="page-info">Hiển thị 1 – 8 trên 1,248 thành viên</span>
+                <div class="page-controls">
+                    <button class="btn-page active">1</button>
+                    <button class="btn-page">2</button>
+                    <button class="btn-page">3</button>
+                    <button class="btn-page">...</button>
+                    <button class="btn-page">157</button>
+                    <button class="btn-page"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TAB 2: POINTS HISTORY ===== -->
+        <div id="tab-points" class="page-tab-content">
+            <div style="display:flex;gap:12px;margin-bottom:14px;">
+                <div class="header-search" style="flex:1;">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Tìm theo tên khách hoặc mã đơn...">
+                </div>
+                <select
+                    style="height:38px;border:1px solid var(--admin-border);border-radius:8px;padding:0 12px;font-size:13px;color:#374151;">
+                    <option>Tất cả loại</option>
+                    <option>Tích điểm</option>
+                    <option>Quy đổi điểm</option>
+                    <option>Điều chỉnh thủ công</option>
+                </select>
+            </div>
+
+            <div class="inventory-table-container">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Thành viên</th>
+                            <th>Loại giao dịch</th>
+                            <th>Mô tả</th>
+                            <th>Điểm thay đổi</th>
+                            <th>Số dư sau</th>
+                            <th>Thời gian</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <div class="customer-avatar"
+                                        style="background:#ede9fe;color:#7c3aed;font-size:12px;">NL</div>
+                                    <div>
+                                        <div style="font-weight:600;font-size:13px;">Nguyễn Thị Linh</div>
+                                        <div style="font-size:11px;color:#9ca3af;">MV-001248</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="pub-status published" style="font-size:11px;border-radius:6px;">Tích
+                                    điểm</span></td>
+                            <td style="font-size:12px;color:#374151;">Mua hàng đơn #WEB-9015</td>
+                            <td style="font-weight:700;color:#10b981;">+465 điểm</td>
+                            <td style="font-weight:600;">3,280 điểm</td>
+                            <td style="font-size:12px;color:#6b7280;">10/03/2026 10:12</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <div class="customer-avatar"
+                                        style="background:#fef3c7;color:#92400e;font-size:12px;">TH</div>
+                                    <div>
+                                        <div style="font-weight:600;font-size:13px;">Trần Đức Hùng</div>
+                                        <div style="font-size:11px;color:#9ca3af;">MV-000415</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="pub-status draft" style="font-size:11px;border-radius:6px;">Quy đổi</span>
+                            </td>
+                            <td style="font-size:12px;color:#374151;">Dùng điểm giảm 50,000₫ đơn #WEB-9014</td>
+                            <td style="font-weight:700;color:#ef4444;">-500 điểm</td>
+                            <td style="font-weight:600;">12,300 điểm</td>
+                            <td style="font-size:12px;color:#6b7280;">10/03/2026 09:55</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <div class="customer-avatar"
+                                        style="background:#f0fdf4;color:#16a34a;font-size:12px;">PM</div>
+                                    <div>
+                                        <div style="font-weight:600;font-size:13px;">Phạm Tố Ny</div>
+                                        <div style="font-size:11px;color:#9ca3af;">MV-000987</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="pub-status published" style="font-size:11px;border-radius:6px;">Tích
+                                    điểm</span></td>
+                            <td style="font-size:12px;color:#374151;">Mua hàng tại quầy POS #POS-4521</td>
+                            <td style="font-weight:700;color:#10b981;">+95 điểm</td>
+                            <td style="font-weight:600;">1,450 điểm</td>
+                            <td style="font-size:12px;color:#6b7280;">10/03/2026 09:30</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <div class="customer-avatar"
+                                        style="background:#fdf4ff;color:#9333ea;font-size:12px;">LH</div>
+                                    <div>
+                                        <div style="font-weight:600;font-size:13px;">Lê Hoàng Minh</div>
+                                        <div style="font-size:11px;color:#9ca3af;">MV-000312</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="pub-status review" style="font-size:11px;border-radius:6px;">Điều
+                                    chỉnh</span></td>
+                            <td style="font-size:12px;color:#374151;">Admin bổ sung điểm sinh nhật tháng 3</td>
+                            <td style="font-weight:700;color:#3b82f6;">+200 điểm</td>
+                            <td style="font-weight:600;">8,920 điểm</td>
+                            <td style="font-size:12px;color:#6b7280;">10/03/2026 09:00</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <div class="customer-avatar"
+                                        style="background:#eff6ff;color:#3b82f6;font-size:12px;">VT</div>
+                                    <div>
+                                        <div style="font-weight:600;font-size:13px;">Võ Thị Thu</div>
+                                        <div style="font-size:11px;color:#9ca3af;">MV-001100</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="pub-status published" style="font-size:11px;border-radius:6px;">Tích
+                                    điểm</span></td>
+                            <td style="font-size:12px;color:#374151;">Mua hàng đơn #WEB-9021</td>
+                            <td style="font-weight:700;color:#10b981;">+340 điểm</td>
+                            <td style="font-weight:600;">2,210 điểm</td>
+                            <td style="font-size:12px;color:#6b7280;">10/03/2026 08:50</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ===== TAB 3: SEGMENTS ===== -->
+        <div id="tab-segments" class="page-tab-content">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                <!-- Segment: inactive -->
+                <div style="background:#fff;border:1px solid var(--admin-border);border-radius:12px;padding:20px;">
+                    <h3 style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:4px;"><i
+                            class="fa-solid fa-user-clock" style="color:#ea580c;margin-right:6px;"></i>Khách Không Hoạt
+                        Động (30+ ngày)</h3>
+                    <p style="font-size:12px;color:#9ca3af;margin-bottom:16px;">89 khách chưa mua trong 30 ngày qua</p>
+                    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
+                        <div
+                            style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:#fff7ed;border-radius:8px;">
+                            <span style="font-size:12px;font-weight:600;color:#c2410c;">30–60 ngày chưa mua</span>
+                            <span style="font-size:13px;font-weight:700;color:#c2410c;">54 người</span>
+                        </div>
+                        <div
+                            style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:#fef2f2;border-radius:8px;">
+                            <span style="font-size:12px;font-weight:600;color:#dc2626;">60–90 ngày chưa mua</span>
+                            <span style="font-size:13px;font-weight:700;color:#dc2626;">25 người</span>
+                        </div>
+                        <div
+                            style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:#fee2e2;border-radius:8px;">
+                            <span style="font-size:12px;font-weight:600;color:#b91c1c;">Trên 90 ngày</span>
+                            <span style="font-size:13px;font-weight:700;color:#b91c1c;">10 người</span>
+                        </div>
+                    </div>
+                    <button class="btn-primary" style="width:100%;justify-content:center;height:36px;font-size:13px;"
+                        onclick="alert('Gửi Zalo/SMS nhắc nhở đến 89 khách...')">
+                        <i class="fa-brands fa-stripe-s"></i> Gửi thông báo tái kích hoạt
+                    </button>
+                </div>
+
+                <!-- Segment: big spenders -->
+                <div style="background:#fff;border:1px solid var(--admin-border);border-radius:12px;padding:20px;">
+                    <h3 style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:4px;"><i
+                            class="fa-solid fa-crown" style="color:#d97706;margin-right:6px;"></i>Khách Hàng VIP (Top 20
+                        chi tiêu)</h3>
+                    <p style="font-size:12px;color:#9ca3af;margin-bottom:16px;">Chiếm 48% tổng doanh thu tháng này</p>
+                    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="font-size:16px;font-weight:800;color:#d97706;">1</span>
+                            <div style="flex:1;">
+                                <div style="font-size:13px;font-weight:600;color:#0f172a;">Trần Đức Hùng</div>
+                                <div style="height:5px;background:#fcd34d;border-radius:3px;margin-top:3px;width:100%;">
+                                </div>
+                            </div>
+                            <span style="font-size:12px;font-weight:700;color:#92400e;">45,200,000₫</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="font-size:16px;font-weight:800;color:#94a3b8;">2</span>
+                            <div style="flex:1;">
+                                <div style="font-size:13px;font-weight:600;color:#0f172a;">Nguyễn Thị Linh</div>
+                                <div style="height:5px;background:#e2e8f0;border-radius:3px;margin-top:3px;width:82%;">
+                                </div>
+                            </div>
+                            <span style="font-size:12px;font-weight:700;color:#374151;">37,100,000₫</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="font-size:16px;font-weight:800;color:#ea580c;">3</span>
+                            <div style="flex:1;">
+                                <div style="font-size:13px;font-weight:600;color:#0f172a;">Hoàng Thu Trang</div>
+                                <div style="height:5px;background:#fdba74;border-radius:3px;margin-top:3px;width:65%;">
+                                </div>
+                            </div>
+                            <span style="font-size:12px;font-weight:700;color:#374151;">29,400,000₫</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="font-size:13px;font-weight:600;color:#9ca3af;">4–20</span>
+                            <div style="flex:1;">
+                                <div style="font-size:12px;color:#9ca3af;">17 khách còn lại</div>
+                                <div style="height:5px;background:#f1f5f9;border-radius:3px;margin-top:3px;width:50%;">
+                                </div>
+                            </div>
+                            <span style="font-size:12px;font-weight:600;color:#9ca3af;">85,300,000₫</span>
+                        </div>
+                    </div>
+                    <button class="btn-secondary" style="width:100%;justify-content:center;height:36px;font-size:13px;"
+                        onclick="alert('Xuất danh sách VIP...')">
+                        <i class="fa-solid fa-file-export"></i> Xuất danh sách VIP
+                    </button>
+                </div>
+
+                <!-- Segment: birthday this month -->
+                <div style="background:#fff;border:1px solid var(--admin-border);border-radius:12px;padding:20px;">
+                    <h3 style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:4px;"><i
+                            class="fa-solid fa-cake-candles" style="color:#ec4899;margin-right:6px;"></i>Sinh Nhật Tháng
+                        Này (Tháng 3)</h3>
+                    <p style="font-size:12px;color:#9ca3af;margin-bottom:14px;">23 khách có sinh nhật trong tháng 3 —
+                        gửi chúc mừng & ưu đãi</p>
+                    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+                        <div
+                            style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fdf2f8;border-radius:8px;">
+                            <span style="font-size:18px;">🎂</span>
+                            <div style="flex:1;">
+                                <div style="font-size:13px;font-weight:600;color:#0f172a;">Lê Hoàng Minh</div>
+                                <div style="font-size:11px;color:#9ca3af;">Sinh nhật: 12/03 — Hạng Vàng</div>
+                            </div>
+                            <button class="btn-icon" style="color:#ec4899;"
+                                onclick="alert('Gửi chúc mừng sinh nhật Zalo!')"><i
+                                    class="fa-brands fa-stripe-s"></i></button>
+                        </div>
+                        <div
+                            style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fdf2f8;border-radius:8px;">
+                            <span style="font-size:18px;">🎂</span>
+                            <div style="flex:1;">
+                                <div style="font-size:13px;font-weight:600;color:#0f172a;">Nguyễn Văn Ba</div>
+                                <div style="font-size:11px;color:#9ca3af;">Sinh nhật: 15/03 — Hạng Bạc</div>
+                            </div>
+                            <button class="btn-icon" style="color:#ec4899;"
+                                onclick="alert('Gửi chúc mừng sinh nhật Zalo!')"><i
+                                    class="fa-brands fa-stripe-s"></i></button>
+                        </div>
+                        <div style="font-size:12px;color:#9ca3af;padding:4px 12px;">+ 21 khách khác trong tháng 3...
+                        </div>
+                    </div>
+                    <button class="btn-primary"
+                        style="width:100%;justify-content:center;height:36px;font-size:13px;background:linear-gradient(135deg,#ec4899,#f43f5e);"
+                        onclick="alert('Gửi toàn bộ lời chúc sinh nhật tháng 3...')">
+                        <i class="fa-solid fa-paper-plane"></i> Gửi tất cả lời chúc tháng 3
+                    </button>
+                </div>
+
+                <!-- New registered this month -->
+                <div style="background:#fff;border:1px solid var(--admin-border);border-radius:12px;padding:20px;">
+                    <h3 style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:4px;"><i
+                            class="fa-solid fa-user-plus" style="color:#3b82f6;margin-right:6px;"></i>Thành Viên Mới
+                        Tháng Này</h3>
+                    <p style="font-size:12px;color:#9ca3af;margin-bottom:14px;">42 người đăng ký mới trong tháng 3/2026
+                    </p>
+                    <!-- Mini bar chart -->
+                    <div style="display:flex;gap:4px;align-items:flex-end;height:60px;margin-bottom:14px;">
+                        <div style="flex:1;background:#bfdbfe;border-radius:3px 3px 0 0;" title="1–7 Tháng 3: 8"
+                            style="flex:1;height:50%;background:#bfdbfe;border-radius:3px 3px 0 0;"></div>
+                        <div style="flex:1;height:70%;background:#93c5fd;border-radius:3px 3px 0 0;" title="8–15"></div>
+                        <div style="flex:1;height:100%;background:#3b82f6;border-radius:3px 3px 0 0;" title="16–23">
+                        </div>
+                        <div style="flex:1;height:55%;background:#60a5fa;border-radius:3px 3px 0 0;" title="24–31">
+                        </div>
+                    </div>
+                    <div
+                        style="display:flex;justify-content:space-between;font-size:10px;color:#9ca3af;margin-bottom:14px;">
+                        <span>1–7/3</span><span>8–15/3</span><span>16–23/3</span><span>24–31/3</span>
+                    </div>
+                    <div style="display:flex;gap:10px;">
+                        <div style="flex:1;text-align:center;background:#eff6ff;border-radius:8px;padding:10px;">
+                            <div style="font-size:18px;font-weight:700;color:#1d4ed8;">32</div>
+                            <div style="font-size:11px;color:#6b7280;">Đăng ký Web</div>
+                        </div>
+                        <div style="flex:1;text-align:center;background:#f0fdf4;border-radius:8px;padding:10px;">
+                            <div style="font-size:18px;font-weight:700;color:#15803d;">10</div>
+                            <div style="font-size:11px;color:#6b7280;">Đăng ký POS</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ===== MODAL: CUSTOMER DETAIL ===== -->
+    <div class="standard-modal-overlay" id="customerModal">
+        <div class="standard-modal-container" style="max-width:800px;">
+            <div class="standard-modal-header">
+                <div>
+                    <h2 class="slide-title" id="customerModalTitle">Chi Tiết Thành Viên</h2>
+                    <p style="font-size:13px;color:#6b7280;margin-top:4px;" id="customerModalSub">MV-001248 • Đồng</p>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <button class="btn-secondary" style="height:34px;font-size:12px;"
+                        onclick="alert('Điều chỉnh điểm thủ công...')"><i class="fa-solid fa-coins"></i> Điều chỉnh
+                        điểm</button>
+                    <button class="slide-close" onclick="closeCustomerModal()"><i
+                            class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+            <div class="standard-modal-body" style="padding:0;">
+                <div class="modal-two-col">
+                    <div class="modal-left">
+                        <!-- Hero -->
+                        <div class="customer-hero">
+                            <div class="customer-hero-avatar" style="background:#ede9fe;color:#7c3aed;">NL</div>
+                            <div>
+                                <div class="customer-hero-name">Nguyễn Thị Linh</div>
+                                <div class="customer-hero-sub">📱 0912 000 333 &nbsp;|&nbsp; 📧 linh.nguyen@gmail.com
+                                </div>
+                                <div style="margin-top:6px;display:flex;gap:6px;align-items:center;">
+                                    <span class="tier-badge tier-silver">🥈 Bạc</span>
+                                    <span style="font-size:11px;color:#9ca3af;">Từ 01/2025</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Points summary -->
+                        <div
+                            style="background:#eff6ff;border-radius:10px;padding:14px;margin-bottom:16px;display:flex;gap:20px;">
+                            <div style="text-align:center;flex:1;">
+                                <div style="font-size:22px;font-weight:800;color:#1d4ed8;">3,280</div>
+                                <div style="font-size:11px;color:#6b7280;">Điểm hiện tại</div>
+                            </div>
+                            <div style="width:1px;background:#bfdbfe;"></div>
+                            <div style="text-align:center;flex:1;">
+                                <div style="font-size:22px;font-weight:800;color:#374151;">6,200,000₫</div>
+                                <div style="font-size:11px;color:#6b7280;">Tổng chi tiêu</div>
+                            </div>
+                            <div style="width:1px;background:#bfdbfe;"></div>
+                            <div style="text-align:center;flex:1;">
+                                <div style="font-size:22px;font-weight:800;color:#374151;">24</div>
+                                <div style="font-size:11px;color:#6b7280;">Tổng đơn hàng</div>
+                            </div>
+                        </div>
+
+                        <!-- Progress to next tier -->
+                        <div style="margin-bottom:16px;">
+                            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;">
+                                <span style="font-weight:600;color:#374151;">Tiến độ lên hạng
+                                    <strong>Vàng</strong></span><span style="color:#6b7280;">6,200,000 /
+                                    15,000,000₫</span></div>
+                            <div class="points-bar">
+                                <div class="points-bar-fill" style="width:41%;background:#f59e0b;"></div>
+                            </div>
+                            <div style="font-size:11px;color:#9ca3af;margin-top:4px;">Còn cần chi thêm 8,800,000₫ để lên
+                                hạng Vàng 🥇</div>
+                        </div>
+
+                        <!-- Points history -->
+                        <h4 style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:10px;"><i
+                                class="fa-solid fa-clock-rotate-left" style="color:#6b7280;margin-right:6px;"></i>Lịch
+                            Sử Điểm Gần Nhất</h4>
+                        <div>
+                            <div class="point-entry">
+                                <div class="pe-icon" style="background:#d1fae5;color:#065f46;"><i
+                                        class="fa-solid fa-plus fa-xs"></i></div>
+                                <div class="pe-info">
+                                    <h4>Mua hàng đơn #WEB-9015</h4>
+                                    <p>10/03/2026 – 10:12 AM</p>
+                                </div>
+                                <div class="pe-pts" style="color:#10b981;">+465 đ</div>
+                            </div>
+                            <div class="point-entry">
+                                <div class="pe-icon" style="background:#fef3c7;color:#92400e;"><i
+                                        class="fa-solid fa-minus fa-xs"></i></div>
+                                <div class="pe-info">
+                                    <h4>Quy đổi điểm giảm 20,000₫</h4>
+                                    <p>05/03/2026 – 15:30</p>
+                                </div>
+                                <div class="pe-pts" style="color:#ef4444;">-200 đ</div>
+                            </div>
+                            <div class="point-entry">
+                                <div class="pe-icon" style="background:#d1fae5;color:#065f46;"><i
+                                        class="fa-solid fa-plus fa-xs"></i></div>
+                                <div class="pe-info">
+                                    <h4>Mua hàng tại POS #POS-4490</h4>
+                                    <p>01/03/2026 – 09:15</p>
+                                </div>
+                                <div class="pe-pts" style="color:#10b981;">+320 đ</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Purchase history & info -->
+                    <div class="modal-right">
+                        <h4 style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:12px;"><i
+                                class="fa-solid fa-bag-shopping" style="color:#6b7280;margin-right:6px;"></i>Lịch Sử Mua
+                            Hàng</h4>
+                        <div>
+                            <div class="purchase-row">
+                                <span style="font-size:11px;font-weight:700;color:#3b82f6;">#WEB-9015</span>
+                                <div>
+                                    <div style="font-size:12px;font-weight:600;color:#0f172a;">3 sản phẩm</div>
+                                    <div style="font-size:10px;color:#9ca3af;">10/03/2026</div>
+                                </div>
+                                <span style="font-weight:700;font-size:13px;">465,000₫</span>
+                            </div>
+                            <div class="purchase-row">
+                                <span style="font-size:11px;font-weight:700;color:#3b82f6;">#WEB-8900</span>
+                                <div>
+                                    <div style="font-size:12px;font-weight:600;color:#0f172a;">2 sản phẩm</div>
+                                    <div style="font-size:10px;color:#9ca3af;">05/03/2026</div>
+                                </div>
+                                <span style="font-weight:700;font-size:13px;">200,000₫</span>
+                            </div>
+                            <div class="purchase-row">
+                                <span style="font-size:11px;font-weight:700;color:#6b7280;">#POS-4490</span>
+                                <div>
+                                    <div style="font-size:12px;font-weight:600;color:#0f172a;">1 sản phẩm</div>
+                                    <div style="font-size:10px;color:#9ca3af;">01/03/2026</div>
+                                </div>
+                                <span style="font-weight:700;font-size:13px;">320,000₫</span>
+                            </div>
+                            <div class="purchase-row">
+                                <span style="font-size:11px;font-weight:700;color:#6b7280;">#POS-4310</span>
+                                <div>
+                                    <div style="font-size:12px;font-weight:600;color:#0f172a;">5 sản phẩm</div>
+                                    <div style="font-size:10px;color:#9ca3af;">20/02/2026</div>
+                                </div>
+                                <span style="font-weight:700;font-size:13px;">780,000₫</span>
+                            </div>
+                        </div>
+
+                        <div style="border-top:1px solid var(--admin-border);padding-top:14px;margin-top:12px;">
+                            <h4 style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:12px;"><i
+                                    class="fa-solid fa-pencil" style="color:#6b7280;margin-right:6px;"></i>Chỉnh Sửa
+                                Thông Tin</h4>
+                            <div class="form-group"><label>Tên đầy đủ</label><input type="text" value="Nguyễn Thị Linh">
+                            </div>
+                            <div class="form-group"><label>Số điện thoại</label><input type="tel" value="0912 000 333">
+                            </div>
+                            <div class="form-group"><label>Email</label><input type="email"
+                                    value="linh.nguyen@gmail.com"></div>
+                            <div class="form-group"><label>Ngày sinh</label><input type="date" value="1990-08-22"></div>
+                            <div class="form-group" style="margin-bottom:0;"><label>Ghi chú nội bộ</label><input
+                                    type="text" placeholder="VD: Dị ứng Penicillin, mua thuốc mãn tính hàng tháng...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="standard-modal-footer" style="background:#fff;">
+                <button class="btn-secondary" onclick="closeCustomerModal()">Đóng</button>
+                <button class="btn-primary" onclick="alert('Đã lưu thông tin khách hàng!'); closeCustomerModal();"
+                    style="width:180px;justify-content:center;height:40px;"><i class="fa-solid fa-floppy-disk"></i> Lưu
+                    thay đổi</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== SAMPLE DATA =====
+        const customers = [
+            { id: 'MV-001248', name: 'Nguyễn Thị Linh', phone: '0912 000 333', tier: 'silver', tierLabel: 'Bạc', spent: 6200000, points: 3280, last: '10/03/2026', progress: 41, color: '#94a3b8', initials: 'NL', bg: '#f1f5f9' },
+            { id: 'MV-000415', name: 'Trần Đức Hùng', phone: '0909 222 444', tier: 'diamond', tierLabel: 'Kim Cương', spent: 45200000, points: 12800, last: '10/03/2026', progress: 100, color: '#8b5cf6', initials: 'TH', bg: '#ede9fe' },
+            { id: 'MV-000312', name: 'Lê Hoàng Minh', phone: '0977 555 666', tier: 'gold', tierLabel: 'Vàng', spent: 18900000, points: 8920, last: '10/03/2026', progress: 100, color: '#f59e0b', initials: 'LH', bg: '#fffbeb' },
+            { id: 'MV-000987', name: 'Phạm Tố Ny', phone: '0988 333 111', tier: 'bronze', tierLabel: 'Đồng', spent: 950000, points: 1450, last: '10/03/2026', progress: 47, color: '#d97706', initials: 'PN', bg: '#fef3c7' },
+            { id: 'MV-001100', name: 'Võ Thị Thu', phone: '0901 777 888', tier: 'silver', tierLabel: 'Bạc', spent: 3200000, points: 2210, last: '10/03/2026', progress: 64, color: '#94a3b8', initials: 'VT', bg: '#f1f5f9' },
+            { id: 'MV-000756', name: 'Nguyễn Văn Ba', phone: '0912 444 000', tier: 'gold', tierLabel: 'Vàng', spent: 9800000, points: 5600, last: '09/03/2026', progress: 65, color: '#f59e0b', initials: 'NB', bg: '#fffbeb' },
+            { id: 'MV-001050', name: 'Hoàng Thu Trang', phone: '0937 123 456', tier: 'diamond', tierLabel: 'Kim Cương', spent: 29400000, points: 18200, last: '08/03/2026', progress: 100, color: '#8b5cf6', initials: 'HT', bg: '#ede9fe' },
+            { id: 'MV-001210', name: 'Đặng Minh Tuấn', phone: '0966 789 012', tier: 'bronze', tierLabel: 'Đồng', spent: 420000, points: 320, last: '07/03/2026', progress: 21, color: '#d97706', initials: 'DT', bg: '#fef3c7' },
+        ];
+
+        const tierColors = { bronze: 'tier-bronze', silver: 'tier-silver', gold: 'tier-gold', diamond: 'tier-diamond' };
+
+        function renderTable() {
+            const tbody = document.getElementById('customerTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = customers.map(c => `
+                <tr>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div class="customer-avatar" style="background:${c.bg};color:${c.color};font-size:12px;">${c.initials}</div>
+                            <div>
+                                <div style="font-weight:600;font-size:13px;color:#0f172a;">${c.name}</div>
+                                <div style="font-size:11px;color:#9ca3af;">${c.id} · ${c.phone}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="tier-badge ${tierColors[c.tier]}">${c.tier === 'bronze' ? '🥉' : c.tier === 'silver' ? '🥈' : c.tier === 'gold' ? '🥇' : '💎'} ${c.tierLabel}</span></td>
+                    <td style="font-weight:700;color:#0f172a;">${c.spent.toLocaleString('vi-VN')}₫</td>
+                    <td style="font-weight:600;">${c.points.toLocaleString()} đ</td>
+                    <td style="font-size:12px;color:#374151;">${c.last}</td>
+                    <td style="min-width:110px;">
+                        <div style="font-size:10px;color:#9ca3af;margin-bottom:3px;">${c.progress}% lên hạng tiếp</div>
+                        <div class="points-bar"><div class="points-bar-fill" style="width:${c.progress}%;background:${c.color};"></div></div>
+                    </td>
+                    <td>
+                        <div class="action-btns" style="justify-content:flex-end;">
+                            <button class="btn-icon" title="Xem chi tiết" onclick="openCustomerModal('view')"><i class="fa-solid fa-eye"></i></button>
+                            <button class="btn-icon" title="Gửi Zalo" onclick="alert('Mở Zalo chat với ${c.name}')"><i class="fa-brands fa-stripe-s"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function switchPageTab(tabId) {
+            document.querySelectorAll('.page-tab-btn').forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.querySelectorAll('.page-tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function openCustomerModal(mode) {
+            document.getElementById('customerModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCustomerModal() {
+            document.getElementById('customerModal').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('DOMContentLoaded', renderTable);
+    </script>
+
+    <script src="js/admin-components.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', () => { renderAdminLayout('crm'); });</script>
+</body>
+
+</html>

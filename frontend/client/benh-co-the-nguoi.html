@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bệnh theo cơ thể người — Nhà Thuốc Minh Giang</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+
+
+        /* Container and Structure */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .breadcrumb {
+            padding: 14px 0;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .breadcrumb a {
+            color: #0b7a3e;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb span {
+            margin: 0 6px;
+            color: #9ca3af;
+        }
+
+        .page-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: #0b7a3e;
+            margin: 0 0 24px;
+        }
+
+        .page-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        /* Left Sidebar: Danh sách bệnh chuyên khoa */
+        .sidebar {
+            padding-top: 10px;
+        }
+
+        .sidebar-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #374151;
+            margin: 0 0 16px;
+        }
+
+        .specialty-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .specialty-list li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #8a9bb2;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .specialty-list li a:hover,
+        .specialty-list li a.active {
+            background: #fff;
+            color: #8a9bb2;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .specialty-list li a img {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+        }
+
+        /* Main Content: Article Cards */
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .content-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+        }
+
+        .content-card h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #374151;
+            margin: 0 0 20px;
+        }
+
+        .article-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px 24px;
+        }
+
+        .article-grid a {
+            font-size: 13px;
+            color: #111827;
+            line-height: 1.5;
+            text-decoration: none;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            transition: color 0.15s;
+        }
+
+        .article-grid a:hover {
+            color: #0b7a3e;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header Banner -->
+    <div mg-include="includes/header_banner.html"></div>
+
+    <!-- Top Bar -->
+    <div mg-include="includes/top_bar.html"></div>
+
+    <!-- Main Header -->
+    <div mg-include="includes/main_header.html"></div>
+
+    <!-- Content -->
+    <main class="container">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="index.html">Trang chủ</a><span>›</span>
+            <a href="disease.html">Bệnh lý</a><span>›</span>
+            <strong style="color:#0b7a3e">Bệnh theo cơ thể người</strong>
+        </div>
+
+        <h1 class="page-title">Bệnh theo cơ thể người</h1>
+
+        <div class="page-layout">
+            <!-- Left Sidebar -->
+            <aside class="sidebar">
+                <h3 class="sidebar-title">Phân loại theo cơ thể người</h3>
+
+                <ul class="specialty-list" id="specialtyNav">
+                    <li><a href="#dau" class="active"><img src="../assets/images/benh-ly/benh-theo-co-the-nguoi/icon-dau.png"
+                                alt="">Đầu</a></li>
+                    <li><a href="#co"><img src="../assets/images/benh-ly/benh-theo-co-the-nguoi/icon-co.png" alt="">Cổ</a></li>
+                    <li><a href="#nguc"><img src="../assets/images/benh-ly/benh-theo-co-the-nguoi/icon-nguc.png" alt="">Ngực</a>
+                    </li>
+                    <li><a href="#bung"><img src="../assets/images/benh-ly/benh-theo-co-the-nguoi/icon-bung.png" alt="">Bụng</a>
+                    </li>
+                    <li><a href="#sinh-duc"><img src="../assets/images/benh-ly/benh-theo-co-the-nguoi/icon-sinhduc.png" alt="">Cơ
+                            quan sinh dục</a></li>
+                    <li><a href="#tu-chi"><img src="../assets/images/benh-ly/benh-theo-co-the-nguoi/icon-tuchi.png" alt="">Tứ
+                            chi</a></li>
+                    <li><a href="#da"><img src="../assets/images/benh-ly/benh-theo-co-the-nguoi/icon-da.png" alt="">Da & Các
+                            mô</a></li>
+                </ul>
+
+            </aside>
+
+            <!-- Main Content Area -->
+
+            <div class="content-area">
+
+                <div class="content-card specialty-card-content" id="dau">
+                    <h2>Đầu</h2>
+                    <div class="article-grid">
+                        <a href="#">Phân biệt Rối loạn tiền đình và Thiếu máu não: Triệu chứng, Nguyên nhân và Cách xử
+                            lý</a>
+                        <a href="#">Nhức đầu: Nguyên nhân, triệu chứng và cách điều trị hiệu quả</a>
+                        <a href="#">Tai biến mạch máu não là gì? Cách phòng tránh tử vong khi xuất hiện đột quỵ</a>
+                        <a href="#">Đau đầu mãn tính: 05 cách giảm đau đầu hiệu quả tại nhà</a>
+                        <a href="#">Viêm xoang là gì? Tại sao bệnh viêm xoang lại khó chữa?</a>
+                        <a href="#">Viêm Tai Giữa Ở Người Lớn Và Những Biến Chứng Nguy Hiểm</a>
+                        <a href="#">Đục thủy tinh thể: Nguyên nhân, triệu chứng, chẩn đoán và cách điều trị hiệu quả</a>
+                        <a href="#">Viêm giác mạc: Nguyên nhân, triệu chứng và cách điều trị hiệu quả</a>
+                    </div>
+                </div>
+
+                <div class="content-card specialty-card-content" id="co">
+                    <h2>Cổ</h2>
+                    <div class="article-grid">
+                        <a href="#">Bướu cổ: Nguyên nhân, Triệu Chứng Và Cách Điều Trị Hiệu Quả</a>
+                        <a href="#">Cường Giáp: Hướng Dẫn Nhận Biết, Điều Trị Và Phòng Ngừa Hiệu Quả</a>
+                        <a href="#">Đau họng: Nguyên nhân, triệu chứng và cách điều trị hiệu quả tại nhà</a>
+                        <a href="#">Viêm amidan là gì? Nguyên nhân, triệu chứng và 5 cách điều trị hiệu quả</a>
+                        <a href="#">Viêm họng là gì? Top 05 cách trị viêm họng nhanh chóng tại nhà</a>
+                        <a href="#">Thoái hóa đốt sống cổ: nguyên nhân, triệu chứng, cách điều trị và phòng ngừa hiệu
+                            quả</a>
+                    </div>
+                </div>
+
+                <div class="content-card specialty-card-content" id="nguc">
+                    <h2>Ngực</h2>
+                    <div class="article-grid">
+                        <a href="#">Viêm Phổi: Hướng Dẫn Nhận Biết, Điều Trị Và Phòng Ngừa Hiệu Quả</a>
+                        <a href="#">Hen phế quản: Nguyên nhân, triệu chứng và cách điều trị hiệu quả nhất 2025</a>
+                        <a href="#">Nhồi máu cơ tim: nguyên nhân, triệu chứng và cách phòng ngừa hiệu quả</a>
+                        <a href="#">Hở van tim: Nguyên nhân, triệu chứng, cách chẩn đoán và điều trị hiệu quả</a>
+                        <a href="#">Rối Loạn Nhịp Tim Có Chữa Khỏi Được Không?</a>
+                        <a href="#">Ung thư vú: Nguyên nhân, triệu chứng, cách phòng ngừa và điều trị hiệu quả</a>
+                        <a href="#">Viêm Phế Quản Và 8 Triệu Chứng Thường Gặp</a>
+                    </div>
+                </div>
+
+                <div class="content-card specialty-card-content" id="bung">
+                    <h2>Bụng</h2>
+                    <div class="article-grid">
+                        <a href="#">Viêm Dạ Dày: Hiểu Rõ Triệu Chứng, Nguyên Nhân Và Cách Khắc Phục Hiệu Quả</a>
+                        <a href="#">Rối Loạn Tiêu Hóa Là Gì? Triệu Chứng, Nguyên Nhân Và Cách Chữa Rối Loạn Tiêu Hóa</a>
+                        <a href="#">Viêm Đại Tràng: Giải Mã Nguyên Nhân Và Chấm Dứt Nỗi Lo Về Tiêu Hóa</a>
+                        <a href="#">Trào Ngược Dạ Dày Thực Quản (GERD): Nguyên Nhân, Triệu Chứng Và Mẹo Làm Giảm Trào
+                            Ngược Dạ Dày</a>
+                        <a href="#">Gan Nhiễm Mỡ (FLD): Nguyên Nhân, Triệu Chứng, Chẩn Đoán Và Điều Trị</a>
+                        <a href="#">Sỏi Thận: Nguyên Nhân, Triệu Chứng Và Cách Phòng Ngừa Hiệu Quả</a>
+                        <a href="#">Suy thận: nguyên nhân, triệu chứng và cách điều trị hiệu quả</a>
+                        <a href="#">Táo Bón: Hiểu Rõ Nguyên Nhân Và Cách Khắc Phục An Toàn</a>
+                    </div>
+                </div>
+
+                <div class="content-card specialty-card-content" id="sinh-duc">
+                    <h2>Cơ quan sinh dục</h2>
+                    <div class="article-grid">
+                        <a href="#">Viêm đường tiết niệu: Nguyên nhân, triệu chứng, cách điều trị và phòng ngừa hiệu
+                            quả</a>
+                        <a href="#">Nhiễm Herpes Simplex: Nguyên nhân, triệu chứng, cách điều trị và phòng ngừa hiệu
+                            quả</a>
+                        <a href="#">Bệnh Lậu: Dấu Hiệu Nhận Biết Sớm Và Hướng Điều Trị</a>
+                        <a href="#">Nấm Candida: Triệu chứng, mức độ nguy hiểm và phòng ngừa</a>
+                    </div>
+                </div>
+
+                <div class="content-card specialty-card-content" id="tu-chi">
+                    <h2>Tứ chi</h2>
+                    <div class="article-grid">
+                        <a href="#">Bệnh gout - Nguyên Nhân, Triệu Chứng Và Cách Kiểm Soát Hiệu Quả</a>
+                        <a href="#">Giãn tĩnh mạch: Nguyên nhân, triệu chứng và biện pháp điều trị</a>
+                        <a href="#">Thoái hóa khớp: Biểu hiện và phương pháp làm giảm đau nhức hiệu quả</a>
+                        <a href="#">Bong gân: Cách xử trí an toàn và nhanh phục hồi nhất</a>
+                    </div>
+                </div>
+
+                <div class="content-card specialty-card-content" id="da">
+                    <h2>Da & Các mô</h2>
+                    <div class="article-grid">
+                        <a href="#">Ngứa da: nguyên nhân, triệu chứng, cách chữa trị và phòng ngừa hiệu quả tại nhà</a>
+                        <a href="#">Viêm da cơ địa: Dấu hiệu nhận biết và quản lý bệnh lâu dài</a>
+                        <a href="#">Nổi vảy nến: Nguyên nhân, triệu chứng và cách chăm sóc da</a>
+                        <a href="#">Mề đay vô căn: Làm sao để hết ngứa và tránh tái phát?</a>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Extracted Bottom Sections -->
+        <div class="bottom-sections">
+
+            <!-- Tra cứu theo nhóm bệnh -->
+            <div mg-include="includes/disease_groups.html"></div>
+
+            <!-- Tìm kiếm hàng đầu -->
+            <div mg-include="includes/top_searches.html"></div>
+
+            <!-- SẢN PHẨM ĐANG THU HÚT -->
+            <div mg-include="includes/featured_products.html"></div>
+
+        </div>
+    </main>
+
+    <!-- Pre-Footer Promises -->
+    <div mg-include="includes/promises.html"></div>
+
+    <!-- Newsletter -->
+    <div mg-include="includes/newsletter.html"></div>
+
+    <!-- Main Footer -->
+    <div mg-include="includes/main_footer.html"></div>
+
+    <script>
+        // Smooth scrolling for sidebar links
+        document.querySelectorAll('.specialty-list a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetEl = document.getElementById(targetId);
+                if (targetEl) {
+                    targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Intersection Observer logic to highlight active sidebar link
+        const cards = document.querySelectorAll('.specialty-card-content');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    document.querySelectorAll('.specialty-list a').forEach(a => a.classList.remove('active'));
+                    const navLink = document.querySelector(`.specialty-list a[href="#${entry.target.id}"]`);
+                    if (navLink) navLink.classList.add('active');
+                }
+            });
+        }, { rootMargin: '-10% 0px -80% 0px' });
+
+        cards.forEach(card => observer.observe(card));
+    </script>
+    <script src="../assets/js/components.js"></script>
+</body>
+
+</html>
