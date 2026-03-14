@@ -152,16 +152,16 @@
 <body>
 
     <!-- Header Banner -->
-    <div mg-include="includes/header_banner.html"></div>
+    <div mg-include="../components/header_banner.html"></div>
 
     <!-- Top Bar -->
-    <div mg-include="includes/top_bar.html"></div>
+    <div mg-include="../components/top_bar.html"></div>
 
     <!-- Main Header -->
-    <div mg-include="includes/main_header.html"></div>
+    <div mg-include="../components/main_header.html"></div>
 
     <!-- Content -->
-    <main class="container">
+    <main class="container" data-page-type="specialty-listing" data-page-slug="chuyen-khoa" data-page-title="Bệnh chuyên khoa">
         <!-- Breadcrumb -->
         <div class="breadcrumb">
             <a href="index.html">Trang chủ</a><span>›</span>
@@ -351,25 +351,25 @@
         <div class="bottom-sections">
 
             <!-- Tra cứu theo nhóm bệnh -->
-            <div mg-include="includes/disease_groups.html"></div>
+            <div mg-include="../components/disease_groups.html"></div>
 
             <!-- Tìm kiếm hàng đầu -->
-            <div mg-include="includes/top_searches.html"></div>
+            <div mg-include="../components/top_searches.html"></div>
 
             <!-- SẢN PHẨM ĐANG THU HÚT -->
-            <div mg-include="includes/featured_products.html"></div>
+            <div mg-include="../components/featured_products.html"></div>
 
         </div>
     </main>
 
     <!-- Pre-Footer Promises -->
-    <div mg-include="includes/promises.html"></div>
+    <div mg-include="../components/promises.html"></div>
 
     <!-- Newsletter -->
-    <div mg-include="includes/newsletter.html"></div>
+    <div mg-include="../components/newsletter.html"></div>
 
     <!-- Main Footer -->
-    <div mg-include="includes/main_footer.html"></div>
+    <div mg-include="../components/main_footer.html"></div>
 
     <script>
         // Smooth scrolling for sidebar links
@@ -399,6 +399,7 @@
         cards.forEach(card => observer.observe(card));
     </script>
     <script src="../assets/js/components.js"></script>
+    <script src="../assets/js/disease-page-loader.js"></script>
 </body>
 
 </html>

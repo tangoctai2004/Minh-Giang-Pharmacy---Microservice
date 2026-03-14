@@ -1,0 +1,28 @@
+# Disease Pages Consolidation - 301 Redirects
+# These redirects move old disease pages to benh-ung-thu.html with query parameters
+# This preserves SEO rankings (301 = permanent redirect)
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Redirect old disease listing pages to master page with slug query param
+    # benh-la.html → benh-ung-thu.html?slug=la
+    RewriteRule ^benh-la\.html$ benh-ung-thu.html?slug=la [R=301,L]
+    
+    # benh-truyen-nhiem.html → benh-ung-thu.html?slug=truyen-nhiem
+    RewriteRule ^benh-truyen-nhiem\.html$ benh-ung-thu.html?slug=truyen-nhiem [R=301,L]
+    
+    # benh-theo-mua.html → benh-ung-thu.html?slug=theo-mua
+    RewriteRule ^benh-theo-mua\.html$ benh-ung-thu.html?slug=theo-mua [R=301,L]
+    
+    # benh-man-tinh.html → benh-ung-thu.html?slug=man-tinh
+    RewriteRule ^benh-man-tinh\.html$ benh-ung-thu.html?slug=man-tinh [R=301,L]
+</IfModule>
+
+# Alternative method using Redirect directive (if mod_rewrite not available)
+# <IfModule !mod_rewrite.c>
+#     Redirect 301 /benh-la.html /benh-ung-thu.html?slug=la
+#     Redirect 301 /benh-truyen-nhiem.html /benh-ung-thu.html?slug=truyen-nhiem
+#     Redirect 301 /benh-theo-mua.html /benh-ung-thu.html?slug=theo-mua
+#     Redirect 301 /benh-man-tinh.html /benh-ung-thu.html?slug=man-tinh
+# </IfModule>

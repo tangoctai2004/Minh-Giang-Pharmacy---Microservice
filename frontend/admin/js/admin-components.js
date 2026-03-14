@@ -7,7 +7,7 @@
 function renderAdminLayout(activePageId) {
     const sidebarHTML = `
         <div class="sidebar-brand">
-            <img src="../assets/logo_Minh_Giang_Pharmacy.png" alt="Logo">
+            <img src="../assets/images/logo_Minh_Giang_Pharmacy.png" alt="Logo">
             <div class="sidebar-brand-text">
                 <span class="sidebar-brand-name">Minh Giang</span>
                 <span class="sidebar-brand-sub">Admin Portal</span>

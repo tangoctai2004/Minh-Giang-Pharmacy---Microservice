@@ -11,7 +11,6 @@ services:
       - "3306:3306"
     volumes:
       - db-data:/var/lib/mysql
-      # Script tự chạy khi db được tạo lần đầu
       - ./infrastructure/database:/docker-entrypoint-initdb.d/
     restart: unless-stopped
     healthcheck:
@@ -23,8 +22,10 @@ services:
     image: rabbitmq:3-management
     container_name: minhgiang_rabbitmq
     ports:
-      - "5672:5672"   # Port giao tiếp MQTT cho code
-      - "15672:15672" # Port Management UI trên Web
+      - "5672:5672"
+# Port giao tiếp MQTT cho code
+      - "15672:15672"
+# Port Management UI trên Web
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
