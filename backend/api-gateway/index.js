@@ -1,56 +1,98 @@
 const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
-const cors = require('cors');
-const morgan = require('morgan');
+const cors    = require('cors');
+const morgan  = require('morgan');
 require('dotenv').config();
 
-const app = express();
+const authMiddleware = require('./middlewares/auth');
+
+const app  = express();
 const PORT = process.env.PORT || 8000;
 
-// 1. Nhúng Middlewares cơ bản
-app.use(cors()); // Cho phép Frontend gọi API mà không bị lỗi CORS
-app.use(morgan('dev')); // Log lịch sử gọi API ra terminal cho dễ debug
-
-const routes = {
-  '/api/identity': 'http://localhost:8001',   // Cổng của Identity Service (Tài khoản)
-  '/api/catalog': 'http://localhost:8002',    // Cổng của Catalog Service (Thuốc)
-  '/api/order': 'http://localhost:8003',      // Cổng của Order Service (Đơn hàng)
-  '/api/cms': 'http://localhost:8004',        // Cổng của CMS Service (Nội dung)
-  '/api/notification': 'http://localhost:8005' // Cổng Notification Service
+// ── Lấy URL từng service từ .env ─────────────────────────────────────────────
+// Dev local  : giá trị mặc định  → localhost:800x
+// Docker     : đặt trong docker-compose.yml → http://identity-service:8001
+const SERVICES = {
+  IDENTITY:     process.env.IDENTITY_SERVICE_URL     || 'http://localhost:8001',
+  CATALOG:      process.env.CATALOG_SERVICE_URL      || 'http://localhost:8002',
+  ORDER:        process.env.ORDER_SERVICE_URL        || 'http://localhost:8003',
+  CMS:          process.env.CMS_SERVICE_URL          || 'http://localhost:8004',
+  NOTIFICATION: process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:8005',
 };
 
-// Vòng lặp để proxy mọi luồng tự động
-for (const path in routes) {
-  const targetUrl = routes[path];
-  app.use(
-    path, 
-    // Tích hợp middleware xác thực Token (JWT Authentication) ở đây sau
-    createProxyMiddleware({
-      target: targetUrl,
-      changeOrigin: true,
-      pathRewrite: (pathStr) => pathStr.replace(path, ''), // Xoá chữ '/api/identity' khi đi xuống service con cho sạch
-      onProxyReq: (proxyReq, req, res) => {
-        // Gắn thêm Header thông tin user sau khi giải mã JWT để các service bên dưới biết là ai gọi
+// ── Middlewares ───────────────────────────────────────────────────────────────
+app.use(cors({
+  origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : '*',
+  credentials: true,
+}));
+app.use(morgan('dev'));
+app.use(express.json());
+
+// ── Proxy factory ─────────────────────────────────────────────────────────────
+function makeProxy(target, prefix) {
+  return createProxyMiddleware({
+    target,
+    changeOrigin: true,
+    pathRewrite: { [`^${prefix}`]: '' },
+    on: {
+      proxyReq(proxyReq, req) {
+        // Gắn thông tin user đã xác thực để các service con dùng
         if (req.user) {
-           proxyReq.setHeader('x-user-id', req.user.id);
-           proxyReq.setHeader('x-user-role', req.user.role);
+          proxyReq.setHeader('x-user-id',   String(req.user.id));
+          proxyReq.setHeader('x-user-role', String(req.user.role  || ''));
+          proxyReq.setHeader('x-user-type', String(req.user.type  || ''));
         }
       },
-      onError: (err, req, res) => {
-        res.status(500).json({ message: 'Service con hiện chưa khởi chạy hoặc bị sập', error: err.message });
-      }
-    })
-  );
+      error(err, req, res) {
+        res.status(503).json({
+          success: false,
+          message:  'Service tạm thời không khả dụng. Vui lòng thử lại.',
+          service:  prefix,
+          ...(process.env.NODE_ENV === 'development' && { detail: err.message }),
+        });
+      },
+    },
+  });
 }
 
-// Route Ping kiểm tra Gateway sống hay chết
+// ── Routes ────────────────────────────────────────────────────────────────────
+// authMiddleware kiểm tra JWT nhưng tự động bỏ qua các endpoint công khai
+// (xem danh sách whitelist trong middlewares/auth.js)
+const ROUTES = [
+  { prefix: '/api/identity',     target: SERVICES.IDENTITY },
+  { prefix: '/api/catalog',      target: SERVICES.CATALOG },
+  { prefix: '/api/order',        target: SERVICES.ORDER },
+  { prefix: '/api/cms',          target: SERVICES.CMS },
+  { prefix: '/api/notification', target: SERVICES.NOTIFICATION },
+];
+
+for (const { prefix, target } of ROUTES) {
+  app.use(prefix, authMiddleware, makeProxy(target, prefix));
+}
+
+// ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => {
-  res.status(200).json({ message: 'API Gateway is Up and Running 🚀', timestamp: new Date() });
+  res.json({
+    service:   'api-gateway',
+    status:    'ok',
+    uptime:    `${process.uptime().toFixed(1)}s`,
+    timestamp: new Date().toISOString(),
+    services:  SERVICES,
+  });
 });
 
-// Chạy Server
+// ── 404 fallback ──────────────────────────────────────────────────────────────
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Route ${req.method} ${req.originalUrl} không tồn tại trên Gateway`,
+  });
+});
+
+// ── Start ─────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
-  console.log(`[GATEWAY] đang lắng nghe tại http://localhost:${PORT}`);
-  console.log('--- Cấu hình Route hiện tại ---');
-  console.table(routes);
+  console.log(`\n[API Gateway] ✅  http://localhost:${PORT}`);
+  console.log('[API Gateway] Danh sách route:');
+  console.table(ROUTES.map(r => ({ prefix: r.prefix, service: r.target })));
+  console.log();
 });

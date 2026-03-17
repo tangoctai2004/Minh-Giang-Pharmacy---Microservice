@@ -1,12 +1,14 @@
 version: '3.8'
 
 services:
+  # ─────────────────────────── Infrastructure ───────────────────────────
   mysql-db:
     image: mysql:8.0
     container_name: minhgiang_mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: minhgiang_db
+      MYSQL_ROOT_HOST: '%'
     ports:
       - "3306:3306"
     volumes:
@@ -14,21 +16,167 @@ services:
       - ./infrastructure/database:/docker-entrypoint-initdb.d/
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
 
   rabbitmq:
     image: rabbitmq:3-management
     container_name: minhgiang_rabbitmq
     ports:
-      - "5672:5672"
-# Port giao tiếp MQTT cho code
-      - "15672:15672"
-# Port Management UI trên Web
+      - "5672:5672"    # AMQP (code kết nối)
+      - "15672:15672"  # Management UI: http://localhost:15672  (guest/guest)
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    restart: unless-stopped
+
+  # ─────────────────────────── Microservices ────────────────────────────
+  identity-service:
+    build: ./backend/identity-service
+    container_name: minhgiang_identity
+    ports:
+      - "8001:8001"
+    environment:
+      PORT: 8001
+      NODE_ENV: development
+      DB_HOST: mysql-db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASS: root
+      DB_NAME: mg_identity
+      JWT_SECRET: ${JWT_SECRET:-change_me_to_a_random_32_char_string}
+      JWT_EXPIRES_IN: 8h
+    volumes:
+      - ./backend/identity-service:/app
+      - /app/node_modules
+    command: npm run dev
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  catalog-service:
+    build: ./backend/catalog-service
+    container_name: minhgiang_catalog
+    ports:
+      - "8002:8002"
+    environment:
+      PORT: 8002
+      NODE_ENV: development
+      DB_HOST: mysql-db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASS: root
+      DB_NAME: mg_catalog
+    volumes:
+      - ./backend/catalog-service:/app
+      - /app/node_modules
+    command: npm run dev
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  order-service:
+    build: ./backend/order-service
+    container_name: minhgiang_order
+    ports:
+      - "8003:8003"
+    environment:
+      PORT: 8003
+      NODE_ENV: development
+      DB_HOST: mysql-db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASS: root
+      DB_NAME: mg_order
+    volumes:
+      - ./backend/order-service:/app
+      - /app/node_modules
+    command: npm run dev
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  cms-service:
+    build: ./backend/cms-service
+    container_name: minhgiang_cms
+    ports:
+      - "8004:8004"
+    environment:
+      PORT: 8004
+      NODE_ENV: development
+      DB_HOST: mysql-db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASS: root
+      DB_NAME: mg_cms
+    volumes:
+      - ./backend/cms-service:/app
+      - /app/node_modules
+    command: npm run dev
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  notification-service:
+    build: ./backend/notification-service
+    container_name: minhgiang_notification
+    ports:
+      - "8005:8005"
+    environment:
+      PORT: 8005
+      NODE_ENV: development
+      DB_HOST: mysql-db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASS: root
+      DB_NAME: mg_notification
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM_NAME: Minh Giang Pharmacy
+    volumes:
+      - ./backend/notification-service:/app
+      - /app/node_modules
+    command: npm run dev
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ─────────────────────────── API Gateway ──────────────────────────────
+  api-gateway:
+    build: ./backend/api-gateway
+    container_name: minhgiang_gateway
+    ports:
+      - "8000:8000"   # Tất cả request đi qua đây: http://localhost:8000/api/...
+    environment:
+      PORT: 8000
+      NODE_ENV: development
+      JWT_SECRET: ${JWT_SECRET:-change_me_to_a_random_32_char_string}
+      IDENTITY_SERVICE_URL: http://identity-service:8001
+      CATALOG_SERVICE_URL: http://catalog-service:8002
+      ORDER_SERVICE_URL: http://order-service:8003
+      CMS_SERVICE_URL: http://cms-service:8004
+      NOTIFICATION_SERVICE_URL: http://notification-service:8005
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5500,http://localhost:3000}
+    volumes:
+      - ./backend/api-gateway:/app
+      - /app/node_modules
+    command: npm run dev
+    depends_on:
+      - identity-service
+      - catalog-service
+      - order-service
+      - cms-service
+      - notification-service
     restart: unless-stopped
 
 volumes:

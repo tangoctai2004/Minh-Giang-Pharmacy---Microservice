@@ -1,0 +1,20 @@
+{
+  "name": "cms-service",
+  "version": "1.0.0",
+  "description": "Dịch vụ quản lý nội dung — articles, banners, disease-categories, promotions, store-config, media",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev":   "nodemon index.js"
+  },
+  "dependencies": {
+    "cors":    "^2.8.5",
+    "dotenv":  "^16.4.5",
+    "express": "^4.19.2",
+    "morgan":  "^1.10.0",
+    "mysql2":  "^3.9.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}

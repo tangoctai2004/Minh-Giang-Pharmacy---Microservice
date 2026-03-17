@@ -3,7 +3,47 @@
    Medical-grade enterprise styling
    ============================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@font-face {
+    font-family: 'Sarabun';
+    src: url('../../assets/fonts/Sarabun-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Sarabun';
+    src: url('../../assets/fonts/Sarabun-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Sarabun';
+    src: url('../../assets/fonts/Sarabun-Italic.ttf') format('truetype');
+    font-weight: normal;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Sarabun';
+    src: url('../../assets/fonts/Sarabun-BoldItalic.ttf') format('truetype');
+    font-weight: bold;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Sarabun';
+    src: url('../../assets/fonts/Sarabun-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Sarabun';
+    src: url('../../assets/fonts/Sarabun-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
 
 :root {
     --pos-primary: #005824;
@@ -41,7 +81,7 @@ html,
 body {
     height: 100%;
     overflow: hidden;
-    font-family: 'Inter', 'Roboto', sans-serif;
+    font-family: 'Sarabun', sans-serif;
     background-color: var(--pos-bg-main);
     color: var(--pos-text-primary);
     -webkit-font-smoothing: antialiased;
