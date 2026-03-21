@@ -1,40 +1,120 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# ════════════════════════════════════════════════════════════════
+# .gitignore — Minh Giang Pharmacy Microservices Project
+# Tránh commit các file nhạy cảm, build outputs, dependencies
+# ════════════════════════════════════════════════════════════════
 
-# Dependencies
-node_modules/
-target/
-*.jar
-*.war
-*.ear
+# ─── CRITICAL: Environment & Secrets ───────────────────────────────
+.env                          # Local environment variables (NEVER commit)
+.env.local                     # Local overrides
+.env.*.local                   # Environment-specific locals
+.env.production                # Production secrets (NEVER commit)
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ─── Node.js Dependencies & Lock ───────────────────────────────────
+node_modules/                 # npm install creates this (huge folder)
+npm-debug.log*                # npm debug logs
+npm-error.log*
+yarn-error.log*
+yarn-debug.log*
+package-lock.json             # Optional: uncomment if team tracks it
+yarn.lock                      # Optional: uncomment if team tracks it
+
+# ─── Build Outputs ─────────────────────────────────────────────────
+dist/
+build/
+out/
+bin/
+obj/
+target/                        # Maven build output
+*.jar                         # Compiled Java archives
+*.war                         # Java web archives
+*.ear                         # Java enterprise archives
+
+# ─── IDE & Editor Files ────────────────────────────────────────────
+.vscode/                       # VS Code workspace settings
+.idea/                         # JetBrains IDEs (IntelliJ, WebStorm, etc.)
+*.suo                         # Visual Studio solution
+*.ntvs*
+*.njsproj
+*.sln
+.DS_Store                      # macOS folder metadata
+Thumbs.db                      # Windows folder thumbnails
+
+# ─── Editor Temporary Files ────────────────────────────────────────
+*.swp                         # Vim swap files
+*.swo
+*~                            # Emacs temporary
+*.bak                         # Backup files
+*.tmp
+
+# ─── OS Files ──────────────────────────────────────────────────────
+.AppleDouble
+.LSOverride
+
+# ─── Python (if used) ──────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ─── Database Files (local dev only) ────────────────────────────────
+*.sqlite
+*.sqlite3
+*.db
+data/
+
+# ─── Log Files ─────────────────────────────────────────────────────
+logs/
+*.log
+*.log.*
+
+# ─── Test & Coverage ──────────────────────────────────────────────
+.cache/
+.coverage
+coverage/
+*.lcov
+test-results/
+junit.xml
+
+# ─── Sensitive Files & Credentials ────────────────────────────────
+*.pem
+*.key
+*.crt
+*.pfx
+secret*
+*credentials*
+*password*
+oauth.json
+api-keys.json
+private/
+
+# ─── Gradle & Maven ───────────────────────────────────────────────
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
 pom.xml.next
 release.properties
+.flattened-pom.xml
+.gradle/
+!gradle-wrapper.jar
+gradle-app.setting
+.gradletasknamecache
 
-# Build
-dist/
-build/
-out/
+# ─── Postman local backups ────────────────────────────────────────
+Postman/backup/
 
-# IDE
-.idea/
-.vscode/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-.DS_Store
-
-# Environment
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# ═══════════════════════════════════════════════════════════════════
+# EXCEPTIONS: Files to KEEP
+# ═══════════════════════════════════════════════════════════════════
+!.env.example
+!.vscode/extensions.json
+!.idea/codeStyles/
+!docker-compose.yml
+!Dockerfile
+!.gitignore
