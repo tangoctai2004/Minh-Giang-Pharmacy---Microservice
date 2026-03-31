@@ -279,7 +279,7 @@ INSERT INTO order_items (order_id, product_id, product_name, unit_name, quantity
 (1, 9, 'Băng cuộn y tế 5cm × 5m',             'Cuộn',  12, 5000.00,  60000.00,  3, 'BAN-MV-260101'),
 (1, 4, 'Vitamin C 1000mg Effervescent Hộp 20v','Viên',  24, 9000.00,  60000.00,  6, 'VTC-OPV-261001'),
 -- POS-260317-002
-(2, 7, 'Blackmores Bio C 1000mg Hộp 31 viên',  'Hộp',   2, 28000.00 * 31, 1736000.00, 5, 'BLK-BM-260201'),
+(2, 7, 'Blackmores Bio C 1000mg Hộp 31 viên',  'Hộp',   2, 868000.00, 1736000.00, 5, 'BLK-BM-260201'),
 -- WEB-260316-001
 (4, 7, 'Blackmores Bio C 1000mg Hộp 31 viên',  'Hộp',   1, 850000.00, 850000.00, 5, 'BLK-BM-260201'),
 -- WEB-260315-001

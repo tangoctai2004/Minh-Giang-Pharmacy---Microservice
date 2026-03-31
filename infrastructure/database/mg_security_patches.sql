@@ -680,7 +680,23 @@ WHERE admin_notes IS NOT NULL AND TRIM(admin_notes) != '';
 
 -- Xoá cột admin_notes khỏi orders (dữ liệu đã migrate sang bảng mới)
 -- Lưu ý: MySQL 8.0 không hỗ trợ DROP COLUMN IF EXISTS (là cú pháp MariaDB)
-ALTER TABLE orders DROP COLUMN admin_notes;
+-- Dùng stored procedure để kiểm tra cột tồn tại trước khi xoá
+DROP PROCEDURE IF EXISTS _drop_admin_notes_if_exists;
+DELIMITER $$
+CREATE PROCEDURE _drop_admin_notes_if_exists()
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'mg_order'
+          AND table_name   = 'orders'
+          AND column_name  = 'admin_notes'
+    ) THEN
+        ALTER TABLE orders DROP COLUMN admin_notes;
+    END IF;
+END$$
+DELIMITER ;
+CALL _drop_admin_notes_if_exists();
+DROP PROCEDURE _drop_admin_notes_if_exists;
 
 SELECT '[D4-06] ✅ order_internal_notes: đã tách ghi chú nội bộ và xoá admin_notes khỏi orders' AS status;
 

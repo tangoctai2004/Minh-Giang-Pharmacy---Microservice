@@ -383,7 +383,7 @@ WHERE id = 1;
 UPDATE shifts
 SET expected_closing_cash = 3000000.00 + 2500000.00,
     cash_difference = 5680000.00 - (3000000.00 + 2500000.00),
-    reconciliation_status = 'surplus',
+    reconciliation_status = 'excess',
     approved_by = 1,
     approved_at = '2026-03-17 15:35:00',
     approval_note = 'Thừa 180.000đ — khả năng khách thối tiền chênh lẻ, ghi nhập quỹ'
