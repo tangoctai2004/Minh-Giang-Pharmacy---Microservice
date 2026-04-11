@@ -108,4 +108,73 @@ function renderAdminLayout(activePageId) {
     // Inject Header
     const header = document.querySelector('header.admin-header');
     if (header) header.innerHTML = headerHTML;
+
+    // Tự động apply auth header sau khi inject HTML
+    _applyAdminAuth();
+}
+
+// ─── Admin Auth (dùng chung cho toàn bộ trang admin) ─────────────────
+
+function _applyAdminAuth() {
+    // Auth guard
+    const authRaw = localStorage.getItem('MG_ADMIN_AUTH');
+    if (!authRaw) { window.location.href = 'login.html'; return; }
+
+    try {
+        const parsed = JSON.parse(authRaw);
+        if (!parsed.accessToken) { window.location.href = 'login.html'; return; }
+
+        if (parsed.user && parsed.user.full_name) {
+            const nameEl = document.querySelector('.header-user-name');
+            if (nameEl) nameEl.textContent = parsed.user.full_name;
+
+            const roleEl = document.querySelector('.header-user-role');
+            if (roleEl) roleEl.textContent = 'Quản trị viên';
+
+            const avatarEl = document.querySelector('.header-avatar');
+            if (avatarEl) {
+                avatarEl.textContent = parsed.user.full_name.split(' ').pop().charAt(0).toUpperCase();
+            }
+
+            // Dropdown logout - dùng hover thay click
+            const headerUser = document.querySelector('.header-user');
+            if (headerUser) {
+                headerUser.style.cursor = 'pointer';
+                headerUser.style.position = 'relative';
+
+                const oldDropdown = document.getElementById('_adminUserDropdown');
+                if (oldDropdown) oldDropdown.remove();
+
+                const dropdown = document.createElement('div');
+                dropdown.id = '_adminUserDropdown';
+                dropdown.style.cssText = 'position:absolute;top:calc(100% + 10px);right:0;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.12);min-width:200px;z-index:9999;overflow:hidden;opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity 0.2s ease,transform 0.2s ease,visibility 0.2s;';
+                dropdown.innerHTML = `
+                    <div style="padding:12px 16px;border-bottom:1px solid #f1f5f9;">
+                        <div style="font-size:13px;font-weight:700;color:#0f172a;">${parsed.user.full_name}</div>
+                        <div style="font-size:12px;color:#94a3b8;margin-top:2px;">Quản trị viên</div>
+                    </div>
+                    <a href="javascript:void(0)" onclick="adminLogout()" style="display:flex;align-items:center;gap:10px;padding:11px 16px;color:#ef4444;text-decoration:none;font-size:13px;font-weight:500;">
+                        <i class="fa-solid fa-sign-out-alt" style="width:14px;"></i> Đăng xuất
+                    </a>
+                `;
+                headerUser.appendChild(dropdown);
+
+                headerUser.addEventListener('mouseenter', () => {
+                    dropdown.style.opacity = '1';
+                    dropdown.style.visibility = 'visible';
+                    dropdown.style.transform = 'translateY(0)';
+                });
+                headerUser.addEventListener('mouseleave', () => {
+                    dropdown.style.opacity = '0';
+                    dropdown.style.visibility = 'hidden';
+                    dropdown.style.transform = 'translateY(-8px)';
+                });
+            }
+        }
+    } catch (e) { /* ignore */ }
+}
+
+function adminLogout() {
+    localStorage.removeItem('MG_ADMIN_AUTH');
+    window.location.href = 'login.html';
 }

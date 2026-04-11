@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const pool   = require('../db/pool');
+const pool = require('../db/pool');
 
 /**
  * Products Routes — mg_catalog.products
@@ -9,15 +9,15 @@ const pool   = require('../db/pool');
 // GET /products — Danh sách sản phẩm với phân trang
 router.get('/', async (req, res) => {
   try {
-    const page     = Math.max(1, Number(req.query.page)  || 1);
-    const limit    = Math.min(100, Number(req.query.limit) || 20);
-    const offset   = (page - 1) * limit;
-    const keyword  = req.query.q ? `%${req.query.q}%` : null;
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(100, Number(req.query.limit) || 20);
+    const offset = (page - 1) * limit;
+    const keyword = req.query.q ? `%${req.query.q}%` : null;
     const categoryId = req.query.category_id ? Number(req.query.category_id) : null;
 
     let where = 'WHERE p.is_active = 1';
     const params = [];
-    if (keyword)    { where += ' AND (p.name LIKE ? OR p.code LIKE ?)'; params.push(keyword, keyword); }
+    if (keyword) { where += ' AND (p.name LIKE ? OR p.code LIKE ?)'; params.push(keyword, keyword); }
     if (categoryId) { where += ' AND p.category_id = ?'; params.push(categoryId); }
 
     const [rows] = await pool.query(
@@ -57,8 +57,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.post('/',     (req, res) => res.status(501).json({ success: false, message: 'TODO: POST /products' }));
-router.put('/:id',   (req, res) => res.status(501).json({ success: false, message: 'TODO: PUT /products/:id' }));
-router.delete('/:id',(req, res) => res.status(501).json({ success: false, message: 'TODO: DELETE /products/:id — soft delete (SET is_active=0)' }));
+router.post('/', (req, res) => res.status(501).json({ success: false, message: 'TODO: POST /products' }));
+router.put('/:id', (req, res) => res.status(501).json({ success: false, message: 'TODO: PUT /products/:id' }));
+router.delete('/:id', (req, res) => res.status(501).json({ success: false, message: 'TODO: DELETE /products/:id — soft delete (SET is_active=0)' }));
 
 module.exports = router;

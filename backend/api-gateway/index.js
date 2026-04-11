@@ -1,6 +1,5 @@
 const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
-const cors    = require('cors');
 const morgan  = require('morgan');
 require('dotenv').config();
 
@@ -20,13 +19,18 @@ const SERVICES = {
   NOTIFICATION: process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:8005',
 };
 
-// ── Middlewares ───────────────────────────────────────────────────────────────
-app.use(cors({
-  origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : '*',
-  credentials: true,
-}));
+// ── Middlewares ───────────────────────────────────────────────────────────────;
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  // Xử lý preflight ngay, không chuyển xuống proxy
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
 app.use(morgan('dev'));
-app.use(express.json());
 
 // ── Proxy factory ─────────────────────────────────────────────────────────────
 function makeProxy(target, prefix) {
@@ -35,8 +39,12 @@ function makeProxy(target, prefix) {
     changeOrigin: true,
     pathRewrite: { [`^${prefix}`]: '' },
     on: {
+      proxyRes(proxyRes) {
+        // Gắn CORS headers vào response từ backend service trước khi gửi về client
+        proxyRes.headers['access-control-allow-origin'] = '*';
+        proxyRes.headers['access-control-allow-headers'] = 'Content-Type, Authorization';
+      },
       proxyReq(proxyReq, req) {
-        // Gắn thông tin user đã xác thực để các service con dùng
         if (req.user) {
           proxyReq.setHeader('x-user-id',   String(req.user.id));
           proxyReq.setHeader('x-user-role', String(req.user.role  || ''));

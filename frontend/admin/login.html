@@ -305,6 +305,14 @@
     </div>
 
     <script>
+        // Nếu đã đăng nhập rồi thì vào thẳng index
+        (function checkAuth() {
+            try {
+                const auth = JSON.parse(localStorage.getItem('MG_ADMIN_AUTH') || '{}');
+                if (auth.accessToken) window.location.href = 'index.html';
+            } catch (e) {}
+        })();
+
         function togglePassword() {
             const pwdInput = document.getElementById('password');
             const icon = document.getElementById('toggleIcon');
@@ -324,25 +332,47 @@
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
             const errorBox = document.getElementById('authError');
-            const u = document.getElementById('username').value;
+            const u = document.getElementById('username').value.trim();
             const p = document.getElementById('password').value;
 
-            // Loading state
             btn.classList.add('loading');
             errorBox.classList.remove('show');
 
-            // Simulate API Call
-            setTimeout(() => {
+            fetch('http://localhost:8000/api/identity/auth/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: u, password: p })
+            })
+            .then(r => r.json())
+            .then(data => {
                 btn.classList.remove('loading');
 
-                // Simple validation mock
-                if (u === 'admin' && p === 'admin123') {
-                    window.location.href = 'index.html';
-                } else {
-                    document.getElementById('errorMessage').textContent = "Sai tên đăng nhập hoặc mật khẩu. Vui lòng thử lại.";
+                if (!data.success) {
+                    document.getElementById('errorMessage').textContent = data.message || 'Đăng nhập thất bại.';
                     errorBox.classList.add('show');
+                    return;
                 }
-            }, 1000);
+
+                const user = data.data && data.data.user;
+                if (!user || (user.role !== 'admin' && user.role !== 'manager')) {
+                    document.getElementById('errorMessage').textContent = 'Tài khoản không có quyền truy cập hệ thống quản trị.';
+                    errorBox.classList.add('show');
+                    return;
+                }
+
+                localStorage.setItem('MG_ADMIN_AUTH', JSON.stringify({
+                    accessToken: data.data.accessToken,
+                    refreshToken: data.data.refreshToken,
+                    user: user,
+                    loggedInAt: Date.now()
+                }));
+                window.location.href = 'index.html';
+            })
+            .catch(() => {
+                btn.classList.remove('loading');
+                document.getElementById('errorMessage').textContent = 'Không thể kết nối đến máy chủ. Vui lòng thử lại.';
+                errorBox.classList.add('show');
+            });
         }
 
         function handleForgotPwd() {

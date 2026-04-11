@@ -614,6 +614,47 @@
         });
     </script>
     <script src="../assets/js/components.js"></script>
+    <script>
+        const API_BASE = 'http://localhost:8000/api/identity';
+
+        // Auto refresh token khi accessToken hết hạn (call lại API kèm refreshToken)
+        async function tryRefreshToken() {
+            try {
+                const authRaw = localStorage.getItem('MG_CLIENT_AUTH');
+                if (!authRaw) return;
+                const auth = JSON.parse(authRaw);
+                if (!auth.refreshToken) return;
+
+                const res = await fetch(API_BASE + '/auth/refresh', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refreshToken: auth.refreshToken }),
+                });
+                const data = await res.json();
+                if (data.success) {
+                    auth.accessToken = data.data.accessToken;
+                    localStorage.setItem('MG_CLIENT_AUTH', JSON.stringify(auth));
+                } else {
+                    localStorage.removeItem('MG_CLIENT_AUTH');
+                }
+            } catch (e) { /* ignore */ }
+        }
+
+        // Kiểm tra token khi load trang — nếu sắp hết hạn thì refresh
+        (function checkToken() {
+            try {
+                const authRaw = localStorage.getItem('MG_CLIENT_AUTH');
+                if (!authRaw) return;
+                const auth = JSON.parse(authRaw);
+                if (!auth.accessToken) return;
+                const payload = JSON.parse(atob(auth.accessToken.split('.')[1]));
+                const expiresIn = payload.exp * 1000 - Date.now();
+                if (expiresIn < 30 * 60 * 1000) {
+                    tryRefreshToken();
+                }
+            } catch (e) { /* ignore */ }
+        })();
+    </script>
 </body>
 
 </html>

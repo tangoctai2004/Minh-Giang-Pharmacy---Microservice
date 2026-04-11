@@ -1,0 +1,6 @@
+# Use this workspace to collaborate
+workspace:
+  id: 1ad456da-5125-459e-8366-2cef38c4be90
+localResources:
+  collections:
+    - ../infrastructure/postman/Minh_Giang_Pharmacy_API.postman_collection.json
