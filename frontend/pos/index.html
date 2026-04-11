@@ -1336,7 +1336,11 @@
                 setTimeout(() => { toast.classList.add('show'); }, 10);
                 setTimeout(() => {
                     toast.classList.remove('show');
-                    setTimeout(() => { toast.remove(); window.location.href = 'login.html'; }, 300);
+                    setTimeout(() => {
+                        toast.remove();
+                        localStorage.removeItem('MG_POS_AUTH');
+                        window.location.href = 'login.html';
+                    }, 300);
                 }, 2000);
             }
 
@@ -1415,7 +1419,8 @@
                 }
             });
         </script>
+        <script src="js/pos-auth.js"></script>
 
-</body>
+    </body>
 
 </html>

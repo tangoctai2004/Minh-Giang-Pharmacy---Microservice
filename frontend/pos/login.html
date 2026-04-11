@@ -637,10 +637,9 @@
                         <i class="fa-solid fa-user-tie login-select-icon"></i>
                         <select class="login-select" id="cashierSelect">
                             <option value="">— Chọn nhân viên —</option>
-                            <option value="nva">Nguyễn Văn A — DS. Dược sĩ</option>
-                            <option value="ttb">Trần Thị B — NV. Thu ngân</option>
-                            <option value="lvc">Lê Văn C — NV. Thu ngân</option>
-                            <option value="pth">Phạm Thị H — DS. Dược sĩ</option>
+                            <option value="duocsi_lan">Trần Thị Lan — DS. Dược sĩ</option>
+                            <option value="thugan_minh">Lê Văn Minh — NV. Thu ngân</option>
+                            <option value="duocsi_tuan">Đỗ Mạnh Tuấn — DS. Dược sĩ</option>
                         </select>
                         <i class="fa-solid fa-chevron-down login-select-arrow"></i>
                     </div>
@@ -730,7 +729,6 @@
         // ---- PIN Logic ----
         let pin = '';
         const maxPin = 6;
-        const correctPin = '123456'; // Demo PIN
 
         function pressKey(key) {
             if (pin.length >= maxPin) return;
@@ -776,46 +774,60 @@
                 return;
             }
 
-            if (pin === correctPin) {
-                // Success
-                status.className = 'login-pin-status success';
-                status.innerHTML = '<i class="fa-solid fa-circle-check"></i><span>Xác thực thành công!</span>';
+            status.className = 'login-pin-status waiting';
+            status.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Đang xác thực...</span>';
 
-                // Show verified cashier
-                const selectedText = cashierSelect.options[cashierSelect.selectedIndex].text;
-                const parts = selectedText.split(' — ');
-                const name = parts[0];
-                const role = parts[1] || 'Nhân viên';
+            fetch('http://localhost:8000/api/identity/auth/login-pos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: cashierSelect.value,
+                    password: pin,
+                    kiosk_id: 'POS-01'
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    status.className = 'login-pin-status success';
+                    status.innerHTML = '<i class="fa-solid fa-circle-check"></i><span>Xác thực thành công!</span>';
 
-                document.getElementById('cashierName').textContent = name;
-                document.getElementById('cashierRole').textContent = role + ' — Ca ' + (new Date().getHours() < 12 ? 'sáng' : 'chiều');
-                document.getElementById('cashierAvatar').textContent = name.split(' ').pop().charAt(0);
+                    localStorage.setItem('MG_POS_AUTH', JSON.stringify({
+                        accessToken: data.data.accessToken,
+                        refreshToken: data.data.refreshToken,
+                        user: data.data.user,
+                        loggedInAt: Date.now()
+                    }));
 
-                document.getElementById('cashierVerified').classList.add('visible');
-                document.getElementById('cashierField').style.display = 'none';
+                    const selectedText = cashierSelect.options[cashierSelect.selectedIndex].text;
+                    const parts = selectedText.split(' — ');
+                    const name = parts[0];
+                    const role = parts[1] || 'Nhân viên';
 
-                // Show open shift
-                document.getElementById('openShiftSection').classList.add('visible');
+                    document.getElementById('cashierName').textContent = name;
+                    document.getElementById('cashierRole').textContent = role + ' — Ca ' + (new Date().getHours() < 12 ? 'sáng' : 'chiều');
+                    document.getElementById('cashierAvatar').textContent = name.split(' ').pop().charAt(0);
 
-            } else {
-                // Error
-                status.className = 'login-pin-status error';
-                status.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i><span>Mã PIN không đúng! Vui lòng thử lại.</span>';
+                    document.getElementById('cashierVerified').classList.add('visible');
+                    document.getElementById('cashierField').style.display = 'none';
+                    document.getElementById('openShiftSection').classList.add('visible');
 
-                // Shake dots
-                for (let i = 0; i < maxPin; i++) {
-                    const dot = document.getElementById('dot' + i);
-                    if (dot.classList.contains('filled')) {
-                        dot.classList.add('error');
+                } else {
+                    status.className = 'login-pin-status error';
+                    status.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i><span>' + (data.message || 'Mã PIN không đúng!') + '</span>';
+
+                    for (let i = 0; i < maxPin; i++) {
+                        const dot = document.getElementById('dot' + i);
+                        if (dot.classList.contains('filled')) dot.classList.add('error');
                     }
+                    setTimeout(() => { pin = ''; updateDots(); }, 800);
                 }
-
-                // Reset after delay
-                setTimeout(() => {
-                    pin = '';
-                    updateDots();
-                }, 800);
-            }
+            })
+            .catch(() => {
+                status.className = 'login-pin-status error';
+                status.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i><span>Không thể kết nối máy chủ!</span>';
+                setTimeout(() => { pin = ''; updateDots(); }, 800);
+            });
         }
 
         // ---- Quick Cash Buttons ----

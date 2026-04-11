@@ -305,7 +305,7 @@
                     <div class="input-group" style="flex:1;">
                         <label>Họ và Tên</label>
                         <div class="input-field">
-                            <input type="text" placeholder="Nguyễn Văn A" required>
+                            <input type="text" id="full_name" placeholder="Nguyễn Văn A" required>
                         </div>
                     </div>
                 </div>
@@ -319,9 +319,9 @@
                 </div>
 
                 <div class="input-group">
-                    <label>Email (Không bắt buộc)</label>
+                    <label>Email</label>
                     <div class="input-field">
-                        <input type="email" placeholder="example@gmail.com">
+                        <input type="email" id="email" placeholder="example@gmail.com" required>
                     </div>
                 </div>
 
@@ -344,7 +344,12 @@
                 <p class="terms-text">Bằng việc đăng ký, bạn đã đồng ý với <a href="#">Điều khoản Dịch vụ</a> và <a
                         href="#">Chính sách Bảo mật</a> của Minh Giang.</p>
 
-                <button type="submit" class="submit-btn">Tạo Tài Khoản Mới</button>
+                <div id="registerError" style="display:none; background:#fef2f2; border:1px solid #fecaca; color:#ef4444; padding:12px 14px; border-radius:8px; font-size:13px; font-weight:500; margin-bottom:12px; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span id="registerErrorMsg"></span>
+                </div>
+
+                <button type="submit" class="submit-btn" id="registerBtn">Tạo Tài Khoản Mới</button>
             </form>
 
             <div class="back-home">
@@ -389,18 +394,64 @@
             }
         }
 
-        function handleRegister(e) {
+        const API_BASE = 'http://localhost:8000/api/identity';
+
+        function showRegisterError(msg) {
+            const box = document.getElementById('registerError');
+            document.getElementById('registerErrorMsg').textContent = msg;
+            box.style.display = 'flex';
+        }
+
+        async function handleRegister(e) {
             e.preventDefault();
 
-            const pwd = document.getElementById('regPassword').value;
-            if (pwd.length < 8 || !/\d/.test(pwd) || !/[A-Z]/.test(pwd)) {
-                alert('Vui lòng tạo mật khẩu thoả mãn tất cả các điều kiện bảo mật đính kèm!');
+            const full_name = document.getElementById('full_name').value.trim();
+            const phone     = document.getElementById('mobile').value.trim();
+            const email     = document.getElementById('email').value.trim();
+            const password  = document.getElementById('regPassword').value;
+            const btn       = document.getElementById('registerBtn');
+
+            // Validate password
+            if (password.length < 8 || !/\d/.test(password) || !/[A-Z]/.test(password)) {
+                showRegisterError('Mật khẩu chưa đủ điều kiện bảo mật.');
                 return;
             }
 
-            // Simulating success
-            alert('Đăng ký tài khoản nội bộ trải nghiệm thành công! Hệ thống sẽ điều hướng sang trang Đăng nhập.');
-            window.location.href = 'login.html';
+            btn.disabled = true;
+            btn.textContent = 'Đang đăng ký...';
+            document.getElementById('registerError').style.display = 'none';
+
+            try {
+                const res = await fetch(API_BASE + '/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ full_name, email, phone, password }),
+                });
+
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    showRegisterError(data.message || 'Đăng ký thất bại.');
+                    btn.disabled = false;
+                    btn.textContent = 'Tạo Tài Khoản Mới';
+                    return;
+                }
+
+                // Đăng ký thành công → lưu token và vào trang chủ luôn
+                localStorage.setItem('MG_CLIENT_AUTH', JSON.stringify({
+                    accessToken:  data.data.accessToken,
+                    refreshToken: data.data.refreshToken,
+                    customer:     data.data.customer,
+                    loggedInAt:   Date.now(),
+                }));
+
+                window.location.href = 'index.html';
+
+            } catch (err) {
+                showRegisterError('Không thể kết nối máy chủ. Vui lòng thử lại sau.');
+                btn.disabled = false;
+                btn.textContent = 'Tạo Tài Khoản Mới';
+            }
         }
     </script>
 </body>

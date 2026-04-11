@@ -344,12 +344,17 @@
                 <a href="register.html" class="auth-tab">Đăng Ký</a>
             </div>
 
-            <form onsubmit="event.preventDefault(); window.location.href='index.html';">
+            <div class="auth-alert" id="loginError" style="display:none; background:#fef2f2; border:1px solid #fecaca; color:#ef4444; padding:12px 14px; border-radius:8px; font-size:13px; font-weight:500; margin-bottom:20px; align-items:center; gap:8px;">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span id="loginErrorMsg"></span>
+            </div>
+
+            <form id="clientLoginForm" onsubmit="handleLogin(event)">
                 <div class="input-group">
                     <label>SĐT hoặc Email</label>
                     <div class="input-field">
                         <i class="fa-solid fa-envelope icon-left"></i>
-                        <input type="text" placeholder="Nhập email hoặc số điện thoại..." required>
+                        <input type="text" id="username" placeholder="Nhập email hoặc số điện thoại..." required>
                     </div>
                 </div>
 
@@ -357,8 +362,7 @@
                     <label>Mật khẩu</label>
                     <div class="input-field">
                         <i class="fa-solid fa-lock icon-left"></i>
-                        <input type="password" placeholder="Nhập mật khẩu..." required>
-                        <!-- Eye icon toggler can be added here -->
+                        <input type="password" id="password" placeholder="Nhập mật khẩu..." required>
                     </div>
                 </div>
 
@@ -369,12 +373,11 @@
                     <a href="#" class="forgot-link">Quên mật khẩu?</a>
                 </div>
 
-                <button type="submit" class="submit-btn">Đăng nhập ngay</button>
+                <button type="submit" class="submit-btn" id="submitBtn">Đăng nhập ngay</button>
 
                 <div class="social-login">
                     <p>Hoặc đăng nhập bằng</p>
                     <button type="button" class="social-btn">
-                        <!-- Use FontAwesome for simple Zalo placeholder, real app would use strict icons -->
                         <i class="fa-solid fa-comment" style="color:#0068ff; font-size: 20px;"></i>
                         Zalo
                     </button>
@@ -387,6 +390,91 @@
         </div>
     </div>
 
+    <script>
+        const API_BASE = 'http://localhost:8000/api/identity';
+
+        // Nếu đã đăng nhập rồi thì chuyển thẳng về trang chủ
+        (function checkAuth() {
+            const auth = localStorage.getItem('MG_CLIENT_AUTH');
+            if (auth) {
+                try {
+                    const parsed = JSON.parse(auth);
+                    if (parsed.accessToken) {
+                        window.location.href = 'index.html';
+                    }
+                } catch (e) { /* ignore */ }
+            }
+        })();
+
+        function showError(msg) {
+            const box = document.getElementById('loginError');
+            document.getElementById('loginErrorMsg').textContent = msg;
+            box.style.display = 'flex';
+        }
+
+        function hideError() {
+            document.getElementById('loginError').style.display = 'none';
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            hideError();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('submitBtn');
+
+            if (!username || !password) {
+                showError('Vui lòng nhập đầy đủ thông tin đăng nhập.');
+                return;
+            }
+
+            // Loading state
+            btn.disabled = true;
+            btn.textContent = 'Đang đăng nhập...';
+
+            try {
+                const res = await fetch(API_BASE + '/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email_or_phone: username, password }),
+                });
+
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    showError(data.message || 'Đăng nhập thất bại.');
+                    btn.disabled = false;
+                    btn.textContent = 'Đăng nhập ngay';
+                    return;
+                }
+
+                // Chỉ cho phép tài khoản khách hàng đăng nhập ở trang client
+                if (data.data.user && !data.data.customer) {
+                    showError('Tài khoản nhân viên vui lòng đăng nhập tại trang Quản trị.');
+                    btn.disabled = false;
+                    btn.textContent = 'Đăng nhập ngay';
+                    return;
+                }
+
+                // Lưu phiên đăng nhập
+                localStorage.setItem('MG_CLIENT_AUTH', JSON.stringify({
+                    accessToken:  data.data.accessToken,
+                    refreshToken: data.data.refreshToken,
+                    customer:     data.data.customer,
+                    loggedInAt:   Date.now(),
+                }));
+
+                // Chuyển về trang chủ
+                window.location.href = 'index.html';
+
+            } catch (err) {
+                showError('Không thể kết nối máy chủ. Vui lòng thử lại sau.');
+                btn.disabled = false;
+                btn.textContent = 'Đăng nhập ngay';
+            }
+        }
+    </script>
 </body>
 
 </html>

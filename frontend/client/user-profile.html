@@ -640,6 +640,274 @@
             background-position: right 14px center;
             padding-right: 36px;
         }
+
+        /* === MODAL STYLES === */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.2s;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: #fff;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #111827;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #9ca3af;
+            cursor: pointer;
+        }
+
+        .modal-close:hover {
+            color: #374151;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-footer button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .btn-primary {
+            background: #0b7a3e;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #095c2e;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            color: #0b7a3e;
+            padding: 6px 8px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            min-height: 32px;
+            line-height: 1;
+        }
+
+        .btn-icon:hover {
+            background: #f0faf4;
+            color: #065f46;
+        }
+
+        .btn-icon.delete:hover {
+            color: #dc2626;
+        }
+
+        .btn-danger {
+            background: none;
+            color: #dc2626;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 1px solid #fecaca;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-danger:hover {
+            background: #fee2e2;
+            border-color: #fecaca;
+        }
+
+        /* === AUTOCOMPLETE STYLES === */
+        .autocomplete-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: none;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .autocomplete-list.active {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #374151;
+            transition: background 0.15s;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.selected {
+            background: #f0faf4;
+            color: #0b7a3e;
+            font-weight: 500;
+        }
+
+        /* === ADDRESS CARD STYLES === */
+        .address-card {
+            background: #f9fafb;
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 3px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .address-card:hover {
+            background: #f0faf4;
+            border-left-color: #0b7a3e;
+            box-shadow: 0 2px 8px rgba(11, 122, 62, 0.1);
+        }
+
+        .address-card.default {
+            border-left-color: #0b7a3e;
+            background: #ecfdf5;
+        }
+
+        .address-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .address-card-name {
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .address-badge-default {
+            background: #d1fae5;
+            color: #065f46;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .address-card-info {
+            font-size: 13px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .address-card-phone {
+            font-size: 13px;
+            color: #374151;
+            margin-top: 6px;
+        }
+
+        .address-edit-btn {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 4px 12px;
+            background: #0b7a3e;
+            color: #fff;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .address-edit-btn:hover {
+            background: #095c2e;
+        }
     </style>
 </head>
 
@@ -660,29 +928,29 @@
             <!-- LEFT SIDEBAR -->
             <aside class="profile-sidebar">
                 <div class="user-avatar-row">
-                    <div class="user-avatar">09</div>
+                    <div class="user-avatar" id="sidebarAvatar">?</div>
                     <div class="user-info-text">
-                        <strong>0969259650</strong>
-                        <small>0969259650</small>
+                        <strong id="sidebarName">Đang tải...</strong>
+                        <small id="sidebarPhone"></small>
                     </div>
                 </div>
 
-                <span class="member-badge">Thành viên</span>
+                <span class="member-badge" id="sidebarTier">Thành viên</span>
 
-                <p class="points-text">Bạn đang có <strong>0</strong> điểm</p>
+                <p class="points-text">Bạn đang có <strong id="sidebarPoints">0</strong> điểm</p>
                 <div class="points-bar-track">
-                    <div class="points-bar-fill"></div>
+                    <div class="points-bar-fill" id="sidebarPointsBar" style="width:0%"></div>
                 </div>
-                <p class="points-hint">Mua thêm 4.000.000 điểm để lên hạng Vip</p>
+                <p class="points-hint" id="sidebarPointsHint">Đang tải...</p>
 
                 <div class="points-stats">
                     <div>
                         <div class="label">Doanh số tích lũy</div>
-                        <div class="val">0</div>
+                        <div class="val" id="sidebarRevenue">0</div>
                     </div>
                     <div style="text-align:right;">
                         <div class="label">Điểm có thể dùng online</div>
-                        <div class="val">0</div>
+                        <div class="val" id="sidebarPointsUsable">0</div>
                     </div>
                 </div>
 
@@ -690,30 +958,30 @@
 
                 <ul class="sidebar-nav">
                     <li>
-                        <a href="#" id="nav-orders-online"
+                        <a href="javascript:void(0)" id="nav-orders-online"
                             onclick="showSection('orders-online', this, 'Đơn hàng online của tôi')">
                             <i class="fa-regular fa-file-lines"></i> Đơn hàng online của tôi
                         </a>
                     </li>
                     <li>
-                        <a href="#" id="nav-orders-offline"
+                        <a href="javascript:void(0)" id="nav-orders-offline"
                             onclick="showSection('orders-offline', this, 'Đơn hàng tại nhà thuốc')">
                             <i class="fa-solid fa-store"></i> Đơn hàng của tôi tại nhà thuốc
                         </a>
                     </li>
                     <li>
-                        <a href="#" id="nav-profile" class="active"
+                        <a href="javascript:void(0)" id="nav-profile" class="active"
                             onclick="showSection('profile', this, 'Chỉnh sửa hồ sơ')">
                             <i class="fa-regular fa-user"></i> Thông tin cá nhân
                         </a>
                     </li>
                     <li>
-                        <a href="#" id="nav-vouchers" onclick="showSection('vouchers', this, 'Ưu đãi & giảm giá')">
+                        <a href="javascript:void(0)" id="nav-vouchers" onclick="showSection('vouchers', this, 'Ưu đãi & giảm giá')">
                             <i class="fa-solid fa-ticket"></i> Mã giảm giá
                         </a>
                     </li>
                     <li>
-                        <a href="index.html" style="color: #ef4444;">
+                        <a href="#" onclick="clientLogout()" style="color: #ef4444;">
                             <i class="fa-solid fa-right-from-bracket" style="color:#ef4444;"></i> Đăng xuất
                         </a>
                     </li>
@@ -732,22 +1000,21 @@
 
                         <div class="form-group">
                             <label>E-mail <span class="required">*</span></label>
-                            <input type="email" class="form-control" value="0969259650@tscare.vn"
-                                placeholder="Email của bạn">
+                            <input type="email" class="form-control" id="fieldEmail" placeholder="Email của bạn">
                         </div>
 
                         <div class="form-group">
-                            <label>Mật khẩu <span class="required">*</span></label>
+                            <label>Mật khẩu mới</label>
                             <div class="form-control-password" style="position:relative;">
-                                <input type="password" class="form-control" value="•••••••••••" id="pw">
+                                <input type="password" class="form-control" placeholder="Để trống nếu không đổi" id="pw">
                                 <i class="fa-regular fa-eye pw-toggle" onclick="togglePW('pw')"></i>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label>Xác nhận mật khẩu <span class="required">*</span></label>
+                            <label>Xác nhận mật khẩu mới</label>
                             <div style="position:relative;">
-                                <input type="password" class="form-control" value="•••••••••••" id="pw2">
+                                <input type="password" class="form-control" placeholder="Nhập lại mật khẩu mới" id="pw2">
                                 <i class="fa-regular fa-eye pw-toggle" onclick="togglePW('pw2')"></i>
                             </div>
                         </div>
@@ -757,92 +1024,112 @@
                         <div class="form-group">
                             <label>Giới tính <span class="required">*</span></label>
                             <div class="radio-group">
-                                <label><input type="radio" name="gender" checked value="anh"> Anh</label>
-                                <label><input type="radio" name="gender" value="chi"> Chị</label>
+                                <label><input type="radio" name="gender" id="genderMale" value="male"> Anh</label>
+                                <label><input type="radio" name="gender" id="genderFemale" value="female"> Chị</label>
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Họ</label>
-                                <input type="text" class="form-control" placeholder="Họ của bạn">
+                                <input type="text" class="form-control" id="fieldLastName" placeholder="Họ của bạn">
                             </div>
                             <div class="form-group">
                                 <label>Tên</label>
-                                <input type="text" class="form-control" value="0969259650">
+                                <input type="text" class="form-control" id="fieldFirstName" placeholder="Tên của bạn">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Ngày tháng năm sinh</label>
+                                <input type="date" class="form-control" id="fieldDateOfBirth" placeholder="Chọn ngày sinh">
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label>Điện thoại <span class="required">*</span></label>
-                            <input type="tel" class="form-control" value="0969259650">
+                            <input type="tel" class="form-control" id="fieldPhone" placeholder="Số điện thoại">
                         </div>
 
-                        <p class="form-section-label">Địa chỉ nhận hàng</p>
+                        <p class="form-section-label">Địa chỉ giao hàng</p>
 
-                        <div class="form-group">
-                            <label>Email</label>
-                            <input type="email" class="form-control" placeholder="Email nhận hàng">
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Họ</label>
-                                <input type="text" class="form-control" placeholder="Họ">
-                            </div>
-                            <div class="form-group">
-                                <label>Tên</label>
-                                <input type="text" class="form-control" value="0969259650">
+                        <!-- ⚠️ Delivery Area Banner -->
+                        <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:12px 14px;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start;">
+                            <span style="font-size:18px;flex-shrink:0;">📍</span>
+                            <div style="font-size:13px;color:#78350f;">
+                                <strong style="color:#92400e;">Giao hàng chỉ trong khu vực Hòa Bình</strong>
+                                <p style="margin:4px 0 0;">Nhà thuốc Minh Giang hiện cung cấp dịch vụ giao hàng tối đa trong phạm vi tỉnh Hòa Bình, TP Hòa Bình.</p>
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label>Bang/Tỉnh</label>
-                            <select class="form-control">
-                                <option>Thành phố Cần Thơ</option>
-                                <option>Hồ Chí Minh</option>
-                                <option>Hà Nội</option>
-                                <option>Đà Nẵng</option>
-                                <option>An Giang</option>
-                            </select>
+                        <!-- Danh sách địa chỉ đã lưu -->
+                        <div id="addressesList" style="margin-bottom: 24px;">
+                            <p style="color:#9ca3af;font-size:13px;">Đang tải danh sách địa chỉ...</p>
                         </div>
 
-                        <div class="form-group">
-                            <label>Quận/Huyện <span class="required">*</span></label>
-                            <select class="form-control">
-                                <option value="">Chọn Quận/Huyện</option>
-                                <option>Ninh Kiều</option>
-                                <option>Bình Thuỷ</option>
-                                <option>Cái Răng</option>
-                            </select>
+                        <!-- Form thêm địa chỉ mới -->
+                        <div style="background:#f0faf4;padding:16px;border-radius:8px;border:1px dashed #0b7a3e;">
+                            <h3 style="margin:0 0 14px;font-size:14px;font-weight:600;color:#111827;">➕ Thêm địa chỉ giao hàng mới</h3>
+
+                            <div class="form-group">
+                                <label>Tên người nhận <span class="required">*</span></label>
+                                <input type="text" class="form-control" id="addrReceiverName" placeholder="Tên người nhận hàng">
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Tỉnh/Thành phố <span class="required">*</span></label>
+                                    <div class="autocomplete-container">
+                                        <input type="text" class="form-control" id="addrProvince" placeholder="TP. Hồ Chí Minh" onkeyup="filterProvinces()" onclick="filterProvinces()">
+                                        <ul class="autocomplete-list" id="provinceList"></ul>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Quận/Huyện <span class="required">*</span></label>
+                                    <div class="autocomplete-container">
+                                        <input type="text" class="form-control" id="addrDistrict" placeholder="Quận 1" onkeyup="filterDistricts()" onclick="filterDistricts()">
+                                        <ul class="autocomplete-list" id="districtList"></ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Phường/Xã <span class="required">*</span></label>
+                                    <div class="autocomplete-container">
+                                        <input type="text" class="form-control" id="addrWard" placeholder="Phường Bến Nghé" onkeyup="filterWards()" onclick="filterWards()">
+                                        <ul class="autocomplete-list" id="wardList"></ul>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Điện thoại <span class="required">*</span></label>
+                                    <input type="tel" class="form-control" id="addrPhone" placeholder="0901234567">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Địa chỉ chi tiết (số nhà, tên đường) <span class="required">*</span></label>
+                                <input type="text" class="form-control" id="addrStreet" placeholder="123 Nguyễn Huệ, Tòa B">
+                            </div>
+
+                            <div class="form-checkbox">
+                                <input type="checkbox" id="addrDefault">
+                                <label for="addrDefault">Đặt làm địa chỉ mặc định</label>
+                            </div>
+
+                            <button class="btn-save" onclick="addNewAddress()" style="margin-top:12px;">Thêm địa chỉ</button>
                         </div>
 
-                        <div class="form-group">
-                            <label>Phường/Xã <span class="required">*</span></label>
-                            <select class="form-control">
-                                <option value="">Chọn Phường/Xã</option>
-                            </select>
-                        </div>
+                        <p class="form-section-label" style="margin-top:28px;">Yêu cầu xuất hóa đơn điện tử</p>
 
                         <div class="form-group">
-                            <label>Địa chỉ</label>
-                            <input type="text" class="form-control" placeholder="Số nhà, đường...">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Điện thoại</label>
-                            <input type="tel" class="form-control" placeholder="Điện thoại nhận hàng">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Yêu cầu xuất hóa đơn điện tử</label>
+                            <label>Yêu cầu xuất hóa đơn</label>
                             <div class="radio-group">
                                 <label><input type="radio" name="invoice" value="no" checked> Không</label>
                                 <label><input type="radio" name="invoice" value="yes"> Có</label>
                             </div>
                         </div>
-
-                        <p class="form-section-label">Thông tin xuất HD VAT</p>
 
                         <div class="form-group">
                             <label>Tên công ty</label>
@@ -1026,6 +1313,94 @@
     <div mg-include="../components/main_footer.html"></div>
 
     <script>
+        const API_BASE = 'http://localhost:8000/api/identity';
+        let currentCustomer = null;
+
+        // ---- Auth guard + load user data ----
+        (async function initProfile() {
+            const authRaw = localStorage.getItem('MG_CLIENT_AUTH');
+            if (!authRaw) { window.location.href = 'login.html'; return; }
+
+            let auth;
+            try { auth = JSON.parse(authRaw); } catch (e) { window.location.href = 'login.html'; return; }
+            if (!auth.accessToken) { window.location.href = 'login.html'; return; }
+
+            // Fetch fresh customer data từ API
+            try {
+                const resp = await fetch(`${API_BASE}/customers/me`, {
+                    headers: { 'Authorization': `Bearer ${auth.accessToken}` }
+                });
+                if (!resp.ok) throw new Error('Không tải được dữ liệu khách hàng');
+                const data = await resp.json();
+                if (!data.success) throw new Error(data.message);
+                currentCustomer = data.data;
+            } catch (err) {
+                console.error('Lỗi tải hồ sơ:', err);
+                currentCustomer = auth.customer;
+            }
+
+            const c = currentCustomer;
+            if (!c) return;
+
+            // Sidebar
+            const displayName = c.full_name || c.phone || c.email || 'Tài khoản';
+            const nameParts  = displayName.split(' ');
+            const firstName  = nameParts.pop();
+            const lastName   = nameParts.join(' ');
+
+            document.getElementById('sidebarAvatar').textContent = firstName.charAt(0).toUpperCase();
+            document.getElementById('sidebarName').textContent   = displayName;
+            document.getElementById('sidebarPhone').textContent  = c.phone || c.email || '';
+
+            const tierMap = { member: 'Thành viên', silver: 'Bạc', gold: 'Vàng', vip: 'VIP' };
+            const tierEl = document.getElementById('sidebarTier');
+            tierEl.textContent = tierMap[c.loyalty_tier] || 'Thành viên';
+            if (c.loyalty_tier === 'gold' || c.loyalty_tier === 'vip') {
+                tierEl.style.background = c.loyalty_tier === 'vip' ? '#7c3aed' : '#d97706';
+                tierEl.style.color = '#fff';
+            }
+
+            const pts = c.loyalty_points || 0;
+            document.getElementById('sidebarPoints').textContent = pts.toLocaleString('vi-VN');
+            document.getElementById('sidebarPointsUsable').textContent = pts.toLocaleString('vi-VN');
+
+            const nextTierPts = { member: 500, silver: 2000, gold: 5000, vip: 999999 };
+            const next = nextTierPts[c.loyalty_tier] || 500;
+            const pct = Math.min(100, Math.round((pts / next) * 100));
+            document.getElementById('sidebarPointsBar').style.width = pct + '%';
+            document.getElementById('sidebarPointsHint').textContent =
+                pts >= next ? 'Đã đạt hạng tối đa!' : `Mua thêm ${(next - pts).toLocaleString('vi-VN')} điểm để lên hạng tiếp theo`;
+
+            // Form fields
+            if (document.getElementById('fieldEmail'))     document.getElementById('fieldEmail').value     = c.email || '';
+            if (document.getElementById('fieldPhone'))     document.getElementById('fieldPhone').value     = c.phone || '';
+            if (document.getElementById('fieldDateOfBirth') && c.date_of_birth) {
+                const dob = new Date(c.date_of_birth);
+                if (!isNaN(dob)) {
+                    document.getElementById('fieldDateOfBirth').value = dob.toISOString().split('T')[0];
+                }
+            }
+            if (document.getElementById('fieldFirstName')) document.getElementById('fieldFirstName').value = firstName;
+            if (document.getElementById('fieldLastName'))  document.getElementById('fieldLastName').value  = lastName;
+
+            if (c.gender === 'female') {
+                const f = document.getElementById('genderFemale');
+                if (f) f.checked = true;
+            } else {
+                const m = document.getElementById('genderMale');
+                if (m) m.checked = true;
+            }
+
+            // Load delivery addresses
+            await loadDeliveryAddresses(c.id, auth.accessToken);
+        })();
+
+        // clientLogout dùng cho nút Đăng xuất trong sidebar
+        function clientLogout() {
+            localStorage.removeItem('MG_CLIENT_AUTH');
+            window.location.href = 'login.html';
+        }
+
         function showSection(sectionId, linkEl, breadcrumb) {
             // Hide all sections
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
@@ -1051,7 +1426,370 @@
                 this.classList.add('active');
             });
         });
+
+        // === PROFILE SAVE ===
+        document.querySelector('.form-actions .btn-save')?.addEventListener('click', async () => {
+            const auth = JSON.parse(localStorage.getItem('MG_CLIENT_AUTH') || '{}');
+            if (!currentCustomer || !auth.accessToken) return alert('Lỗi xác thực');
+
+            const payload = {
+                full_name: (document.getElementById('fieldLastName')?.value || '') + ' ' + 
+                          (document.getElementById('fieldFirstName')?.value || ''),
+                email: document.getElementById('fieldEmail')?.value,
+                phone: document.getElementById('fieldPhone')?.value,
+                date_of_birth: document.getElementById('fieldDateOfBirth')?.value || null,
+                gender: document.querySelector('input[name="gender"]:checked')?.value
+            };
+
+            try {
+                const resp = await fetch(`${API_BASE}/customers/me`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${auth.accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await resp.json();
+                if (!data.success) return alert('Lỗi: ' + data.message);
+                alert('✅ Cập nhật hồ sơ thành công!');
+                location.reload();
+            } catch (err) {
+                alert('❌ Lỗi: ' + err.message);
+            }
+        });
+
+        // === LOAD DELIVERY ADDRESSES ===
+        async function loadDeliveryAddresses(customerId, token) {
+            try {
+                const resp = await fetch(`${API_BASE}/customers/${customerId}/addresses`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await resp.json();
+                if (!data.success) throw new Error(data.message);
+
+                const addresses = data.data || [];
+                const container = document.getElementById('addressesList');
+
+                if (addresses.length === 0) {
+                    container.innerHTML = '<p style="color:#9ca3af;font-size:13px;text-align:center;padding:20px;">Chưa có địa chỉ giao hàng nào. Hãy thêm một địa chỉ mới.</p>';
+                    return;
+                }
+
+                container.innerHTML = addresses.map((addr) => `
+                    <div class="address-card ${addr.is_default ? 'default' : ''}" onclick="openEditModal(${addr.id}, '${addr.receiver_name}', '${addr.province}', '${addr.district}', '${addr.ward}', '${addr.street_address}', '${addr.phone}', ${addr.is_default})">
+                        <div class="address-card-header">
+                            <div class="address-card-name">${addr.receiver_name}</div>
+                            ${addr.is_default ? '<span class="address-badge-default">Mặc định</span>' : ''}
+                        </div>
+                        <div class="address-card-info">
+                            📍 ${addr.street_address}<br>
+                            ${addr.ward}, ${addr.district}, ${addr.province}
+                        </div>
+                        <div class="address-card-phone">📱 ${addr.phone}</div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Lỗi tải địa chỉ:', err);
+                document.getElementById('addressesList').innerHTML = '<p style="color:#ef4444;font-size:13px;">❌ Lỗi tải danh sách địa chỉ</p>';
+            }
+        }
+
+        // === EDIT ADDRESS MODAL ===
+        let editingAddressId = null;
+        function openEditModal(addrId, name, prov, dist, ward, street, phone, isDefault) {
+            editingAddressId = addrId;
+            document.getElementById('editReceiverName').value = name;
+            document.getElementById('editProvince').value = prov;
+            document.getElementById('editDistrict').value = dist;
+            document.getElementById('editWard').value = ward;
+            document.getElementById('editStreet').value = street;
+            document.getElementById('editPhone').value = phone;
+            document.getElementById('editDefault').checked = isDefault;
+            document.getElementById('editAddressModal').classList.add('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editAddressModal').classList.remove('active');
+            editingAddressId = null;
+        }
+
+        async function saveEditAddress() {
+            const auth = JSON.parse(localStorage.getItem('MG_CLIENT_AUTH') || '{}');
+            if (!currentCustomer || !auth.accessToken) return alert('Lỗi xác thực');
+            if (!editingAddressId) return alert('Lỗi: không xác định được địa chỉ');
+
+            const name = document.getElementById('editReceiverName').value?.trim();
+            const phone = document.getElementById('editPhone').value?.trim();
+            const province = document.getElementById('editProvince').value?.trim();
+            const district = document.getElementById('editDistrict').value?.trim();
+            const ward = document.getElementById('editWard').value?.trim();
+            const street = document.getElementById('editStreet').value?.trim();
+            const isDefault = document.getElementById('editDefault').checked;
+
+            if (!name || !phone || !province || !district || !ward || !street) {
+                return alert('❌ Vui lòng điền đầy đủ thông tin địa chỉ');
+            }
+
+            // Validate Hòa Bình only
+            if (province !== 'Hòa Bình') {
+                return alert('❌ Hiện tại chúng tôi chỉ giao hàng trong khu vực Hòa Bình. Vui lòng chọn Hòa Bình.');
+            }
+
+            try {
+                const resp = await fetch(`${API_BASE}/customers/${currentCustomer.id}/addresses/${editingAddressId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${auth.accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        receiver_name: name,
+                        phone: phone,
+                        province: province,
+                        district: district,
+                        ward: ward,
+                        street_address: street,
+                        is_default: isDefault
+                    })
+                });
+                
+                const data = await resp.json();
+                if (!data.success) return alert('❌ Lỗi: ' + data.message);
+
+                alert('✅ Cập nhật địa chỉ thành công!');
+                closeEditModal();
+                await loadDeliveryAddresses(currentCustomer.id, auth.accessToken);
+            } catch (err) {
+                alert('❌ Lỗi: ' + err.message);
+            }
+        }
+
+        // === DELETE ADDRESS ===
+        async function deleteAddress() {
+            const auth = JSON.parse(localStorage.getItem('MG_CLIENT_AUTH') || '{}');
+            if (!currentCustomer || !auth.accessToken) return alert('Lỗi xác thực');
+            if (!editingAddressId) return alert('Lỗi: không xác định được địa chỉ');
+
+            if (!confirm('❓ Bạn có chắc chắn muốn xoá địa chỉ này?')) return;
+
+            try {
+                const resp = await fetch(`${API_BASE}/customers/${currentCustomer.id}/addresses/${editingAddressId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${auth.accessToken}` }
+                });
+                
+                const data = await resp.json();
+                if (!data.success) return alert('❌ Lỗi: ' + data.message);
+
+                alert('✅ Xoá địa chỉ thành công!');
+                closeEditModal();
+                await loadDeliveryAddresses(currentCustomer.id, auth.accessToken);
+            } catch (err) {
+                alert('❌ Lỗi: ' + err.message);
+            }
+        }
+
+        async function quickDeleteAddress(addrId) {
+            const auth = JSON.parse(localStorage.getItem('MG_CLIENT_AUTH') || '{}');
+            if (!currentCustomer || !auth.accessToken) return alert('Lỗi xác thực');
+
+            if (!confirm('❓ Bạn có chắc chắn muốn xoá địa chỉ này?')) return;
+
+            try {
+                const resp = await fetch(`${API_BASE}/customers/${currentCustomer.id}/addresses/${addrId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${auth.accessToken}` }
+                });
+                
+                const data = await resp.json();
+                if (!data.success) return alert('❌ Lỗi: ' + data.message);
+
+                alert('✅ Xoá địa chỉ thành công!');
+                await loadDeliveryAddresses(currentCustomer.id, auth.accessToken);
+            } catch (err) {
+                alert('❌ Lỗi: ' + err.message);
+            }
+        }
+
+        // === AUTOCOMPLETE FUNCTIONS ===
+        function filterProvinces() {
+            const input = document.getElementById('addrProvince');
+            const query = input.value;
+            const provinces = getProvinces();
+            const filtered = filterItems(provinces, query);
+            showAutocompleteList('provinceList', filtered, 'addrProvince', () => {
+                document.getElementById('addrDistrict').value = '';
+                document.getElementById('addrWard').value = '';
+                showAutocompleteList('districtList', [], 'addrDistrict');
+                showAutocompleteList('wardList', [], 'addrWard');
+            });
+        }
+
+        function filterDistricts() {
+            const province = document.getElementById('addrProvince').value;
+            const input = document.getElementById('addrDistrict');
+            const query = input.value;
+            if (!province) {
+                alert('⚠️ Vui lòng chọn tỉnh/thành phố trước');
+                input.value = '';
+                return;
+            }
+            const districts = getDistricts(province);
+            const filtered = filterItems(districts, query);
+            showAutocompleteList('districtList', filtered, 'addrDistrict', () => {
+                document.getElementById('addrWard').value = '';
+                showAutocompleteList('wardList', [], 'addrWard');
+            });
+        }
+
+        function filterWards() {
+            const province = document.getElementById('addrProvince').value;
+            const district = document.getElementById('addrDistrict').value;
+            const input = document.getElementById('addrWard');
+            const query = input.value;
+            if (!province || !district) {
+                alert('⚠️ Vui lòng chọn tỉnh/thành phố và quận/huyện trước');
+                input.value = '';
+                return;
+            }
+            const wards = getWards(province, district);
+            const filtered = filterItems(wards, query);
+            showAutocompleteList('wardList', filtered, 'addrWard');
+        }
+
+        function showAutocompleteList(listId, items, inputId, onSelect) {
+            const list = document.getElementById(listId);
+            if (items.length === 0) {
+                list.classList.remove('active');
+                return;
+            }
+            list.innerHTML = items.map(item => `
+                <li class="autocomplete-item" onclick="selectAutocompleteItem('${item}', '${inputId}', '${listId}'); ${onSelect ? onSelect.toString().match(/{([\s\S]*?)}/)[1] : ''}">${item}</li>
+            `).join('');
+            list.classList.add('active');
+        }
+
+        function selectAutocompleteItem(item, inputId, listId) {
+            document.getElementById(inputId).value = item;
+            document.getElementById(listId).classList.remove('active');
+        }
+
+        // === ADD NEW ADDRESS ===
+        async function addNewAddress() {
+            const auth = JSON.parse(localStorage.getItem('MG_CLIENT_AUTH') || '{}');
+            if (!currentCustomer || !auth.accessToken) return alert('Lỗi xác thực');
+
+            const receiverName = document.getElementById('addrReceiverName')?.value?.trim();
+            const province = document.getElementById('addrProvince')?.value?.trim();
+            const district = document.getElementById('addrDistrict')?.value?.trim();
+            const ward = document.getElementById('addrWard')?.value?.trim();
+            const phone = document.getElementById('addrPhone')?.value?.trim();
+            const street = document.getElementById('addrStreet')?.value?.trim();
+            const isDefault = document.getElementById('addrDefault')?.checked || false;
+
+            if (!receiverName || !province || !district || !ward || !phone || !street) {
+                return alert('❌ Vui lòng điền đầy đủ thông tin địa chỉ');
+            }
+
+            // ⚠️ Validate: Only Hòa Bình allowed
+            if (province !== 'Hòa Bình') {
+                return alert('❌ Hiện tại chúng tôi chỉ giao hàng trong khu vực Hòa Bình. Vui lòng chọn Hòa Bình.');
+            }
+
+            try {
+                const resp = await fetch(`${API_BASE}/customers/${currentCustomer.id}/addresses`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${auth.accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        receiver_name: receiverName,
+                        phone: phone,
+                        province: province,
+                        district: district,
+                        ward: ward,
+                        street_address: street,
+                        is_default: isDefault
+                    })
+                });
+                const data = await resp.json();
+                if (!data.success) return alert('❌ Lỗi: ' + data.message);
+
+                alert('✅ Thêm địa chỉ thành công!');
+                
+                // Clear form
+                document.getElementById('addrReceiverName').value = '';
+                document.getElementById('addrProvince').value = '';
+                document.getElementById('addrDistrict').value = '';
+                document.getElementById('addrWard').value = '';
+                document.getElementById('addrPhone').value = '';
+                document.getElementById('addrStreet').value = '';
+                document.getElementById('addrDefault').checked = false;
+
+                // Reload addresses list
+                await loadDeliveryAddresses(currentCustomer.id, auth.accessToken);
+            } catch (err) {
+                alert('❌ Lỗi: ' + err.message);
+            }
+        }
     </script>
+    
+    <!-- MODAL: Edit Address -->
+    <div id="editAddressModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="editModalTitle">Chỉnh sửa địa chỉ</h2>
+                <button class="modal-close" onclick="closeEditModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Tên người nhận <span class="required">*</span></label>
+                    <input type="text" class="form-control" id="editReceiverName" placeholder="Tên người nhận hàng">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tỉnh/Thành phố</label>
+                        <input type="text" class="form-control" id="editProvince">
+                    </div>
+                    <div class="form-group">
+                        <label>Quận/Huyện</label>
+                        <input type="text" class="form-control" id="editDistrict">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Phường/Xã</label>
+                        <input type="text" class="form-control" id="editWard">
+                    </div>
+                    <div class="form-group">
+                        <label>Điện thoại <span class="required">*</span></label>
+                        <input type="tel" class="form-control" id="editPhone" placeholder="0901234567">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Địa chỉ chi tiết (số nhà, tên đường) <span class="required">*</span></label>
+                    <input type="text" class="form-control" id="editStreet" placeholder="123 Nguyễn Huệ, Tòa B">
+                </div>
+
+                <div class="form-checkbox">
+                    <input type="checkbox" id="editDefault">
+                    <label for="editDefault">Đặt làm địa chỉ mặc định</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-danger" onclick="deleteAddress()" style="margin-right:auto;"><i class="fa-solid fa-trash"></i> Xoá</button>
+                <button class="btn-secondary" onclick="closeEditModal()">Hủy</button>
+                <button class="btn-primary" onclick="saveEditAddress()">Lưu</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/locations.js"></script>
     <script src="../assets/js/components.js"></script>
 </body>
 
