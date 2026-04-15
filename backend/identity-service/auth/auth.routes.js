@@ -26,7 +26,7 @@ async function findAccount(identifier) {
   const [[user]] = await pool.query(
     `SELECT u.id, u.username, u.full_name, u.email, u.phone,
             u.password_hash, u.is_active, u.role_id,
-            r.name AS role_name
+            r.name AS role_name, r.permissions
      FROM users u
      LEFT JOIN roles r ON r.id = u.role_id
      WHERE (u.username = ? OR u.email = ? OR u.phone = ?)
@@ -108,7 +108,7 @@ router.post('/login', async (req, res) => {
     // 5. Xác định type và payload
     const isStaff = !!user;
     const tokenPayload = isStaff
-      ? { id: user.id, role: user.role_name, type: 'staff' }
+      ? { id: user.id, role: user.role_name, type: 'staff', permissions: user.permissions }
       : { id: customer.id, role: 'customer', type: 'customer' };
 
     // 6. Tạo tokens
@@ -165,7 +165,7 @@ router.post('/admin/login', async (req, res) => {
     const [[user]] = await pool.query(
       `SELECT u.id, u.username, u.full_name, u.email, u.phone,
               u.password_hash, u.is_active, u.role_id,
-              r.name AS role_name
+              r.name AS role_name, r.permissions
        FROM users u
        LEFT JOIN roles r ON r.id = u.role_id
        WHERE (u.username = ? OR u.email = ?)
@@ -180,8 +180,7 @@ router.post('/admin/login', async (req, res) => {
       });
     }
 
-    // Chỉ cho phép admin hoặc manager
-    if (user.role_name !== 'admin' && user.role_name !== 'manager') {
+    if (!user.permissions || !user.permissions.includes('dashboard.view')) {
       return res.status(403).json({
         success: false,
         message: 'Tài khoản không có quyền truy cập trang quản trị',
@@ -196,7 +195,7 @@ router.post('/admin/login', async (req, res) => {
       });
     }
 
-    const tokenPayload = { id: user.id, role: user.role_name, type: 'staff' };
+    const tokenPayload = { id: user.id, role: user.role_name, type: 'staff', permissions: user.permissions };
     const { accessToken, refreshToken } = await generateTokens(tokenPayload);
 
     pool.query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]).catch(() => {});
@@ -237,7 +236,7 @@ router.post('/pos/verify-pin', async (req, res) => {
     const [[user]] = await pool.query(
       `SELECT u.id, u.username, u.full_name, u.email, u.phone,
               u.password_hash, u.is_active, u.role_id,
-              r.name AS role_name
+              r.name AS role_name, r.permissions
        FROM users u
        LEFT JOIN roles r ON r.id = u.role_id
        WHERE u.username = ?
@@ -252,8 +251,7 @@ router.post('/pos/verify-pin', async (req, res) => {
       });
     }
 
-    // Chỉ cho phép pharmacist hoặc cashier
-    if (user.role_name !== 'pharmacist' && user.role_name !== 'cashier') {
+    if (!user.permissions || !user.permissions.includes('pos.access')) {
       return res.status(403).json({
         success: false,
         message: 'Tài khoản không có quyền truy cập POS',
@@ -269,7 +267,7 @@ router.post('/pos/verify-pin', async (req, res) => {
       });
     }
 
-    const tokenPayload = { id: user.id, role: user.role_name, type: 'staff' };
+    const tokenPayload = { id: user.id, role: user.role_name, type: 'staff', permissions: user.permissions };
     const { accessToken, refreshToken } = await generateTokens(tokenPayload);
 
     pool.query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]).catch(() => {});
@@ -310,7 +308,7 @@ router.post('/login-pos', async (req, res) => {
     const [[user]] = await pool.query(
       `SELECT u.id, u.username, u.full_name, u.email, u.phone,
               u.password_hash, u.is_active, u.role_id,
-              r.name AS role_name
+              r.name AS role_name, r.permissions
        FROM users u
        LEFT JOIN roles r ON r.id = u.role_id
        WHERE (u.username = ? OR u.email = ? OR u.phone = ?)
@@ -325,8 +323,7 @@ router.post('/login-pos', async (req, res) => {
       });
     }
 
-    // 3. Chỉ cho phép pharmacist hoặc cashier
-    if (user.role_name !== 'pharmacist' && user.role_name !== 'cashier') {
+    if (!user.permissions || !user.permissions.includes('pos.access')) {
       return res.status(403).json({
         success: false,
         message: 'Tài khoản không có quyền truy cập POS',
@@ -344,7 +341,7 @@ router.post('/login-pos', async (req, res) => {
 
     // 5. Tạo access token
     const accessToken = jwt.sign(
-      { id: user.id, role: user.role_name, type: 'staff' },
+      { id: user.id, role: user.role_name, type: 'staff', permissions: user.permissions },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
     );
@@ -524,7 +521,7 @@ router.post('/refresh', async (req, res) => {
     let payload;
     if (decoded.type === 'staff') {
       const [[user]] = await pool.query(
-        `SELECT u.id, r.name AS role_name
+        `SELECT u.id, r.name AS role_name, r.permissions
          FROM users u LEFT JOIN roles r ON r.id = u.role_id
          WHERE u.id = ? AND u.is_active = 1`,
         [decoded.id]
@@ -532,7 +529,7 @@ router.post('/refresh', async (req, res) => {
       if (!user) {
         return res.status(401).json({ success: false, message: 'Tài khoản không tồn tại hoặc đã bị khoá' });
       }
-      payload = { id: user.id, role: user.role_name, type: 'staff' };
+      payload = { id: user.id, role: user.role_name, type: 'staff', permissions: user.permissions };
     } else {
       const [[customer]] = await pool.query(
         'SELECT id FROM customers WHERE id = ? AND is_active = 1 AND deleted_at IS NULL',

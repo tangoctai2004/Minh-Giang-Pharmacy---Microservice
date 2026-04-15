@@ -180,13 +180,13 @@ CREATE TABLE refresh_tokens (
 
 -- Các vai trò trong hệ thống
 INSERT INTO roles (name, description, permissions) VALUES
-('admin',       'Quản trị viên hệ thống toàn quyền',
+('Quản trị viên','Quản trị viên hệ thống toàn quyền',
     '["dashboard.view","inventory.view","inventory.edit","orders.view","orders.edit","customers.view","customers.edit","reports.view","settings.edit","users.manage"]'),
-('pharmacist',  'Dược sĩ — quản lý thuốc và tồn kho',
+('Dược sĩ',     'Dược sĩ — quản lý thuốc và tồn kho',
     '["dashboard.view","inventory.view","inventory.edit","batches.view","batches.edit","products.view","products.edit","orders.view"]'),
-('cashier',     'Thu ngân — bán hàng tại quầy POS',
+('Thu ngân',    'Thu ngân — bán hàng tại quầy POS',
     '["pos.access","orders.create","orders.view","customers.view"]'),
-('staff',       'Nhân viên kho — nhập/xuất kho',
+('Nhân viên kho','Nhân viên kho — nhập/xuất kho',
     '["inventory.view","batches.view","batches.edit","orders.view","orders.fulfillment"]');
 
 -- Tài khoản nhân viên

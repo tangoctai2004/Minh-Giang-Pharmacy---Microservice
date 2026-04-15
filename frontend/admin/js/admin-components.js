@@ -63,6 +63,9 @@ function renderAdminLayout(activePageId) {
             <a href="crm-customers.html" class="sidebar-link \${activePageId === 'crm' ? 'active' : ''}">
                 <i class="fa-solid fa-users"></i> Khách Hàng & Loyalty (CRM)
             </a>
+            <a href="users-roles.html" class="sidebar-link \${activePageId === 'users-roles' ? 'active' : ''}">
+                <i class="fa-solid fa-user-shield"></i> Quản Lý Nhân Sự & Quyền
+            </a>
             <a href="shifts.html" class="sidebar-link \${activePageId === 'shifts' ? 'active' : ''}">
                 <i class="fa-solid fa-user-clock"></i> Ca Làm Việc & Thu Ngân
             </a>

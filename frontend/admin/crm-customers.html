@@ -895,50 +895,88 @@
     </div>
 
     <script>
-        // ===== SAMPLE DATA =====
-        const customers = [
-            { id: 'MV-001248', name: 'Nguyễn Thị Linh', phone: '0912 000 333', tier: 'silver', tierLabel: 'Bạc', spent: 6200000, points: 3280, last: '10/03/2026', progress: 41, color: '#94a3b8', initials: 'NL', bg: '#f1f5f9' },
-            { id: 'MV-000415', name: 'Trần Đức Hùng', phone: '0909 222 444', tier: 'diamond', tierLabel: 'Kim Cương', spent: 45200000, points: 12800, last: '10/03/2026', progress: 100, color: '#8b5cf6', initials: 'TH', bg: '#ede9fe' },
-            { id: 'MV-000312', name: 'Lê Hoàng Minh', phone: '0977 555 666', tier: 'gold', tierLabel: 'Vàng', spent: 18900000, points: 8920, last: '10/03/2026', progress: 100, color: '#f59e0b', initials: 'LH', bg: '#fffbeb' },
-            { id: 'MV-000987', name: 'Phạm Tố Ny', phone: '0988 333 111', tier: 'bronze', tierLabel: 'Đồng', spent: 950000, points: 1450, last: '10/03/2026', progress: 47, color: '#d97706', initials: 'PN', bg: '#fef3c7' },
-            { id: 'MV-001100', name: 'Võ Thị Thu', phone: '0901 777 888', tier: 'silver', tierLabel: 'Bạc', spent: 3200000, points: 2210, last: '10/03/2026', progress: 64, color: '#94a3b8', initials: 'VT', bg: '#f1f5f9' },
-            { id: 'MV-000756', name: 'Nguyễn Văn Ba', phone: '0912 444 000', tier: 'gold', tierLabel: 'Vàng', spent: 9800000, points: 5600, last: '09/03/2026', progress: 65, color: '#f59e0b', initials: 'NB', bg: '#fffbeb' },
-            { id: 'MV-001050', name: 'Hoàng Thu Trang', phone: '0937 123 456', tier: 'diamond', tierLabel: 'Kim Cương', spent: 29400000, points: 18200, last: '08/03/2026', progress: 100, color: '#8b5cf6', initials: 'HT', bg: '#ede9fe' },
-            { id: 'MV-001210', name: 'Đặng Minh Tuấn', phone: '0966 789 012', tier: 'bronze', tierLabel: 'Đồng', spent: 420000, points: 320, last: '07/03/2026', progress: 21, color: '#d97706', initials: 'DT', bg: '#fef3c7' },
-        ];
+        const API_BASE = 'http://localhost:8000/api/identity';
+        
+        async function fetchCustomers() {
+            try {
+                const authRaw = localStorage.getItem('MG_ADMIN_AUTH');
+                let token = '';
+                if (authRaw) {
+                    const parsed = JSON.parse(authRaw);
+                    token = parsed.accessToken;
+                }
+
+                if (!token) {
+                    console.error("No token found. Redirect to login.");
+                    return [];
+                }
+
+                const res = await fetch(API_BASE + '/customers', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    return data.data;
+                }
+                return [];
+            } catch (error) {
+                console.error("Error fetching customers:", error);
+                return [];
+            }
+        }
 
         const tierColors = { bronze: 'tier-bronze', silver: 'tier-silver', gold: 'tier-gold', diamond: 'tier-diamond' };
 
-        function renderTable() {
+        function getTierInfo(points) {
+            points = points || 0;
+            if (points < 20000) return { id: 'bronze', label: 'Đồng', icon: '🥉' };
+            if (points < 50000) return { id: 'silver', label: 'Bạc', icon: '🥈' };
+            if (points < 150000) return { id: 'gold', label: 'Vàng', icon: '🥇' };
+            return { id: 'diamond', label: 'Kim Cương', icon: '💎' };
+        }
+
+        async function renderTable() {
             const tbody = document.getElementById('customerTableBody');
             if (!tbody) return;
-            tbody.innerHTML = customers.map(c => `
+            
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">Đang tải dữ liệu...</td></tr>';
+            
+            const customers = await fetchCustomers();
+            
+            if (customers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">Không có khách hàng nào.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = customers.map(c => {
+                const initials = c.full_name ? c.full_name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase() : 'KH';
+                const tier = getTierInfo(c.loyalty_points);
+                const isActiveStr = c.is_active ? '<span style="color:#10b981;font-size:12px;font-weight:600;"><i class="fa-solid fa-circle-check"></i> Hoạt động</span>' : '<span style="color:#ef4444;font-size:12px;font-weight:600;"><i class="fa-solid fa-lock"></i> Đã khoá</span>';
+                
+                return `
                 <tr>
                     <td>
                         <div style="display:flex;align-items:center;gap:10px;">
-                            <div class="customer-avatar" style="background:${c.bg};color:${c.color};font-size:12px;">${c.initials}</div>
+                            <div class="customer-avatar" style="background:#f1f5f9;color:#334155;font-size:12px;">${initials}</div>
                             <div>
-                                <div style="font-weight:600;font-size:13px;color:#0f172a;">${c.name}</div>
-                                <div style="font-size:11px;color:#9ca3af;">${c.id} · ${c.phone}</div>
+                                <div style="font-weight:600;font-size:13px;color:#0f172a;">${c.full_name}</div>
+                                <div style="font-size:11px;color:#9ca3af;">${c.code || 'N/A'} · ${c.phone || 'N/A'}</div>
                             </div>
                         </div>
                     </td>
-                    <td><span class="tier-badge ${tierColors[c.tier]}">${c.tier === 'bronze' ? '🥉' : c.tier === 'silver' ? '🥈' : c.tier === 'gold' ? '🥇' : '💎'} ${c.tierLabel}</span></td>
-                    <td style="font-weight:700;color:#0f172a;">${c.spent.toLocaleString('vi-VN')}₫</td>
-                    <td style="font-weight:600;">${c.points.toLocaleString()} đ</td>
-                    <td style="font-size:12px;color:#374151;">${c.last}</td>
-                    <td style="min-width:110px;">
-                        <div style="font-size:10px;color:#9ca3af;margin-bottom:3px;">${c.progress}% lên hạng tiếp</div>
-                        <div class="points-bar"><div class="points-bar-fill" style="width:${c.progress}%;background:${c.color};"></div></div>
-                    </td>
+                    <td><span class="tier-badge ${tierColors[tier.id]}">${tier.icon} ${tier.label}</span></td>
+                    <td style="font-weight:700;color:#0f172a;">-</td>
+                    <td style="font-weight:600;">${(c.loyalty_points || 0).toLocaleString()} đ</td>
+                    <td style="font-size:12px;color:#374151;">${new Date(c.created_at).toLocaleDateString()}</td>
+                    <td>${isActiveStr}</td>
                     <td>
                         <div class="action-btns" style="justify-content:flex-end;">
                             <button class="btn-icon" title="Xem chi tiết" onclick="openCustomerModal('view')"><i class="fa-solid fa-eye"></i></button>
-                            <button class="btn-icon" title="Gửi Zalo" onclick="alert('Mở Zalo chat với ${c.name}')"><i class="fa-brands fa-stripe-s"></i></button>
+                            <button class="btn-icon" title="Gửi Zalo" onclick="alert('Mở Zalo chat với ${c.full_name}')"><i class="fa-brands fa-stripe-s"></i></button>
                         </div>
                     </td>
                 </tr>
-            `).join('');
+            `}).join('');
         }
 
         function switchPageTab(tabId) {

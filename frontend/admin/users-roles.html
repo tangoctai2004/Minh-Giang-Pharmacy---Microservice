@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Nhân Sự & Quyền — Nhà Thuốc Minh Giang</title>
+    <link rel="stylesheet" href="css/admin-style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <aside class="admin-sidebar"></aside>
+    <header class="admin-header"></header>
+
+    <main class="admin-main">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Quản Lý Nhân Sự & Quyền</h1>
+                <p class="page-subtitle">Cấu hình danh sách nhân viên, tài khoản hệ thống và phân quyền truy cập</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn-primary" id="btnAddUser" onclick="openUserModal()"><i class="fa-solid fa-plus"></i> Thêm Nhân Viên Mới</button>
+                <button class="btn-primary" id="btnAddRole" onclick="openRoleModal()" style="display:none; background:#8b5cf6;"><i class="fa-solid fa-plus"></i> Thêm Vai Trò Mới</button>
+            </div>
+        </div>
+
+        <!-- TABS -->
+        <div class="page-tabs" style="margin-bottom: 20px;">
+            <button class="page-tab-btn active" onclick="switchPageTab('tab-users', event)"><i class="fa-solid fa-user-tie"></i> Danh Sách Nhân Viên</button>
+            <button class="page-tab-btn" onclick="switchPageTab('tab-roles', event)"><i class="fa-solid fa-shield-halved"></i> Vai Trò (Roles)</button>
+        </div>
+
+        <!-- ===== TAB 1: USERS ===== -->
+        <div id="tab-users" class="page-tab-content active">
+            <div class="inventory-table-container">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Nhân viên</th>
+                            <th>Mã NV</th>
+                            <th>Liên hệ</th>
+                            <th>Vai trò</th>
+                            <th>Trạng thái</th>
+                            <th style="text-align:right;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <tr><td colspan="6" style="text-align:center;padding:20px;">Đang tải dữ liệu...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ===== TAB 2: ROLES ===== -->
+        <div id="tab-roles" class="page-tab-content">
+            <div class="inventory-table-container">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th style="width:25%">Vai Trò</th>
+                            <th style="width:30%">Mô tả nhiệm vụ</th>
+                            <th style="width:30%">Quyền hạn cấu hình</th>
+                            <th style="text-align:right;width:15%">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="roleTableBody">
+                        <tr><td colspan="4" style="text-align:center;padding:20px;">Đang tải dữ liệu...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- ===== USER MODAL ===== -->
+    <div class="standard-modal-overlay" id="userModal">
+        <div class="standard-modal-container" style="max-width:500px;">
+            <div class="standard-modal-header">
+                <div>
+                    <h2 class="slide-title" id="userModalTitle">Thêm Nhân Viên Mới</h2>
+                </div>
+                <button class="slide-close" onclick="closeUserModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="standard-modal-body">
+                <form id="userForm" onsubmit="saveUser(event)">
+                    <input type="hidden" id="editUserId">
+                    <div style="margin-bottom:12px;">
+                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Tên đầy đủ *</label>
+                        <input type="text" id="iptFullName" required style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;">
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Email</label>
+                        <input type="email" id="iptEmail" style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;">
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">SĐT *</label>
+                        <input type="tel" id="iptPhone" required style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;">
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Mật khẩu *</label>
+                        <input type="password" id="iptPassword" required style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;">
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Vai trò *</label>
+                        <select id="iptRole" required style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;background:#fff;">
+                            <!-- Option gen by JS -->
+                        </select>
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+                            <input type="checkbox" id="iptIsActive" checked>
+                            Tài khoản đang hoạt động
+                        </label>
+                    </div>
+                    <div style="text-align:right;margin-top:20px;">
+                        <button type="button" class="btn-secondary" onclick="closeUserModal()">Huỷ</button>
+                        <button type="submit" class="btn-primary" id="btnSaveUser">Lưu Thông Tin</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ROLE MODAL ===== -->
+    <div class="standard-modal-overlay" id="roleModal">
+        <div class="standard-modal-container" style="max-width:600px;">
+            <div class="standard-modal-header">
+                <div>
+                    <h2 class="slide-title" id="roleModalTitle">Thêm Vai Trò Mới</h2>
+                </div>
+                <button class="slide-close" onclick="closeRoleModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="standard-modal-body">
+                <form id="roleForm" onsubmit="saveRole(event)">
+                    <input type="hidden" id="editRoleId">
+                    <div style="margin-bottom:12px;">
+                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Tên Vai Trò *</label>
+                        <input type="text" id="iptRoleName" required style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;">
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Mô tả</label>
+                        <input type="text" id="iptRoleDesc" style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;">
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:8px;">Quyền hạn truy cập</label>
+                        <div id="permissionsGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#f8fafc;padding:12px;border-radius:6px;border:1px solid #e2e8f0;max-height:250px;overflow-y:auto;">
+                            <!-- Generate by JS -->
+                        </div>
+                    </div>
+                    <div style="text-align:right;margin-top:20px;">
+                        <button type="button" class="btn-secondary" onclick="closeRoleModal()">Huỷ</button>
+                        <button type="submit" class="btn-primary" id="btnSaveRole">Lưu Vai Trò</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== JS ===== -->
+    <script>
+        const API_BASE = 'http://localhost:8000/api/identity';
+        let allRoles = [];
+
+        function getToken() {
+            const authRaw = localStorage.getItem('MG_ADMIN_AUTH');
+            if (authRaw) {
+                const parsed = JSON.parse(authRaw);
+                return parsed.accessToken;
+            }
+            return '';
+        }
+
+        const MASTER_PERMISSIONS = [
+            { id: 'dashboard.view', label: 'Xem Bảng Điều Khiển' },
+            { id: 'inventory.view', label: 'Xem Tồn Kho' },
+            { id: 'inventory.edit', label: 'Quản Lý Kho' },
+            { id: 'batches.view',   label: 'Xem Lô Hàng' },
+            { id: 'batches.edit',   label: 'Quản Lý Lô Hàng' },
+            { id: 'products.view',  label: 'Xem Thuốc' },
+            { id: 'products.edit',  label: 'Quản Lý Thuốc' },
+            { id: 'orders.view',    label: 'Xem Đơn Hàng' },
+            { id: 'orders.edit',    label: 'Quản Lý Đơn Hàng' },
+            { id: 'orders.fulfillment', label: 'Xử Lý Đơn Hàng' },
+            { id: 'orders.create',  label: 'Tạo Đơn Hàng' },
+            { id: 'customers.view', label: 'Xem Khách Hàng' },
+            { id: 'customers.edit', label: 'Quản Lý Khách Hàng' },
+            { id: 'reports.view',   label: 'Xem Báo Cáo' },
+            { id: 'settings.edit',  label: 'Cài Đặt Hệ Thống' },
+            { id: 'users.manage',   label: 'Quản Lý Nhân Sự & Quyền' },
+            { id: 'pos.access',     label: 'Mở Quầy Thu Ngân (POS)' }
+        ];
+
+        async function initPage() {
+            const token = getToken();
+            if(!token) return;
+
+            initPermissionsGrid();
+
+            // Fetch roles first
+            try {
+                const resRole = await fetch(API_BASE + '/roles', { headers: { 'Authorization': 'Bearer ' + token }});
+                const roleData = await resRole.json();
+                if (roleData.success) {
+                    allRoles = roleData.data;
+                    renderRoleTable(allRoles);
+                    populateRoleDropdown(allRoles);
+                }
+            } catch (e) { console.warn('Cannot fetch roles', e); }
+
+            // Fetch users
+            fetchAndRenderUsers();
+        }
+
+        async function fetchAndRenderUsers() {
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">Đang tải dữ liệu...</td></tr>';
+            try {
+                const token = getToken();
+                const res = await fetch(API_BASE + '/users', { headers: { 'Authorization': 'Bearer ' + token }});
+                const data = await res.json();
+                if (data.success) {
+                    renderUserTable(data.data);
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">Không có quyền truy cập.</td></tr>';
+                }
+            } catch (e) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">Lỗi mạng.</td></tr>';
+            }
+        }
+
+        function renderUserTable(users) {
+            const tbody = document.getElementById('userTableBody');
+            if(users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">Không có dữ liệu nhân viên.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = users.map(u => {
+                const initials = u.full_name ? u.full_name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase() : 'NV';
+                const status = u.is_active ? 
+                    '<span style="display:inline-flex;align-items:center;padding:4px 8px;background:#d1fae5;color:#065f46;border-radius:6px;font-size:11px;font-weight:600;"><i class="fa-solid fa-circle-check" style="margin-right:4px;"></i> Active</span>' : 
+                    '<span style="display:inline-flex;align-items:center;padding:4px 8px;background:#fee2e2;color:#991b1b;border-radius:6px;font-size:11px;font-weight:600;"><i class="fa-solid fa-lock" style="margin-right:4px;"></i> Locked</span>';
+                
+                return `
+                <tr>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:34px;height:34px;border-radius:50%;background:#e0e7ff;color:#4338ca;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">${initials}</div>
+                            <div style="font-weight:600;font-size:13px;color:#0f172a;">${u.full_name}</div>
+                        </div>
+                    </td>
+                    <td><span style="font-size:12px;color:#475569;background:#f1f5f9;padding:3px 6px;border-radius:4px;font-weight:600;font-family:monospace;">${u.code || '-'}</span></td>
+                    <td>
+                        <div style="font-size:12px;color:#334155;">${u.phone || '-'}</div>
+                        <div style="font-size:11px;color:#94a3b8;">${u.email || '-'}</div>
+                    </td>
+                    <td style="font-weight:600;font-size:12px;color:#1d4ed8;">${u.role_name || 'Nhân viên'}</td>
+                    <td>${status}</td>
+                    <td>
+                        <div class="action-btns" style="justify-content:flex-end;">
+                            <button class="btn-icon" title="Sửa" onclick="openEditUser(${u.id}, '${u.full_name}', '${u.email || ''}', '${u.phone || ''}', ${u.role_id}, ${u.is_active})"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn-icon" title="Vô hiệu hoá" onclick="deleteUser(${u.id})" style="color:#ef4444;"><i class="fa-solid fa-ban"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        function renderRoleTable(roles) {
+            const tbody = document.getElementById('roleTableBody');
+            if(roles.length === 0) return;
+            tbody.innerHTML = roles.map(r => {
+                const encodedRole = encodeURIComponent(JSON.stringify(r));
+                return '<tr>' +
+                    '<td style="font-weight:700;color:#0f172a;font-size:14px;"><i class="fa-solid fa-shield" style="color:#8b5cf6;margin-right:6px;"></i> ' + r.name + '</td>' +
+                    '<td style="font-size:12px;color:#475569;line-height:1.5;">' + (r.description || 'Không có mô tả') + '</td>' +
+                    '<td style="font-size:12px;color:#94a3b8;">' + (r.permissions ? r.permissions.length + ' quyền hạn' : 'Chưa thiết lập') + '</td>' +
+                    '<td>' +
+                        '<div class="action-btns" style="justify-content:flex-end;">' +
+                            '<button class="btn-icon" title="Sửa" onclick="openEditRole(`' + encodedRole + '`)"><i class="fa-solid fa-pen"></i></button>' +
+                            '<button class="btn-icon" title="Xoá" onclick="deleteRole(' + r.id + ')" style="color:#ef4444;"><i class="fa-solid fa-trash"></i></button>' +
+                        '</div>' +
+                    '</td>' +
+                '</tr>';
+            }).join('');
+        }
+
+        function populateRoleDropdown(roles) {
+            const select = document.getElementById('iptRole');
+            select.innerHTML = '<option value="">Chọn một vai trò...</option>' + roles.map(r => '<option value="' + r.id + '">' + r.name + '</option>').join('');
+        }
+
+        /* Tabs Logic */
+        function switchPageTab(tabId, ev) {
+            document.querySelectorAll('.page-tab-btn').forEach(b => b.classList.remove('active'));
+            ev.currentTarget.classList.add('active');
+            document.querySelectorAll('.page-tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            
+            if(tabId === 'tab-users') {
+                document.getElementById('btnAddUser').style.display = 'inline-flex';
+                document.getElementById('btnAddRole').style.display = 'none';
+            } else {
+                document.getElementById('btnAddUser').style.display = 'none';
+                document.getElementById('btnAddRole').style.display = 'inline-flex';
+            }
+        }
+
+        /* Modal Logic */
+        function openUserModal() {
+            document.getElementById('editUserId').value = '';
+            document.getElementById('userForm').reset();
+            document.getElementById('userModalTitle').textContent = 'Thêm Nhân Viên Mới';
+            document.getElementById('userModal').classList.add('open');
+            document.getElementById('iptPassword').required = true;
+            document.getElementById('iptPassword').placeholder = 'Bắt buộc nhập';
+        }
+
+        function openEditUser(id, name, email, phone, roleId, isActive) {
+            document.getElementById('editUserId').value = id;
+            document.getElementById('iptFullName').value = name;
+            document.getElementById('iptEmail').value = email;
+            document.getElementById('iptPhone').value = phone;
+            document.getElementById('iptRole').value = roleId;
+            document.getElementById('iptIsActive').checked = isActive === 1 ? true : false;
+            
+            document.getElementById('userModalTitle').textContent = 'Cập Nhật Thông Tin Nhân Viên';
+            document.getElementById('iptPassword').required = false; // Khi edit không bắt buộc đổi pass
+            document.getElementById('iptPassword').placeholder = '(Bỏ trống nếu không đổi)';
+            document.getElementById('userModal').classList.add('open');
+        }
+
+        function closeUserModal() {
+            document.getElementById('userModal').classList.remove('open');
+        }
+
+        async function saveUser(e) {
+            e.preventDefault();
+            const token = getToken();
+            const btn = document.getElementById('btnSaveUser');
+            
+            const id = document.getElementById('editUserId').value;
+            const payload = {
+                full_name: document.getElementById('iptFullName').value,
+                email: document.getElementById('iptEmail').value,
+                phone: document.getElementById('iptPhone').value,
+                role_id: document.getElementById('iptRole').value
+            };
+            
+            const pass = document.getElementById('iptPassword').value;
+            if(pass) payload.password = pass;
+
+            // Hiện tại API PUT users/:id chỉ support edit cơ bản, ta cần kiểm tra backend có support update trạng thái không. 
+            // Nếu createUser thì dùng POST
+            
+            btn.disabled = true;
+            btn.textContent = 'Đang lưu...';
+
+            try {
+                const url = id ? `${API_BASE}/users/${id}` : `${API_BASE}/users`;
+                const method = id ? 'PUT' : 'POST';
+
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await res.json();
+                if(data.success) {
+                    closeUserModal();
+                    fetchAndRenderUsers();
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            } catch(error) {
+                alert('Lỗi mạng!');
+            }
+            btn.disabled = false;
+            btn.textContent = 'Lưu Thông Tin';
+        }
+
+        async function deleteUser(id) {
+            if(!confirm('Bạn có chắc chắn muốn vô hiệu hoá nhân viên này? Họ sẽ không thể đăng nhập vào hệ thống nữa.')) return;
+            const token = getToken();
+            try {
+                const res = await fetch(API_BASE + '/users/' + id, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await res.json();
+                if(data.success) {
+                    fetchAndRenderUsers();
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            } catch(e) { alert('Lỗi mạng!'); }
+        }
+
+        /* =========== ROLE CRUD =========== */
+        function initPermissionsGrid() {
+            const grid = document.getElementById('permissionsGrid');
+            grid.innerHTML = MASTER_PERMISSIONS.map(p => 
+                '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;">' +
+                    '<input type="checkbox" name="permissions" value="' + p.id + '">' +
+                    p.label +
+                '</label>'
+            ).join('');
+        }
+
+        function openRoleModal() {
+            document.getElementById('editRoleId').value = '';
+            document.getElementById('roleForm').reset();
+            document.getElementById('roleModalTitle').textContent = 'Thêm Vai Trò Mới';
+            document.getElementById('roleModal').classList.add('open');
+        }
+
+        function openEditRole(encodedRole) {
+            const role = JSON.parse(decodeURIComponent(encodedRole));
+            document.getElementById('editRoleId').value = role.id;
+            document.getElementById('iptRoleName').value = role.name;
+            document.getElementById('iptRoleDesc').value = role.description || '';
+            
+            // Render permissions checked
+            const checkboxes = document.querySelectorAll('input[name="permissions"]');
+            checkboxes.forEach(cb => cb.checked = false);
+            if (role.permissions && Array.isArray(role.permissions)) {
+                role.permissions.forEach(p => {
+                    const cb = document.querySelector('input[name="permissions"][value="' + p + '"]');
+                    if (cb) cb.checked = true;
+                });
+            }
+
+            document.getElementById('roleModalTitle').textContent = 'Cập Nhật Vai Trò & Phân Quyền';
+            document.getElementById('roleModal').classList.add('open');
+        }
+
+        function closeRoleModal() {
+            document.getElementById('roleModal').classList.remove('open');
+        }
+
+        async function saveRole(e) {
+            e.preventDefault();
+            const token = getToken();
+            const btn = document.getElementById('btnSaveRole');
+            const id = document.getElementById('editRoleId').value;
+            
+            const checkboxes = document.querySelectorAll('input[name="permissions"]:checked');
+            const permissions = Array.from(checkboxes).map(cb => cb.value);
+
+            const payload = {
+                name: document.getElementById('iptRoleName').value,
+                description: document.getElementById('iptRoleDesc').value,
+                permissions: permissions
+            };
+            
+            btn.disabled = true;
+            btn.textContent = id ? 'Đang lưu...' : 'Đang tạo...';
+
+            try {
+                const url = id ? API_BASE + '/roles/' + id : API_BASE + '/roles';
+                const method = id ? 'PUT' : 'POST';
+
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await res.json();
+                if(data.success) {
+                    closeRoleModal();
+                    // Refetch
+                    const resRole = await fetch(API_BASE + '/roles', { headers: { 'Authorization': 'Bearer ' + token }});
+                    const roleData = await resRole.json();
+                    if (roleData.success) {
+                        allRoles = roleData.data;
+                        renderRoleTable(allRoles);
+                        populateRoleDropdown(allRoles);
+                    }
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            } catch(error) {
+                alert('Lỗi mạng!');
+            }
+            btn.disabled = false;
+            btn.textContent = 'Lưu Vai Trò';
+        }
+
+        async function deleteRole(id) {
+            if(!confirm('Bạn có chắc chắn muốn xoá vai trò này? Cảnh báo: Việc này có thể ảnh hưởng tới các nhân viên đang sở hữu vai trò.')) return;
+            const token = getToken();
+            try {
+                const res = await fetch(API_BASE + '/roles/' + id, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await res.json();
+                if(data.success) {
+                    const resRole = await fetch(API_BASE + '/roles', { headers: { 'Authorization': 'Bearer ' + token }});
+                    const roleData = await resRole.json();
+                    if (roleData.success) {
+                        allRoles = roleData.data;
+                        renderRoleTable(allRoles);
+                        populateRoleDropdown(allRoles);
+                    }
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            } catch(e) { alert('Lỗi mạng!'); }
+        }
+
+        document.addEventListener('DOMContentLoaded', initPage);
+    </script>
+
+    <!-- UI Injector -->
+    <script src="js/admin-components.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', () => { renderAdminLayout('users-roles'); });</script>
+</body>
+
+</html>

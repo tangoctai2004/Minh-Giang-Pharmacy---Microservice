@@ -25,5 +25,11 @@ module.exports = function gatewayAuth(req, res, next) {
   req.userRole = userRole || null;
   req.userType = userType || null;   // 'staff' | 'customer'
 
+  try {
+    req.userPermissions = req.headers['x-user-permissions'] ? JSON.parse(req.headers['x-user-permissions']) : [];
+  } catch (e) {
+    req.userPermissions = [];
+  }
+
   next();
 };

@@ -49,6 +49,7 @@ function makeProxy(target, prefix) {
           proxyReq.setHeader('x-user-id',   String(req.user.id));
           proxyReq.setHeader('x-user-role', String(req.user.role  || ''));
           proxyReq.setHeader('x-user-type', String(req.user.type  || ''));
+          proxyReq.setHeader('x-user-permissions', JSON.stringify(req.user.permissions || []));
         }
       },
       error(err, req, res) {

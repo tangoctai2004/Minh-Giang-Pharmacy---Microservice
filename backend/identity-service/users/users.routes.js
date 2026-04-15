@@ -9,8 +9,8 @@ const bcrypt = require('bcryptjs');
  * GET    /users          — Danh sách nhân viên ✅
  * GET    /users/:id      — Chi tiết 1 nhân viên ✅
  * POST   /users          — Tạo tài khoản nhân viên ✅
- * PUT    /users/:id      — Cập nhật thông tin (TODO)
- * DELETE /users/:id      — Vô hiệu hoá tài khoản, soft-delete (TODO)
+ * PUT    /users/:id      — Cập nhật thông tin ✅
+ * DELETE /users/:id      — Vô hiệu hoá tài khoản, soft-delete ✅
  */
 
 // ── Helper: kiểm tra quyền admin ─────────────────────────────────────────────
@@ -19,8 +19,8 @@ function requireAdmin(req, res) {
     res.status(401).json({ success: false, message: 'Chưa đăng nhập' });
     return false;
   }
-  if (req.userRole !== 'admin') {
-    res.status(403).json({ success: false, message: 'Chỉ admin mới có quyền thực hiện' });
+  if (!req.userPermissions.includes('users.manage')) {
+    res.status(403).json({ success: false, message: 'Chỉ admin có quyền quản lý người dùng' });
     return false;
   }
   return true;

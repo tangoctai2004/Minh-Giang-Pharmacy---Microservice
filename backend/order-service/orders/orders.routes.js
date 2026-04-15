@@ -4,7 +4,7 @@ const pool   = require('../db/pool');
 // GET /orders — Admin: tất cả đơn, Customer: đơn của mình
 router.get('/', async (req, res) => {
   try {
-    const isAdmin = req.userRole === 'admin' || req.userRole === 'pharmacist';
+    const isAdmin = req.userType === 'staff';
     let where = isAdmin ? '' : 'WHERE o.customer_id = ?';
     const params = isAdmin ? [] : [req.userId];
 
