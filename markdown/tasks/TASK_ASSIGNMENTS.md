@@ -40,10 +40,13 @@
 | 11| `/customers/:id`                   | GET    | Chi tiết khách hàng           | 🟡 TB   |
 | 12| `/customers/:id`                   | PUT    | Cập nhật khách hàng           | 🟡 TB   |
 | 13| `/customers/:id/loyalty`           | GET    | Điểm tích lũy                | 🟢 Thấp|
-| 14| `/roles`                           | GET    | Danh sách vai trò             | 🟢 Thấp|
-| 15| `/shifts`                          | GET    | Danh sách ca làm việc         | 🟢 Thấp|
-| 16| `/shifts`                          | POST   | Mở ca mới                    | 🟢 Thấp|
-| 17| `/shifts/:id/close`                | PUT    | Đóng ca                      | 🟢 Thấp|
+| 14| `/roles`                           | GET    | Danh sách vai trò (PBAC)      | ✅ Done|
+| 15| `/roles`                           | POST   | Tạo vai trò mới (PBAC)        | ✅ Done|
+| 16| `/roles/:id`                       | PUT    | Sửa vai trò & quyền (PBAC)   | ✅ Done|
+| 17| `/roles/:id`                       | DELETE | Xoá vai trò                   | ✅ Done|
+| 18| `/shifts`                          | GET    | Danh sách ca làm việc         | 🟢 Thấp|
+| 19| `/shifts`                          | POST   | Mở ca mới                    | 🟢 Thấp|
+| 20| `/shifts/:id/close`                | PUT    | Đóng ca                      | 🟢 Thấp|
 
 **Checklist:**
 - [ ] Login + Register + JWT token → test bằng Postman
