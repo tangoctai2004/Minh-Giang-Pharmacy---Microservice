@@ -132,6 +132,45 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// GET /customers/:id/loyalty - Điểm tích luỹ Loyalty
+router.get('/:id/loyalty', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1. Query bảng customers để lấy loyalty_points và loyalty_tier
+    const [[customer]] = await pool.query(
+      'SELECT id, loyalty_points, loyalty_tier FROM customers WHERE id = ? AND deleted_at IS NULL',
+      [id]
+    );
+
+    if (!customer) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy khách hàng' });
+    }
+
+    // 2. Query bảng loyalty_points_transactions lấy 10 lịch sử giao dịch mới nhất
+    const [transactions] = await pool.query(
+      `SELECT id, transaction_type, points_change, description, created_at 
+       FROM loyalty_points_transactions 
+       WHERE customer_id = ? 
+       ORDER BY created_at DESC 
+       LIMIT 10`,
+      [id]
+    );
+
+    // 3. Ghép thành object data và trả về
+    res.json({
+      success: true,
+      data: {
+        loyalty_points: customer.loyalty_points,
+        loyalty_tier: customer.loyalty_tier,
+        transactions
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // GET /customers/:id/addresses - Get customer delivery addresses
 router.get('/:id/addresses', async (req, res) => {
   try {

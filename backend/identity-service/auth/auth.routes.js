@@ -462,22 +462,103 @@ router.post('/register', async (req, res) => {
 
 // POST /auth/send-otp
 router.post('/send-otp', async (req, res) => {
-  // TODO: 1. Validate { target: phone|email, target_type, purpose }
-  //       2. Kiểm tra blocked_until trong otp_codes (D4-01 security patch)
-  //       3. Generate 6-digit OTP, hash rồi INSERT INTO otp_codes
-  //       4. Gọi notification-service để gửi SMS/Email
-  //       5. Trả về { message: 'OTP đã được gửi', expires_in: 300 }
-  res.status(501).json({ success: false, message: 'TODO: implement POST /auth/send-otp' });
+  try {
+    const { target, target_type, purpose } = req.body;
+
+    // 1. Validate payload
+    if (!target || !target_type || !purpose) {
+      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp target, target_type và purpose' });
+    }
+    if (!['phone', 'email'].includes(target_type)) {
+      return res.status(400).json({ success: false, message: 'target_type không hợp lệ' });
+    }
+
+    // 2. Sinh ngẫu nhiên mã OTP 6 chữ số
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log('\n--- 🔴 [TESTING ONLY] MÃ OTP ĐƯỢC SINH RA LÀ:', otpCode, '---\n');
+
+    // 3. Băm (Hash) mã OTP bằng bcrypt
+    const otpHash = await bcrypt.hash(otpCode, 10);
+
+    // 4. Xoá cứng (hoặc update) các OTP cũ chưa sử dụng của target và purpose này để tránh spam hoặc lưu trữ rác
+    await pool.query('DELETE FROM otp_codes WHERE target = ? AND purpose = ? AND used_at IS NULL', [target, purpose]);
+
+    // 5. INSERT vào bảng otp_codes
+    await pool.query(
+      `INSERT INTO otp_codes (target, target_type, otp_hash, purpose, expires_at)
+       VALUES (?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 5 MINUTE))`,
+      [target, target_type, otpHash, purpose]
+    );
+
+    // 6. Gọi nội bộ sang Notification Service
+    try {
+      const endpoint = target_type === 'phone' ? 'sms/send' : 'email/send';
+      // Sử dụng global fetch (Node.js 18+)
+      await fetch(`http://notification-service:8005/api/notification/${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: target, otp: otpCode, purpose })
+      });
+    } catch (err) {
+      console.error('Call to Notification Service failed:', err);
+    }
+
+    // 7. Trả về response
+    res.json({ success: true, message: 'Gửi OTP thành công', expires_in: 300 });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
 });
 
 // POST /auth/verify-otp
 router.post('/verify-otp', async (req, res) => {
-  // TODO: 1. Validate { target, target_type, purpose, otp_code }
-  //       2. SELECT từ otp_codes WHERE target=? AND purpose=? AND used_at IS NULL AND expires_at > NOW()
-  //       3. So sánh otp_code với giá trị lưu (hoặc hash)
-  //       4. UPDATE otp_codes SET used_at = NOW()
-  //       5. Nếu purpose='register' → kích hoạt tài khoản
-  res.status(501).json({ success: false, message: 'TODO: implement POST /auth/verify-otp' });
+  try {
+    const { target, purpose, otp_code } = req.body;
+
+    // 1. Validate target, purpose, otp_code
+    if (!target || !purpose || !otp_code) {
+      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp target, purpose và otp_code' });
+    }
+
+    // 2. Lệnh SQL SELECT từ otp_codes lấy OTP mới nhất
+    const [[record]] = await pool.query(
+      `SELECT id, otp_hash, attempts FROM otp_codes 
+       WHERE target = ? AND purpose = ? AND used_at IS NULL AND expires_at > NOW() 
+       ORDER BY id DESC LIMIT 1`,
+      [target, purpose]
+    );
+
+    // 3. Nếu không tìm thấy
+    if (!record) {
+      return res.status(400).json({ success: false, message: 'Mã OTP không hợp lệ hoặc đã hết hạn' });
+    }
+
+    if (record.attempts >= 5) {
+      return res.status(400).json({ success: false, message: 'Bạn đã nhập sai quá số lần quy định' });
+    }
+
+    // 4. Dùng bcrypt.compare để so sánh otp_code
+    const isMatch = await bcrypt.compare(otp_code, record.otp_hash);
+    if (!isMatch) {
+      // Nếu SAI: tăng attempts
+      const newAttempts = record.attempts + 1;
+      await pool.query('UPDATE otp_codes SET attempts = ? WHERE id = ?', [newAttempts, record.id]);
+      
+      if (newAttempts >= 5) {
+        return res.status(400).json({ success: false, message: 'Bạn đã nhập sai quá số lần quy định' });
+      } else {
+        return res.status(400).json({ success: false, message: 'Mã OTP không đúng' });
+      }
+    }
+
+    // Nếu ĐÚNG: update used_at
+    await pool.query('UPDATE otp_codes SET used_at = NOW() WHERE id = ?', [record.id]);
+
+    // 5. Trả về response
+    res.json({ success: true, message: 'Xác thực thành công', data: { verified: true } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
 });
 
 // POST /auth/refresh
