@@ -1,193 +1,105 @@
 # 📋 PHÂN CÔNG NHIỆM VỤ — Minh Giang Pharmacy
 
-**Cập nhật:** 10/04/2026  
+**Cập nhật:** 20/04/2026 (Đã chốt cấu trúc theo năng lực thực tế của team)  
 **Team size:** 4 thành viên  
-**Workflow:** Mỗi TV code trên branch riêng → merge vào `dev` → leader review → merge `main`
+**Workflow:** Code trên branch riêng → Tạo Pull Request vào `dev` → Leader review → Merge `main`
 
 ---
 
-## 🏗️ Tổng Quan Kiến Trúc
+## 🏗️ Tổng Quan Phân Vùng Trách Nhiệm Mới Nhất
 
-| Service             | Port | Database       | Branch            |
-|---------------------|------|----------------|-------------------|
-| API Gateway         | 8000 | —              | `dev`             |
-| Identity Service    | 8001 | `mg_identity`  | `service/identity`|
-| Catalog Service     | 8002 | `mg_catalog`   | `service/catalog` |
-| Order Service       | 8003 | `mg_order`     | `service/order`   |
-| CMS Service         | 8004 | `mg_cms`       | `service/frontend`|
-| Notification Service| 8005 | `mg_notification`| `service/frontend`|
+Dựa trên việc Leader đã thiết lập xong nền tảng (Docker, Database Schema, Gateway), chiến lược phân chia mới được thiết kế dựa trên điểm mạnh/yếu của từng người:
 
----
-
-## 👥 Phân Công Theo Thành Viên
-
-### TV1 — Identity Service (`service/identity`)
-
-**Phạm vi:** Quản lý tài khoản, xác thực, phân quyền, ca làm việc
-
-| # | Endpoint                           | Method | Mô tả                        | Ưu tiên |
-|---|-------------------------------------|--------|-------------------------------|---------|
-| 1 | `/auth/login`                      | POST   | Đăng nhập (JWT token)        | 🔴 Cao  |
-| 2 | `/auth/register`                   | POST   | Đăng ký customer              | 🔴 Cao  |
-| 3 | `/auth/me`                         | GET    | Lấy thông tin user hiện tại   | 🔴 Cao  |
-| 4 | `/auth/change-password`            | PUT    | Đổi mật khẩu                 | 🟡 TB   |
-| 5 | `/users`                           | GET    | Danh sách nhân viên           | 🟡 TB   |
-| 6 | `/users`                           | POST   | Tạo nhân viên mới             | 🟡 TB   |
-| 7 | `/users/:id`                       | GET    | Chi tiết nhân viên            | 🟡 TB   |
-| 8 | `/users/:id`                       | PUT    | Cập nhật nhân viên            | 🟡 TB   |
-| 9 | `/users/:id`                       | DELETE | Xóa/vô hiệu hóa nhân viên   | 🟢 Thấp|
-| 10| `/customers`                       | GET    | Danh sách khách hàng          | 🟡 TB   |
-| 11| `/customers/:id`                   | GET    | Chi tiết khách hàng           | 🟡 TB   |
-| 12| `/customers/:id`                   | PUT    | Cập nhật khách hàng           | 🟡 TB   |
-| 13| `/customers/:id/loyalty`           | GET    | Điểm tích lũy                | 🟢 Thấp|
-| 14| `/roles`                           | GET    | Danh sách vai trò (PBAC)      | ✅ Done|
-| 15| `/roles`                           | POST   | Tạo vai trò mới (PBAC)        | ✅ Done|
-| 16| `/roles/:id`                       | PUT    | Sửa vai trò & quyền (PBAC)   | ✅ Done|
-| 17| `/roles/:id`                       | DELETE | Xoá vai trò                   | ✅ Done|
-| 18| `/shifts`                          | GET    | Danh sách ca làm việc         | 🟢 Thấp|
-| 19| `/shifts`                          | POST   | Mở ca mới                    | 🟢 Thấp|
-| 20| `/shifts/:id/close`                | PUT    | Đóng ca                      | 🟢 Thấp|
-
-**Checklist:**
-- [ ] Login + Register + JWT token → test bằng Postman
-- [ ] `/auth/me` trả đúng thông tin user
-- [ ] CRUD users (nhân viên)
-- [ ] CRUD customers
-- [ ] Shifts (mở/đóng ca)
-- [ ] Roles listing
+| Phân công | Vai trò trong hệ thống | Khối lượng | Trạng thái kỹ năng |
+|---|---|---|---|
+| **Leader (Bạn)** | **Catalog Service** + Infra/DevOps | Rất Nặng | Hiểu rõ hệ thống nhất, xử lý Tồn kho, Giá vốn. |
+| **Thành viên 1** | **Toàn bộ Frontend** + API Gateway | Rất Nặng | Cần người cứng tay UI/UX và logic ráp API. |
+| **Thành viên 2** | **Order Service & CMS Service** | Khá Nặng | Xử lý logic giỏ hàng, thanh toán, tính toán khuyến mãi. |
+| **Thành viên 3** | **Identity & Notification** | Vừa Phải | (Dành cho TV yếu nhất) Code theo pattern có sẵn, chủ yếu làm API tích hợp (Google/Zalo Login, SMS). |
 
 ---
 
-### TV2 — Catalog Service (`service/catalog`)
+## 👑 1. LEADER — Catalog Service & Quản trị Hệ thống
 
-**Phạm vi:** Sản phẩm, danh mục, nhà cung cấp, kho hàng, lô hàng, chi nhánh
+**Database:** `mg_catalog`  
+**Nhánh Git:** `service/catalog`  
+**Lý do đảm nhận:** Catalog là trái tim của nhà thuốc, chứa nghiệp vụ phức tạp nhất (Lô hàng, Tính toán tồn kho FEFO, Giá nêm yết, Cảnh báo hết hạn). Cần người nắm rõ nhất DB Schema để xây dựng chuẩn xác từ đầu.
 
-| # | Endpoint                           | Method | Mô tả                        | Ưu tiên |
-|---|-------------------------------------|--------|-------------------------------|---------|
-| 1 | `/products`                        | GET    | Danh sách SP ✅ (đã impl)     | ✅ Done |
-| 2 | `/products/:id`                    | GET    | Chi tiết SP ✅ (đã impl)      | ✅ Done |
-| 3 | `/products`                        | POST   | Tạo sản phẩm mới             | 🔴 Cao  |
-| 4 | `/products/:id`                    | PUT    | Cập nhật sản phẩm            | 🔴 Cao  |
-| 5 | `/products/:id`                    | DELETE | Xóa sản phẩm (soft delete)   | 🟡 TB   |
-| 6 | `/categories`                      | GET    | Danh sách danh mục           | 🔴 Cao  |
-| 7 | `/categories`                      | POST   | Tạo danh mục                 | 🟡 TB   |
-| 8 | `/categories/:id`                  | PUT    | Sửa danh mục                 | 🟡 TB   |
-| 9 | `/categories/:id`                  | DELETE | Xóa danh mục                 | 🟢 Thấp|
-| 10| `/suppliers`                       | GET    | Danh sách NCC               | 🟡 TB   |
-| 11| `/suppliers`                       | POST   | Tạo NCC                     | 🟡 TB   |
-| 12| `/suppliers/:id`                   | PUT    | Sửa NCC                     | 🟡 TB   |
-| 13| `/suppliers/:id`                   | DELETE | Xóa NCC                     | 🟢 Thấp|
-| 14| `/inventory`                       | GET    | Tồn kho hiện tại             | 🔴 Cao  |
-| 15| `/inventory/adjust`                | POST   | Điều chỉnh tồn kho          | 🟡 TB   |
-| 16| `/batches`                         | GET    | Danh sách lô hàng           | 🟡 TB   |
-| 17| `/batches`                         | POST   | Nhập lô hàng mới            | 🔴 Cao  |
-| 18| `/batches/:id`                     | GET    | Chi tiết lô hàng            | 🟡 TB   |
-| 19| `/locations`                       | GET    | Danh sách chi nhánh          | 🟡 TB   |
-| 20| `/locations`                       | POST   | Tạo chi nhánh               | 🟢 Thấp|
-| 21| `/locations/:id`                   | PUT    | Sửa chi nhánh               | 🟢 Thấp|
-
-**Checklist:**
-- [ ] POST/PUT/DELETE products (hiện đang 501)
-- [ ] CRUD categories (cần cho frontend filter)
-- [ ] CRUD suppliers
-- [ ] Inventory listing + adjust
-- [ ] Batches CRUD (nhập lô) 
-- [ ] Locations CRUD
+### 🎯 Nhiệm vụ chính:
+1. **Duy trì hạ tầng:** Quản lý `docker-compose`, DB Scripts chung của dự án (Đã hoàn thành).
+2. **Quản trị API Gateway:** Giữ quyền update whitelist các router an toàn.
+3. **Phát triển Catalog Service (Hiện tại API mới xong ~30% - Chủ yếu GET)**:
+   - **Hoàn thiện Sản phẩm (`/products`):** Code API POST/PUT quản lý thuốc (Hỗ trợ upload ảnh, `product_units` đa đơn vị quy đổi Hộp/Vỉ/Viên).
+   - **Luồng Lô Hàng (`/batches`):** Code API phiếu nhập kho (Gán `lot_number`, `expiry_date`, tính giá vốn).
+   - **Luồng Tồn Kho (`/inventory`):** Viết logic trừ tồn kho tự động, cảnh báo hàng sắp hết hạn trước 90 ngày.
+   - **Hoàn thành các CRUD còn lại:** Categories, Suppliers, Brand, Locations.
 
 ---
 
-### TV3 — Order Service (`service/order`)
+## 🎨 2. THÀNH VIÊN 1 — Chiến Thần Frontend
 
-**Phạm vi:** Giỏ hàng, đặt hàng, xử lý đơn, trả hàng
+**Nhánh Git:** `service/frontend`  
+**Lý do đảm nhận:** Việc quy về 1 mối Frontend sẽ làm UI/UX nhất quán, không xảy ra xung đột CSS hay thư viện. Thành viên này không cần quan tâm DB, chỉ cần đọc file Markdown API Mapping và ráp dữ liệu.
 
-| # | Endpoint                           | Method | Mô tả                        | Ưu tiên |
-|---|-------------------------------------|--------|-------------------------------|---------|
-| 1 | `/cart`                            | GET    | Lấy giỏ hàng user            | 🔴 Cao  |
-| 2 | `/cart/items`                      | POST   | Thêm SP vào giỏ              | 🔴 Cao  |
-| 3 | `/cart/items/:id`                  | PUT    | Cập nhật SL trong giỏ        | 🔴 Cao  |
-| 4 | `/cart/items/:id`                  | DELETE | Xóa SP khỏi giỏ             | 🟡 TB   |
-| 5 | `/checkout`                        | POST   | Đặt hàng (tạo order)         | 🔴 Cao  |
-| 6 | `/orders`                          | GET    | Danh sách đơn hàng           | 🔴 Cao  |
-| 7 | `/orders/:id`                      | GET    | Chi tiết đơn hàng            | 🔴 Cao  |
-| 8 | `/orders/:id/status`               | PUT    | Cập nhật trạng thái          | 🔴 Cao  |
-| 9 | `/orders/:id/cancel`               | PUT    | Hủy đơn hàng                 | 🟡 TB   |
-| 10| `/orders/stats`                    | GET    | Thống kê đơn hàng            | 🟡 TB   |
-| 11| `/returns`                         | GET    | Danh sách trả hàng           | 🟡 TB   |
-| 12| `/returns`                         | POST   | Tạo yêu cầu trả hàng        | 🟡 TB   |
-| 13| `/returns/:id`                     | GET    | Chi tiết trả hàng            | 🟢 Thấp|
-| 14| `/returns/:id/approve`             | PUT    | Duyệt trả hàng              | 🟢 Thấp|
-
-**Checklist:**
-- [ ] Cart CRUD (thêm/sửa/xóa SP trong giỏ)
-- [ ] Checkout (tạo order từ cart)
-- [ ] Orders listing + detail
-- [ ] Update order status (flow: pending → confirmed → shipping → delivered)
-- [ ] Cancel order
-- [ ] Returns CRUD
+### 🎯 Nhiệm vụ chính:
+1. **Frontend Admin Portal (`/admin`):**
+   - Ráp API Đăng nhập cho nhân viên.
+   - Làm màn hình POS bán hàng tĩnh, tích hợp quét mã vạch (Barcode/QR).
+   - Xây dựng các trang Quản trị: Nhập hàng, QL Sản phẩm, Duyệt đơn hàng online.
+2. **Frontend Website Client (`/client`):**
+   - Xây dựng trải nghiệm Mua thuốc Online (Trang chủ Banners, List Thuốc theo bệnh, Chi tiết Thuốc).
+   - Ráp luồng Checkout (Giỏ hàng -> Nhập Coupon -> Đặt hàng).
+   - Tích hợp đăng nhập Google/Zalo từ API của Thành viên 3.
 
 ---
 
-### TV4 — CMS + Notification + Frontend (`service/frontend`)
+## 🛒 3. THÀNH VIÊN 2 — Order Service & CMS Service
 
-**Phạm vi:** Quản lý nội dung, banner, khuyến mãi, bệnh lý, email/SMS, và tích hợp frontend
+**Database:** `mg_order`, `mg_cms`  
+**Nhánh Git:** `service/order`, `service/cms`  
+**Lý do đảm nhận:** Order và CMS (Promotions) gắn liền với nhau trong lúc Checkout. Thành viên này sẽ xây dựng cỗ máy kiếm tiền của hệ thống.
 
-| # | Endpoint                           | Service     | Method | Mô tả                    | Ưu tiên |
-|---|-------------------------------------|-------------|--------|---------------------------|---------|
-| 1 | `/articles`                        | CMS         | GET    | Danh sách bài viết        | 🔴 Cao  |
-| 2 | `/articles/:id`                    | CMS         | GET    | Chi tiết bài viết         | 🔴 Cao  |
-| 3 | `/articles`                        | CMS         | POST   | Tạo bài viết             | 🟡 TB   |
-| 4 | `/articles/:id`                    | CMS         | PUT    | Sửa bài viết             | 🟡 TB   |
-| 5 | `/articles/:id`                    | CMS         | DELETE | Xóa bài viết             | 🟢 Thấp|
-| 6 | `/banners`                         | CMS         | GET    | Danh sách banner          | 🔴 Cao  |
-| 7 | `/banners`                         | CMS         | POST   | Tạo banner               | 🟡 TB   |
-| 8 | `/banners/:id`                     | CMS         | PUT    | Sửa banner               | 🟡 TB   |
-| 9 | `/disease-categories`              | CMS         | GET    | Danh mục bệnh lý         | 🟡 TB   |
-| 10| `/disease-categories`              | CMS         | POST   | Tạo danh mục bệnh        | 🟢 Thấp|
-| 11| `/promotions`                      | CMS         | GET    | Danh sách khuyến mãi      | 🔴 Cao  |
-| 12| `/promotions`                      | CMS         | POST   | Tạo khuyến mãi           | 🟡 TB   |
-| 13| `/promotions/:id`                  | CMS         | PUT    | Sửa khuyến mãi           | 🟡 TB   |
-| 14| `/promotions/:code/validate`       | CMS         | POST   | Kiểm tra mã coupon        | 🔴 Cao  |
-| 15| `/store-config`                    | CMS         | GET    | Cấu hình cửa hàng        | 🟡 TB   |
-| 16| `/store-config`                    | CMS         | PUT    | Cập nhật cấu hình        | 🟢 Thấp|
-| 17| `/email/send`                      | Notification| POST   | Gửi email                | 🟢 Thấp|
-| 18| `/sms/send`                        | Notification| POST   | Gửi SMS                  | 🟢 Thấp|
-| 19| `/templates`                       | Notification| GET    | Danh sách mẫu tin nhắn    | 🟢 Thấp|
-
-**Checklist:**
-- [ ] Articles CRUD (dùng cho trang bệnh lý)
-- [ ] Banners CRUD (trang chủ + admin)
-- [ ] Promotions CRUD + validate coupon code
-- [ ] Disease categories CRUD
-- [ ] Store config GET/PUT
-- [ ] Notification email/sms (nếu còn thời gian)
-- [ ] Tích hợp frontend gọi API (fetch → render)
+### 🎯 Nhiệm vụ chính:
+1. **Giỏ hàng & Checkout (Order Service - Đang Trống 100%):**
+   - Xây dựng CRUD `/cart` lưu giỏ hàng cho user.
+   - Code logic POST `/checkout`: Nhận thông tin giỏ, **gọi API sang Catalog** để check tồn kho, nếu đủ thì thả đơn xuống trạng thái `pending_approval`.
+2. **Quản lý Vận đơn (Order Service):**
+   - Cung cấp API duyệt/huỷ đơn (`/orders/:id/confirm`, `cancel`).
+   - Xây luồng Trả hàng (`/returns`) - Tính toán tiền hoàn lại.
+3. **Mã Giảm Giá & Tiếp Thị (CMS Service - Đã xong GET, thiếu POST/PUT):**
+   - Viết API tạo/sửa Coupon (`/promotions`).
+   - Cốt lõi: Viết API POST `/promotions/:code/validate`. API này nhận vào giá trị đơn hàng và mã Coupon, tính toán số tiền được giảm để trả về cho Order xử lý.
+   - Thêm tính năng đăng Bài viết Bệnh lý (`/articles`), upload Banner trang chủ.
 
 ---
 
-## 🗓️ Timeline Gợi Ý
+## 🔐 4. THÀNH VIÊN 3 — Identity & Notification (Tập trung Tích Hợp)
 
-| Tuần | Mục tiêu                                              |
-|------|-------------------------------------------------------|
-| 1    | **Ưu tiên 🔴:** Login/Register, Products CRUD, Cart+Checkout, Articles+Banners |
-| 2    | **Ưu tiên 🟡:** Users, Categories, Orders, Promotions, Suppliers |
-| 3    | **Ưu tiên 🟢:** Shifts, Returns, Locations, Notification, Store config |
-| 4    | Tích hợp frontend, test end-to-end, fix bugs          |
+**Database:** `mg_identity`, `mg_notification`  
+**Nhánh Git:** `service/identity`, `service/notification`  
+**Lý do đảm nhận:** Identity đã được Leader setup sườn cứng (Auth bình thường, DB Roles) xong gần 95%. Thành viên yếu nhất nhận mảng này sẽ dễ thở vì mã nguồn mẫu đã chạy rất ổn, chỉ cần học cách tích hợp SDK của bên thứ 3 và làm các chức năng mở rộng hệ thống.
+
+### 🎯 Hướng phát triển và Nhiệm vụ (Rất rõ ràng, step-by-step):
+1. **Tích hợp Đăng nhập Mạng Xã Hội (Identity):**
+   - Code luồng POST `/auth/google`: Tích hợp Firebase/Google OAuth2. Sinh token JWT trả về cho Client để login không cần mật khẩu.
+   - Code luồng POST `/auth/zalo`: Tích hợp Zalo Login API (Phù hợp với khách mua thuốc ở VN).
+2. **Tích hợp Notification thực tế (Notification):**
+   - File Email/SMTP đã gửi được qua Nodemailer (Đã xong mẫu).
+   - Nhiệm vụ: Tích hợp API gửi tin nhắn thật SMS hoặc Zalo ZNS vào POST `/sms/send` (VD: Đăng ký ESMS.vn hoặc SpeedSMS, gọi axios bắn tin nhắn chứa OTP).
+3. **Hoàn thiện User Profile (Identity):**
+   - Viết tính năng Upload/Đổi Avatar cho Customer.
+   - Hỗ trợ fix bug lặt vặt liên quan đến API Quản lý Roles/Users nếu phát sinh.
+
+*(Lưu ý cho TV3: Việc gọi sang API thứ 3 như Google/Zalo rất phổ biến. Có thể tham khảo doc của họ, dùng thư viện `axios` để `POST/GET` lấy user data, sau đó mới insert vào DB của nhà thuốc và cấp token là xong)*
 
 ---
 
-## ⚡ Quy Trình Làm Việc
+## ⚡ Giao Tiếp Liên Dịch Vụ (Cần Leader chỉ đạo chặt chẽ)
+Có những tính năng bắt buộc 2 người phải code khớp với nhau:
 
-1. **Pull code mới nhất** từ `dev` trước khi bắt đầu (xem `GIT_GUIDE.md`)
-2. **Code trên branch riêng** (`service/identity`, `service/catalog`, ...)
-3. **Test bằng Postman** trước khi push
-4. **Push + tạo Pull Request** vào `dev`
-5. **Leader review** → merge
+- **Khi Khách Đặt Hàng (Thành viên 2 - Order) -> Cần Check Tồn Kho (Leader - Catalog):** Mọi đơn hàng phải gọi HTTP sang Catalog Service.
+- **Khi Khách Đăng Ký (Thành viên 3 - Identity) -> Cần Gửi OTP (Thành viên 3 - Notification):** TV3 tự xử lý trong nội dung file của mình.
+- **Khi Giao Hàng Thành Công (Thành viên 2 - Order) -> Cấp Điểm Thưởng (Thành viên 3 - Identity):** TV2 publish event hoặc gọi HTTP sang TV3 để cộng điểm `loyalty`.
 
----
-
-## 📞 Liên Hệ Khi Gặp Vấn Đề
-
-- **Docker không chạy:** Kiểm tra `docker-compose up -d` + xem logs
-- **DB lỗi:** Kiểm tra MySQL container đã healthy chưa
-- **API 401/403:** Kiểm tra token + PUBLIC_ROUTES trong gateway
-- **Conflict Git:** Đọc mục "Xử Lý Conflict" trong `GIT_GUIDE.md`
+## 📌 Quản lý tiến độ
+Leader cần thường xuyên monitor Pull Requests, đặc biệt là phần logic Checkout của TV2 và phần Schema của chính Leader làm, để đảm bảo FE (Thành viên 1) không bị đói Data để ráp giao diện. Mọi quyết định thay đổi Database đều phải qua Leader.

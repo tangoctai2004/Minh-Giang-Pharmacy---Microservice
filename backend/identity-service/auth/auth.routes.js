@@ -26,7 +26,7 @@ async function findAccount(identifier) {
   const [[user]] = await pool.query(
     `SELECT u.id, u.username, u.full_name, u.email, u.phone,
             u.password_hash, u.is_active, u.role_id,
-            r.name AS role_name, r.permissions
+            r.name AS role_name
      FROM users u
      LEFT JOIN roles r ON r.id = u.role_id
      WHERE (u.username = ? OR u.email = ? OR u.phone = ?)
@@ -108,7 +108,7 @@ router.post('/login', async (req, res) => {
     // 5. Xác định type và payload
     const isStaff = !!user;
     const tokenPayload = isStaff
-      ? { id: user.id, role: user.role_name, type: 'staff', permissions: user.permissions }
+      ? { id: user.id, role: user.role_name, type: 'staff' }
       : { id: customer.id, role: 'customer', type: 'customer' };
 
     // 6. Tạo tokens
@@ -165,7 +165,7 @@ router.post('/admin/login', async (req, res) => {
     const [[user]] = await pool.query(
       `SELECT u.id, u.username, u.full_name, u.email, u.phone,
               u.password_hash, u.is_active, u.role_id,
-              r.name AS role_name, r.permissions
+              r.name AS role_name
        FROM users u
        LEFT JOIN roles r ON r.id = u.role_id
        WHERE (u.username = ? OR u.email = ?)
@@ -180,7 +180,8 @@ router.post('/admin/login', async (req, res) => {
       });
     }
 
-    if (!user.permissions || !user.permissions.includes('dashboard.view')) {
+    // Chỉ cho phép admin hoặc manager
+    if (user.role_name !== 'admin' && user.role_name !== 'manager') {
       return res.status(403).json({
         success: false,
         message: 'Tài khoản không có quyền truy cập trang quản trị',
@@ -195,7 +196,7 @@ router.post('/admin/login', async (req, res) => {
       });
     }
 
-    const tokenPayload = { id: user.id, role: user.role_name, type: 'staff', permissions: user.permissions };
+    const tokenPayload = { id: user.id, role: user.role_name, type: 'staff' };
     const { accessToken, refreshToken } = await generateTokens(tokenPayload);
 
     pool.query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]).catch(() => {});
@@ -236,7 +237,7 @@ router.post('/pos/verify-pin', async (req, res) => {
     const [[user]] = await pool.query(
       `SELECT u.id, u.username, u.full_name, u.email, u.phone,
               u.password_hash, u.is_active, u.role_id,
-              r.name AS role_name, r.permissions
+              r.name AS role_name
        FROM users u
        LEFT JOIN roles r ON r.id = u.role_id
        WHERE u.username = ?
@@ -251,7 +252,8 @@ router.post('/pos/verify-pin', async (req, res) => {
       });
     }
 
-    if (!user.permissions || !user.permissions.includes('pos.access')) {
+    // Chỉ cho phép pharmacist hoặc cashier
+    if (user.role_name !== 'pharmacist' && user.role_name !== 'cashier') {
       return res.status(403).json({
         success: false,
         message: 'Tài khoản không có quyền truy cập POS',
@@ -267,7 +269,7 @@ router.post('/pos/verify-pin', async (req, res) => {
       });
     }
 
-    const tokenPayload = { id: user.id, role: user.role_name, type: 'staff', permissions: user.permissions };
+    const tokenPayload = { id: user.id, role: user.role_name, type: 'staff' };
     const { accessToken, refreshToken } = await generateTokens(tokenPayload);
 
     pool.query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]).catch(() => {});
@@ -308,7 +310,7 @@ router.post('/login-pos', async (req, res) => {
     const [[user]] = await pool.query(
       `SELECT u.id, u.username, u.full_name, u.email, u.phone,
               u.password_hash, u.is_active, u.role_id,
-              r.name AS role_name, r.permissions
+              r.name AS role_name
        FROM users u
        LEFT JOIN roles r ON r.id = u.role_id
        WHERE (u.username = ? OR u.email = ? OR u.phone = ?)
@@ -323,7 +325,8 @@ router.post('/login-pos', async (req, res) => {
       });
     }
 
-    if (!user.permissions || !user.permissions.includes('pos.access')) {
+    // 3. Chỉ cho phép pharmacist hoặc cashier
+    if (user.role_name !== 'pharmacist' && user.role_name !== 'cashier') {
       return res.status(403).json({
         success: false,
         message: 'Tài khoản không có quyền truy cập POS',
@@ -341,7 +344,7 @@ router.post('/login-pos', async (req, res) => {
 
     // 5. Tạo access token
     const accessToken = jwt.sign(
-      { id: user.id, role: user.role_name, type: 'staff', permissions: user.permissions },
+      { id: user.id, role: user.role_name, type: 'staff' },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
     );
@@ -462,103 +465,22 @@ router.post('/register', async (req, res) => {
 
 // POST /auth/send-otp
 router.post('/send-otp', async (req, res) => {
-  try {
-    const { target, target_type, purpose } = req.body;
-
-    // 1. Validate payload
-    if (!target || !target_type || !purpose) {
-      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp target, target_type và purpose' });
-    }
-    if (!['phone', 'email'].includes(target_type)) {
-      return res.status(400).json({ success: false, message: 'target_type không hợp lệ' });
-    }
-
-    // 2. Sinh ngẫu nhiên mã OTP 6 chữ số
-    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log('\n--- 🔴 [TESTING ONLY] MÃ OTP ĐƯỢC SINH RA LÀ:', otpCode, '---\n');
-
-    // 3. Băm (Hash) mã OTP bằng bcrypt
-    const otpHash = await bcrypt.hash(otpCode, 10);
-
-    // 4. Xoá cứng (hoặc update) các OTP cũ chưa sử dụng của target và purpose này để tránh spam hoặc lưu trữ rác
-    await pool.query('DELETE FROM otp_codes WHERE target = ? AND purpose = ? AND used_at IS NULL', [target, purpose]);
-
-    // 5. INSERT vào bảng otp_codes
-    await pool.query(
-      `INSERT INTO otp_codes (target, target_type, otp_hash, purpose, expires_at)
-       VALUES (?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 5 MINUTE))`,
-      [target, target_type, otpHash, purpose]
-    );
-
-    // 6. Gọi nội bộ sang Notification Service
-    try {
-      const endpoint = target_type === 'phone' ? 'sms/send' : 'email/send';
-      // Sử dụng global fetch (Node.js 18+)
-      await fetch(`http://notification-service:8005/api/notification/${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to: target, otp: otpCode, purpose })
-      });
-    } catch (err) {
-      console.error('Call to Notification Service failed:', err);
-    }
-
-    // 7. Trả về response
-    res.json({ success: true, message: 'Gửi OTP thành công', expires_in: 300 });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
+  // TODO: 1. Validate { target: phone|email, target_type, purpose }
+  //       2. Kiểm tra blocked_until trong otp_codes (D4-01 security patch)
+  //       3. Generate 6-digit OTP, hash rồi INSERT INTO otp_codes
+  //       4. Gọi notification-service để gửi SMS/Email
+  //       5. Trả về { message: 'OTP đã được gửi', expires_in: 300 }
+  res.status(501).json({ success: false, message: 'TODO: implement POST /auth/send-otp' });
 });
 
 // POST /auth/verify-otp
 router.post('/verify-otp', async (req, res) => {
-  try {
-    const { target, purpose, otp_code } = req.body;
-
-    // 1. Validate target, purpose, otp_code
-    if (!target || !purpose || !otp_code) {
-      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp target, purpose và otp_code' });
-    }
-
-    // 2. Lệnh SQL SELECT từ otp_codes lấy OTP mới nhất
-    const [[record]] = await pool.query(
-      `SELECT id, otp_hash, attempts FROM otp_codes 
-       WHERE target = ? AND purpose = ? AND used_at IS NULL AND expires_at > NOW() 
-       ORDER BY id DESC LIMIT 1`,
-      [target, purpose]
-    );
-
-    // 3. Nếu không tìm thấy
-    if (!record) {
-      return res.status(400).json({ success: false, message: 'Mã OTP không hợp lệ hoặc đã hết hạn' });
-    }
-
-    if (record.attempts >= 5) {
-      return res.status(400).json({ success: false, message: 'Bạn đã nhập sai quá số lần quy định' });
-    }
-
-    // 4. Dùng bcrypt.compare để so sánh otp_code
-    const isMatch = await bcrypt.compare(otp_code, record.otp_hash);
-    if (!isMatch) {
-      // Nếu SAI: tăng attempts
-      const newAttempts = record.attempts + 1;
-      await pool.query('UPDATE otp_codes SET attempts = ? WHERE id = ?', [newAttempts, record.id]);
-      
-      if (newAttempts >= 5) {
-        return res.status(400).json({ success: false, message: 'Bạn đã nhập sai quá số lần quy định' });
-      } else {
-        return res.status(400).json({ success: false, message: 'Mã OTP không đúng' });
-      }
-    }
-
-    // Nếu ĐÚNG: update used_at
-    await pool.query('UPDATE otp_codes SET used_at = NOW() WHERE id = ?', [record.id]);
-
-    // 5. Trả về response
-    res.json({ success: true, message: 'Xác thực thành công', data: { verified: true } });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
+  // TODO: 1. Validate { target, target_type, purpose, otp_code }
+  //       2. SELECT từ otp_codes WHERE target=? AND purpose=? AND used_at IS NULL AND expires_at > NOW()
+  //       3. So sánh otp_code với giá trị lưu (hoặc hash)
+  //       4. UPDATE otp_codes SET used_at = NOW()
+  //       5. Nếu purpose='register' → kích hoạt tài khoản
+  res.status(501).json({ success: false, message: 'TODO: implement POST /auth/verify-otp' });
 });
 
 // POST /auth/refresh
@@ -602,7 +524,7 @@ router.post('/refresh', async (req, res) => {
     let payload;
     if (decoded.type === 'staff') {
       const [[user]] = await pool.query(
-        `SELECT u.id, r.name AS role_name, r.permissions
+        `SELECT u.id, r.name AS role_name
          FROM users u LEFT JOIN roles r ON r.id = u.role_id
          WHERE u.id = ? AND u.is_active = 1`,
         [decoded.id]
@@ -610,7 +532,7 @@ router.post('/refresh', async (req, res) => {
       if (!user) {
         return res.status(401).json({ success: false, message: 'Tài khoản không tồn tại hoặc đã bị khoá' });
       }
-      payload = { id: user.id, role: user.role_name, type: 'staff', permissions: user.permissions };
+      payload = { id: user.id, role: user.role_name, type: 'staff' };
     } else {
       const [[customer]] = await pool.query(
         'SELECT id FROM customers WHERE id = ? AND is_active = 1 AND deleted_at IS NULL',
