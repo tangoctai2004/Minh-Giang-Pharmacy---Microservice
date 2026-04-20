@@ -166,6 +166,14 @@ docker-compose down
 
 # Dừng và xóa dữ liệu (reset database)
 docker-compose down -v
+
+# LƯU Ý QUAN TRỌNG KHI CHẠY LẦN ĐẦU TIÊN:
+# Ở lần chạy đầu, MySQL cần nhiều thời gian để setup database. 
+# Điều này làm các API bị lỗi kết nối mạng (ECONNREFUSED) và bị treo do dùng nodemon.
+# BẠN CẦN LÀM THÊM BƯỚC NÀY:
+# 1. Chờ khoảng 15-20 giây sau khi up -d
+# 2. Khởi động lại tất cả các container API để kết nối lại thành công:
+docker-compose restart
 ```
 
 **Kiểm tra hoạt động:**

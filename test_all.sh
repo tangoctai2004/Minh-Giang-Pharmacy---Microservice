@@ -31,10 +31,11 @@ chk "POST /auth/pos/verify-pin (route ok)" "False" "$R"
 R=$(curl -s $BASE/auth/login-pos -H 'Content-Type: application/json' -d '{"username":"admin","password":"admin123","kiosk_id":"POS-01"}')
 chk "POST /auth/login-pos (legacy)" "False" "$R"
 
-R=$(curl -s $BASE/auth/register -H 'Content-Type: application/json' -d '{"full_name":"RegTest","email":"regtest_'$RANDOM'@test.com","phone":"09'$RANDOM'55","password":"Test@123"}')
+RANDOM_EMAIL="regtest_${RANDOM}@test.com"
+R=$(curl -s $BASE/auth/register -H 'Content-Type: application/json' -d '{"full_name":"RegTest","email":"'$RANDOM_EMAIL'","phone":"09'$RANDOM'55","password":"Test@123"}')
 chk "POST /auth/register" "True" "$R"
 
-R=$(curl -s $BASE/auth/login -H 'Content-Type: application/json' -d '{"email_or_phone":"testcheck@test.com","password":"Test@789"}')
+R=$(curl -s $BASE/auth/login -H 'Content-Type: application/json' -d '{"email_or_phone":"'$RANDOM_EMAIL'","password":"Test@123"}')
 chk "POST /auth/login (customer)" "True" "$R"
 CUST_TOKEN=$(echo "$R" | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['accessToken'])" 2>/dev/null)
 CUST_REFRESH=$(echo "$R" | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['refreshToken'])" 2>/dev/null)
@@ -64,7 +65,7 @@ chk "GET /customers/:id/addresses" "True" "$R"
 
 echo ""
 echo "═══════ 4. AUTH FEATURES ═══════"
-R=$(curl -s -X PUT $BASE/auth/change-password -H "Authorization: Bearer $CUST_TOKEN" -H 'Content-Type: application/json' -d '{"current_password":"Test@789","new_password":"Test@000","confirm_password":"Test@000"}')
+R=$(curl -s -X PUT $BASE/auth/change-password -H "Authorization: Bearer $CUST_TOKEN" -H 'Content-Type: application/json' -d '{"current_password":"Test@123","new_password":"Test@000","confirm_password":"Test@000"}')
 chk "PUT /auth/change-password" "True" "$R"
 
 R=$(curl -s $BASE/auth/refresh -H 'Content-Type: application/json' -d "{\"refreshToken\":\"$CUST_REFRESH\"}")
