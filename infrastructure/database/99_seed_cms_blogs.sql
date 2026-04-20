@@ -1,6 +1,15 @@
 -- MOCK BLOGS: 50 BÀI VIẾT TỪ TRUNG SƠN CARE
 USE mg_cms;
 
+-- Tạo danh mục trước để tránh lỗi Foreign Key Constraint (id=1, id=2)
+INSERT IGNORE INTO cms_categories (id, name, slug, type) VALUES 
+(1, 'Sức khoẻ tổng quát', 'suc-khoe-tong-quat', 'article'),
+(2, 'Kiến thức bệnh lý', 'kien-thuc-benh-ly', 'disease'),
+(3, 'Tư vấn dùng thuốc', 'tu-van-dung-thuoc', 'article'),
+(4, 'Tin tức y tế', 'tin-tuc-y-te', 'article'),
+(5, 'Chương trình KM', 'chuong-trinh-khuyen-mai', 'promotion'),
+(6, 'Người cao tuổi', 'nguoi-cao-tuoi', 'article');
+
 INSERT IGNORE INTO articles (title, slug, content, excerpt, thumbnail_url, category_id, tags, status, published_at, view_count) VALUES ('Triệu chứng ung thư vòm họng: Nhận biết sớm để tăng cơ hội chữa khỏi', 'trieu-chung-ung-thu-vom-hong-nhan-biet-som-de-tang-co-hoi-chua-khoi', '<a title="Chương trình khuyến mãi tháng 04" href="https://trungsoncare.com/khuyen-mai-trung-son" target="_blank" rel="noopener"><img src="https://cdn.trungsoncare.com/storage/uploads/Blog/2026/04/Chuong-trinh-khuyen-mai-1%20(1).png" alt="Chương trình khuyến mãi tháng 04" width="100%" height="100%"></a>', '', 'http://trungsoncare.com/images/detailed/29/trieu-chung-ung-thu-vom-hong-nhan-biet-som-de-tang-co-hoi-chua-khoi-1.png', 2, '["benh-ly","suc-khoe","tu-van"]', 'published', NOW(), 140); 
 INSERT IGNORE INTO articles (title, slug, content, excerpt, thumbnail_url, category_id, tags, status, published_at, view_count) VALUES ('04 Bước Chăm Sóc Da Body Mướt Mịn, Trắng Sáng Tại Nhà', '04-buoc-cham-soc-da-body-muot-min-trang-sang-tai-nha', '<a title="Chương trình khuyến mãi tháng 04" href="https://trungsoncare.com/khuyen-mai-trung-son" target="_blank" rel="noopener"><img src="https://cdn.trungsoncare.com/storage/uploads/Blog/2026/04/Chuong-trinh-khuyen-mai-1%20(1).png" alt="Chương trình khuyến mãi tháng 04" width="100%" height="100%"></a>', '', 'http://trungsoncare.com/images/detailed/29/thumbnail-cham-soc-da-body.jpg', 1, '["suc-khoe-tong-quat","suc-khoe","tu-van"]', 'published', NOW(), 647); 
 INSERT IGNORE INTO articles (title, slug, content, excerpt, thumbnail_url, category_id, tags, status, published_at, view_count) VALUES ('Trĩ Nội, Trĩ Ngoại: 4 Dấu Hiệu Cảnh Báo Bệnh Trĩ Thường Gặp', 'tri-noi-tri-ngoai', '<a title="Chương trình khuyến mãi tháng 04" href="https://trungsoncare.com/khuyen-mai-trung-son" target="_blank" rel="noopener"><img src="https://cdn.trungsoncare.com/storage/uploads/Blog/2026/04/Chuong-trinh-khuyen-mai-1%20(1).png" alt="Chương trình khuyến mãi tháng 04" width="100%" height="100%"></a>', '', 'http://trungsoncare.com/images/detailed/32/tri-noi-tri-ngoai-1.jpg', 2, '["benh-ly","suc-khoe","tu-van"]', 'published', NOW(), 572); 
