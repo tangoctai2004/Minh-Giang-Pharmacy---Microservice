@@ -18,7 +18,6 @@ FILES=(
   "mg_order.sql"
   "mg_cms.sql"
   "mg_notification.sql"
-  "mg_security_patches.sql"
 )
 
 echo "================================================"

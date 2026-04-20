@@ -1,0 +1,1292 @@
+[
+  {
+    "id": 1,
+    "name": "Thuốc",
+    "slug": "thuoc",
+    "parent_id": null
+  },
+  {
+    "id": 2,
+    "name": "Thuốc dạ dày",
+    "slug": "thuoc-da-day",
+    "parent_id": 1
+  },
+  {
+    "id": 3,
+    "name": "Thuốc đầy hơi, buồn nôn",
+    "slug": "thuoc-day-hoi-buon-non",
+    "parent_id": 1
+  },
+  {
+    "id": 4,
+    "name": "Men tiêu hoá - vi sinh",
+    "slug": "men-tieu-hoa-vi-sinh",
+    "parent_id": 1
+  },
+  {
+    "id": 5,
+    "name": "Thuốc nhuận tràng - trị táo bón",
+    "slug": "thuoc-nhuan-trang-tri-tao-bon",
+    "parent_id": 1
+  },
+  {
+    "id": 6,
+    "name": "Thuốc trị tiêu chảy",
+    "slug": "thuoc-tri-tieu-chay",
+    "parent_id": 1
+  },
+  {
+    "id": 7,
+    "name": "Thuốc trị bệnh gan - mật",
+    "slug": "thuoc-tri-benh-gan-mat",
+    "parent_id": 1
+  },
+  {
+    "id": 8,
+    "name": "Thuốc cảm",
+    "slug": "thuoc-cam",
+    "parent_id": 1
+  },
+  {
+    "id": 9,
+    "name": "Thuốc ho - long đờm",
+    "slug": "thuoc-ho-long-dom",
+    "parent_id": 1
+  },
+  {
+    "id": 10,
+    "name": "Thuốc trị hen suyễn - COPD",
+    "slug": "thuoc-tri-hen-suyen-copd",
+    "parent_id": 1
+  },
+  {
+    "id": 11,
+    "name": "Thuốc giảm đau - hạ sốt",
+    "slug": "thuoc-giam-dau-ha-sot",
+    "parent_id": 1
+  },
+  {
+    "id": 12,
+    "name": "Thuốc giảm đau xương khớp",
+    "slug": "thuoc-giam-dau-xuong-khop",
+    "parent_id": 1
+  },
+  {
+    "id": 13,
+    "name": "Thuốc chống viêm NSAIDs",
+    "slug": "thuoc-chong-viem-nsaids",
+    "parent_id": 1
+  },
+  {
+    "id": 14,
+    "name": "Thuốc huyết áp",
+    "slug": "thuoc-huyet-ap",
+    "parent_id": 1
+  },
+  {
+    "id": 15,
+    "name": "Thuốc tim mạch",
+    "slug": "thuoc-tim-mach",
+    "parent_id": 1
+  },
+  {
+    "id": 16,
+    "name": "Thuốc giảm mỡ máu - Cholesterol",
+    "slug": "thuoc-giam-mo-mau-cholesterol",
+    "parent_id": 1
+  },
+  {
+    "id": 17,
+    "name": "Thuốc cầm máu - Chống đông",
+    "slug": "thuoc-cam-mau-chong-dong",
+    "parent_id": 1
+  },
+  {
+    "id": 18,
+    "name": "Thuốc trị thiếu máu (bổ máu, sắt)",
+    "slug": "thuoc-tri-thieu-mau-bo-mau-sat",
+    "parent_id": 1
+  },
+  {
+    "id": 19,
+    "name": "Thuốc tăng tuần hoàn não",
+    "slug": "thuoc-tang-tuan-hoan-nao",
+    "parent_id": 1
+  },
+  {
+    "id": 20,
+    "name": "Thuốc bổ - Vitamin",
+    "slug": "thuoc-bo-vitamin",
+    "parent_id": 1
+  },
+  {
+    "id": 21,
+    "name": "Thuốc bổ xương khớp, canxi",
+    "slug": "thuoc-bo-xuong-khop-canxi",
+    "parent_id": 1
+  },
+  {
+    "id": 22,
+    "name": "Siro bổ trẻ em",
+    "slug": "siro-bo-tre-em",
+    "parent_id": 1
+  },
+  {
+    "id": 23,
+    "name": "Thuốc tăng cường đề kháng",
+    "slug": "thuoc-tang-cuong-de-khang",
+    "parent_id": 1
+  },
+  {
+    "id": 24,
+    "name": "Thuốc bù điện giải",
+    "slug": "thuoc-bu-dien-giai",
+    "parent_id": 1
+  },
+  {
+    "id": 25,
+    "name": "Thuốc kháng sinh",
+    "slug": "thuoc-khang-sinh",
+    "parent_id": 1
+  },
+  {
+    "id": 26,
+    "name": "Thuốc kháng virus",
+    "slug": "thuoc-khang-virus",
+    "parent_id": 1
+  },
+  {
+    "id": 27,
+    "name": "Thuốc kháng nấm",
+    "slug": "thuoc-khang-nam",
+    "parent_id": 1
+  },
+  {
+    "id": 28,
+    "name": "Thuốc trị giun sán",
+    "slug": "thuoc-tri-giun-san",
+    "parent_id": 1
+  },
+  {
+    "id": 29,
+    "name": "Thuốc trị sốt rét",
+    "slug": "thuoc-tri-sot-ret",
+    "parent_id": 1
+  },
+  {
+    "id": 30,
+    "name": "Thuốc trị lao",
+    "slug": "thuoc-tri-lao",
+    "parent_id": 1
+  },
+  {
+    "id": 31,
+    "name": "Thuốc bôi trị mụn",
+    "slug": "thuoc-boi-tri-mun",
+    "parent_id": 1
+  },
+  {
+    "id": 32,
+    "name": "Thuốc bôi trị sẹo",
+    "slug": "thuoc-boi-tri-seo",
+    "parent_id": 1
+  },
+  {
+    "id": 33,
+    "name": "Thuốc trị nấm da",
+    "slug": "thuoc-tri-nam-da",
+    "parent_id": 1
+  },
+  {
+    "id": 34,
+    "name": "Thuốc khử trùng, sát khuẩn",
+    "slug": "thuoc-khu-trung-sat-khuan",
+    "parent_id": 1
+  },
+  {
+    "id": 35,
+    "name": "Dầu gội trị gàu",
+    "slug": "dau-goi-tri-gau",
+    "parent_id": 1
+  },
+  {
+    "id": 36,
+    "name": "Trị bệnh da liễu",
+    "slug": "tri-benh-da-lieu",
+    "parent_id": 1
+  },
+  {
+    "id": 37,
+    "name": "Thuốc an thần, chống lo âu - Ngủ ngon",
+    "slug": "thuoc-an-than-chong-lo-au-ngu-ngon",
+    "parent_id": 1
+  },
+  {
+    "id": 38,
+    "name": "Thuốc bổ não - Tuần hoàn não",
+    "slug": "thuoc-bo-nao-tuan-hoan-nao",
+    "parent_id": 1
+  },
+  {
+    "id": 39,
+    "name": "Thuốc trị đau nửa đầu",
+    "slug": "thuoc-tri-dau-nua-dau",
+    "parent_id": 1
+  },
+  {
+    "id": 40,
+    "name": "Thuốc trị trầm cảm",
+    "slug": "thuoc-tri-tram-cam",
+    "parent_id": 1
+  },
+  {
+    "id": 41,
+    "name": "Thuốc chống co giật",
+    "slug": "thuoc-chong-co-giat",
+    "parent_id": 1
+  },
+  {
+    "id": 42,
+    "name": "Thuốc điều trị Parkinson",
+    "slug": "thuoc-dieu-tri-parkinson",
+    "parent_id": 1
+  },
+  {
+    "id": 43,
+    "name": "Thuốc phụ khoa",
+    "slug": "thuoc-phu-khoa",
+    "parent_id": 1
+  },
+  {
+    "id": 44,
+    "name": "Dung dịch vệ sinh phụ nữ",
+    "slug": "dung-dich-ve-sinh-phu-nu",
+    "parent_id": 1
+  },
+  {
+    "id": 45,
+    "name": "Thuốc điều hòa kinh nguyệt",
+    "slug": "thuoc-dieu-hoa-kinh-nguyet",
+    "parent_id": 1
+  },
+  {
+    "id": 46,
+    "name": "Thuốc ngừa thai, tránh thai",
+    "slug": "thuoc-ngua-thai-tranh-thai",
+    "parent_id": 1
+  },
+  {
+    "id": 47,
+    "name": "Thuốc rối loạn cương dương - Tiền liệt",
+    "slug": "thuoc-roi-loan-cuong-duong-tien-liet",
+    "parent_id": 1
+  },
+  {
+    "id": 48,
+    "name": "Thuốc trị bệnh tuyến giáp",
+    "slug": "thuoc-tri-benh-tuyen-giap",
+    "parent_id": 1
+  },
+  {
+    "id": 49,
+    "name": "Thuốc viêm khớp - Thoái hóa",
+    "slug": "thuoc-viem-khop-thoai-hoa",
+    "parent_id": 1
+  },
+  {
+    "id": 50,
+    "name": "Thuốc trị gout",
+    "slug": "thuoc-tri-gout",
+    "parent_id": 1
+  },
+  {
+    "id": 51,
+    "name": "Thuốc giãn cơ",
+    "slug": "thuoc-gian-co",
+    "parent_id": 1
+  },
+  {
+    "id": 52,
+    "name": "Bổ xương khớp",
+    "slug": "bo-xuong-khop",
+    "parent_id": 1
+  },
+  {
+    "id": 53,
+    "name": "Thuốc nhỏ mắt, tra mắt",
+    "slug": "thuoc-nho-mat-tra-mat",
+    "parent_id": 1
+  },
+  {
+    "id": 54,
+    "name": "Thuốc nhỏ tai",
+    "slug": "thuoc-nho-tai",
+    "parent_id": 1
+  },
+  {
+    "id": 55,
+    "name": "Thuốc sổ mũi - xịt mũi - viêm xoang",
+    "slug": "thuoc-so-mui-xit-mui-viem-xoang",
+    "parent_id": 1
+  },
+  {
+    "id": 56,
+    "name": "Viên ngậm - xịt họng - viêm họng",
+    "slug": "vien-ngam-xit-hong-viem-hong",
+    "parent_id": 1
+  },
+  {
+    "id": 57,
+    "name": "Thuốc súc miệng, bôi răng miệng",
+    "slug": "thuoc-suc-mieng-boi-rang-mieng",
+    "parent_id": 1
+  },
+  {
+    "id": 58,
+    "name": "Thuốc tiểu đường - đái tháo đường",
+    "slug": "thuoc-tieu-duong-dai-thao-duong",
+    "parent_id": 1
+  },
+  {
+    "id": 59,
+    "name": "Hỗ trợ hạ đường huyết",
+    "slug": "ho-tro-ha-duong-huyet",
+    "parent_id": 1
+  },
+  {
+    "id": 60,
+    "name": "Thuốc tiêm",
+    "slug": "thuoc-tiem",
+    "parent_id": 1
+  },
+  {
+    "id": 61,
+    "name": "Dịch truyền - bù nước điện giải",
+    "slug": "dich-truyen-bu-nuoc-dien-giai",
+    "parent_id": 1
+  },
+  {
+    "id": 62,
+    "name": "Thuốc chống dị ứng",
+    "slug": "thuoc-chong-di-ung",
+    "parent_id": 1
+  },
+  {
+    "id": 63,
+    "name": "Thuốc say tàu xe",
+    "slug": "thuoc-say-tau-xe",
+    "parent_id": 1
+  },
+  {
+    "id": 64,
+    "name": "Thuốc cai thuốc lá, ma túy",
+    "slug": "thuoc-cai-thuoc-la-ma-tuy",
+    "parent_id": 1
+  },
+  {
+    "id": 65,
+    "name": "Thuốc giải độc - cấp cứu",
+    "slug": "thuoc-giai-doc-cap-cuu",
+    "parent_id": 1
+  },
+  {
+    "id": 66,
+    "name": "Thuốc điều trị ung thư",
+    "slug": "thuoc-dieu-tri-ung-thu",
+    "parent_id": 1
+  },
+  {
+    "id": 67,
+    "name": "Thuốc tăng miễn dịch",
+    "slug": "thuoc-tang-mien-dich",
+    "parent_id": 1
+  },
+  {
+    "id": 68,
+    "name": "Thuốc điều trị bệnh tự miễn",
+    "slug": "thuoc-dieu-tri-benh-tu-mien",
+    "parent_id": 1
+  },
+  {
+    "id": 69,
+    "name": "Thực phẩm chức năng",
+    "slug": "thuc-pham-chuc-nang",
+    "parent_id": null
+  },
+  {
+    "id": 70,
+    "name": "Vitamin nhóm B (B1, B6, B12)",
+    "slug": "vitamin-nhom-b-b1-b6-b12",
+    "parent_id": 69
+  },
+  {
+    "id": 71,
+    "name": "Vitamin C",
+    "slug": "vitamin-c",
+    "parent_id": 69
+  },
+  {
+    "id": 72,
+    "name": "Canxi và vitamin D",
+    "slug": "canxi-va-vitamin-d",
+    "parent_id": 69
+  },
+  {
+    "id": 73,
+    "name": "Vitamin E",
+    "slug": "vitamin-e",
+    "parent_id": 69
+  },
+  {
+    "id": 74,
+    "name": "Vitamin tổng hợp",
+    "slug": "vitamin-tong-hop",
+    "parent_id": 69
+  },
+  {
+    "id": 75,
+    "name": "Kẽm & Magie",
+    "slug": "kem-and-magie",
+    "parent_id": 69
+  },
+  {
+    "id": 76,
+    "name": "Hỗ trợ dạ dày, tá tràng",
+    "slug": "ho-tro-da-day-ta-trang",
+    "parent_id": 69
+  },
+  {
+    "id": 77,
+    "name": "Nhuận tràng, táo bón",
+    "slug": "nhuan-trang-tao-bon",
+    "parent_id": 69
+  },
+  {
+    "id": 78,
+    "name": "Enzyme tiêu hóa",
+    "slug": "enzyme-tieu-hoa",
+    "parent_id": 69
+  },
+  {
+    "id": 79,
+    "name": "Men vi sinh (Probiotics)",
+    "slug": "men-vi-sinh-probiotics",
+    "parent_id": 69
+  },
+  {
+    "id": 80,
+    "name": "Chất xơ hỗ trợ tiêu hóa",
+    "slug": "chat-xo-ho-tro-tieu-hoa",
+    "parent_id": 69
+  },
+  {
+    "id": 81,
+    "name": "Hỗ trợ tiêu hóa & trao đổi chất",
+    "slug": "ho-tro-tieu-hoa-and-trao-doi-chat",
+    "parent_id": 69
+  },
+  {
+    "id": 82,
+    "name": "Hỗ trợ chức năng gan",
+    "slug": "ho-tro-chuc-nang-gan",
+    "parent_id": 69
+  },
+  {
+    "id": 83,
+    "name": "Hỗ trợ giải rượu, cai rượu",
+    "slug": "ho-tro-giai-ruou-cai-ruou",
+    "parent_id": 69
+  },
+  {
+    "id": 84,
+    "name": "Hỗ trợ trí não & thần kinh",
+    "slug": "ho-tro-tri-nao-and-than-kinh",
+    "parent_id": 69
+  },
+  {
+    "id": 85,
+    "name": "Cải thiện trí nhớ",
+    "slug": "cai-thien-tri-nho",
+    "parent_id": 69
+  },
+  {
+    "id": 86,
+    "name": "Hỗ trợ giấc ngủ ngon",
+    "slug": "ho-tro-giac-ngu-ngon",
+    "parent_id": 69
+  },
+  {
+    "id": 87,
+    "name": "Hỗ trợ tuần hoàn máu",
+    "slug": "ho-tro-tuan-hoan-mau",
+    "parent_id": 69
+  },
+  {
+    "id": 88,
+    "name": "Hỗ trợ hoạt huyết",
+    "slug": "ho-tro-hoat-huyet",
+    "parent_id": 69
+  },
+  {
+    "id": 89,
+    "name": "Hỗ trợ thần kinh khác",
+    "slug": "ho-tro-than-kinh-khac",
+    "parent_id": 69
+  },
+  {
+    "id": 90,
+    "name": "Hỗ trợ giảm cholesterol, mỡ máu",
+    "slug": "ho-tro-giam-cholesterol-mo-mau",
+    "parent_id": 69
+  },
+  {
+    "id": 91,
+    "name": "Hỗ trợ huyết áp",
+    "slug": "ho-tro-huyet-ap",
+    "parent_id": 69
+  },
+  {
+    "id": 92,
+    "name": "Hỗ trợ mạch máu",
+    "slug": "ho-tro-mach-mau",
+    "parent_id": 69
+  },
+  {
+    "id": 93,
+    "name": "Ngừa xơ vữa, tai biến",
+    "slug": "ngua-xo-vua-tai-bien",
+    "parent_id": 69
+  },
+  {
+    "id": 94,
+    "name": "Bảo vệ tim mạch",
+    "slug": "bao-ve-tim-mach",
+    "parent_id": 69
+  },
+  {
+    "id": 95,
+    "name": "Bổ thận, tiết niệu",
+    "slug": "bo-than-tiet-nieu",
+    "parent_id": 69
+  },
+  {
+    "id": 96,
+    "name": "Sinh lý nữ",
+    "slug": "sinh-ly-nu",
+    "parent_id": 69
+  },
+  {
+    "id": 97,
+    "name": "Hỗ trợ mãn kinh & nội tiết",
+    "slug": "ho-tro-man-kinh-and-noi-tiet",
+    "parent_id": 69
+  },
+  {
+    "id": 98,
+    "name": "Sinh lý nam",
+    "slug": "sinh-ly-nam",
+    "parent_id": 69
+  },
+  {
+    "id": 99,
+    "name": "Hỗ trợ tuyến tiền liệt",
+    "slug": "ho-tro-tuyen-tien-liet",
+    "parent_id": 69
+  },
+  {
+    "id": 100,
+    "name": "Kiểm soát cân nặng & giảm cân",
+    "slug": "kiem-soat-can-nang-and-giam-can",
+    "parent_id": 69
+  },
+  {
+    "id": 101,
+    "name": "Hỗ trợ chuyển hóa và sức khỏe tổng quát",
+    "slug": "ho-tro-chuyen-hoa-va-suc-khoe-tong-quat",
+    "parent_id": 69
+  },
+  {
+    "id": 102,
+    "name": "Chăm sóc da",
+    "slug": "cham-soc-da",
+    "parent_id": 69
+  },
+  {
+    "id": 103,
+    "name": "Chăm sóc tóc, móng",
+    "slug": "cham-soc-toc-mong",
+    "parent_id": 69
+  },
+  {
+    "id": 104,
+    "name": "Chống lão hóa",
+    "slug": "chong-lao-hoa",
+    "parent_id": 69
+  },
+  {
+    "id": 105,
+    "name": "Xương khớp tổng hợp",
+    "slug": "xuong-khop-tong-hop",
+    "parent_id": 69
+  },
+  {
+    "id": 106,
+    "name": "Giảm viêm và đau khớp",
+    "slug": "giam-viem-va-dau-khop",
+    "parent_id": 69
+  },
+  {
+    "id": 107,
+    "name": "Hỗ trợ tái tạo sụn và dịch khớp",
+    "slug": "ho-tro-tai-tao-sun-va-dich-khop",
+    "parent_id": 69
+  },
+  {
+    "id": 108,
+    "name": "Bổ phế, hô hấp",
+    "slug": "bo-phe-ho-hap",
+    "parent_id": 69
+  },
+  {
+    "id": 109,
+    "name": "Giảm ho, đau họng",
+    "slug": "giam-ho-dau-hong",
+    "parent_id": 69
+  },
+  {
+    "id": 110,
+    "name": "Giảm viêm đường hô hấp",
+    "slug": "giam-viem-duong-ho-hap",
+    "parent_id": 69
+  },
+  {
+    "id": 111,
+    "name": "Chức năng hô hấp tổng hợp",
+    "slug": "chuc-nang-ho-hap-tong-hop",
+    "parent_id": 69
+  },
+  {
+    "id": 112,
+    "name": "Kẹo ngậm giảm ho, đau họng",
+    "slug": "keo-ngam-giam-ho-dau-hong",
+    "parent_id": 69
+  },
+  {
+    "id": 113,
+    "name": "Hỗ trợ thận, tiết niệu",
+    "slug": "ho-tro-than-tiet-nieu",
+    "parent_id": 69
+  },
+  {
+    "id": 114,
+    "name": "Hỗ trợ đường huyết & chuyển hóa",
+    "slug": "ho-tro-duong-huyet-and-chuyen-hoa",
+    "parent_id": 69
+  },
+  {
+    "id": 115,
+    "name": "Hỗ trợ điều trị ung thư, chống ung thư",
+    "slug": "ho-tro-dieu-tri-ung-thu-chong-ung-thu",
+    "parent_id": 69
+  },
+  {
+    "id": 116,
+    "name": "Hỗ trợ điều trị trĩ",
+    "slug": "ho-tro-dieu-tri-tri",
+    "parent_id": 69
+  },
+  {
+    "id": 117,
+    "name": "Hỗ trợ giảm Acid Uric & Gout",
+    "slug": "ho-tro-giam-acid-uric-and-gout",
+    "parent_id": 69
+  },
+  {
+    "id": 118,
+    "name": "Hỗ trợ tuyến giáp",
+    "slug": "ho-tro-tuyen-giap",
+    "parent_id": 69
+  },
+  {
+    "id": 119,
+    "name": "Tăng cường đề kháng, miễn dịch",
+    "slug": "tang-cuong-de-khang-mien-dich",
+    "parent_id": 69
+  },
+  {
+    "id": 120,
+    "name": "Hỗ trợ trao đổi chất",
+    "slug": "ho-tro-trao-doi-chat",
+    "parent_id": 69
+  },
+  {
+    "id": 121,
+    "name": "Dinh dưỡng tổng hợp",
+    "slug": "dinh-duong-tong-hop",
+    "parent_id": 69
+  },
+  {
+    "id": 122,
+    "name": "Sữa dinh dưỡng",
+    "slug": "sua-dinh-duong",
+    "parent_id": 69
+  },
+  {
+    "id": 123,
+    "name": "Hỗ trợ mắt & thị lực",
+    "slug": "ho-tro-mat-and-thi-luc",
+    "parent_id": 69
+  },
+  {
+    "id": 124,
+    "name": "Sữa cho bé",
+    "slug": "sua-cho-be",
+    "parent_id": 69
+  },
+  {
+    "id": 125,
+    "name": "Nhân sâm, Đông trùng hạ thảo, Nấm linh chi",
+    "slug": "nhan-sam-dong-trung-ha-thao-nam-linh-chi",
+    "parent_id": 69
+  },
+  {
+    "id": 126,
+    "name": "Tảo",
+    "slug": "tao",
+    "parent_id": 69
+  },
+  {
+    "id": 127,
+    "name": "Thảo dược khác",
+    "slug": "thao-duoc-khac",
+    "parent_id": 69
+  },
+  {
+    "id": 128,
+    "name": "Dược mỹ phẩm",
+    "slug": "duoc-my-pham",
+    "parent_id": null
+  },
+  {
+    "id": 129,
+    "name": "Sữa rửa mặt (Sữa, kem, gel)",
+    "slug": "sua-rua-mat-sua-kem-gel",
+    "parent_id": 128
+  },
+  {
+    "id": 130,
+    "name": "Toner (nước hoa hồng), xịt khoáng",
+    "slug": "toner-nuoc-hoa-hong-xit-khoang",
+    "parent_id": 128
+  },
+  {
+    "id": 131,
+    "name": "Serum & Tinh chất dưỡng da",
+    "slug": "serum-and-tinh-chat-duong-da",
+    "parent_id": 128
+  },
+  {
+    "id": 132,
+    "name": "Kem dưỡng ẩm",
+    "slug": "kem-duong-am",
+    "parent_id": 128
+  },
+  {
+    "id": 133,
+    "name": "Kem, xịt chống nắng da mặt",
+    "slug": "kem-xit-chong-nang-da-mat",
+    "parent_id": 128
+  },
+  {
+    "id": 134,
+    "name": "Mặt nạ dưỡng da",
+    "slug": "mat-na-duong-da",
+    "parent_id": 128
+  },
+  {
+    "id": 135,
+    "name": "Sữa tắm, xà phòng",
+    "slug": "sua-tam-xa-phong",
+    "parent_id": 128
+  },
+  {
+    "id": 136,
+    "name": "Dưỡng thể, dầu dưỡng",
+    "slug": "duong-the-dau-duong",
+    "parent_id": 128
+  },
+  {
+    "id": 137,
+    "name": "Lăn khử mùi & Xịt khử mùi",
+    "slug": "lan-khu-mui-and-xit-khu-mui",
+    "parent_id": 128
+  },
+  {
+    "id": 138,
+    "name": "Chống nắng cơ thể",
+    "slug": "chong-nang-co-the",
+    "parent_id": 128
+  },
+  {
+    "id": 139,
+    "name": "Dưỡng da tay & chân",
+    "slug": "duong-da-tay-and-chan",
+    "parent_id": 128
+  },
+  {
+    "id": 140,
+    "name": "Muối tắm - Tẩy tế bào chết",
+    "slug": "muoi-tam-tay-te-bao-chet",
+    "parent_id": 128
+  },
+  {
+    "id": 141,
+    "name": "Dầu gội & dầu xả",
+    "slug": "dau-goi-and-dau-xa",
+    "parent_id": 128
+  },
+  {
+    "id": 142,
+    "name": "Dầu dưỡng tóc & Serum tóc",
+    "slug": "dau-duong-toc-and-serum-toc",
+    "parent_id": 128
+  },
+  {
+    "id": 143,
+    "name": "Kem ủ tóc & Mặt nạ tóc",
+    "slug": "kem-u-toc-and-mat-na-toc",
+    "parent_id": 128
+  },
+  {
+    "id": 144,
+    "name": "Trị nấm, gàu, rụng tóc",
+    "slug": "tri-nam-gau-rung-toc",
+    "parent_id": 128
+  },
+  {
+    "id": 145,
+    "name": "Nhuộm tóc & Phủ bạc",
+    "slug": "nhuom-toc-and-phu-bac",
+    "parent_id": 128
+  },
+  {
+    "id": 146,
+    "name": "Son môi, dưỡng môi",
+    "slug": "son-moi-duong-moi",
+    "parent_id": 128
+  },
+  {
+    "id": 147,
+    "name": "Trang điểm mặt",
+    "slug": "trang-diem-mat",
+    "parent_id": 128
+  },
+  {
+    "id": 148,
+    "name": "Ngừa mụn & Trị mụn",
+    "slug": "ngua-mun-and-tri-mun",
+    "parent_id": 128
+  },
+  {
+    "id": 149,
+    "name": "Trị nám & Tàn nhang",
+    "slug": "tri-nam-and-tan-nhang",
+    "parent_id": 128
+  },
+  {
+    "id": 150,
+    "name": "Dưỡng trắng da",
+    "slug": "duong-trang-da",
+    "parent_id": 128
+  },
+  {
+    "id": 151,
+    "name": "Tái tạo & chống lão hóa da",
+    "slug": "tai-tao-and-chong-lao-hoa-da",
+    "parent_id": 128
+  },
+  {
+    "id": 152,
+    "name": "Dưỡng da mắt",
+    "slug": "duong-da-mat",
+    "parent_id": 128
+  },
+  {
+    "id": 153,
+    "name": "Trị sẹo & Mờ thâm",
+    "slug": "tri-seo-and-mo-tham",
+    "parent_id": 128
+  },
+  {
+    "id": 154,
+    "name": "Dành cho da nhạy cảm",
+    "slug": "danh-cho-da-nhay-cam",
+    "parent_id": 128
+  },
+  {
+    "id": 155,
+    "name": "Mỹ phẩm hữu cơ & Thiên nhiên",
+    "slug": "my-pham-huu-co-and-thien-nhien",
+    "parent_id": 128
+  },
+  {
+    "id": 156,
+    "name": "Khăn, bông tẩy trang",
+    "slug": "khan-bong-tay-trang",
+    "parent_id": 128
+  },
+  {
+    "id": 157,
+    "name": "Cọ trang điểm & Bông mút",
+    "slug": "co-trang-diem-and-bong-mut",
+    "parent_id": 128
+  },
+  {
+    "id": 158,
+    "name": "Dao cạo & Tẩy lông",
+    "slug": "dao-cao-and-tay-long",
+    "parent_id": 128
+  },
+  {
+    "id": 159,
+    "name": "Kẻ mày",
+    "slug": "ke-may",
+    "parent_id": 128
+  },
+  {
+    "id": 160,
+    "name": "Mascara & Kẻ mắt",
+    "slug": "mascara-and-ke-mat",
+    "parent_id": 128
+  },
+  {
+    "id": 161,
+    "name": "Chăm sóc cá nhân",
+    "slug": "cham-soc-ca-nhan",
+    "parent_id": null
+  },
+  {
+    "id": 162,
+    "name": "Kem đánh răng",
+    "slug": "kem-danh-rang",
+    "parent_id": 161
+  },
+  {
+    "id": 163,
+    "name": "Nước súc miệng",
+    "slug": "nuoc-suc-mieng",
+    "parent_id": 161
+  },
+  {
+    "id": 164,
+    "name": "Tăm, chỉ nha khoa",
+    "slug": "tam-chi-nha-khoa",
+    "parent_id": 161
+  },
+  {
+    "id": 165,
+    "name": "Bàn chải đánh răng",
+    "slug": "ban-chai-danh-rang",
+    "parent_id": 161
+  },
+  {
+    "id": 166,
+    "name": "Xịt răng miệng",
+    "slug": "xit-rang-mieng",
+    "parent_id": 161
+  },
+  {
+    "id": 167,
+    "name": "Bao cao su",
+    "slug": "bao-cao-su",
+    "parent_id": 161
+  },
+  {
+    "id": 168,
+    "name": "Gel bôi trơn",
+    "slug": "gel-boi-tron",
+    "parent_id": 161
+  },
+  {
+    "id": 169,
+    "name": "Sữa nước",
+    "slug": "sua-nuoc",
+    "parent_id": 161
+  },
+  {
+    "id": 170,
+    "name": "Nước yến, tổ yến",
+    "slug": "nuoc-yen-to-yen",
+    "parent_id": 161
+  },
+  {
+    "id": 171,
+    "name": "Kẹo cứng, kẹo dẻo",
+    "slug": "keo-cung-keo-deo",
+    "parent_id": 161
+  },
+  {
+    "id": 172,
+    "name": "Nước uống, Nước khoáng",
+    "slug": "nuoc-uong-nuoc-khoang",
+    "parent_id": 161
+  },
+  {
+    "id": 173,
+    "name": "Đường ăn kiêng",
+    "slug": "duong-an-kieng",
+    "parent_id": 161
+  },
+  {
+    "id": 174,
+    "name": "Trà, trà thảo dược",
+    "slug": "tra-tra-thao-duoc",
+    "parent_id": 161
+  },
+  {
+    "id": 175,
+    "name": "Vệ sinh tai, mũi, họng",
+    "slug": "ve-sinh-tai-mui-hong",
+    "parent_id": 161
+  },
+  {
+    "id": 176,
+    "name": "Khăn giấy, khăn ướt",
+    "slug": "khan-giay-khan-uot",
+    "parent_id": 161
+  },
+  {
+    "id": 177,
+    "name": "Rửa tay sát khuẩn",
+    "slug": "rua-tay-sat-khuan",
+    "parent_id": 161
+  },
+  {
+    "id": 178,
+    "name": "Băng vệ sinh",
+    "slug": "bang-ve-sinh",
+    "parent_id": 161
+  },
+  {
+    "id": 179,
+    "name": "Dung dịch vệ sinh",
+    "slug": "dung-dich-ve-sinh",
+    "parent_id": 161
+  },
+  {
+    "id": 180,
+    "name": "Kem bôi phụ khoa",
+    "slug": "kem-boi-phu-khoa",
+    "parent_id": 161
+  },
+  {
+    "id": 181,
+    "name": "Dầu & tinh dầu xông",
+    "slug": "dau-and-tinh-dau-xong",
+    "parent_id": 161
+  },
+  {
+    "id": 182,
+    "name": "Dầu & tinh dầu Massage",
+    "slug": "dau-and-tinh-dau-massage",
+    "parent_id": 161
+  },
+  {
+    "id": 183,
+    "name": "Dầu & tinh dầu thiên nhiên",
+    "slug": "dau-and-tinh-dau-thien-nhien",
+    "parent_id": 161
+  },
+  {
+    "id": 184,
+    "name": "Xịt chống côn trùng",
+    "slug": "xit-chong-con-trung",
+    "parent_id": 161
+  },
+  {
+    "id": 185,
+    "name": "Kem chống côn trùng",
+    "slug": "kem-chong-con-trung",
+    "parent_id": 161
+  },
+  {
+    "id": 186,
+    "name": "Mẹ & bé",
+    "slug": "me-and-be",
+    "parent_id": null
+  },
+  {
+    "id": 187,
+    "name": "Dinh dưỡng cho bé",
+    "slug": "dinh-duong-cho-be",
+    "parent_id": 186
+  },
+  {
+    "id": 188,
+    "name": "Đồ dùng cho bé",
+    "slug": "do-dung-cho-be",
+    "parent_id": 186
+  },
+  {
+    "id": 189,
+    "name": "Vệ sinh & chăm sóc bé",
+    "slug": "ve-sinh-and-cham-soc-be",
+    "parent_id": 186
+  },
+  {
+    "id": 190,
+    "name": "Dinh dưỡng cho mẹ",
+    "slug": "dinh-duong-cho-me",
+    "parent_id": 186
+  },
+  {
+    "id": 191,
+    "name": "Đồ dùng cho mẹ",
+    "slug": "do-dung-cho-me",
+    "parent_id": 186
+  },
+  {
+    "id": 192,
+    "name": "Vệ sinh & chăm sóc mẹ",
+    "slug": "ve-sinh-and-cham-soc-me",
+    "parent_id": 186
+  },
+  {
+    "id": 193,
+    "name": "Dụng cụ y tế",
+    "slug": "dung-cu-y-te",
+    "parent_id": null
+  },
+  {
+    "id": 194,
+    "name": "Kit test covid",
+    "slug": "kit-test-covid",
+    "parent_id": 193
+  },
+  {
+    "id": 195,
+    "name": "Máy đo huyết áp",
+    "slug": "may-do-huyet-ap",
+    "parent_id": 193
+  },
+  {
+    "id": 196,
+    "name": "Nhiệt kế",
+    "slug": "nhiet-ke",
+    "parent_id": 193
+  },
+  {
+    "id": 197,
+    "name": "Máy đo, que, kim thử đường huyết",
+    "slug": "may-do-que-kim-thu-duong-huyet",
+    "parent_id": 193
+  },
+  {
+    "id": 198,
+    "name": "Que thử thai",
+    "slug": "que-thu-thai",
+    "parent_id": 193
+  },
+  {
+    "id": 199,
+    "name": "Băng gạc, bông y tế",
+    "slug": "bang-gac-bong-y-te",
+    "parent_id": 193
+  },
+  {
+    "id": 200,
+    "name": "Khử trùng, sát trùng",
+    "slug": "khu-trung-sat-trung",
+    "parent_id": 193
+  },
+  {
+    "id": 201,
+    "name": "Khẩu trang y tế",
+    "slug": "khau-trang-y-te",
+    "parent_id": 193
+  },
+  {
+    "id": 202,
+    "name": "Găng tay y tế (cao su, nitrile)",
+    "slug": "gang-tay-y-te-cao-su-nitrile",
+    "parent_id": 193
+  },
+  {
+    "id": 203,
+    "name": "Mắt kính, tấm chắn giọt bắn",
+    "slug": "mat-kinh-tam-chan-giot-ban",
+    "parent_id": 193
+  },
+  {
+    "id": 204,
+    "name": "Hỗ trợ giảm đau, hạ sốt",
+    "slug": "ho-tro-giam-dau-ha-sot",
+    "parent_id": 193
+  },
+  {
+    "id": 205,
+    "name": "Máy đo SpO2",
+    "slug": "may-do-spo2",
+    "parent_id": 193
+  },
+  {
+    "id": 206,
+    "name": "Máy xông khí dung",
+    "slug": "may-xong-khi-dung",
+    "parent_id": 193
+  },
+  {
+    "id": 207,
+    "name": "Đai, nẹp, vớ y khoa",
+    "slug": "dai-nep-vo-y-khoa",
+    "parent_id": 193
+  },
+  {
+    "id": 208,
+    "name": "Thiết bị hỗ trợ điều trị khác",
+    "slug": "thiet-bi-ho-tro-dieu-tri-khac",
+    "parent_id": 193
+  },
+  {
+    "id": 209,
+    "name": "Bơm, kim tiêm các loại",
+    "slug": "bom-kim-tiem-cac-loai",
+    "parent_id": 193
+  },
+  {
+    "id": 210,
+    "name": "Kéo, dao mổ",
+    "slug": "keo-dao-mo",
+    "parent_id": 193
+  },
+  {
+    "id": 211,
+    "name": "Dụng cụ phẫu thuật và khám bệnh khác",
+    "slug": "dung-cu-phau-thuat-va-kham-benh-khac",
+    "parent_id": 193
+  },
+  {
+    "id": 212,
+    "name": "Xe lăn",
+    "slug": "xe-lan",
+    "parent_id": 193
+  },
+  {
+    "id": 213,
+    "name": "Nạng chống, gậy chống",
+    "slug": "nang-chong-gay-chong",
+    "parent_id": 193
+  },
+  {
+    "id": 214,
+    "name": "Hỗ trợ chống loét",
+    "slug": "ho-tro-chong-loet",
+    "parent_id": 193
+  },
+  {
+    "id": 215,
+    "name": "Thiết bị hỗ trợ khác",
+    "slug": "thiet-bi-ho-tro-khac",
+    "parent_id": 193
+  }
+]
