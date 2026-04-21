@@ -535,6 +535,121 @@ CREATE TABLE outbox_events (
 ) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- =============================================================================
+-- BẢNG: catalog_vouchers
+-- =============================================================================
+CREATE TABLE catalog_vouchers (
+    id                  BIGINT          NOT NULL AUTO_INCREMENT,
+    code                VARCHAR(50)     NOT NULL,
+    name                VARCHAR(255)    NOT NULL,
+    discount_type       ENUM('percent','fixed','freeship') NOT NULL,
+    discount_value      DECIMAL(15,2)   NOT NULL,
+    max_discount        DECIMAL(15,2),
+    min_order_amount    DECIMAL(15,2)   NOT NULL DEFAULT 0.00,
+    usage_count         INT             NOT NULL DEFAULT 0,
+    usage_limit         INT             NOT NULL DEFAULT 0,
+    valid_from          DATE,
+    valid_to            DATE,
+    status              ENUM('active','paused','expired','used_up') NOT NULL DEFAULT 'active',
+    created_at          DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_catalog_vouchers_code (code),
+    INDEX idx_catalog_vouchers_status (status),
+    INDEX idx_catalog_vouchers_valid (valid_from, valid_to)
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- =============================================================================
+-- BẢNG: catalog_gift_campaigns
+-- =============================================================================
+CREATE TABLE catalog_gift_campaigns (
+    id                  BIGINT          NOT NULL AUTO_INCREMENT,
+    name                VARCHAR(255)    NOT NULL,
+    min_order_amount    DECIMAL(15,2)   NOT NULL DEFAULT 0.00,
+    gift_product_id     BIGINT          NOT NULL,
+    max_per_customer    INT             NOT NULL DEFAULT 1,
+    usage_count         INT             NOT NULL DEFAULT 0,
+    status              ENUM('active','paused','expired') NOT NULL DEFAULT 'active',
+    valid_from          DATE,
+    valid_to            DATE,
+    created_at          DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    INDEX idx_catalog_gifts_status (status),
+    INDEX idx_catalog_gifts_valid (valid_from, valid_to),
+    CONSTRAINT fk_catalog_gifts_product
+        FOREIGN KEY (gift_product_id) REFERENCES products(id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- =============================================================================
+-- BẢNG: catalog_loyalty_config
+-- =============================================================================
+CREATE TABLE catalog_loyalty_config (
+    id                  INT             NOT NULL AUTO_INCREMENT,
+    tiers               JSON            NOT NULL,
+    redemption          JSON            NOT NULL,
+    channels            JSON            NOT NULL,
+    updated_at          DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- =============================================================================
+-- BẢNG: catalog_audit_logs
+-- =============================================================================
+CREATE TABLE catalog_audit_logs (
+    id              BIGINT          NOT NULL AUTO_INCREMENT,
+    action          VARCHAR(100)    NOT NULL,
+    entity_type     VARCHAR(100)    NOT NULL,
+    entity_id       BIGINT,
+    user_id         BIGINT,
+    request_id      VARCHAR(64),
+    before_data     JSON,
+    after_data      JSON,
+    metadata        JSON,
+    created_at      DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    INDEX idx_catalog_audit_action (action),
+    INDEX idx_catalog_audit_entity (entity_type, entity_id),
+    INDEX idx_catalog_audit_created (created_at)
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- =============================================================================
+-- BẢNG: catalog_idempotency_keys
+-- =============================================================================
+CREATE TABLE catalog_idempotency_keys (
+    id                  BIGINT          NOT NULL AUTO_INCREMENT,
+    idempotency_scope   VARCHAR(100)    NOT NULL,
+    idempotency_key     VARCHAR(120)    NOT NULL,
+    request_hash        VARCHAR(64),
+    response_data       JSON            NOT NULL,
+    created_at          DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_catalog_idempotency_scope_key (idempotency_scope, idempotency_key),
+    INDEX idx_catalog_idempotency_created (created_at)
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+INSERT INTO catalog_vouchers
+    (code, name, discount_type, discount_value, max_discount, min_order_amount, usage_count, usage_limit, valid_from, valid_to, status)
+VALUES
+    ('MINGIANG50', 'Giam 50k don tu 300k', 'fixed', 50000, NULL, 300000, 0, 200, '2026-01-01', '2026-12-31', 'active')
+ON DUPLICATE KEY UPDATE updated_at = CURRENT_TIMESTAMP;
+
+INSERT INTO catalog_loyalty_config (id, tiers, redemption, channels)
+VALUES
+    (
+      1,
+      JSON_ARRAY(
+        JSON_OBJECT('tier', 'bronze', 'points_per_10k', 1, 'min_spend', 0),
+        JSON_OBJECT('tier', 'silver', 'points_per_10k', 1.5, 'min_spend', 2000000),
+        JSON_OBJECT('tier', 'gold', 'points_per_10k', 2, 'min_spend', 10000000),
+        JSON_OBJECT('tier', 'diamond', 'points_per_10k', 3, 'min_spend', 50000000)
+      ),
+      JSON_OBJECT('points_to_vnd_rate', 1000, 'min_points_redeem', 100, 'max_value_per_order', 200000),
+      JSON_OBJECT('web', true, 'pos', true)
+    )
+ON DUPLICATE KEY UPDATE updated_at = CURRENT_TIMESTAMP;
+
+-- =============================================================================
 -- VIEW: v_supplier_debt
 -- =============================================================================
 CREATE OR REPLACE VIEW v_supplier_debt AS

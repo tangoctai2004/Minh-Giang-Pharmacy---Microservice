@@ -1,0 +1,88 @@
+name: Catalog Service CI
+
+on:
+  push:
+    paths:
+      - "backend/catalog-service/**"
+      - "infrastructure/database/02_mg_catalog.sql"
+      - ".github/workflows/catalog-service-ci.yml"
+  pull_request:
+    paths:
+      - "backend/catalog-service/**"
+      - "infrastructure/database/02_mg_catalog.sql"
+      - ".github/workflows/catalog-service-ci.yml"
+
+jobs:
+  test-catalog-service:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: mg_catalog
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: backend/catalog-service/package-lock.json
+
+      - name: Install mysql client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: backend/catalog-service
+
+      - name: Init schema and seed minimal data
+        run: |
+          mysql -h 127.0.0.1 -uroot -proot < infrastructure/database/02_mg_catalog.sql
+          mysql -h 127.0.0.1 -uroot -proot < backend/catalog-service/scripts/ci_seed_minimal.sql
+
+      - name: Start catalog service
+        run: |
+          nohup node index.js > /tmp/catalog-service.log 2>&1 &
+        working-directory: backend/catalog-service
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_USER: root
+          DB_PASS: root
+          DB_NAME: mg_catalog
+          PORT: 8002
+          ALLOW_DEV_RBAC_BYPASS: "false"
+
+      - name: Wait for health
+        run: |
+          for i in $(seq 1 20); do
+            if curl -fsS http://localhost:8002/health >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Catalog service failed to start"
+          cat /tmp/catalog-service.log
+          exit 1
+
+      - name: Run smoke test
+        run: ./smoke_test_catalog.sh
+        working-directory: backend/catalog-service
+
+      - name: Run integration test
+        run: ./integration_test_catalog.sh
+        working-directory: backend/catalog-service

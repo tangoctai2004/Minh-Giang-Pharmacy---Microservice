@@ -9,6 +9,7 @@ router.use('/suppliers',  require('../suppliers/suppliers.routes'));
 router.use('/batches',    require('../batches/batches.routes'));
 router.use('/inventory',  require('../inventory/inventory.routes'));
 router.use('/locations',  require('../locations/locations.routes'));
+router.use('/promotions', require('../promotions/promotions.routes'));
 
 router.get('/', (req, res) => {
   res.json({
@@ -25,6 +26,7 @@ router.get('/', (req, res) => {
       'POST   /batches            — Tạo phiếu nhập hàng mới',
       'GET    /inventory          — Tổng quan tồn kho',
       'GET    /locations          — Vị trí kệ thuốc',
+      'GET    /promotions/stats   — Thống kê khuyến mãi',
     ],
   });
 });
