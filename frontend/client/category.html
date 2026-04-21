@@ -207,134 +207,11 @@
             border-radius: 4px;
         }
 
-        /* --- PRODUCT GRID --- */
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-        }
-
-        .product-card {
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            overflow: hidden;
-            transition: all 0.2s;
-            display: flex;
-            flex-direction: column;
-            cursor: pointer;
-        }
-
-        .product-card:hover {
-            border-color: #0b7a3e;
-            box-shadow: 0 4px 16px rgba(11, 122, 62, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .product-card-img {
-            width: 100%;
-            aspect-ratio: 1;
-            object-fit: contain;
-            padding: 12px;
-            background: #fafafa;
-        }
-
-        .product-card-body {
-            padding: 12px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .product-card-name {
-            font-size: 15px;
-            font-weight: 500;
-            color: #1f2937;
-            line-height: 1.4;
-            margin-bottom: 6px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .product-card-unit {
-            font-size: 13px;
-            color: #9ca3af;
-            margin-bottom: 8px;
-        }
-
-        .product-card-price {
-            font-size: 15px;
-            font-weight: 700;
-            color: #dc2626;
-            margin-bottom: 4px;
-        }
-
-        .product-card-old-price {
-            font-size: 13px;
-            color: #9ca3af;
-            text-decoration: line-through;
-        }
-
-        .product-card-footer {
-            padding: 8px 12px;
-            border-top: 1px solid #f3f4f6;
-            display: flex;
-            gap: 6px;
-            margin-top: auto;
-        }
-
-        .btn-add-cart {
-            flex: 1;
-            padding: 6px 0;
-            background: #0b7a3e;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: inherit;
-            transition: background 0.15s;
-        }
-
-        .btn-add-cart:hover {
-            background: #095e30;
-        }
-
-        .btn-view-detail {
-            flex: 1;
-            padding: 6px 0;
-            background: #fff;
-            color: #0b7a3e;
-            border: 1px solid #0b7a3e;
-            border-radius: 4px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: inherit;
-            transition: all 0.15s;
-        }
-
-        .btn-view-detail:hover {
-            background: #ecfdf5;
-        }
-
-        .product-badge {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            background: #dc2626;
-            color: #fff;
-            font-size: 12px;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 4px;
-        }
-
-        .product-card {
-            position: relative;
+        /* Override Product Grid for Sidebar Layout */
+        .cat-main .product-grid {
+            grid-template-columns: repeat(4, 1fr) !important;
+            padding: 0;
+            background: none;
         }
 
         /* --- PAGINATION --- */
@@ -507,14 +384,14 @@
 
                 <!-- Sub-categories (chip pills) -->
                 <div class="cat-subcategories">
-                    <a href="#" class="cat-sub-chip active">Tất cả</a>
-                    <a href="#" class="cat-sub-chip">Thuốc giảm đau, hạ sốt</a>
-                    <a href="#" class="cat-sub-chip">Thuốc kháng sinh</a>
-                    <a href="#" class="cat-sub-chip">Thuốc ho, cảm, sổ mũi</a>
-                    <a href="#" class="cat-sub-chip">Thuốc tiêu hóa</a>
-                    <a href="#" class="cat-sub-chip">Thuốc nhỏ mắt, tai, mũi</a>
-                    <a href="#" class="cat-sub-chip">Thuốc da liễu</a>
-                    <a href="#" class="cat-sub-chip">Thuốc tim mạch</a>
+                    <a href="category.html" class="cat-sub-chip active">Tất cả</a>
+                    <a href="category.html" class="cat-sub-chip">Thuốc giảm đau, hạ sốt</a>
+                    <a href="category.html" class="cat-sub-chip">Thuốc kháng sinh</a>
+                    <a href="category.html" class="cat-sub-chip">Thuốc ho, cảm, sổ mũi</a>
+                    <a href="category.html" class="cat-sub-chip">Thuốc tiêu hóa</a>
+                    <a href="category.html" class="cat-sub-chip">Thuốc nhỏ mắt, tai, mũi</a>
+                    <a href="category.html" class="cat-sub-chip">Thuốc da liễu</a>
+                    <a href="category.html" class="cat-sub-chip">Thuốc tim mạch</a>
                 </div>
 
                 <!-- Product Grid -->
@@ -522,184 +399,113 @@
 
                     <!-- Product 1 -->
                     <div class="product-card">
-                        <span class="product-badge">-20%</span>
-                        <img src="../assets/images/product_frame.png" alt="Thuốc" class="product-card-img">
-                        <div class="product-card-body">
-                            <div class="product-card-name">Thuốc Hapacol Extra giảm đau, hạ sốt (Hộp 10 vỉ x 10 viên)
-                            </div>
-                            <div class="product-card-unit">Hộp 10 vỉ x 10 viên</div>
-                            <div class="product-card-price">68,000₫</div>
-                            <div class="product-card-old-price">85,000₫</div>
+                        <div class="product-image">
+                            <img src="../assets/images/product_frame.png" alt="Product">
                         </div>
-                        <div class="product-card-footer">
-                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
-                            <button class="btn-view-detail">Xem chi tiết</button>
+                        <div class="product-info">
+                            <h5><a href="product.html">Thuốc Hapacol Extra giảm đau, hạ sốt (Hộp 10 vỉ x 10 viên)</a></h5>
+                            <div class="product-price">
+                                <span class="price-new">68,000đ</span>
+                            </div>
+                            <button class="btn-add-cart">Thêm giỏ hàng</button>
                         </div>
                     </div>
 
                     <!-- Product 2 -->
                     <div class="product-card">
-                        <img src="../assets/images/product_frame_2.png" alt="Thuốc" class="product-card-img">
-                        <div class="product-card-body">
-                            <div class="product-card-name">Thuốc Efferalgan 500mg giảm đau hạ sốt (Hộp 16 viên nén sủi)
-                            </div>
-                            <div class="product-card-unit">Hộp 16 viên</div>
-                            <div class="product-card-price">42,000₫</div>
+                        <div class="product-image">
+                            <img src="../assets/images/product_frame_2.png" alt="Product">
                         </div>
-                        <div class="product-card-footer">
-                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
-                            <button class="btn-view-detail">Xem chi tiết</button>
+                        <div class="product-info">
+                            <h5><a href="product.html">Thuốc Efferalgan 500mg giảm đau hạ sốt (Hộp 16 viên nén sủi)</a></h5>
+                            <div class="product-price">
+                                <span class="price-new">42,000đ</span>
+                            </div>
+                            <button class="btn-add-cart">Thêm giỏ hàng</button>
                         </div>
                     </div>
 
                     <!-- Product 3 -->
                     <div class="product-card">
-                        <span class="product-badge">-15%</span>
-                        <img src="../assets/images/product_frame.png" alt="Thuốc" class="product-card-img">
-                        <div class="product-card-body">
-                            <div class="product-card-name">Thuốc Amoxicillin 500mg kháng sinh điều trị nhiễm khuẩn</div>
-                            <div class="product-card-unit">Hộp 20 viên</div>
-                            <div class="product-card-price">35,000₫</div>
-                            <div class="product-card-old-price">41,000₫</div>
+                        <div class="product-image">
+                            <img src="../assets/images/product_frame.png" alt="Product">
                         </div>
-                        <div class="product-card-footer">
-                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
-                            <button class="btn-view-detail">Xem chi tiết</button>
+                        <div class="product-info">
+                            <h5><a href="product.html">Thuốc Amoxicillin 500mg kháng sinh điều trị nhiễm khuẩn</a></h5>
+                            <div class="product-price">
+                                <span class="price-new">35,000đ</span>
+                            </div>
+                            <button class="btn-add-cart">Thêm giỏ hàng</button>
                         </div>
                     </div>
 
                     <!-- Product 4 -->
                     <div class="product-card">
-                        <img src="../assets/images/product_frame_2.png" alt="Thuốc" class="product-card-img">
-                        <div class="product-card-body">
-                            <div class="product-card-name">Thuốc Phosphalugel giảm triệu chứng viêm dạ dày</div>
-                            <div class="product-card-unit">Hộp 20 gói</div>
-                            <div class="product-card-price">95,000₫</div>
+                        <div class="product-image">
+                            <img src="../assets/images/product_frame_2.png" alt="Product">
                         </div>
-                        <div class="product-card-footer">
-                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
-                            <button class="btn-view-detail">Xem chi tiết</button>
+                        <div class="product-info">
+                            <h5><a href="product.html">Thuốc Phosphalugel giảm triệu chứng viêm dạ dày</a></h5>
+                            <div class="product-price">
+                                <span class="price-new">95,000đ</span>
+                            </div>
+                            <button class="btn-add-cart">Thêm giỏ hàng</button>
                         </div>
                     </div>
 
                     <!-- Product 5 -->
                     <div class="product-card">
-                        <span class="product-badge">-10%</span>
-                        <img src="../assets/images/product_frame.png" alt="Thuốc" class="product-card-img">
-                        <div class="product-card-body">
-                            <div class="product-card-name">Thuốc Cetirizin 10mg chống dị ứng mề đay, viêm mũi</div>
-                            <div class="product-card-unit">Hộp 10 vỉ x 10 viên</div>
-                            <div class="product-card-price">18,000₫</div>
-                            <div class="product-card-old-price">20,000₫</div>
+                        <div class="product-image">
+                            <img src="../assets/images/product_frame.png" alt="Product">
                         </div>
-                        <div class="product-card-footer">
-                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
-                            <button class="btn-view-detail">Xem chi tiết</button>
+                        <div class="product-info">
+                            <h5><a href="product.html">Thuốc Cetirizin 10mg chống dị ứng mề đay, viêm mũi</a></h5>
+                            <div class="product-price">
+                                <span class="price-new">18,000đ</span>
+                            </div>
+                            <button class="btn-add-cart">Thêm giỏ hàng</button>
                         </div>
                     </div>
 
                     <!-- Product 6 -->
                     <div class="product-card">
-                        <img src="../assets/images/product_frame_2.png" alt="Thuốc" class="product-card-img">
-                        <div class="product-card-body">
-                            <div class="product-card-name">Viên uống bổ mắt Vision Pharma với Lutein & Zeaxanthin</div>
-                            <div class="product-card-unit">Hộp 30 viên</div>
-                            <div class="product-card-price">245,000₫</div>
+                        <div class="product-image">
+                            <img src="../assets/images/product_frame_2.png" alt="Product">
                         </div>
-                        <div class="product-card-footer">
-                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
-                            <button class="btn-view-detail">Xem chi tiết</button>
+                        <div class="product-info">
+                            <h5><a href="product.html">Viên uống bổ mắt Vision Pharma với Lutein & Zeaxanthin</a></h5>
+                            <div class="product-price">
+                                <span class="price-new">245,000đ</span>
+                            </div>
+                            <button class="btn-add-cart">Thêm giỏ hàng</button>
                         </div>
                     </div>
 
                     <!-- Product 7 -->
                     <div class="product-card">
-                        <span class="product-badge">-30%</span>
-                        <img src="../assets/images/product_frame.png" alt="Thuốc" class="product-card-img">
-                        <div class="product-card-body">
-                            <div class="product-card-name">Thuốc Semistra điều trị viêm xoang, giảm viêm mũi dị ứng
-                            </div>
-                            <div class="product-card-unit">Hộp 30 viên</div>
-                            <div class="product-card-price">120,000₫</div>
-                            <div class="product-card-old-price">170,000₫</div>
+                        <div class="product-image">
+                            <img src="../assets/images/product_frame.png" alt="Product">
                         </div>
-                        <div class="product-card-footer">
-                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
-                            <button class="btn-view-detail">Xem chi tiết</button>
+                        <div class="product-info">
+                            <h5><a href="product.html">Thuốc Semistra điều trị viêm xoang, giảm viêm mũi dị ứng</a></h5>
+                            <div class="product-price">
+                                <span class="price-new">120,000đ</span>
+                            </div>
+                            <button class="btn-add-cart">Thêm giỏ hàng</button>
                         </div>
                     </div>
 
                     <!-- Product 8 -->
                     <div class="product-card">
-                        <img src="../assets/images/product_frame_2.png" alt="Thuốc" class="product-card-img">
-                        <div class="product-card-body">
-                            <div class="product-card-name">Thuốc dạ dày Kremil-S trung hoà acid, giảm đau dạ dày</div>
-                            <div class="product-card-unit">Hộp 25 vỉ x 4 viên</div>
-                            <div class="product-card-price">75,000₫</div>
+                        <div class="product-image">
+                            <img src="../assets/images/product_frame_2.png" alt="Product">
                         </div>
-                        <div class="product-card-footer">
-                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
-                            <button class="btn-view-detail">Xem chi tiết</button>
-                        </div>
-                    </div>
-
-                    <!-- Product 9 -->
-                    <div class="product-card">
-                        <img src="../assets/images/product_frame.png" alt="Thuốc" class="product-card-img">
-                        <div class="product-card-body">
-                            <div class="product-card-name">Dung dịch sát khuẩn Betadine 10% dùng ngoài da</div>
-                            <div class="product-card-unit">Chai 125ml</div>
-                            <div class="product-card-price">72,000₫</div>
-                        </div>
-                        <div class="product-card-footer">
-                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
-                            <button class="btn-view-detail">Xem chi tiết</button>
-                        </div>
-                    </div>
-
-                    <!-- Product 10 -->
-                    <div class="product-card">
-                        <span class="product-badge">-25%</span>
-                        <img src="../assets/images/product_frame_2.png" alt="Thuốc" class="product-card-img">
-                        <div class="product-card-body">
-                            <div class="product-card-name">Thuốc Magne B6 giúp giảm stress, lo âu, mệt mỏi</div>
-                            <div class="product-card-unit">Hộp 50 viên</div>
-                            <div class="product-card-price">105,000₫</div>
-                            <div class="product-card-old-price">140,000₫</div>
-                        </div>
-                        <div class="product-card-footer">
-                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
-                            <button class="btn-view-detail">Xem chi tiết</button>
-                        </div>
-                    </div>
-
-                    <!-- Product 11 -->
-                    <div class="product-card">
-                        <img src="../assets/images/product_frame.png" alt="Thuốc" class="product-card-img">
-                        <div class="product-card-body">
-                            <div class="product-card-name">Thuốc Medrol 4mg điều trị viêm khớp, dị ứng nặng</div>
-                            <div class="product-card-unit">Hộp 30 viên</div>
-                            <div class="product-card-price">48,000₫</div>
-                        </div>
-                        <div class="product-card-footer">
-                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
-                            <button class="btn-view-detail">Xem chi tiết</button>
-                        </div>
-                    </div>
-
-                    <!-- Product 12 -->
-                    <div class="product-card">
-                        <span class="product-badge">-18%</span>
-                        <img src="../assets/images/product_frame_2.png" alt="Thuốc" class="product-card-img">
-                        <div class="product-card-body">
-                            <div class="product-card-name">Thuốc Ferrovit bổ sung sắt, acid folic cho bà bầu</div>
-                            <div class="product-card-unit">Hộp 100 viên</div>
-                            <div class="product-card-price">115,000₫</div>
-                            <div class="product-card-old-price">140,000₫</div>
-                        </div>
-                        <div class="product-card-footer">
-                            <button class="btn-add-cart"><i class="fa-solid fa-cart-plus"></i> Mua ngay</button>
-                            <button class="btn-view-detail">Xem chi tiết</button>
+                        <div class="product-info">
+                            <h5><a href="product.html">Thuốc dạ dày Kremil-S trung hoà acid, giảm đau dạ dày</a></h5>
+                            <div class="product-price">
+                                <span class="price-new">75,000đ</span>
+                            </div>
+                            <button class="btn-add-cart">Thêm giỏ hàng</button>
                         </div>
                     </div>
 
@@ -784,7 +590,10 @@
         });
     </script>
 
+    <script src="../assets/js/dropdown-handler.js"></script>
+    <script src="../assets/js/mega-menu-loader.js"></script>
     <script src="../assets/js/components.js"></script>
+    <script src="../assets/js/category-loader.js"></script>
 </body>
 
 </html>

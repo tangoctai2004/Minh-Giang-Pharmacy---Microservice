@@ -1,79 +1,52 @@
-// Dropdown Menu Handler
-document.addEventListener('DOMContentLoaded', function() {
-    const navItems = document.querySelectorAll('.nav-item');
-    const dropdowns = document.querySelectorAll('.dropdown-menu');
-    let scrollTimeout;
+/**
+ * Dropdown Menu Handler
+ * Handles the visibility of the mega menu dropdowns.
+ * We rely on CSS for positioning (position: absolute; left: 50%; transform: translateX(-50%))
+ * to ensure the UI remains exactly as originally designed.
+ */
 
-    // Handle hover to show/hide dropdown and center it
-    navItems.forEach((item, index) => {
-        item.addEventListener('mouseenter', function() {
-            // Hide all dropdowns first
-            dropdowns.forEach(dropdown => {
-                dropdown.style.opacity = '0';
-                dropdown.style.visibility = 'hidden';
-            });
+function initDropdownHandler() {
+    const navList = document.querySelector('.nav-list');
+    if (!navList) return;
 
-            // Show current dropdown
-            const dropdown = item.querySelector('.dropdown-menu');
-            if (dropdown) {
-                dropdown.style.opacity = '1';
-                dropdown.style.visibility = 'visible';
-                dropdown.style.translate = '0 0';
-                centerDropdown(dropdown);
-            }
-        });
+    // Use Event Delegation to handle dynamic .nav-item elements
+    
+    // Mouse Enter
+    navList.addEventListener('mouseover', (e) => {
+        const navItem = e.target.closest('.nav-item');
+        if (!navItem) return;
 
-        item.addEventListener('mouseleave', function() {
-            const dropdown = item.querySelector('.dropdown-menu');
+        const dropdown = navItem.querySelector('.dropdown-menu');
+        if (dropdown) {
+            // We set opacity and visibility, but let CSS handle the position and transform
+            dropdown.style.opacity = '1';
+            dropdown.style.visibility = 'visible';
+            dropdown.style.translate = '0 0';
+            
+            // If the original UI used fixed positioning, we can re-enable it.
+            // However, the user reports displacement (lệch), which usually happens 
+            // when JS fights with CSS. We attempt to let CSS handle it first.
+        }
+    });
+
+    // Mouse Leave
+    navList.addEventListener('mouseout', (e) => {
+        const navItem = e.target.closest('.nav-item');
+        if (!navItem) return;
+
+        if (!navItem.contains(e.relatedTarget)) {
+            const dropdown = navItem.querySelector('.dropdown-menu');
             if (dropdown) {
                 dropdown.style.opacity = '0';
                 dropdown.style.visibility = 'hidden';
                 dropdown.style.translate = '0 -10px';
             }
-        });
-    });
-
-    // Center dropdown on window resize
-    window.addEventListener('resize', function() {
-        const visibleDropdown = document.querySelector('.dropdown-menu[style*="visibility: visible"]');
-        if (visibleDropdown) {
-            centerDropdown(visibleDropdown);
         }
     });
+}
 
-    // Hide dropdown on scroll
-    document.addEventListener('scroll', function() {
-        dropdowns.forEach(dropdown => {
-            dropdown.style.opacity = '0';
-            dropdown.style.visibility = 'hidden';
-            dropdown.style.translate = '0 -10px';
-        });
+// Initial run
+document.addEventListener('DOMContentLoaded', initDropdownHandler);
 
-        // Clear existing timeout
-        clearTimeout(scrollTimeout);
-        
-        // Re-enable dropdown after scroll ends (300ms)
-        scrollTimeout = setTimeout(function() {
-            // Dropdown will show again on next hover
-        }, 300);
-    });
-
-    // Function to center dropdown
-    function centerDropdown(dropdown) {
-        const viewportWidth = window.innerWidth;
-        const dropdownWidth = Math.min(1200, viewportWidth);
-        const leftPosition = (viewportWidth - dropdownWidth) / 2;
-        
-        // Set dropdown position to be centered
-        dropdown.style.position = 'fixed';
-        dropdown.style.left = leftPosition + 'px';
-        dropdown.style.width = dropdownWidth + 'px';
-        
-        // Get navbar position to place dropdown right below it
-        const navbar = document.querySelector('.main-nav');
-        if (navbar) {
-            const navbarRect = navbar.getBoundingClientRect();
-            dropdown.style.top = (navbarRect.bottom) + 'px';
-        }
-    }
-});
+// Expose to window
+window.initDropdownHandler = initDropdownHandler;

@@ -29,10 +29,48 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Sau khi tất cả component load xong, apply auth header
-    // Dùng MutationObserver để đợi .login-btn xuất hiện trong DOM
+    // Sau khi tất cả component load xong, apply auth header và mega menu
     _initClientAuthHeader();
+    _initMegaMenu();
+    _initProductCardNavigation();
 });
+
+// ─── Điều hướng Product Card toàn cục ─────────────────
+function _initProductCardNavigation() {
+    document.addEventListener('click', function (e) {
+        const card = e.target.closest('.product-card');
+        const addCartBtn = e.target.closest('.btn-add-cart');
+
+        // Nếu click vào card nhưng KHÔNG phải click vào nút thêm giỏ hàng
+        if (card && !addCartBtn) {
+            const productId = card.dataset.productId;
+            let productPath = _resolveClientPath('product.html');
+            if (productId) {
+                productPath += `?id=${productId}`;
+            }
+            window.location.href = productPath;
+        }
+    });
+}
+
+// ─── Mega Menu Initialization ─────────────────
+function _initMegaMenu() {
+    const observer = new MutationObserver(function () {
+        const navList = document.getElementById('main-nav-list');
+        if (navList) {
+            observer.disconnect();
+            if (typeof window.initMegaMenu === 'function') {
+                window.initMegaMenu();
+            }
+        }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // Fallback nếu navList đã có sẵn
+    if (document.getElementById('main-nav-list') && typeof window.initMegaMenu === 'function') {
+        window.initMegaMenu();
+    }
+}
 
 // ─── Client Auth Header (dùng chung cho toàn bộ trang client) ─────────────────
 

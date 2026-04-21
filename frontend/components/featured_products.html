@@ -2,53 +2,78 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h2 class="section-title" style="margin: 0;">SẢN PHẨM ĐANG THU HÚT</h2>
         <div style="display: flex; gap: 10px;">
-            <button style="border: none; background: transparent; cursor: pointer; color: #4b5563;"><i
-                    class="fa-solid fa-arrow-left"></i></button>
-            <button style="border: none; background: transparent; cursor: pointer; color: #4b5563;"><i
-                    class="fa-solid fa-arrow-right"></i></button>
+            <button class="slider-btn" style="position: static; border: 1px solid #ddd;"><img
+                src="../assets/images/icon_banner_arrow_left.png" alt="Prev" style="filter: brightness(0);"></button>
+            <button class="slider-btn" style="position: static; border: 1px solid #ddd;"><img
+                src="../assets/images/icon_banner_arrow_right.png" alt="Next" style="filter: brightness(0);"></button>
         </div>
     </div>
 
-    <div class="featured-grid">
-        <div class="feat-card">
-            <div class="feat-img"><img src="../assets/images/Magne-B6-Sanofi_300x300.png" alt="Image"
-                    onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><rect width=\'100\' height=\'100\' fill=\'#f3f4f6\'/><text x=\'50\' y=\'50\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'sans-serif\' font-size=\'14\' fill=\'#9ca3af\'>Image</text></svg>'">
+    <div class="product-grid" style="padding: 0; background: none;">
+        <!-- Product 1 -->
+        <div class="product-card">
+            <div class="product-image">
+                <img src="../assets/images/Magne-B6-Sanofi_300x300.png" alt="Product">
             </div>
-            <div class="feat-name">Viên nén Magne-B6 Corbiere Sanofi điều t...</div>
-            <div class="feat-price">102,000đ</div>
-            <a href="#" class="feat-btn">Thêm giỏ hàng</a>
+            <div class="product-info">
+                <h5><a href="product.html">Viên nén Magne-B6 Corbiere Sanofi điều trị thiếu Magie</a></h5>
+                <div class="product-price">
+                    <span class="price-new">102,000đ</span>
+                </div>
+                <button class="btn-add-cart">Thêm giỏ hàng</button>
+            </div>
         </div>
-        <div class="feat-card">
-            <div class="feat-img"><img src="../assets/images/Vitamin-B2.png" alt="Image"
-                    onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><rect width=\'100\' height=\'100\' fill=\'#f3f4f6\'/><text x=\'50\' y=\'50\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'sans-serif\' font-size=\'14\' fill=\'#9ca3af\'>Image</text></svg>'">
+        <!-- Product 2 -->
+        <div class="product-card">
+            <div class="product-image">
+                <img src="../assets/images/Vitamin-B2.png" alt="Product">
             </div>
-            <div class="feat-name">Thuốc Vitamin B2 Điều Trị Và Phòng Ngừa Thiếu Vitamin...</div>
-            <div class="feat-price">23,400đ</div>
-            <a href="#" class="feat-btn">Thêm giỏ hàng</a>
+            <div class="product-info">
+                <h5><a href="product.html">Thuốc Vitamin B2 Điều Trị Và Phòng Ngừa Thiếu Vitamin B2</a></h5>
+                <div class="product-price">
+                    <span class="price-new">23,400đ</span>
+                </div>
+                <button class="btn-add-cart">Thêm giỏ hàng</button>
+            </div>
         </div>
-        <div class="feat-card">
-            <div class="feat-img"><img src="../assets/images/Hoan-Luc-Vi-Bo-Than-Am-OPC.png" alt="Image"
-                    onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><rect width=\'100\' height=\'100\' fill=\'#f3f4f6\'/><text x=\'50\' y=\'50\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'sans-serif\' font-size=\'14\' fill=\'#9ca3af\'>Image</text></svg>'">
+        <!-- Product 3 -->
+        <div class="product-card">
+            <div class="product-image">
+                <img src="../assets/images/Hoan-Luc-Vi-Bo-Than-Am-OPC.png" alt="Product">
             </div>
-            <div class="feat-name">Thuốc Hoàn Lục Vị Bổ Thận Âm OPC điều trị các trườn...</div>
-            <div class="feat-price">55,000đ</div>
-            <a href="#" class="feat-btn">Thêm giỏ hàng</a>
+            <div class="product-info">
+                <h5><a href="product.html">Thuốc Hoàn Lục Vị Bổ Thận Âm OPC điều trị các trường hợp thận yếu</a></h5>
+                <div class="product-price">
+                    <span class="price-new">55,000đ</span>
+                </div>
+                <button class="btn-add-cart">Thêm giỏ hàng</button>
+            </div>
         </div>
-        <div class="feat-card">
-            <div class="feat-img"><img src="../assets/images/Conipa-Pure.png" alt="Image"
-                    onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><rect width=\'100\' height=\'100\' fill=\'#f3f4f6\'/><text x=\'50\' y=\'50\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'sans-serif\' font-size=\'14\' fill=\'#9ca3af\'>Image</text></svg>'">
+        <!-- Product 4 -->
+        <div class="product-card">
+            <div class="product-image">
+                <img src="../assets/images/Conipa-Pure.png" alt="Product">
             </div>
-            <div class="feat-name">Thuốc Conipa Pure điều trị thiếu kẽm, suy dinh dưỡng...</div>
-            <div style="font-size: 13px; color: #6b7280; margin-bottom: 12px;">Cần tư vấn từ dược sỹ</div>
-            <a href="#" class="feat-btn">Tư vấn ngay</a>
+            <div class="product-info">
+                <h5><a href="product.html">Thuốc Conipa Pure điều trị thiếu kẽm, suy dinh dưỡng</a></h5>
+                <div class="product-price">
+                    <span class="price-new">Liên hệ tư vấn</span>
+                </div>
+                <button class="btn-add-cart">Tư vấn ngay</button>
+            </div>
         </div>
-        <div class="feat-card">
-            <div class="feat-img"><img src="../assets/images/ZinC.png" alt="Image"
-                    onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><rect width=\'100\' height=\'100\' fill=\'#f3f4f6\'/><text x=\'50\' y=\'50\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'sans-serif\' font-size=\'14\' fill=\'#9ca3af\'>Image</text></svg>'">
+        <!-- Product 5 -->
+        <div class="product-card">
+            <div class="product-image">
+                <img src="../assets/images/ZinC.png" alt="Product">
             </div>
-            <div class="feat-name">Thuốc ZinC phòng ngừa và điều trị thiếu kẽm (Hộp 10...</div>
-            <div class="feat-price">55,000đ</div>
-            <a href="#" class="feat-btn">Thêm giỏ hàng</a>
+            <div class="product-info">
+                <h5><a href="product.html">Thuốc ZinC phòng ngừa và điều trị thiếu kẽm (Hộp 10 vỉ)</a></h5>
+                <div class="product-price">
+                    <span class="price-new">55,000đ</span>
+                </div>
+                <button class="btn-add-cart">Thêm giỏ hàng</button>
+            </div>
         </div>
     </div>
 </div>

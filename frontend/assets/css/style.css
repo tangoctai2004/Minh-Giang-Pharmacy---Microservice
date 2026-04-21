@@ -329,6 +329,7 @@ ul {
     overflow: visible;
     position: relative;
 }
+
 .nav-item {
     list-style: none;
 }
@@ -398,18 +399,35 @@ ul {
 
 .dropdown-content {
     display: flex;
-    gap: 20px;
-    padding: 12px 20px;
+    gap: 15px;
+    padding: 8px 15px;
     max-width: 1200px;
     margin: 0 auto;
 }
 
 /* Dropdown Sidebar */
 .dropdown-sidebar {
-    width: 260px;
+    width: 250px;
     flex-shrink: 0;
-    border-right: none;
+    border-right: 1px solid #f1f1f1;
     padding: 0;
+    max-height: 480px;
+    overflow-y: auto;
+}
+
+/* Custom Scrollbar cho Sidebar */
+.dropdown-sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+.dropdown-sidebar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+.dropdown-sidebar::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+.dropdown-sidebar::-webkit-scrollbar-thumb:hover {
+    background: #999;
 }
 
 .dropdown-categories {
@@ -422,11 +440,11 @@ ul {
 .dropdown-cat-item {
     display: flex;
     align-items: center;
-    padding: 8px 20px;
+    padding: 6px 15px;
     cursor: pointer;
     color: var(--text-color);
     transition: all 0.2s ease;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid #f1f1f1;
 }
 
 .dropdown-cat-item:first-child {
@@ -434,7 +452,7 @@ ul {
 }
 
 .dropdown-cat-item span {
-    font-size: 18px;
+    font-size: 15px;
     font-weight: 500;
 }
 
@@ -496,7 +514,7 @@ ul {
 .dropdown-products {
     flex: 1;
     min-width: 0;
-    padding: 15px 20px;
+    padding: 10px 15px;
     background-color: #f8f9fa;
 }
 
@@ -511,13 +529,13 @@ ul {
 .subnav-pill {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 15px;
+    gap: 6px;
+    padding: 6px 12px;
     background: var(--white);
     border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    border-radius: 6px;
     color: #333;
-    font-size: 14px;
+    font-size: 13px;
     transition: all 0.2s;
     text-decoration: none;
 }
@@ -592,77 +610,88 @@ ul {
     color: #333;
 }
 
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+}
+
 .products-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
+    gap: 15px;
 }
 
 .product-card {
     background: var(--white);
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 15px;
     text-align: left;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     cursor: pointer;
     display: flex;
     flex-direction: column;
+    border: 1px solid #f1f1f1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    height: 100%;
 }
 
 .product-card:hover {
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px);
+    border-color: #0b7a3e;
 }
 
 .product-image {
     position: relative;
     width: 100%;
-    height: 130px;
-    margin-bottom: 10px;
-    background-color: var(--bg-light);
-    border-radius: 6px;
+    height: 180px;
+    margin-bottom: 15px;
+    background-color: transparent;
+    border-radius: 8px;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.product-image img {
-    width: 80%;
-    height: 80%;
-    object-fit: contain;
-}
-
-.product-badge {
+.discount-badge {
     position: absolute;
-    top: -8px;
-    right: -8px;
-    width: 32px;
-    height: 32px;
-    background: var(--primary-color);
-    color: var(--white);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    top: 0;
+    left: 0;
+    background: #eb7c23;
+    color: #fff;
+    padding: 4px 10px;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 0 0 12px 0;
+    z-index: 2;
 }
 
-.product-badge:hover {
-    transform: scale(1.15);
-    box-shadow: 0 4px 12px rgba(27, 136, 68, 0.3);
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.5s ease;
+}
+
+.product-card:hover .product-image img {
+    transform: scale(1.05);
+}
+
+.product-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
 .product-card h5 {
-    font-size: 14px;
+    font-size: 15px;
     line-height: 1.4;
     font-weight: 500;
     color: #333;
     margin-bottom: 12px;
-    min-height: 40px;
-    display: -webkit-box;
+    min-height: 42px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     line-clamp: 2;
@@ -670,41 +699,58 @@ ul {
     overflow: hidden;
 }
 
+.product-card h5 a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.product-card h5 a:hover {
+    color: #156835; /* Hover sang màu xanh thương hiệu */
+}
+
 .product-price {
     display: flex;
-    align-items: baseline;
-    gap: 8px;
+    align-items: center;
+    gap: 10px;
     margin-bottom: 15px;
-    margin-top: auto;
+    flex-wrap: wrap;
 }
 
 .price-old {
-    font-size: 12px;
+    font-size: 14px;
     color: #999;
     text-decoration: line-through;
+    font-weight: 400;
 }
 
 .price-new {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 700;
-    color: #e67e22;
+    color: #eb7c23; /* Flash Sale Orange */
 }
 
 .btn-add-cart {
     width: 100%;
-    padding: 10px 0;
-    background-color: #146d33;
-    color: var(--white);
+    height: 46px;
+    background-color: #156835; 
+    color: #fff;
     border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 600;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: auto;
 }
 
 .btn-add-cart:hover {
-    background-color: #0e5226;
+    background-color: #0e4d26;
+    box-shadow: 0 6px 15px rgba(21, 104, 53, 0.3);
+    transform: scale(1.02);
 }
 
 /* Responsive Grid */
@@ -735,10 +781,6 @@ ul {
 
     .dropdown-cat-item {
         min-width: 150px;
-    }
-
-    .products-grid {
-        grid-template-columns: repeat(2, 1fr);
     }
 }
 
@@ -1306,6 +1348,7 @@ ul {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1464,7 +1507,7 @@ ul {
 
 .payment-icons img {
     height: 28px;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
     transition: all 0.2s;
     cursor: pointer;
 }
@@ -1497,7 +1540,7 @@ ul {
         grid-template-columns: 1fr;
         gap: 30px;
     }
-    
+
     .footer-title {
         font-size: 14px;
     }
@@ -1677,4 +1720,29 @@ ul {
 
 .feat-btn:hover {
     background: #096332;
+}
+
+/* ================= MEGA MENU PRODUCT GRID ================= */
+/* Đồng bộ kích thước chuẩn Flash Sale, tối ưu để không bị tràn khung */
+
+.dropdown-products .products-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    width: 100%;
+    max-width: 920px; /* Khống chế để không tràn ra ngoài sidebar */
+}
+
+.dropdown-products .products-grid .product-card {
+    padding: 12px; /* Nhỏ hơn một chút để vừa 4 cột */
+    min-width: 0;   /* Cho phép card co lại theo grid */
+}
+
+.dropdown-products .products-grid .product-image {
+    height: 150px; /* Cân đối chiều cao với chiều rộng 4 cột */
+}
+
+.dropdown-products .products-grid .btn-add-cart {
+    height: 38px;
+    font-size: 14px;
 }

@@ -632,55 +632,6 @@
             margin: 0 0 16px
         }
 
-        .pd-popular-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 12px
-        }
-
-        .pd-pop-card {
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            overflow: hidden;
-            transition: all .2s;
-            cursor: pointer
-        }
-
-        .pd-pop-card:hover {
-            border-color: #0b7a3e;
-            box-shadow: 0 4px 12px rgba(11, 122, 62, .1);
-            transform: translateY(-2px)
-        }
-
-        .pd-pop-card img {
-            width: 100%;
-            aspect-ratio: 1;
-            object-fit: contain;
-            padding: 8px;
-            background: #fafafa
-        }
-
-        .pd-pop-card-body {
-            padding: 10px
-        }
-
-        .pd-pop-card-name {
-            font-size: 14px;
-            color: #1f2937;
-            line-height: 1.3;
-            margin-bottom: 6px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            height: 32px
-        }
-
-        .pd-pop-card-price {
-            font-size: 15px;
-            font-weight: 700;
-            color: #dc2626
-        }
 
         /* Top Searches */
         .top-searches {
@@ -735,9 +686,8 @@
     <!-- ====== PRODUCT DETAIL PAGE ====== -->
     <main class="container">
         <div class="breadcrumb">
-            <a href="index.html">Trang chủ</a><span>›</span><a href="category.html">Thuốc</a><span>›</span><a
-                href="#">Thuốc dạ dày – tiêu hóa</a><span>›</span><strong style="color:#1f2937;">Thuốc Phosphalugel giảm
-                đổ axit dạ dày</strong>
+            <a href="index.html">Trang chủ</a><span>›</span><a href="category.html" id="pd-cat-parent">Sản phẩm</a><span>›</span><a
+                href="#" id="pd-cat-current">Dòng sản phẩm</a><span>›</span><strong style="color:#1f2937;" id="pd-breadcrumb-title">Thuốc Phosphalugel...</strong>
         </div>
 
         <div class="pd-layout">
@@ -745,7 +695,8 @@
                 <!-- Product Top: Gallery + Info -->
                 <div class="pd-top">
                     <div class="pd-gallery">
-                        <img src="../assets/images/product_frame.png" alt="Phosphalugel" class="pd-main-img" id="pdMainImg">
+                        <img src="../assets/images/product_frame.png" alt="Phosphalugel" class="pd-main-img"
+                            id="pdMainImg">
                         <div class="pd-thumbs">
                             <img src="../assets/images/product_frame.png" alt="Thumb 1" class="pd-thumb active"
                                 onclick="changeImg(this)">
@@ -758,20 +709,23 @@
                         </div>
                     </div>
                     <div class="pd-info">
-                        <div class="pd-brand">Thương hiệu: <a href="#">Sanofi (Pháp)</a></div>
-                        <h1 class="pd-name">Thuốc Phosphalugel giảm đổ axit của dạ dày (26 gói x 20g)</h1>
+                        <div class="pd-brand">Thương hiệu: <a href="#" id="pd-brand">Sanofi (Pháp)</a></div>
+                        <h1 class="pd-name" id="pd-name">Thuốc Phosphalugel giảm đổ axit của dạ dày (26 gói x 20g)</h1>
                         <div class="pd-rating-line">
                             <div class="pd-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
                                     class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
                                     class="fa-solid fa-star-half-stroke"></i></div>
-                            <span>4.5</span><span>|</span><span>5 đánh giá</span><span>|</span><span>Đã bán 15</span>
+                            <span>4.5</span><span>|</span><span id="pd-review-count">5 đánh giá</span><span>|</span><span id="pd-sales">Đã bán 15</span>
+                        </div>
+                        <div style="font-size: 14px; color: #6b7280; margin-bottom: 12px;" id="pd-stock-status">
+                            <span style="color: #22c55e; font-weight: 600;">✓ Còn hàng</span>
                         </div>
                         <div class="pd-price-box">
-                            <span class="pd-price">124,800₫<span class="pd-price-unit">/ Hộp</span></span>
-                            <span class="pd-old-price">156,000₫</span>
-                            <span class="pd-discount-tag">-20%</span>
+                            <span class="pd-price" id="pd-price-new">124,800₫<span class="pd-price-unit" id="pd-unit">/ Hộp</span></span>
+                            <span class="pd-old-price" id="pd-price-old">156,000₫</span>
+                            <span class="pd-discount-tag" id="pd-discount">-20%</span>
                         </div>
-                        <div class="pd-short-desc">
+                        <div class="pd-short-desc" id="pd-short-desc">
                             Thuốc Phosphalugel là sản phẩm của Pharmatis (Pháp) với thành phần chính là Aluminium
                             phosphate 20%. Thuốc có tác dụng trung hoà bớt acid trong dạ dày, bao phủ niêm mạc dạ dày
                             giúp giảm đau và bảo vệ thành dạ dày.
@@ -785,8 +739,8 @@
                             </div>
                         </div>
                         <div class="pd-actions">
-                            <button class="pd-btn-buy"><i class="fa-solid fa-bag-shopping"></i> Mua ngay</button>
-                            <button class="pd-btn-cart"><i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ</button>
+                            <button class="pd-btn-buy" id="btn-buy-now"><i class="fa-solid fa-bag-shopping"></i> Mua ngay</button>
+                            <button class="pd-btn-cart" id="btn-add-to-cart"><i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ</button>
                         </div>
 
                         <!-- Specs Table -->
@@ -794,39 +748,43 @@
                             <table>
                                 <tr>
                                     <td>SKU</td>
-                                    <td>PH-DA-001</td>
+                                    <td id="pd-sku">PH-DA-001</td>
                                 </tr>
                                 <tr>
                                     <td>Danh mục</td>
-                                    <td>Thuốc dạ dày – tiêu hóa</td>
+                                    <td id="pd-spec-cat">Thuốc dạ dày – tiêu hóa</td>
                                 </tr>
                                 <tr>
                                     <td>Thương hiệu</td>
-                                    <td>Sanofi (Pháp)</td>
+                                    <td id="pd-spec-brand">Sanofi (Pháp)</td>
                                 </tr>
                                 <tr>
                                     <td>Dạng bào chế</td>
-                                    <td>Hỗn dịch</td>
+                                    <td id="pd-spec-form">Hỗn dịch</td>
                                 </tr>
                                 <tr>
                                     <td>Quy cách</td>
-                                    <td>Hộp 26 gói x 20g</td>
+                                    <td id="pd-spec-packing">Hộp 26 gói x 20g</td>
                                 </tr>
                                 <tr>
                                     <td>Thành phần</td>
-                                    <td>Aluminium phosphate 20%</td>
+                                    <td id="pd-spec-ingredient">Aluminium phosphate 20%</td>
                                 </tr>
                                 <tr>
                                     <td>Xuất xứ</td>
-                                    <td>Pháp</td>
+                                    <td id="pd-spec-origin">Pháp</td>
                                 </tr>
                                 <tr>
                                     <td>Số đăng ký</td>
-                                    <td>VN-12345-18</td>
+                                    <td id="pd-spec-reg">VN-12345-18</td>
+                                </tr>
+                                <tr>
+                                    <td>Nhà sản xuất</td>
+                                    <td id="pd-spec-manufacturer">Sanofi (Pháp)</td>
                                 </tr>
                                 <tr>
                                     <td>Thuốc cần mua theo</td>
-                                    <td>Đơn thuốc</td>
+                                    <td id="pd-spec-prescription">Đơn thuốc</td>
                                 </tr>
                             </table>
                         </div>
@@ -842,16 +800,10 @@
                         <button class="pd-tab-btn" onclick="switchTab('tab-storage')">Bảo quản</button>
                     </div>
                     <div class="pd-tab-content active" id="tab-desc">
-                        <h4>Thành phần</h4>
-                        <p>Thuốc Phosphalugel là sản phẩm của Pharmatis (Pháp) với thành phần chính là Aluminium
-                            phosphate gel 12,38g (tương đương Aluminium phosphate 2,476g). Sản phẩm được bào chế dưới
-                            dạng hỗn dịch uống, đóng gói trong từng gói nhỏ tiện lợi.</p>
-                        <p>Phosphalugel tác dụng trung hoà acid dạ dày nhanh chóng, tạo lớp bảo vệ niêm mạc dạ dày và
-                            thực quản. Phosphalugel là thuốc kháng acid không gây kiềm hoá dịch dạ dày, giúp giảm acid
-                            dạ dày mà không ảnh hưởng đến quá trình tiêu hoá.</p>
-                        <img src="../assets/images/banner_san_pham_ban_chay.png" alt="Phosphalugel" class="pd-desc-banner">
-                        <p><strong>Thương hiệu:</strong> Phosphalugel thuộc thương hiệu Sanofi – tập đoàn dược phẩm hàng
-                            đầu thế giới có trụ sở tại Pháp, với hơn 100 năm kinh nghiệm trong ngành y dược.</p>
+                        <div id="pd-full-content">
+                            <h4>Thành phần</h4>
+                            <p id="pd-detail-desc">Thuốc Phosphalugel là sản phẩm của Pharmatis (Pháp)...</p>
+                        </div>
                     </div>
                     <div class="pd-tab-content" id="tab-usage">
                         <h4>Công dụng</h4>
@@ -861,19 +813,16 @@
                             loạn tiêu hóa, khó tiêu</p>
                     </div>
                     <div class="pd-tab-content" id="tab-dosage">
-                        <h4>Liều dùng</h4>
-                        <p><strong>Người lớn:</strong> dùng 1-2 gói/lần, 2-3 lần/ngày. Uống sau bữa ăn 1-2 giờ hoặc khi
-                            có triệu chứng.</p>
-                        <p><strong>Trẻ em trên 6 tháng:</strong> dùng 1/2 gói – 1 gói/lần, 2-3 lần/ngày theo chỉ dẫn bác
-                            sĩ.</p>
-                        <p><strong>Cách dùng:</strong> Bóp nhẹ gói thuốc để trộn đều trước khi dùng. Có thể uống trực
-                            tiếp hoặc pha với nước.</p>
+                        <h4>Liều dùng và cách dùng</h4>
+                        <div id="pd-tab-content-dosage">
+                            <p>Thông tin về liều dùng đang được cập nhật...</p>
+                        </div>
                     </div>
                     <div class="pd-tab-content" id="tab-storage">
                         <h4>Bảo quản</h4>
-                        <p>Bảo quản nơi khô ráo, thoáng mát, nhiệt độ dưới 30°C. Tránh ánh nắng trực tiếp. Để xa tầm tay
-                            trẻ em.</p>
-                        <p>Hạn sử dụng: 36 tháng kể từ ngày sản xuất (xem trên bao bì).</p>
+                        <div id="pd-tab-content-storage">
+                            <p>Thông tin về bảo quản đang được cập nhật...</p>
+                        </div>
                     </div>
                 </div>
 
@@ -1044,35 +993,70 @@
         <!-- Popular Products -->
         <div class="pd-popular-section">
             <h3><i class="fa-solid fa-fire" style="color:#dc2626"></i> SẢN PHẨM ĐƯỢC MUA NHIỀU NHẤT</h3>
-            <div class="pd-popular-grid">
-                <div class="pd-pop-card"><img src="../assets/images/product_frame.png" alt="">
-                    <div class="pd-pop-card-body">
-                        <div class="pd-pop-card-name">Ống Biotech DK42 Phụ nữ tiền mãn kinh</div>
-                        <div class="pd-pop-card-price">52,000₫</div>
+            <div class="product-grid" style="padding: 0; background: none;">
+                <!-- Product 1 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="../assets/images/product_frame.png" alt="Product">
+                    </div>
+                    <div class="product-info">
+                        <h5><a href="product.html">Ống Biotech DK42 Phụ nữ tiền mãn kinh</a></h5>
+                        <div class="product-price">
+                            <span class="price-new">52,000đ</span>
+                        </div>
+                        <button class="btn-add-cart">Thêm giỏ hàng</button>
                     </div>
                 </div>
-                <div class="pd-pop-card"><img src="../assets/images/product_frame_2.png" alt="">
-                    <div class="pd-pop-card-body">
-                        <div class="pd-pop-card-name">Siro bổ Ensure Gold Phục hồi thể lực</div>
-                        <div class="pd-pop-card-price">189,000₫</div>
+                <!-- Product 2 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="../assets/images/product_frame_2.png" alt="Product">
+                    </div>
+                    <div class="product-info">
+                        <h5><a href="product.html">Siro bổ Ensure Gold Phục hồi thể lực</a></h5>
+                        <div class="product-price">
+                            <span class="price-new">189,000đ</span>
+                        </div>
+                        <button class="btn-add-cart">Thêm giỏ hàng</button>
                     </div>
                 </div>
-                <div class="pd-pop-card"><img src="../assets/images/product_frame.png" alt="">
-                    <div class="pd-pop-card-body">
-                        <div class="pd-pop-card-name">Thuốc Vitamin D3 Aquadetrim cho trẻ sơ sinh</div>
-                        <div class="pd-pop-card-price">98,000₫</div>
+                <!-- Product 3 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="../assets/images/product_frame.png" alt="Product">
+                    </div>
+                    <div class="product-info">
+                        <h5><a href="product.html">Thuốc Vitamin D3 Aquadetrim cho trẻ sơ sinh</a></h5>
+                        <div class="product-price">
+                            <span class="price-new">98,000đ</span>
+                        </div>
+                        <button class="btn-add-cart">Thêm giỏ hàng</button>
                     </div>
                 </div>
-                <div class="pd-pop-card"><img src="../assets/images/product_frame_2.png" alt="">
-                    <div class="pd-pop-card-body">
-                        <div class="pd-pop-card-name">Sữa bột Abbott Glucerna dành cho người tiểu đường</div>
-                        <div class="pd-pop-card-price">425,000₫</div>
+                <!-- Product 4 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="../assets/images/product_frame_2.png" alt="Product">
+                    </div>
+                    <div class="product-info">
+                        <h5><a href="product.html">Sữa bột Abbott Glucerna dành cho người tiểu đường</a></h5>
+                        <div class="product-price">
+                            <span class="price-new">425,000đ</span>
+                        </div>
+                        <button class="btn-add-cart">Thêm giỏ hàng</button>
                     </div>
                 </div>
-                <div class="pd-pop-card"><img src="../assets/images/product_frame.png" alt="">
-                    <div class="pd-pop-card-body">
-                        <div class="pd-pop-card-name">Viên uống Calcium D3 Pharma bổ sung canxi</div>
-                        <div class="pd-pop-card-price">115,000₫</div>
+                <!-- Product 5 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="../assets/images/product_frame.png" alt="Product">
+                    </div>
+                    <div class="product-info">
+                        <h5><a href="product.html">Viên uống Calcium D3 Pharma bổ sung canxi</a></h5>
+                        <div class="product-price">
+                            <span class="price-new">115,000đ</span>
+                        </div>
+                        <button class="btn-add-cart">Thêm giỏ hàng</button>
                     </div>
                 </div>
             </div>
@@ -1129,7 +1113,10 @@
             });
         });
     </script>
+    <script src="../assets/js/dropdown-handler.js"></script>
+    <script src="../assets/js/mega-menu-loader.js"></script>
     <script src="../assets/js/components.js"></script>
+    <script src="../assets/js/product-loader.js"></script>
 </body>
 
 </html>
