@@ -4,14 +4,20 @@
                 alt="Minh Giang Pharmacy"></a>
         <div class="search-area">
             <div class="search-box">
-                <input type="text" placeholder="Tìm tên thuốc, bệnh lý, thực phẩm chức năng...">
+                <input type="text" id="searchInput" placeholder="Tìm thuốc, hoạt chất, triệu chứng, thương hiệu..." autocomplete="off">
                 <button class="search-btn"><i class="fa-solid fa-magnifying-glass"
                         style="color:white;font-size:16px;"></i></button>
+                <div class="search-suggest-dropdown" id="searchSuggest"></div>
             </div>
         </div>
         <div class="header-actions">
-            <a href="cart.html" class="cart-btn"><img src="../assets/images/icon_cart.png" alt="Cart" class="icon-cart"> Giỏ
-                hàng</a>
+            <a href="cart.html" class="cart-btn">
+                <div style="position: relative; display: inline-block; margin-right: 4px;">
+                    <img src="../assets/images/icon_cart.png" alt="Cart" class="icon-cart" style="display: block;">
+                    <span class="cart-count" style="position: absolute; top: -8px; right: -8px; background: #eb7c23; color: white; font-size: 10px; font-weight: 700; width: 16px; height: 16px; border-radius: 50%; display: none; align-items: center; justify-content: center; border: 1px solid white;">0</span>
+                </div>
+                Giỏ hàng
+            </a>
             <a href="login.html" class="login-btn"><img src="../assets/images/icon_user.png" alt="User"
                     class="icon-user">
                 Đăng nhập</a>
@@ -26,5 +32,6 @@
     </nav>
 </header>
 
-<!-- Scripts cho Mega Menu -->
+<!-- Scripts cho Header -->
 <script src="../assets/js/dropdown-handler.js"></script>
+<script src="../assets/js/search-handler.js"></script>

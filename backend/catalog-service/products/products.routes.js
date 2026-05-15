@@ -23,6 +23,9 @@ router.get('/', async (req, res) => {
     const brandIds = req.query.brand_ids ? req.query.brand_ids.split(',').map(Number) : [];
     const priceMin = req.query.price_min ? Number(req.query.price_min) : null;
     const priceMax = req.query.price_max ? Number(req.query.price_max) : null;
+    const origins = req.query.origins ? req.query.origins.split(',') : [];
+    const indications = req.query.indications ? req.query.indications.split(',') : [];
+    const requiresPrescription = req.query.requires_prescription; // '1' or '0'
     const tag = req.query.tag || null;
     const excludeId = req.query.exclude_id ? Number(req.query.exclude_id) : null;
     const status = req.query.status || 'active';
@@ -39,8 +42,12 @@ router.get('/', async (req, res) => {
       where += ' AND p.category_id = ?';
       params.push(subCategoryId);
     } else if (categoryId) {
-      where += ' AND (p.category_id = ? OR p.category_id IN (SELECT id FROM categories WHERE parent_id = ?))';
-      params.push(categoryId, categoryId);
+      where += ` AND (
+        p.category_id = ? 
+        OR p.category_id IN (SELECT id FROM categories WHERE parent_id = ?)
+        OR p.category_id IN (SELECT id FROM categories WHERE parent_id IN (SELECT id FROM categories WHERE parent_id = ?))
+      )`;
+      params.push(categoryId, categoryId, categoryId);
     }
     if (brandIds.length > 0) {
       where += ` AND p.brand_id IN (${brandIds.map(() => '?').join(',')})`;
@@ -53,6 +60,19 @@ router.get('/', async (req, res) => {
     if (priceMax !== null) {
       where += ' AND p.retail_price <= ?';
       params.push(priceMax);
+    }
+    if (origins.length > 0) {
+      where += ` AND p.country_of_origin IN (${origins.map(() => '?').join(',')})`;
+      params.push(...origins);
+    }
+    if (indications.length > 0) {
+      where += ` AND p.active_ingredient IN (${indications.map(() => '?').join(',')})`;
+      params.push(...indications);
+    }
+    if (requiresPrescription === '1') {
+      where += ' AND p.requires_prescription = 1';
+    } else if (requiresPrescription === '0') {
+      where += ' AND p.requires_prescription = 0';
     }
     if (tag) {
       where += ' AND JSON_CONTAINS(p.tags, ?)';
@@ -145,11 +165,15 @@ router.get('/', async (req, res) => {
 router.get('/filters', async (req, res) => {
   try {
     const categoryId = req.query.category_id ? Number(req.query.category_id) : null;
-    let where = "WHERE status = 'active'";
+    let where = "WHERE p.status = 'active'";
     const params = [];
     if (categoryId) {
-      where += " AND category_id = ?";
-      params.push(categoryId);
+      where += ` AND (
+        p.category_id = ? 
+        OR p.category_id IN (SELECT id FROM categories WHERE parent_id = ?)
+        OR p.category_id IN (SELECT id FROM categories WHERE parent_id IN (SELECT id FROM categories WHERE parent_id = ?))
+      )`;
+      params.push(categoryId, categoryId, categoryId);
     }
 
     const price_ranges = [
@@ -171,17 +195,24 @@ router.get('/filters', async (req, res) => {
     );
 
     const [origins] = await pool.query(
-      `SELECT country_of_origin as name, COUNT(id) as count
-       FROM products
-       ${where} AND country_of_origin IS NOT NULL
-       GROUP BY country_of_origin
-       ORDER BY country_of_origin ASC`,
+      `SELECT p.country_of_origin as name, COUNT(p.id) as count
+       FROM products p
+       ${where} AND p.country_of_origin IS NOT NULL
+       GROUP BY p.country_of_origin
+       ORDER BY p.country_of_origin ASC`,
       params
+    );
+
+    const [[{ rx_count }]] = await pool.query(
+      `SELECT COUNT(p.id) as rx_count FROM products p ${where} AND p.requires_prescription = 1`, params
+    );
+    const [[{ non_rx_count }]] = await pool.query(
+      `SELECT COUNT(p.id) as non_rx_count FROM products p ${where} AND p.requires_prescription = 0`, params
     );
 
     res.json({
       success: true,
-      data: { price_ranges, brands, origins }
+      data: { price_ranges, brands, origins, rx_count, non_rx_count }
     });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

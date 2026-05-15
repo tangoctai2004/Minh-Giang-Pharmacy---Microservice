@@ -31,6 +31,15 @@ async function initMegaMenu() {
     }
 }
 
+function getCategoryUrl(cat) {
+    const mapping = {
+        7000: 'disease.html',
+        8000: 'health.html',
+        9000: 'news.html'
+    };
+    return mapping[cat.id] || `category.html?id=${cat.id}`;
+}
+
 function renderNavList(container, categories) {
     container.innerHTML = categories.map(cat => {
         const isSimple = [7000, 8000, 9000].includes(cat.id);
@@ -86,7 +95,7 @@ function renderNavList(container, categories) {
 function renderRichItem(cat) {
     return `
         <li class="nav-item">
-            <a href="category.html">${cat.name} <i class="fa-solid fa-chevron-down arrow-down"></i></a>
+            <a href="${getCategoryUrl(cat)}">${cat.name} <i class="fa-solid fa-chevron-down arrow-down"></i></a>
             <div class="dropdown-menu">
                 <div class="dropdown-content" data-parent-id="${cat.id}">
                     <div class="dropdown-sidebar">
@@ -101,7 +110,7 @@ function renderRichItem(cat) {
                     <div class="dropdown-products">
                         <div class="dropdown-subnav" id="subnav-${cat.id}">
                             ${cat.children[0] ? cat.children[0].children.map(l3 => `
-                                <a href="category.html" class="subnav-pill" data-id="${l3.id}" onclick="loadProducts(${cat.id}, ${l3.id}, event)">
+                                <a href="${getCategoryUrl(l3)}" class="subnav-pill" data-id="${l3.id}" onclick="loadProducts(${cat.id}, ${l3.id}, event)">
                                     <img src="../assets/images/category.png" alt="Icon">
                                     <span>${l3.name}</span>
                                 </a>
@@ -111,7 +120,7 @@ function renderRichItem(cat) {
                             <div class="header-title-area">
                                 <span class="header-title">Bán chạy nhất</span>
                                 <span class="separator">|</span>
-                                <a href="category.html" class="view-all">Xem tất cả <i class="fa-solid fa-chevron-right"></i></a>
+                                <a href="${getCategoryUrl(cat)}" class="view-all">Xem tất cả <i class="fa-solid fa-chevron-right"></i></a>
                             </div>
                         </div>
                         <div class="products-grid" id="grid-${cat.id}">
@@ -127,12 +136,12 @@ function renderRichItem(cat) {
 function renderSimpleItem(cat) {
     return `
         <li class="nav-item nav-item-simple">
-            <a href="category.html">${cat.name} <i class="fa-solid fa-chevron-down arrow-down"></i></a>
+            <a href="${getCategoryUrl(cat)}">${cat.name} <i class="fa-solid fa-chevron-down arrow-down"></i></a>
             <div class="dropdown-menu dropdown-simple">
                 <div class="dropdown-content">
                     <ul class="dropdown-simple-list">
                         ${cat.children.map(sub => `
-                            <li class="dropdown-simple-item"><a href="category.html">${sub.name}</a></li>
+                            <li class="dropdown-simple-item"><a href="${getCategoryUrl(sub)}">${sub.name}</a></li>
                         `).join('')}
                     </ul>
                 </div>
@@ -165,7 +174,7 @@ function loadSubNav(parentId, subId, level3Cats) {
     if (!subnav) return;
 
     subnav.innerHTML = level3Cats.map(l3 => `
-        <a href="category.html" class="subnav-pill" data-id="${l3.id}" onclick="loadProducts(${parentId}, ${l3.id}, event)">
+        <a href="${getCategoryUrl(l3)}" class="subnav-pill" data-id="${l3.id}" onclick="loadProducts(${parentId}, ${l3.id}, event)">
             <img src="../assets/images/category.png" alt="Icon">
             <span>${l3.name}</span>
         </a>

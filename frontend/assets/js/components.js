@@ -11,7 +11,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const file = el.getAttribute("mg-include");
         if (file) {
             try {
-                const response = await fetch(file);
+                // Thêm query parameter ngẫu nhiên để chống cache từ trình duyệt
+                const fetchUrl = file + '?v=' + new Date().getTime();
+                const response = await fetch(fetchUrl);
                 if (response.ok) {
                     let html = await response.text();
                     // Strip Live Server injected script from the HTML component
@@ -33,7 +35,40 @@ document.addEventListener("DOMContentLoaded", function () {
     _initClientAuthHeader();
     _initMegaMenu();
     _initProductCardNavigation();
+    _loadSearchHandler();
+    _loadCartHandler();
 });
+
+// ─── Tải động script tìm kiếm ─────────────────
+function _loadSearchHandler() {
+    const observer = new MutationObserver(function () {
+        if (document.getElementById('searchInput')) {
+            observer.disconnect();
+            if (!document.querySelector('script[src*="search-handler.js"]')) {
+                const script = document.createElement('script');
+                script.src = window.location.pathname.includes('/client/') ? '../assets/js/search-handler.js' : 'assets/js/search-handler.js';
+                document.body.appendChild(script);
+            }
+        }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // Fallback
+    if (document.getElementById('searchInput') && !document.querySelector('script[src*="search-handler.js"]')) {
+        const script = document.createElement('script');
+        script.src = window.location.pathname.includes('/client/') ? '../assets/js/search-handler.js' : 'assets/js/search-handler.js';
+        document.body.appendChild(script);
+    }
+}
+
+// ─── Tải động script giỏ hàng ─────────────────
+function _loadCartHandler() {
+    if (!document.querySelector('script[src*="cart-handler.js"]')) {
+        const script = document.createElement('script');
+        script.src = window.location.pathname.includes('/client/') ? '../assets/js/cart-handler.js' : 'assets/js/cart-handler.js';
+        document.body.appendChild(script);
+    }
+}
 
 // ─── Điều hướng Product Card toàn cục ─────────────────
 function _initProductCardNavigation() {

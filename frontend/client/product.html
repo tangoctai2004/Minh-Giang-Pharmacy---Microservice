@@ -4,671 +4,532 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thuốc Phosphalugel giảm đổ axit của dạ dày — Nhà Thuốc Minh Giang</title>
+    <title>Sản phẩm — Nhà Thuốc Minh Giang</title>
     <link rel="stylesheet" href="../assets/css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        body {
+            background-color: #f5f5fa;
+        }
+
         .breadcrumb {
             padding: 12px 0;
-            font-size: 15px;
-            color: #666
+            font-size: 14px;
+            color: #666;
         }
 
         .breadcrumb a {
             color: #0b7a3e;
-            text-decoration: none
-        }
-
-        .breadcrumb a:hover {
-            text-decoration: underline
+            text-decoration: none;
         }
 
         .breadcrumb span {
-            margin: 0 6px;
-            color: #999
+            margin: 0 8px;
+            color: #999;
         }
 
-        /* PRODUCT DETAIL */
-        .pd-layout {
+        .pd-container {
+            padding-bottom: 50px;
+        }
+
+        /* --- TOP LAYOUT --- */
+        .pd-top-layout {
             display: grid;
             grid-template-columns: 1fr 300px;
-            gap: 24px;
-            padding-bottom: 40px
+            gap: 20px;
+            margin-bottom: 20px;
+            align-items: start;
         }
 
-        .pd-left {}
-
-        .pd-top {
-            display: grid;
-            grid-template-columns: 400px 1fr;
-            gap: 24px;
+        .pd-main-box {
             background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 32px;
             border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 24px
         }
 
-        /* Image Gallery */
-        .pd-gallery {}
+        /* 1. Gallery Column */
+        .pd-gallery-box {
+            /* Không cần background trắng vì đã nằm trong main-box */
+        }
 
         .pd-main-img {
             width: 100%;
             aspect-ratio: 1;
             object-fit: contain;
-            border: 1px solid #f0f0f0;
             border-radius: 8px;
             margin-bottom: 12px;
-            background: #fafafa
         }
 
         .pd-thumbs {
             display: flex;
-            gap: 8px
+            gap: 8px;
+            overflow-x: auto;
         }
 
         .pd-thumb {
-            width: 64px;
-            height: 64px;
+            width: 60px;
+            height: 60px;
             object-fit: contain;
-            border: 2px solid #e5e7eb;
-            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
             cursor: pointer;
-            padding: 4px;
-            background: #fafafa;
-            transition: border-color .15s
+            transition: all 0.2s;
         }
 
-        .pd-thumb:hover,
-        .pd-thumb.active {
-            border-color: #0b7a3e
+        .pd-thumb.active, .pd-thumb:hover {
+            border-color: #0b7a3e;
         }
 
-        /* Product Info */
-        .pd-info {}
+        /* 2. Info Column */
+        .pd-info-col {
+            background: transparent;
+        }
 
         .pd-brand {
             font-size: 14px;
-            color: #0b7a3e;
-            font-weight: 500;
-            margin-bottom: 4px
+            color: #4b5563;
+            margin-bottom: 8px;
         }
 
-        .pd-brand a {
-            color: #0b7a3e;
-            text-decoration: none
+        .pd-brand strong {
+            color: #1f2937;
         }
 
         .pd-name {
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 700;
             color: #1f2937;
             line-height: 1.4;
-            margin-bottom: 8px
+            margin-bottom: 12px;
         }
 
-        .pd-rating-line {
+        .pd-meta {
             display: flex;
             align-items: center;
             gap: 12px;
-            font-size: 15px;
-            color: #6b7280;
-            margin-bottom: 12px
+            font-size: 14px;
+            color: #4b5563;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .pd-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .pd-stars {
             color: #f59e0b;
-            font-size: 15px
         }
 
-        .pd-price-box {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            border-radius: 8px;
-            padding: 14px;
-            margin-bottom: 16px
-        }
-
-        .pd-price {
-            font-size: 26px;
-            font-weight: 700;
-            color: #dc2626
-        }
-
-        .pd-price-unit {
+        .pd-specs-list {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 12px 8px;
             font-size: 15px;
+            color: #374151;
+            line-height: 1.5;
+        }
+
+        .pd-spec-label {
             color: #6b7280;
-            font-weight: 400;
-            margin-left: 4px
         }
 
-        .pd-old-price {
-            font-size: 15px;
-            color: #9ca3af;
-            text-decoration: line-through;
-            margin-left: 12px
-        }
-
-        .pd-discount-tag {
-            background: #dc2626;
-            color: #fff;
-            font-size: 13px;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 4px;
-            margin-left: 8px
+        .pd-spec-val {
+            font-weight: 500;
+            color: #1f2937;
         }
 
         .pd-short-desc {
-            font-size: 15px;
-            color: #4b5563;
+            font-size: 14px;
+            color: #374151;
             line-height: 1.6;
-            margin-bottom: 16px
+            margin-bottom: 20px;
+        }
+        
+        .pd-short-desc strong {
+            color: #116a35;
         }
 
-        .pd-qty-row {
+        /* 3. Action/Buy Column */
+        .pd-sidebar-col {
             display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 16px
+            flex-direction: column;
+            gap: 20px;
         }
 
-        .pd-qty-label {
-            font-size: 15px;
-            font-weight: 500;
-            color: #374151
+        .pd-action-box {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .pd-action-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .pd-action-label {
+            font-size: 18px;
+            color: #1f2937;
+        }
+
+        .pd-price {
+            font-size: 24px;
+            font-weight: 700;
+            color: #eb7c23;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .pd-price-unit {
+            font-size: 14px;
+            color: #4b5563;
+            font-weight: 400;
         }
 
         .pd-qty-ctrl {
             display: flex;
             align-items: center;
             border: 1px solid #d1d5db;
-            border-radius: 6px;
-            overflow: hidden
+            border-radius: 20px;
+            overflow: hidden;
+            background: #f3f4f6;
         }
 
         .pd-qty-btn {
             width: 32px;
             height: 32px;
             border: none;
-            background: #f9fafb;
-            font-size: 15px;
+            background: transparent;
+            font-size: 18px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #374151
-        }
-
-        .pd-qty-btn:hover {
-            background: #e5e7eb
+            color: #374151;
         }
 
         .pd-qty-input {
-            width: 40px;
+            width: 36px;
             height: 32px;
             border: none;
-            border-left: 1px solid #d1d5db;
-            border-right: 1px solid #d1d5db;
+            background: #fff;
             text-align: center;
             font-size: 15px;
-            font-family: inherit
-        }
-
-        .pd-actions {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 16px
+            font-weight: 600;
+            outline: none;
         }
 
         .pd-btn-buy {
-            flex: 1;
-            padding: 12px;
-            background: #0b7a3e;
+            width: 100%;
+            padding: 14px;
+            background: #116a35;
             color: #fff;
             border: none;
             border-radius: 8px;
             font-size: 16px;
-            font-weight: 700;
+            font-weight: 600;
             cursor: pointer;
-            font-family: inherit;
-            transition: background .15s
+            margin-bottom: 12px;
+            transition: background 0.2s;
         }
+        .pd-btn-buy:hover { background: #0c4d26; }
 
-        .pd-btn-buy:hover {
-            background: #095e30
+        .pd-action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
         }
 
         .pd-btn-cart {
-            flex: 1;
             padding: 12px;
             background: #fff;
-            color: #0b7a3e;
-            border: 2px solid #0b7a3e;
+            color: #116a35;
+            border: 1px solid #116a35;
             border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: inherit;
-            transition: all .15s
-        }
-
-        .pd-btn-cart:hover {
-            background: #ecfdf5
-        }
-
-        /* Spec Table */
-        .pd-specs {
-            margin-bottom: 0
-        }
-
-        .pd-specs table {
-            width: 100%;
             font-size: 15px;
-            border-collapse: collapse
-        }
-
-        .pd-specs td {
-            padding: 8px 12px;
-            border-bottom: 1px solid #f3f4f6
-        }
-
-        .pd-specs td:first-child {
-            width: 35%;
-            color: #6b7280;
             font-weight: 500;
-            background: #f9fafb
+            cursor: pointer;
+            transition: all 0.2s;
         }
+        .pd-btn-cart:hover { background: #f0fdf4; }
 
-        .pd-specs td:last-child {
-            color: #1f2937
-        }
-
-        /* Right Sidebar */
-        .pd-sidebar {
-            position: sticky;
-            top: 20px;
-            align-self: start
-        }
-
-        .pd-sidebar-box {
+        .pd-btn-zalo {
+            padding: 12px;
             background: #fff;
-            border: 1px solid #e5e7eb;
+            color: #eb7c23;
+            border: 1px solid #eb7c23;
             border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 16px
-        }
-
-        .pd-sidebar-box h3 {
-            font-size: 16px;
-            font-weight: 700;
-            color: #1f2937;
-            margin: 0 0 12px 0;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #0b7a3e
-        }
-
-        .pd-related-item {
-            display: flex;
-            gap: 10px;
-            padding: 10px 0;
-            border-bottom: 1px solid #f3f4f6;
+            font-size: 15px;
+            font-weight: 500;
             cursor: pointer;
-            transition: background .1s
-        }
-
-        .pd-related-item:last-child {
-            border-bottom: none
-        }
-
-        .pd-related-item:hover {
-            background: #f9fafb;
-            border-radius: 6px
-        }
-
-        .pd-related-img {
-            width: 56px;
-            height: 56px;
-            object-fit: contain;
-            border: 1px solid #f0f0f0;
-            border-radius: 4px;
-            flex-shrink: 0
-        }
-
-        .pd-related-info {
-            flex: 1;
-            min-width: 0
-        }
-
-        .pd-related-name {
-            font-size: 14px;
-            color: #1f2937;
-            line-height: 1.3;
-            margin-bottom: 4px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden
-        }
-
-        .pd-related-price {
-            font-size: 15px;
-            font-weight: 700;
-            color: #dc2626
-        }
-
-        /* Tabs */
-        .pd-tabs-section {
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 24px
-        }
-
-        .pd-tab-nav {
-            display: flex;
-            gap: 0;
-            border-bottom: 2px solid #e5e7eb;
-            margin-bottom: 16px
-        }
-
-        .pd-tab-btn {
-            padding: 10px 20px;
-            font-size: 15px;
-            font-weight: 600;
-            color: #6b7280;
-            background: none;
-            border: none;
-            border-bottom: 2px solid transparent;
-            cursor: pointer;
-            font-family: inherit;
-            transition: all .15s;
-            margin-bottom: -2px
-        }
-
-        .pd-tab-btn:hover {
-            color: #0b7a3e
-        }
-
-        .pd-tab-btn.active {
-            color: #0b7a3e;
-            border-bottom-color: #0b7a3e
-        }
-
-        .pd-tab-content {
-            display: none;
-            font-size: 15px;
-            color: #4b5563;
-            line-height: 1.8
-        }
-
-        .pd-tab-content.active {
-            display: block
-        }
-
-        .pd-tab-content h4 {
-            font-size: 16px;
-            font-weight: 700;
-            color: #1f2937;
-            margin: 16px 0 8px
-        }
-
-        .pd-tab-content p {
-            margin-bottom: 12px
-        }
-
-        .pd-desc-banner {
-            width: 100%;
-            border-radius: 8px;
-            margin: 16px 0
-        }
-
-        /* Rating Section */
-        .pd-rating-section {
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 24px
-        }
-
-        .pd-rating-section h3 {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1f2937;
-            margin: 0 0 16px
-        }
-
-        .pd-rating-overview {
-            display: flex;
-            gap: 30px;
-            margin-bottom: 20px
-        }
-
-        .pd-rating-big {
-            text-align: center;
-            min-width: 100px
-        }
-
-        .pd-rating-big .score {
-            font-size: 40px;
-            font-weight: 700;
-            color: #f59e0b
-        }
-
-        .pd-rating-big .stars {
-            color: #f59e0b;
-            font-size: 16px;
-            margin: 4px 0
-        }
-
-        .pd-rating-big .count {
-            font-size: 14px;
-            color: #9ca3af
-        }
-
-        .pd-rating-bars {
-            flex: 1
-        }
-
-        .pd-bar-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 6px;
-            font-size: 14px;
-            color: #6b7280
-        }
-
-        .pd-bar-row span:first-child {
-            width: 14px;
-            text-align: right
-        }
-
-        .pd-bar-track {
-            flex: 1;
-            height: 8px;
-            background: #f3f4f6;
-            border-radius: 4px;
-            overflow: hidden
-        }
-
-        .pd-bar-fill {
-            height: 100%;
-            background: #f59e0b;
-            border-radius: 4px
-        }
-
-        .pd-bar-row span:last-child {
-            width: 30px
-        }
-
-        .pd-review-form {
-            border-top: 1px solid #e5e7eb;
-            padding-top: 16px
-        }
-
-        .pd-review-form h4 {
-            font-size: 16px;
-            font-weight: 600;
-            margin: 0 0 10px;
-            color: #1f2937
-        }
-
-        .pd-review-stars {
-            display: flex;
-            gap: 4px;
-            margin-bottom: 12px
-        }
-
-        .pd-review-stars i {
-            font-size: 20px;
-            color: #d1d5db;
-            cursor: pointer;
-            transition: color .15s
-        }
-
-        .pd-review-stars i:hover,
-        .pd-review-stars i.active {
-            color: #f59e0b
-        }
-
-        .pd-review-input {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 15px;
-            font-family: inherit;
-            resize: vertical;
-            min-height: 60px;
-            margin-bottom: 10px
-        }
-
-        .pd-review-submit {
-            padding: 8px 20px;
-            background: #0b7a3e;
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: inherit
-        }
-
-        .pd-review-submit:hover {
-            background: #095e30
-        }
-
-        .pd-review-list {
-            margin-top: 16px
-        }
-
-        .pd-review-item {
-            padding: 12px 0;
-            border-bottom: 1px solid #f3f4f6
-        }
-
-        .pd-review-item:last-child {
-            border-bottom: none
-        }
-
-        .pd-review-user {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 6px
-        }
-
-        .pd-review-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: #e5e7eb;
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 8px;
+        }
+        .pd-btn-zalo img { width: 18px; height: 18px; }
+
+        /* Similar Products Sidebar */
+        .pd-similar-box {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .pd-sidebar-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-top: 0;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .pd-mini-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .pd-mini-item {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            text-decoration: none;
+            color: inherit;
+        }
+        .pd-mini-item:hover .pd-mini-name { color: #0b7a3e; }
+
+        .pd-mini-img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            background: #fff;
+        }
+
+        .pd-mini-info { flex: 1; min-width: 0; }
+        .pd-mini-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1f2937;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+        .pd-mini-price {
             font-size: 14px;
             font-weight: 700;
-            color: #6b7280
+            color: #dc2626;
+        }
+        .pd-mini-consult {
+            font-size: 13px;
+            color: #6b7280;
+            font-style: italic;
         }
 
-        .pd-review-meta {
-            font-size: 14px
+        /* --- MIDDLE LAYOUT --- */
+        .pd-mid-layout {
+            display: grid;
+            grid-template-columns: 200px 1fr 300px;
+            gap: 24px;
+            margin-bottom: 40px;
+            align-items: start;
         }
 
-        .pd-review-meta strong {
-            color: #1f2937
+        /* Vertical Tabs */
+        .pd-tab-menu {
+            position: sticky;
+            top: 20px;
+            background: transparent;
         }
-
-        .pd-review-meta span {
-            color: #9ca3af;
-            margin-left: 8px
-        }
-
-        .pd-review-text {
+        .pd-tab-link {
+            display: block;
+            padding: 12px 16px;
             font-size: 15px;
-            color: #4b5563;
-            line-height: 1.5;
-            margin-top: 4px
+            font-weight: 600;
+            color: #1f2937;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            transition: all 0.2s;
+        }
+        .pd-tab-link.active {
+            background: #116a35;
+            color: #fff;
+        }
+        .pd-tab-link:hover:not(.active) {
+            background: #f3f4f6;
         }
 
-        /* Related Products Carousel */
-        .pd-popular-section {
+        /* Content Area */
+        .pd-content-box {
             background: #fff;
             border: 1px solid #e5e7eb;
-            border-radius: 8px;
+            border-radius: 12px;
+            padding: 24px;
+        }
+        
+        .pd-content-section {
+            margin-bottom: 30px;
+        }
+        .pd-content-section h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #116a35;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .pd-content-html {
+            font-size: 15px;
+            color: #374151;
+            line-height: 1.7;
+        }
+        .pd-content-html h3 { font-size: 16px; margin: 16px 0 8px; color: #1f2937; }
+        .pd-content-html p { margin-bottom: 12px; }
+        .pd-content-html ul { padding-left: 20px; margin-bottom: 12px; }
+        .pd-content-html li { margin-bottom: 6px; }
+
+        /* Reviews Box (Empty State) */
+        .pd-reviews-box {
+            margin-top: 40px;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 24px;
+        }
+        .pd-reviews-box h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 20px;
+        }
+        .pd-reviews-summary {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+            background: #f9fafb;
             padding: 20px;
-            margin-bottom: 24px
+            border-radius: 8px;
+        }
+        .pd-reviews-score {
+            text-align: center;
+        }
+        .pd-reviews-score .score {
+            font-size: 36px;
+            font-weight: 700;
+            color: #f59e0b;
+        }
+        .pd-reviews-score .stars { color: #f59e0b; font-size: 16px; margin: 4px 0; }
+        .pd-reviews-score .count { font-size: 14px; color: #0068ff; cursor: pointer; }
+        
+        .pd-reviews-bars { flex: 1; max-width: 400px; }
+        .pd-bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; font-size: 13px; color: #4b5563;}
+        .pd-bar-track { flex: 1; height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden; }
+        .pd-bar-fill { height: 100%; background: #f59e0b; width: 0%; }
+        
+        .pd-reviews-list {
+            margin-top: 24px;
+            text-align: center;
+            padding: 40px 0;
+            color: #6b7280;
+            font-style: italic;
         }
 
-        .pd-popular-section h3 {
-            font-size: 18px;
+        /* --- BOTTOM LAYOUT --- */
+        .pd-bottom-section {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .pd-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .pd-section-title {
+            font-size: 16px;
             font-weight: 700;
             color: #1f2937;
-            margin: 0 0 16px
+            text-transform: uppercase;
+            margin: 0;
         }
-
-
-        /* Top Searches */
-        .top-searches {
-            margin-top: 30px;
-            padding: 20px 0;
-            border-top: 1px solid #e5e7eb
+        .carousel-nav {
+            display: flex;
+            gap: 8px;
         }
-
-        .top-searches h3 {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 14px
+        .carousel-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            color: #4b5563;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
         }
-
-        .top-search-links {
+        .carousel-btn:hover:not(:disabled) {
+            background: #f3f4f6;
+            color: #116a35;
+        }
+        .carousel-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        .carousel-container {
+            position: relative;
+            overflow: hidden;
+            margin: 0 -10px; /* Safe padding cho box-shadow */
+            padding: 10px;
+        }
+        .carousel-track {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+            gap: 15px; /* Giữ nguyên gap 15px của grid cũ */
+        }
+        .carousel-track > div {
+            /* 5 items per view, gap 15px -> (100% - 4*15) / 5 */
+            flex: 0 0 calc((100% - 60px) / 5); 
+        }
+        .pd-tags {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px
+            gap: 10px;
         }
-
-        .top-search-links a {
-            display: inline-block;
-            padding: 6px 14px;
-            border: 1px solid #e5e7eb;
-            border-radius: 16px;
+        .pd-tag {
+            padding: 8px 16px;
+            background: #f3f4f6;
+            color: #374151;
+            border-radius: 20px;
             font-size: 14px;
-            color: #4b5563;
             text-decoration: none;
-            transition: all .15s
+            transition: all 0.2s;
         }
-
-        .top-search-links a:hover {
-            border-color: #0b7a3e;
-            color: #0b7a3e;
-            background: #ecfdf5
-        }
+        .pd-tag:hover { background: #e5e7eb; color: #116a35; }
     </style>
 </head>
 
@@ -683,440 +544,268 @@
     <!-- Main Header -->
     <div mg-include="../components/main_header.html"></div>
 
-    <!-- ====== PRODUCT DETAIL PAGE ====== -->
-    <main class="container">
-        <div class="breadcrumb">
-            <a href="index.html">Trang chủ</a><span>›</span><a href="category.html" id="pd-cat-parent">Sản phẩm</a><span>›</span><a
-                href="#" id="pd-cat-current">Dòng sản phẩm</a><span>›</span><strong style="color:#1f2937;" id="pd-breadcrumb-title">Thuốc Phosphalugel...</strong>
+    <!-- MAIN CONTENT -->
+    <main class="container pd-container">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb" id="pdBreadcrumb">
+            <a href="index.html">Trang chủ</a> <span>›</span> Đang tải...
         </div>
 
-        <div class="pd-layout">
-            <div class="pd-left">
-                <!-- Product Top: Gallery + Info -->
-                <div class="pd-top">
-                    <div class="pd-gallery">
-                        <img src="../assets/images/product_frame.png" alt="Phosphalugel" class="pd-main-img"
-                            id="pdMainImg">
-                        <div class="pd-thumbs">
-                            <img src="../assets/images/product_frame.png" alt="Thumb 1" class="pd-thumb active"
-                                onclick="changeImg(this)">
-                            <img src="../assets/images/product_frame_2.png" alt="Thumb 2" class="pd-thumb"
-                                onclick="changeImg(this)">
-                            <img src="../assets/images/product_frame.png" alt="Thumb 3" class="pd-thumb"
-                                onclick="changeImg(this)">
-                            <img src="../assets/images/product_frame_2.png" alt="Thumb 4" class="pd-thumb"
-                                onclick="changeImg(this)">
+        <!-- 1. TOP LAYOUT (Gallery | Info | Buy & Related) -->
+        <div class="pd-top-layout">
+            
+            <!-- Cột trái: Main Box (Gallery + Info) -->
+            <div class="pd-main-box">
+                <!-- Cột trái trong Main Box: Gallery -->
+                <div class="pd-gallery-box">
+                    <img src="../assets/images/placeholder.png" alt="Product" class="pd-main-img" id="pdMainImg">
+                    <div class="pd-thumbs" id="pdThumbs">
+                        <!-- Nạp bằng JS -->
+                    </div>
+                </div>
+
+                <!-- Cột phải trong Main Box: Thông tin sản phẩm -->
+                <div class="pd-info-col">
+                    <div class="pd-brand">Thương hiệu: <strong id="pdBrand">...</strong></div>
+                    <h1 class="pd-name" id="pdName">Đang tải sản phẩm...</h1>
+                    
+                    <div class="pd-meta">
+                        <span id="pdSku">SKU: ...</span>
+                        <span>|</span>
+                        <div class="pd-meta-item">
+                            <span class="pd-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></span>
+                            <span>0 đánh giá</span>
                         </div>
                     </div>
-                    <div class="pd-info">
-                        <div class="pd-brand">Thương hiệu: <a href="#" id="pd-brand">Sanofi (Pháp)</a></div>
-                        <h1 class="pd-name" id="pd-name">Thuốc Phosphalugel giảm đổ axit của dạ dày (26 gói x 20g)</h1>
-                        <div class="pd-rating-line">
-                            <div class="pd-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                                    class="fa-solid fa-star-half-stroke"></i></div>
-                            <span>4.5</span><span>|</span><span id="pd-review-count">5 đánh giá</span><span>|</span><span id="pd-sales">Đã bán 15</span>
-                        </div>
-                        <div style="font-size: 14px; color: #6b7280; margin-bottom: 12px;" id="pd-stock-status">
-                            <span style="color: #22c55e; font-weight: 600;">✓ Còn hàng</span>
-                        </div>
-                        <div class="pd-price-box">
-                            <span class="pd-price" id="pd-price-new">124,800₫<span class="pd-price-unit" id="pd-unit">/ Hộp</span></span>
-                            <span class="pd-old-price" id="pd-price-old">156,000₫</span>
-                            <span class="pd-discount-tag" id="pd-discount">-20%</span>
-                        </div>
-                        <div class="pd-short-desc" id="pd-short-desc">
-                            Thuốc Phosphalugel là sản phẩm của Pharmatis (Pháp) với thành phần chính là Aluminium
-                            phosphate 20%. Thuốc có tác dụng trung hoà bớt acid trong dạ dày, bao phủ niêm mạc dạ dày
-                            giúp giảm đau và bảo vệ thành dạ dày.
-                        </div>
-                        <div class="pd-qty-row">
-                            <span class="pd-qty-label">Số lượng:</span>
+
+                    <!-- Nút Thuốc kê đơn theo thiết kế 1 -->
+                    <div id="pdPrescriptionNotice" style="background: #e6f4ea; border: 1px solid #ceead6; padding: 12px; border-radius: 6px; margin-bottom: 20px; display: none;">
+                        <div style="color: #137333; font-weight: 700; margin-bottom: 4px;">Thuốc kê đơn</div>
+                        <div style="font-size: 13px; color: #137333;"><i class="fa-solid fa-circle-info"></i> Lưu ý: Sản phẩm này chỉ bán khi có chỉ định của bác sĩ, mọi thông tin trên Website chỉ mang tính chất tham khảo.</div>
+                    </div>
+                    
+                    <div id="pdSupplementNotice" style="background: #f1f3f4; padding: 12px; border-radius: 6px; margin-bottom: 20px; display: none;">
+                        <div style="font-size: 13px; color: #3c4043;"><i class="fa-solid fa-circle-info"></i> Thực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh</div>
+                    </div>
+
+                    <!-- Mô tả ngắn -->
+                    <div class="pd-short-desc">
+                        <strong>Mô tả sản phẩm:</strong><br>
+                        <span id="pdShortDesc">Đang tải...</span>
+                    </div>
+
+                    <div class="pd-specs-list">
+                        <div class="pd-spec-label">Số đăng ký:</div>
+                        <div class="pd-spec-val" id="pdSpecReg">...</div>
+
+                        <div class="pd-spec-label">Đơn vị tính:</div>
+                        <div class="pd-spec-val" id="pdSpecUnit">...</div>
+
+                        <div class="pd-spec-label">Thương hiệu:</div>
+                        <div class="pd-spec-val" id="pdSpecBrand">...</div>
+
+                        <div class="pd-spec-label">Dạng bào chế:</div>
+                        <div class="pd-spec-val" id="pdSpecForm">...</div>
+
+                        <div class="pd-spec-label">Quy cách:</div>
+                        <div class="pd-spec-val" id="pdSpecPack">...</div>
+
+                        <div class="pd-spec-label">Xuất xứ:</div>
+                        <div class="pd-spec-val" id="pdSpecOrigin">...</div>
+
+                        <div class="pd-spec-label">Nhà sản xuất:</div>
+                        <div class="pd-spec-val" id="pdSpecMfg">...</div>
+
+                        <div class="pd-spec-label">Thuốc cần kê đơn:</div>
+                        <div class="pd-spec-val" id="pdSpecRx">...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cột phải: Action & Similar Products -->
+            <div class="pd-sidebar-col">
+                <!-- Hộp mua hàng -->
+                <div class="pd-action-box">
+                    <div class="pd-action-row">
+                        <span class="pd-action-label" style="font-size: 18px;">Tạm tính</span>
+                        <div class="pd-action-label" style="display: flex; gap: 8px; align-items: center; font-size: 16px;">
+                            Số lượng:
                             <div class="pd-qty-ctrl">
                                 <button class="pd-qty-btn" onclick="changeQty(-1)">−</button>
                                 <input type="text" value="1" class="pd-qty-input" id="pdQty">
                                 <button class="pd-qty-btn" onclick="changeQty(1)">+</button>
                             </div>
                         </div>
-                        <div class="pd-actions">
-                            <button class="pd-btn-buy" id="btn-buy-now"><i class="fa-solid fa-bag-shopping"></i> Mua ngay</button>
-                            <button class="pd-btn-cart" id="btn-add-to-cart"><i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ</button>
-                        </div>
+                    </div>
+                    
+                    <div class="pd-price" id="pdPriceBox">
+                        <span id="pdPrice" style="font-size: 24px; font-weight: 700; color: #eb7c23;">0đ</span>
+                    </div>
 
-                        <!-- Specs Table -->
-                        <div class="pd-specs">
-                            <table>
-                                <tr>
-                                    <td>SKU</td>
-                                    <td id="pd-sku">PH-DA-001</td>
-                                </tr>
-                                <tr>
-                                    <td>Danh mục</td>
-                                    <td id="pd-spec-cat">Thuốc dạ dày – tiêu hóa</td>
-                                </tr>
-                                <tr>
-                                    <td>Thương hiệu</td>
-                                    <td id="pd-spec-brand">Sanofi (Pháp)</td>
-                                </tr>
-                                <tr>
-                                    <td>Dạng bào chế</td>
-                                    <td id="pd-spec-form">Hỗn dịch</td>
-                                </tr>
-                                <tr>
-                                    <td>Quy cách</td>
-                                    <td id="pd-spec-packing">Hộp 26 gói x 20g</td>
-                                </tr>
-                                <tr>
-                                    <td>Thành phần</td>
-                                    <td id="pd-spec-ingredient">Aluminium phosphate 20%</td>
-                                </tr>
-                                <tr>
-                                    <td>Xuất xứ</td>
-                                    <td id="pd-spec-origin">Pháp</td>
-                                </tr>
-                                <tr>
-                                    <td>Số đăng ký</td>
-                                    <td id="pd-spec-reg">VN-12345-18</td>
-                                </tr>
-                                <tr>
-                                    <td>Nhà sản xuất</td>
-                                    <td id="pd-spec-manufacturer">Sanofi (Pháp)</td>
-                                </tr>
-                                <tr>
-                                    <td>Thuốc cần mua theo</td>
-                                    <td id="pd-spec-prescription">Đơn thuốc</td>
-                                </tr>
-                            </table>
-                        </div>
+                    <div style="background: #f0fdf4; height: 24px; border-radius: 12px; margin-bottom: 20px;"></div>
+
+                    <button class="pd-btn-buy" id="btnBuyNow">Mua ngay</button>
+                    
+                    <div class="pd-action-buttons">
+                        <button class="pd-btn-cart" id="btnAddToCart">Thêm giỏ hàng</button>
+                        <button class="pd-btn-zalo">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Icon_of_Zalo.svg/1024px-Icon_of_Zalo.svg.png" alt="Zalo" style="width: 20px; height: 20px;"> Chat Zalo
+                        </button>
                     </div>
                 </div>
 
-                <!-- Tabs Section -->
-                <div class="pd-tabs-section">
-                    <div class="pd-tab-nav">
-                        <button class="pd-tab-btn active" onclick="switchTab('tab-desc')">Thành phần</button>
-                        <button class="pd-tab-btn" onclick="switchTab('tab-usage')">Công dụng</button>
-                        <button class="pd-tab-btn" onclick="switchTab('tab-dosage')">Liều dùng</button>
-                        <button class="pd-tab-btn" onclick="switchTab('tab-storage')">Bảo quản</button>
-                    </div>
-                    <div class="pd-tab-content active" id="tab-desc">
-                        <div id="pd-full-content">
-                            <h4>Thành phần</h4>
-                            <p id="pd-detail-desc">Thuốc Phosphalugel là sản phẩm của Pharmatis (Pháp)...</p>
-                        </div>
-                    </div>
-                    <div class="pd-tab-content" id="tab-usage">
-                        <h4>Công dụng</h4>
-                        <p>Phosphalugel được sử dụng để điều trị các triệu chứng sau:</p>
-                        <p>• Ợ nóng, ợ chua, trào ngược dạ dày thực quản<br>• Viêm dạ dày cấp và mạn tính<br>• Loét dạ
-                            dày, tá tràng<br>• Viêm thực quản do trào ngược<br>• Đau dạ dày do tăng tiết acid<br>• Rối
-                            loạn tiêu hóa, khó tiêu</p>
-                    </div>
-                    <div class="pd-tab-content" id="tab-dosage">
-                        <h4>Liều dùng và cách dùng</h4>
-                        <div id="pd-tab-content-dosage">
-                            <p>Thông tin về liều dùng đang được cập nhật...</p>
-                        </div>
-                    </div>
-                    <div class="pd-tab-content" id="tab-storage">
-                        <h4>Bảo quản</h4>
-                        <div id="pd-tab-content-storage">
-                            <p>Thông tin về bảo quản đang được cập nhật...</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Rating Section -->
-                <div class="pd-rating-section">
-                    <h3>Đánh giá sản phẩm</h3>
-                    <div class="pd-rating-overview">
-                        <div class="pd-rating-big">
-                            <div class="score">4.5</div>
-                            <div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                                    class="fa-solid fa-star-half-stroke"></i></div>
-                            <div class="count">5 đánh giá</div>
-                        </div>
-                        <div class="pd-rating-bars">
-                            <div class="pd-bar-row"><span>5</span><i class="fa-solid fa-star"
-                                    style="color:#f59e0b;font-size:10px"></i>
-                                <div class="pd-bar-track">
-                                    <div class="pd-bar-fill" style="width:60%"></div>
-                                </div><span>60%</span>
-                            </div>
-                            <div class="pd-bar-row"><span>4</span><i class="fa-solid fa-star"
-                                    style="color:#f59e0b;font-size:10px"></i>
-                                <div class="pd-bar-track">
-                                    <div class="pd-bar-fill" style="width:20%"></div>
-                                </div><span>20%</span>
-                            </div>
-                            <div class="pd-bar-row"><span>3</span><i class="fa-solid fa-star"
-                                    style="color:#f59e0b;font-size:10px"></i>
-                                <div class="pd-bar-track">
-                                    <div class="pd-bar-fill" style="width:20%"></div>
-                                </div><span>20%</span>
-                            </div>
-                            <div class="pd-bar-row"><span>2</span><i class="fa-solid fa-star"
-                                    style="color:#f59e0b;font-size:10px"></i>
-                                <div class="pd-bar-track">
-                                    <div class="pd-bar-fill" style="width:0%"></div>
-                                </div><span>0%</span>
-                            </div>
-                            <div class="pd-bar-row"><span>1</span><i class="fa-solid fa-star"
-                                    style="color:#f59e0b;font-size:10px"></i>
-                                <div class="pd-bar-track">
-                                    <div class="pd-bar-fill" style="width:0%"></div>
-                                </div><span>0%</span>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Review List -->
-                    <div class="pd-review-list">
-                        <div class="pd-review-item">
-                            <div class="pd-review-user">
-                                <div class="pd-review-avatar">NL</div>
-                                <div class="pd-review-meta"><strong>Nguyễn Lan</strong> <span>17/02/2026, 21:30</span>
-                                </div>
-                            </div>
-                            <div style="color:#f59e0b;font-size:12px;margin-bottom:4px"><i
-                                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                                    class="fa-solid fa-star"></i></div>
-                            <div class="pd-review-text">Thuốc PHOSPHALUGEL HỘP/26 rất tốt. Đã mua lần 2. Giá cả hợp lý,
-                                giao hàng nhanh. Rất hài lòng!</div>
-                        </div>
-                        <div class="pd-review-item">
-                            <div class="pd-review-user">
-                                <div class="pd-review-avatar">TH</div>
-                                <div class="pd-review-meta"><strong>Trần Hùng</strong> <span>10/01/2026, 15:42</span>
-                                </div>
-                            </div>
-                            <div style="color:#f59e0b;font-size:12px;margin-bottom:4px"><i
-                                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                                    class="fa-regular fa-star"></i></div>
-                            <div class="pd-review-text">Sản phẩm chính hãng, đóng gói cẩn thận. Uống giảm đau dạ dày
-                                hiệu quả, sẽ mua thêm.</div>
-                        </div>
-                    </div>
-                    <!-- Review Form -->
-                    <div class="pd-review-form">
-                        <h4><i class="fa-solid fa-pen"></i> Viết đánh giá</h4>
-                        <div class="pd-review-stars" id="reviewStars">
-                            <i class="fa-solid fa-star" data-val="1"></i>
-                            <i class="fa-solid fa-star" data-val="2"></i>
-                            <i class="fa-solid fa-star" data-val="3"></i>
-                            <i class="fa-solid fa-star" data-val="4"></i>
-                            <i class="fa-solid fa-star" data-val="5"></i>
-                        </div>
-                        <textarea class="pd-review-input"
-                            placeholder="Chia sẻ nhận xét của bạn về sản phẩm..."></textarea>
-                        <button class="pd-review-submit"><i class="fa-solid fa-paper-plane"></i> Gửi đánh giá</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- RIGHT SIDEBAR -->
-            <div class="pd-sidebar">
-                <div class="pd-sidebar-box">
-                    <h3><i class="fa-solid fa-shuffle"></i> Sản phẩm tương tự</h3>
-                    <div class="pd-related-item">
-                        <img src="../assets/images/product_frame.png" alt="" class="pd-related-img">
-                        <div class="pd-related-info">
-                            <div class="pd-related-name">Thuốc Maalox dạ dày trung hòa acid, bảo vệ niêm mạc</div>
-                            <div class="pd-related-price">89,000₫</div>
-                        </div>
-                    </div>
-                    <div class="pd-related-item">
-                        <img src="../assets/images/product_frame_2.png" alt="" class="pd-related-img">
-                        <div class="pd-related-info">
-                            <div class="pd-related-name">Thuốc Yumangel giảm đau dạ dày, bao phủ niêm mạc</div>
-                            <div class="pd-related-price">72,000₫</div>
-                        </div>
-                    </div>
-                    <div class="pd-related-item">
-                        <img src="../assets/images/product_frame.png" alt="" class="pd-related-img">
-                        <div class="pd-related-info">
-                            <div class="pd-related-name">Thuốc Gaviscon Advance bạc hà chống trào ngược</div>
-                            <div class="pd-related-price">168,000₫</div>
-                        </div>
-                    </div>
-                    <div class="pd-related-item">
-                        <img src="../assets/images/product_frame_2.png" alt="" class="pd-related-img">
-                        <div class="pd-related-info">
-                            <div class="pd-related-name">Thuốc Mylanta hỗn dịch trung hòa acid dạ dày</div>
-                            <div class="pd-related-price">55,000₫</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="pd-sidebar-box">
-                    <h3><i class="fa-solid fa-pills"></i> Sản phẩm phổ biến</h3>
-                    <div class="pd-related-item">
-                        <img src="../assets/images/product_frame_2.png" alt="" class="pd-related-img">
-                        <div class="pd-related-info">
-                            <div class="pd-related-name">Thuốc Nyzylam Gel trị dạ dày, viêm loét thực quản</div>
-                            <div class="pd-related-price">78,000₫</div>
-                        </div>
-                    </div>
-                    <div class="pd-related-item">
-                        <img src="../assets/images/product_frame.png" alt="" class="pd-related-img">
-                        <div class="pd-related-info">
-                            <div class="pd-related-name">Thuốc dạ dày Gaviscon Duo giảm trào ngược</div>
-                            <div class="pd-related-price">145,000₫</div>
-                        </div>
-                    </div>
-                    <div class="pd-related-item">
-                        <img src="../assets/images/product_frame_2.png" alt="" class="pd-related-img">
-                        <div class="pd-related-info">
-                            <div class="pd-related-name">Thuốc Omeprazol Stada 20mg điều trị viêm loét dạ dày</div>
-                            <div class="pd-related-price">35,000₫</div>
-                        </div>
-                    </div>
-                    <div class="pd-related-item">
-                        <img src="../assets/images/product_frame.png" alt="" class="pd-related-img">
-                        <div class="pd-related-info">
-                            <div class="pd-related-name">Viên uống Gastropulgite Ipsen hỗ trợ dạ dày</div>
-                            <div class="pd-related-price">92,000₫</div>
-                        </div>
-                    </div>
-                    <div class="pd-related-item">
-                        <img src="../assets/images/product_frame_2.png" alt="" class="pd-related-img">
-                        <div class="pd-related-info">
-                            <div class="pd-related-name">Thuốc Sucralfate điều trị loét dạ dày, tá tràng</div>
-                            <div class="pd-related-price">62,000₫</div>
-                        </div>
+                <!-- Sản phẩm tương tự -->
+                <div class="pd-similar-box">
+                    <h3 class="pd-sidebar-title">Sản phẩm tương tự</h3>
+                    <div class="pd-mini-list" id="pdSimilarProducts">
+                        <!-- Nạp bằng JS -->
+                        <div style="font-size: 13px; color: #999;">Đang tải...</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Popular Products -->
-        <div class="pd-popular-section">
-            <h3><i class="fa-solid fa-fire" style="color:#dc2626"></i> SẢN PHẨM ĐƯỢC MUA NHIỀU NHẤT</h3>
-            <div class="product-grid" style="padding: 0; background: none;">
-                <!-- Product 1 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Ống Biotech DK42 Phụ nữ tiền mãn kinh</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">52,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
-                <!-- Product 2 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame_2.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Siro bổ Ensure Gold Phục hồi thể lực</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">189,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
+        <!-- 2. MIDDLE LAYOUT (Menu | Content | Popular) -->
+        <div class="pd-mid-layout">
+            
+            <!-- Menu dọc -->
+            <div class="pd-tab-menu">
+                <a href="#section-desc" class="pd-tab-link active">Mô tả sản phẩm</a>
+                <!-- Các tab khác sẽ được ẩn đi vì hiện tại API chỉ gom chung vào description -->
+                <a href="#section-review" class="pd-tab-link">Đánh giá</a>
+            </div>
+
+            <!-- Nội dung chi tiết -->
+            <div class="pd-content-box">
+                <!-- Nội dung mô tả (từ API) -->
+                <div class="pd-content-section" id="section-desc">
+                    <h2>Thông tin chi tiết</h2>
+                    <div class="pd-content-html" id="pdContentHtml">
+                        Đang tải nội dung...
                     </div>
                 </div>
-                <!-- Product 3 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Thuốc Vitamin D3 Aquadetrim cho trẻ sơ sinh</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">98,000đ</span>
+
+                <!-- Đánh giá sản phẩm (Giao diện giữ chỗ rỗng) -->
+                <div class="pd-reviews-box" id="section-review">
+                    <h2>Đánh giá sản phẩm</h2>
+                    <div class="pd-reviews-summary">
+                        <div class="pd-reviews-score">
+                            <div class="score">0.0</div>
+                            <div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                            <div class="count">0 đánh giá</div>
                         </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
+                        <div class="pd-reviews-bars">
+                            <div class="pd-bar-row">
+                                <span>5<i class="fa-solid fa-star" style="font-size:10px;margin-left:2px"></i></span>
+                                <div class="pd-bar-track"><div class="pd-bar-fill" style="width:0%"></div></div>
+                                <span>0%</span>
+                            </div>
+                            <div class="pd-bar-row">
+                                <span>4<i class="fa-solid fa-star" style="font-size:10px;margin-left:2px"></i></span>
+                                <div class="pd-bar-track"><div class="pd-bar-fill" style="width:0%"></div></div>
+                                <span>0%</span>
+                            </div>
+                            <div class="pd-bar-row">
+                                <span>3<i class="fa-solid fa-star" style="font-size:10px;margin-left:2px"></i></span>
+                                <div class="pd-bar-track"><div class="pd-bar-fill" style="width:0%"></div></div>
+                                <span>0%</span>
+                            </div>
+                            <div class="pd-bar-row">
+                                <span>2<i class="fa-solid fa-star" style="font-size:10px;margin-left:2px"></i></span>
+                                <div class="pd-bar-track"><div class="pd-bar-fill" style="width:0%"></div></div>
+                                <span>0%</span>
+                            </div>
+                            <div class="pd-bar-row">
+                                <span>1<i class="fa-solid fa-star" style="font-size:10px;margin-left:2px"></i></span>
+                                <div class="pd-bar-track"><div class="pd-bar-fill" style="width:0%"></div></div>
+                                <span>0%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pd-reviews-list">
+                        Chưa có đánh giá nào cho sản phẩm này.
                     </div>
                 </div>
-                <!-- Product 4 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame_2.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Sữa bột Abbott Glucerna dành cho người tiểu đường</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">425,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
-                <!-- Product 5 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Viên uống Calcium D3 Pharma bổ sung canxi</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">115,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
+            </div>
+
+            <!-- Sản phẩm phổ biến -->
+            <div class="pd-similar-box">
+                <h3 class="pd-sidebar-title">Sản phẩm phổ biến</h3>
+                <div class="pd-mini-list" id="pdPopularProducts">
+                    <!-- Nạp bằng JS -->
+                    <div style="font-size: 13px; color: #999;">Đang tải...</div>
                 </div>
             </div>
         </div>
 
-        <!-- Top Searches -->
-        <div class="top-searches">
-            <h3>Tìm kiếm hàng đầu</h3>
-            <div class="top-search-links">
-                <a href="#">Bệnh tim mạch</a><a href="#">Thuốc tiểu đường</a><a href="#">Vitamin tổng hợp</a><a
-                    href="#">Thuốc bổ não</a><a href="#">Bệnh tiêu hóa</a><a href="#">Thuốc giảm cân</a><a href="#">Dầu
-                    cá Omega 3</a><a href="#">Người cao tuổi</a><a href="#">Thuốc ho</a><a href="#">Bổ gan</a><a
-                    href="#">Thuốc xương khớp</a><a href="#">Thuốc dạ dày</a><a href="#">Chăm sóc tóc</a><a
-                    href="#">Thuốc mỡ máu</a><a href="#">Kem chống nắng</a><a href="#">Thuốc đau đầu</a><a href="#">Men
-                    tiêu hóa</a><a href="#">Collagen</a>
+        <!-- 3. BOTTOM LAYOUT -->
+        
+        <!-- Tìm kiếm hàng đầu -->
+        <div class="pd-bottom-section" style="margin-top: 40px;">
+            <div class="pd-section-header">
+                <h2 class="pd-section-title">Tìm kiếm hàng đầu</h2>
+            </div>
+            <div class="pd-tags" id="pdTopSearches">
+                <!-- Nạp bằng JS -->
             </div>
         </div>
+
+        <!-- Sản phẩm đang thu hút -->
+        <div class="pd-bottom-section">
+            <div class="pd-section-header">
+                <h2 class="pd-section-title">Sản phẩm đang thu hút</h2>
+                <div class="carousel-nav">
+                    <button class="carousel-btn" id="btnPrevTrending" disabled><i class="fa-solid fa-arrow-left"></i></button>
+                    <button class="carousel-btn" id="btnNextTrending"><i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+            </div>
+            <div class="carousel-container">
+                <div class="carousel-track" id="pdTrendingProducts">
+                    <!-- Nạp bằng JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Sản phẩm vừa xem -->
+        <div class="pd-bottom-section" id="recentlyViewedSection" style="display:none;">
+            <div class="pd-section-header">
+                <h2 class="pd-section-title">Sản phẩm vừa xem</h2>
+                <div class="carousel-nav">
+                    <button class="carousel-btn" id="btnPrevViewed" disabled><i class="fa-solid fa-arrow-left"></i></button>
+                    <button class="carousel-btn" id="btnNextViewed"><i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+            </div>
+            <div class="carousel-container">
+                <div class="carousel-track" id="pdRecentlyViewed">
+                    <!-- Nạp bằng JS -->
+                </div>
+            </div>
+        </div>
+
     </main>
-
-    <!-- Pre-Footer Promises -->
-    <div mg-include="../components/promises.html"></div>
-
-    <!-- Newsletter -->
-    <div mg-include="../components/newsletter.html"></div>
 
     <!-- Main Footer -->
     <div mg-include="../components/main_footer.html"></div>
 
-    <script>
-        function changeImg(thumb) {
-            document.getElementById('pdMainImg').src = thumb.src;
-            document.querySelectorAll('.pd-thumb').forEach(t => t.classList.remove('active'));
-            thumb.classList.add('active');
-        }
-        function changeQty(delta) {
-            const inp = document.getElementById('pdQty');
-            let v = parseInt(inp.value) || 1;
-            v = Math.max(1, v + delta);
-            inp.value = v;
-        }
-        function switchTab(tabId) {
-            document.querySelectorAll('.pd-tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.pd-tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            event.target.classList.add('active');
-        }
-        // Review stars
-        document.querySelectorAll('#reviewStars i').forEach(star => {
-            star.addEventListener('click', () => {
-                const val = parseInt(star.dataset.val);
-                document.querySelectorAll('#reviewStars i').forEach((s, i) => {
-                    s.classList.toggle('active', i < val);
-                });
-            });
-        });
-    </script>
     <script src="../assets/js/dropdown-handler.js"></script>
-    <script src="../assets/js/mega-menu-loader.js"></script>
     <script src="../assets/js/components.js"></script>
+    <script src="../assets/js/mega-menu-loader.js"></script>
     <script src="../assets/js/product-loader.js"></script>
+    <script>
+        function changeQty(delta) {
+            const input = document.getElementById('pdQty');
+            let val = parseInt(input.value) || 1;
+            val += delta;
+            if (val < 1) val = 1;
+            input.value = val;
+        }
+
+        window.changeImg = function(imgEl) {
+            document.getElementById('pdMainImg').src = imgEl.src;
+            document.querySelectorAll('.pd-thumb').forEach(t => t.classList.remove('active'));
+            imgEl.classList.add('active');
+        };
+    </script>
 </body>
 
 </html>

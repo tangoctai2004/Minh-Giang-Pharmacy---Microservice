@@ -6,13 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thuốc — Nhà Thuốc Minh Giang</title>
     <link rel="stylesheet" href="../assets/css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* ====== CATEGORY PAGE STYLES ====== */
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #f3f4f6; /* Đảm bảo nền xám nhạt để khối trắng nổi lên */
+        }
+        
         .breadcrumb {
             padding: 12px 0;
-            font-size: 15px;
+            font-size: 14px;
             color: #666;
         }
 
@@ -21,18 +26,9 @@
             text-decoration: none;
         }
 
-        .breadcrumb a:hover {
-            text-decoration: underline;
-        }
-
-        .breadcrumb span {
-            margin: 0 6px;
-            color: #999;
-        }
-
         .category-layout {
             display: grid;
-            grid-template-columns: 220px 1fr;
+            grid-template-columns: 240px 1fr;
             gap: 24px;
             padding-bottom: 40px;
         }
@@ -40,213 +36,282 @@
         /* --- SIDEBAR --- */
         .cat-sidebar {
             background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 16px;
-            font-size: 15px;
+            font-size: 14px;
             align-self: start;
-            position: sticky;
-            top: 20px;
+            border-radius: 12px;
+            padding: 24px;
         }
 
-        .cat-sidebar h3 {
-            font-size: 16px;
+        .cat-sidebar > h3 {
+            font-size: 20px;
             font-weight: 700;
             color: #1f2937;
-            margin: 0 0 12px 0;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #0b7a3e;
+            margin: 0 0 20px 0;
+            padding-bottom: 0;
+            border-bottom: none;
+            text-transform: none;
         }
 
         .sidebar-section {
-            margin-bottom: 20px;
-        }
-
-        .sidebar-section:last-child {
-            margin-bottom: 0;
+            margin-bottom: 24px;
         }
 
         .sidebar-section h4 {
             font-size: 15px;
             font-weight: 700;
-            color: #374151;
-            margin: 0 0 10px 0;
+            color: #4b5563;
+            margin: 0 0 12px 0;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e5e7eb;
             display: flex;
             align-items: center;
-            gap: 6px;
+            justify-content: space-between;
+            cursor: pointer;
         }
 
         .sidebar-section h4 i {
-            color: #0b7a3e;
-            font-size: 14px;
+            color: #9ca3af;
+            font-size: 12px;
+            transition: transform 0.2s;
         }
 
-        .price-range-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .price-range-list li {
-            padding: 6px 0;
-            cursor: pointer;
-            color: #4b5563;
-            transition: color 0.15s;
+        /* Price Blocks */
+        .price-block-list {
             display: flex;
-            align-items: center;
-            gap: 6px;
+            flex-direction: column;
+            gap: 8px;
         }
 
-        .price-range-list li:hover {
+        .price-block-btn {
+            display: block;
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            background: #fff;
+            text-align: left;
+            font-size: 13px;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .price-block-btn:hover, .price-block-btn.active {
+            border-color: #0b7a3e;
             color: #0b7a3e;
+            background: #f0fdf4;
         }
 
-        .price-range-list li input[type="radio"] {
-            accent-color: #0b7a3e;
+        /* Filter Search Box */
+        .filter-search-box {
+            position: relative;
+            margin-bottom: 12px;
+        }
+        .filter-search-box input {
+            width: 100%;
+            padding: 8px 12px 8px 32px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 13px;
+            outline: none;
+        }
+        .filter-search-box i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 12px;
         }
 
         .filter-check-list {
             list-style: none;
             padding: 0;
             margin: 0;
+            max-height: 200px;
+            overflow-y: auto;
         }
 
+        /* Custom scrollbar for filter list */
+        .filter-check-list::-webkit-scrollbar { width: 6px; }
+        .filter-check-list::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 3px; }
+        .filter-check-list::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
+
         .filter-check-list li {
-            padding: 4px 0;
+            padding: 6px 0;
             display: flex;
             align-items: center;
             gap: 8px;
             color: #4b5563;
-            font-size: 15px;
+            font-size: 14px;
+            cursor: pointer;
         }
 
         .filter-check-list li input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
             accent-color: #0b7a3e;
+            cursor: pointer;
         }
 
         /* --- MAIN CONTENT --- */
-        .cat-main {
-            min-width: 0;
-        }
-
-        .cat-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
+        .cat-main { min-width: 0; }
 
         .cat-title {
             font-size: 24px;
             font-weight: 700;
-            color: #1f2937;
-        }
-
-        .cat-sort-bar {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .sort-btn {
-            padding: 6px 14px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            background: #fff;
-            font-size: 14px;
-            font-weight: 500;
-            color: #374151;
-            cursor: pointer;
-            transition: all 0.15s;
-            font-family: inherit;
-        }
-
-        .sort-btn:hover,
-        .sort-btn.active {
-            background: #0b7a3e;
-            color: #fff;
-            border-color: #0b7a3e;
-        }
-
-        .cat-subcategories {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
+            color: #116a35;
             margin-bottom: 20px;
         }
 
-        .cat-sub-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 16px;
-            border: 1px solid #e5e7eb;
-            border-radius: 20px;
+        /* Sub Categories Grid */
+        .subcats-container {
             background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .subcat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        
+        .subcat-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f9fafb;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: #1f2937;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .subcat-card:hover {
+            border-color: #0b7a3e;
+            box-shadow: 0 4px 12px rgba(11, 122, 62, 0.1);
+        }
+
+        .subcat-icon {
+            width: 40px;
+            height: 40px;
+            background: #116a35;
+            color: #fff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .btn-view-more-subcat {
+            display: block;
+            text-align: center;
+            margin: 20px auto 0 auto;
+            color: #1f2937;
             font-size: 14px;
             font-weight: 500;
-            color: #374151;
             cursor: pointer;
-            transition: all 0.15s;
-            text-decoration: none;
+            border: none;
+            background: none;
         }
 
-        .cat-sub-chip:hover,
-        .cat-sub-chip.active {
-            background: #ecfdf5;
+        /* Tabs (Kê đơn / Không kê đơn) */
+        .cat-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 16px;
+        }
+
+        .cat-tab-btn {
+            padding: 8px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            background: #fff;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .cat-tab-btn.active {
             border-color: #0b7a3e;
             color: #0b7a3e;
+            background: #f0fdf4;
         }
 
-        .cat-sub-chip img {
-            width: 24px;
-            height: 24px;
+        /* Toolbar Sort */
+        .cat-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .cat-toolbar select {
+            padding: 8px 32px 8px 12px;
+            border: 1px solid #d1d5db;
             border-radius: 4px;
+            background: #fff;
+            font-size: 14px;
+            color: #374151;
+            cursor: pointer;
+            outline: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23374151%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px top 50%;
+            background-size: 10px auto;
         }
 
-        /* Override Product Grid for Sidebar Layout */
+        /* Product Grid: Override for 4 columns */
         .cat-main .product-grid {
             grid-template-columns: repeat(4, 1fr) !important;
             padding: 0;
             background: none;
         }
 
-        /* --- PAGINATION --- */
+        /* Pagination */
         .pagination {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 6px;
-            margin-top: 30px;
-            padding-bottom: 20px;
+            gap: 8px;
+            margin-top: 40px;
         }
 
         .page-btn {
             min-width: 36px;
             height: 36px;
+            padding: 0 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            background: #fff;
-            font-size: 15px;
-            font-weight: 500;
-            color: #374151;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.15s;
-            font-family: inherit;
+            transition: all 0.2s;
         }
 
-        .page-btn:hover,
-        .page-btn.active {
+        .page-btn:hover, .page-btn.active {
             background: #0b7a3e;
             color: #fff;
-            border-color: #0b7a3e;
+            border-radius: 4px;
         }
+
 
         /* --- TOP SEARCHES --- */
         .top-searches {
@@ -270,10 +335,12 @@
 
         .top-search-links a {
             display: inline-block;
-            padding: 6px 14px;
-            border: 1px solid #e5e7eb;
-            border-radius: 16px;
+            padding: 8px 16px;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 20px;
             font-size: 14px;
+            font-weight: 500;
             color: #4b5563;
             text-decoration: none;
             transition: all 0.15s;
@@ -310,218 +377,101 @@
 
             <!-- === LEFT SIDEBAR === -->
             <aside class="cat-sidebar">
-                <h3><i class="fa-solid fa-filter"></i> Bộ lọc nâng cao</h3>
+                <h3>Bộ lọc nâng cao</h3>
 
                 <!-- Price Range -->
                 <div class="sidebar-section">
-                    <h4><i class="fa-solid fa-tag"></i> Khoảng giá</h4>
-                    <ul class="price-range-list">
-                        <li><input type="radio" name="price" id="p1"><label for="p1">Dưới 100,000₫</label></li>
-                        <li><input type="radio" name="price" id="p2"><label for="p2">100,000₫ - 300,000₫</label></li>
-                        <li><input type="radio" name="price" id="p3"><label for="p3">300,000₫ - 500,000₫</label></li>
-                        <li><input type="radio" name="price" id="p4"><label for="p4">500,000₫ - 1,000,000₫</label></li>
-                        <li><input type="radio" name="price" id="p5"><label for="p5">Trên 1,000,000₫</label></li>
-                    </ul>
+                    <h4 data-toggle="catPriceBlock">Khung giá <i class="fa-solid fa-chevron-up"></i></h4>
+                    <div class="price-block-list" id="catPriceBlock">
+                        <button class="price-block-btn" data-min="0" data-max="100000">Dưới 100.000đ</button>
+                        <button class="price-block-btn" data-min="100000" data-max="300000">100.000đ - 300.000đ</button>
+                        <button class="price-block-btn" data-min="300000" data-max="500000">300.000đ - 500.000đ</button>
+                        <button class="price-block-btn" data-min="500000" data-max="1000000">500.000đ - 1.000.000đ</button>
+                        <button class="price-block-btn" data-min="1000000" data-max="">Trên 1.000.000đ</button>
+                    </div>
                 </div>
 
-                <!-- Category Filter -->
-                <div class="sidebar-section">
-                    <h4><i class="fa-solid fa-pills"></i> Nhóm thuốc</h4>
-                    <ul class="filter-check-list">
-                        <li><input type="checkbox" id="c1"><label for="c1">Thuốc giảm đau, hạ sốt</label></li>
-                        <li><input type="checkbox" id="c2"><label for="c2">Thuốc ho, cảm lạnh</label></li>
-                        <li><input type="checkbox" id="c3"><label for="c3">Thuốc kháng sinh</label></li>
-                        <li><input type="checkbox" id="c4"><label for="c4">Thuốc tiêu hóa, dạ dày</label></li>
-                        <li><input type="checkbox" id="c5"><label for="c5">Thuốc tim mạch</label></li>
-                        <li><input type="checkbox" id="c6"><label for="c6">Thuốc thần kinh, giấc ngủ</label></li>
-                        <li><input type="checkbox" id="c7"><label for="c7">Thuốc dị ứng</label></li>
-                        <li><input type="checkbox" id="c8"><label for="c8">Thuốc nhỏ mắt</label></li>
-                    </ul>
-                </div>
 
                 <!-- Brand Filter -->
                 <div class="sidebar-section">
-                    <h4><i class="fa-solid fa-building"></i> Thương hiệu</h4>
-                    <ul class="filter-check-list">
-                        <li><input type="checkbox" id="b1"><label for="b1">Abbott</label></li>
-                        <li><input type="checkbox" id="b2"><label for="b2">Sanofi</label></li>
-                        <li><input type="checkbox" id="b3"><label for="b3">DHG Pharma</label></li>
-                        <li><input type="checkbox" id="b4"><label for="b4">Traphaco</label></li>
-                        <li><input type="checkbox" id="b5"><label for="b5">Imexpharm</label></li>
-                        <li><input type="checkbox" id="b6"><label for="b6">Dược Hậu Giang</label></li>
-                        <li><input type="checkbox" id="b7"><label for="b7">Actavis</label></li>
-                        <li><input type="checkbox" id="b8"><label for="b8">GlaxoSmithKline</label></li>
-                    </ul>
+                    <h4 data-toggle="catBrandBlock">Thương hiệu <i class="fa-solid fa-chevron-up"></i></h4>
+                    <div id="catBrandBlock">
+                        <div class="filter-search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" placeholder="Tìm kiếm" id="searchBrand">
+                        </div>
+                        <ul class="filter-check-list" id="listBrand">
+                            <!-- JS nạp dữ liệu -->
+                        </ul>
+                    </div>
                 </div>
 
                 <!-- Origin Filter -->
                 <div class="sidebar-section">
-                    <h4><i class="fa-solid fa-earth-americas"></i> Xuất xứ</h4>
-                    <ul class="filter-check-list">
-                        <li><input type="checkbox" id="o1"><label for="o1">Việt Nam</label></li>
-                        <li><input type="checkbox" id="o2"><label for="o2">Pháp</label></li>
-                        <li><input type="checkbox" id="o3"><label for="o3">Mỹ</label></li>
-                        <li><input type="checkbox" id="o4"><label for="o4">Hàn Quốc</label></li>
-                        <li><input type="checkbox" id="o5"><label for="o5">Ấn Độ</label></li>
-                        <li><input type="checkbox" id="o6"><label for="o6">Nhật Bản</label></li>
-                    </ul>
+                    <h4 data-toggle="catOriginBlock">Xuất xứ <i class="fa-solid fa-chevron-down" style="transform: rotate(180deg);"></i></h4>
+                    <div id="catOriginBlock" style="display:none;">
+                        <div class="filter-search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" placeholder="Tìm kiếm" id="searchOrigin">
+                        </div>
+                        <ul class="filter-check-list" id="listOrigin">
+                            <!-- JS nạp dữ liệu -->
+                        </ul>
+                    </div>
                 </div>
             </aside>
 
             <!-- === MAIN CONTENT === -->
             <div class="cat-main">
-                <div class="cat-header">
-                    <h1 class="cat-title">Thuốc</h1>
-                    <div class="cat-sort-bar">
-                        <span style="font-size:13px;color:#6b7280;">Sắp xếp:</span>
-                        <button class="sort-btn active">Phổ biến</button>
-                        <button class="sort-btn">Bán chạy</button>
-                        <button class="sort-btn">Giá thấp → cao</button>
-                        <button class="sort-btn">Giá cao → thấp</button>
-                        <button class="sort-btn">Mới nhất</button>
+                <h1 class="cat-title" id="mainCategoryTitle">Danh mục</h1>
+                
+                <!-- Sub Categories Grid -->
+                <div class="subcats-container" id="subCatsWrapper" style="display:none;">
+                    <div class="subcat-grid" id="subCategoriesGrid">
+                        <!-- Nạp bằng JS -->
                     </div>
+                    <button class="btn-view-more-subcat" id="btnViewMoreSubcats" style="display:none;"><i class="fa-solid fa-chevron-down"></i> Xem thêm danh mục</button>
                 </div>
 
-                <!-- Sub-categories (chip pills) -->
-                <div class="cat-subcategories">
-                    <a href="category.html" class="cat-sub-chip active">Tất cả</a>
-                    <a href="category.html" class="cat-sub-chip">Thuốc giảm đau, hạ sốt</a>
-                    <a href="category.html" class="cat-sub-chip">Thuốc kháng sinh</a>
-                    <a href="category.html" class="cat-sub-chip">Thuốc ho, cảm, sổ mũi</a>
-                    <a href="category.html" class="cat-sub-chip">Thuốc tiêu hóa</a>
-                    <a href="category.html" class="cat-sub-chip">Thuốc nhỏ mắt, tai, mũi</a>
-                    <a href="category.html" class="cat-sub-chip">Thuốc da liễu</a>
-                    <a href="category.html" class="cat-sub-chip">Thuốc tim mạch</a>
+                <!-- Tabs -->
+                <div class="cat-tabs">
+                    <button class="cat-tab-btn active" data-rx="0" id="tabNonRxProducts">Thuốc không kê đơn (0)</button>
+                    <button class="cat-tab-btn" data-rx="1" id="tabRxProducts">Thuốc kê đơn (0)</button>
+                </div>
+
+                <!-- Toolbar (Sort & Limit) -->
+                <div class="cat-toolbar">
+                    <select id="sortSelect">
+                        <option value="popular">Xếp theo phổ biến nhất</option>
+                        <option value="newest">Mới nhất</option>
+                        <option value="price_asc">Giá thấp đến cao</option>
+                        <option value="price_desc">Giá cao xuống thấp</option>
+                    </select>
+                    <select id="limitSelect">
+                        <option value="28">28 Mỗi trang</option>
+                        <option value="56">56 Mỗi trang</option>
+                    </select>
                 </div>
 
                 <!-- Product Grid -->
-                <div class="product-grid">
+                <div class="product-grid" id="productList">
+                    <!-- Nạp bằng JS -->
+                </div>
 
-                    <!-- Product 1 -->
-                    <div class="product-card">
-                        <div class="product-image">
-                            <img src="../assets/images/product_frame.png" alt="Product">
-                        </div>
-                        <div class="product-info">
-                            <h5><a href="product.html">Thuốc Hapacol Extra giảm đau, hạ sốt (Hộp 10 vỉ x 10 viên)</a></h5>
-                            <div class="product-price">
-                                <span class="price-new">68,000đ</span>
-                            </div>
-                            <button class="btn-add-cart">Thêm giỏ hàng</button>
-                        </div>
-                    </div>
+                <!-- Loading State -->
+                <div id="loadingProducts" style="text-align:center; padding:40px; display:none;">
+                    <i class="fa-solid fa-spinner fa-spin fa-2x" style="color:#0b7a3e;"></i>
+                </div>
 
-                    <!-- Product 2 -->
-                    <div class="product-card">
-                        <div class="product-image">
-                            <img src="../assets/images/product_frame_2.png" alt="Product">
-                        </div>
-                        <div class="product-info">
-                            <h5><a href="product.html">Thuốc Efferalgan 500mg giảm đau hạ sốt (Hộp 16 viên nén sủi)</a></h5>
-                            <div class="product-price">
-                                <span class="price-new">42,000đ</span>
-                            </div>
-                            <button class="btn-add-cart">Thêm giỏ hàng</button>
-                        </div>
-                    </div>
-
-                    <!-- Product 3 -->
-                    <div class="product-card">
-                        <div class="product-image">
-                            <img src="../assets/images/product_frame.png" alt="Product">
-                        </div>
-                        <div class="product-info">
-                            <h5><a href="product.html">Thuốc Amoxicillin 500mg kháng sinh điều trị nhiễm khuẩn</a></h5>
-                            <div class="product-price">
-                                <span class="price-new">35,000đ</span>
-                            </div>
-                            <button class="btn-add-cart">Thêm giỏ hàng</button>
-                        </div>
-                    </div>
-
-                    <!-- Product 4 -->
-                    <div class="product-card">
-                        <div class="product-image">
-                            <img src="../assets/images/product_frame_2.png" alt="Product">
-                        </div>
-                        <div class="product-info">
-                            <h5><a href="product.html">Thuốc Phosphalugel giảm triệu chứng viêm dạ dày</a></h5>
-                            <div class="product-price">
-                                <span class="price-new">95,000đ</span>
-                            </div>
-                            <button class="btn-add-cart">Thêm giỏ hàng</button>
-                        </div>
-                    </div>
-
-                    <!-- Product 5 -->
-                    <div class="product-card">
-                        <div class="product-image">
-                            <img src="../assets/images/product_frame.png" alt="Product">
-                        </div>
-                        <div class="product-info">
-                            <h5><a href="product.html">Thuốc Cetirizin 10mg chống dị ứng mề đay, viêm mũi</a></h5>
-                            <div class="product-price">
-                                <span class="price-new">18,000đ</span>
-                            </div>
-                            <button class="btn-add-cart">Thêm giỏ hàng</button>
-                        </div>
-                    </div>
-
-                    <!-- Product 6 -->
-                    <div class="product-card">
-                        <div class="product-image">
-                            <img src="../assets/images/product_frame_2.png" alt="Product">
-                        </div>
-                        <div class="product-info">
-                            <h5><a href="product.html">Viên uống bổ mắt Vision Pharma với Lutein & Zeaxanthin</a></h5>
-                            <div class="product-price">
-                                <span class="price-new">245,000đ</span>
-                            </div>
-                            <button class="btn-add-cart">Thêm giỏ hàng</button>
-                        </div>
-                    </div>
-
-                    <!-- Product 7 -->
-                    <div class="product-card">
-                        <div class="product-image">
-                            <img src="../assets/images/product_frame.png" alt="Product">
-                        </div>
-                        <div class="product-info">
-                            <h5><a href="product.html">Thuốc Semistra điều trị viêm xoang, giảm viêm mũi dị ứng</a></h5>
-                            <div class="product-price">
-                                <span class="price-new">120,000đ</span>
-                            </div>
-                            <button class="btn-add-cart">Thêm giỏ hàng</button>
-                        </div>
-                    </div>
-
-                    <!-- Product 8 -->
-                    <div class="product-card">
-                        <div class="product-image">
-                            <img src="../assets/images/product_frame_2.png" alt="Product">
-                        </div>
-                        <div class="product-info">
-                            <h5><a href="product.html">Thuốc dạ dày Kremil-S trung hoà acid, giảm đau dạ dày</a></h5>
-                            <div class="product-price">
-                                <span class="price-new">75,000đ</span>
-                            </div>
-                            <button class="btn-add-cart">Thêm giỏ hàng</button>
-                        </div>
-                    </div>
-
+                <!-- Empty State -->
+                <div id="emptyProducts" style="text-align:center; padding:40px; color:#6b7280; display:none;">
+                    <i class="fa-solid fa-box-open fa-3x" style="margin-bottom:16px;"></i>
+                    <p>Không có sản phẩm nào phù hợp với tiêu chí tìm kiếm.</p>
                 </div>
 
                 <!-- Pagination -->
-                <div class="pagination">
-                    <button class="page-btn"><i class="fa-solid fa-chevron-left"></i></button>
-                    <button class="page-btn active">1</button>
-                    <button class="page-btn">2</button>
-                    <button class="page-btn">3</button>
-                    <button class="page-btn">4</button>
-                    <button class="page-btn">5</button>
-                    <button class="page-btn">...</button>
-                    <button class="page-btn">12</button>
-                    <button class="page-btn"><i class="fa-solid fa-chevron-right"></i></button>
+                <div class="pagination" id="paginationBox">
+                    <!-- Nạp bằng JS -->
                 </div>
             </div>
 

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kết quả tìm kiếm — Nhà Thuốc Minh Giang</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ====== SEARCH PAGE STYLES ====== */
+        .breadcrumb {
+            padding: 12px 0;
+            font-size: 15px;
+            color: #666;
+        }
+
+        .breadcrumb a {
+            color: #0b7a3e;
+            text-decoration: none;
+        }
+
+        .breadcrumb span {
+            margin: 0 6px;
+            color: #999;
+        }
+
+        .search-results-container {
+            padding-bottom: 40px;
+        }
+
+        .filter-choice-box {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #4b5563;
+        }
+
+        .search-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .search-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .search-title span {
+            color: #0b7a3e;
+        }
+
+        .result-count {
+            font-size: 16px;
+            color: #1f2937;
+            font-weight: 500;
+        }
+
+        .search-sort-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            background: #fff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .sort-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sort-select {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #374151;
+            outline: none;
+            background: #fff;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            margin-top: 30px;
+        }
+
+        .page-btn {
+            min-width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .page-btn.active, .page-btn:hover {
+            background: #0b7a3e;
+            color: #fff;
+            border-color: #0b7a3e;
+        }
+
+        /* Custom empty state */
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            background: #fff;
+            border-radius: 12px;
+            border: 1px dashed #ccc;
+        }
+
+        .no-results i {
+            font-size: 48px;
+            color: #ccc;
+            margin-bottom: 15px;
+        }
+
+        .no-results h2 {
+            font-size: 20px;
+            color: #4b5563;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header Banner -->
+    <div mg-include="../components/header_banner.html"></div>
+
+    <!-- Top Bar -->
+    <div mg-include="../components/top_bar.html"></div>
+
+    <!-- Main Header -->
+    <div mg-include="../components/main_header.html"></div>
+
+    <main class="container search-results-container">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="index.html">Trang chủ</a> <span>›</span> <strong id="breadcrumbQuery">Kết quả tìm kiếm</strong>
+        </div>
+
+
+
+        <div class="search-header">
+            <h1 class="search-title">Kết quả tìm kiếm: <span id="searchTerm">...</span></h1>
+            <div class="result-count">Sản phẩm tìm thấy: <span id="totalCount">0</span></div>
+        </div>
+
+        <div class="search-sort-bar">
+            <div class="sort-group">
+                <select class="sort-select" id="sortSelect">
+                    <option value="popular">Xếp theo phổ biến nhất</option>
+                    <option value="newest">Mới nhất</option>
+                    <option value="price_asc">Giá từ thấp đến cao</option>
+                    <option value="price_desc">Giá từ cao đến thấp</option>
+                </select>
+                <select class="sort-select">
+                    <option value="28">28 Mỗi trang</option>
+                    <option value="48">48 Mỗi trang</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div class="products-grid" id="searchResultGrid">
+            <!-- Dữ liệu được nạp động từ search-page-loader.js -->
+            <div class="loading">Đang tìm kiếm sản phẩm...</div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="searchPagination">
+            <!-- Phân trang động -->
+        </div>
+    </main>
+
+    <!-- Main Footer -->
+    <div mg-include="../components/main_footer.html"></div>
+
+    <script src="../assets/js/dropdown-handler.js"></script>
+    <script src="../assets/js/mega-menu-loader.js"></script>
+    <script src="../assets/js/components.js"></script>
+    <script src="../assets/js/search-page-loader.js"></script>
+</body>
+
+</html>
