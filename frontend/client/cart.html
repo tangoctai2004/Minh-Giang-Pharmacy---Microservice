@@ -411,79 +411,11 @@
 
         <div class="cart-layout">
             <!-- LEFT: PRODUCT LIST -->
-            <div class="cart-main">
-                <div class="cart-header">
-                    <div class="item-check"><input type="checkbox" checked></div>
-                    <div>Sản phẩm</div>
-                    <div style="text-align: right;">Đơn giá</div>
-                    <div style="text-align: center;">Số lượng</div>
-                    <div style="text-align: right;">Thành tiền</div>
-                    <div></div>
-                </div>
-
-                <!-- Product 1 -->
-                <div class="cart-item">
-                    <div class="item-check"><input type="checkbox" checked></div>
-                    <div class="item-info">
-                        <img src="../assets/images/cart_product_1.png" alt="Fess Little Noses" class="item-img"
-                            onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><rect width=\'100\' height=\'100\' fill=\'#f3f4f6\'/><text x=\'50\' y=\'50\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-size=\'10\' fill=\'#9ca3af\'>Product</text></svg>'">
-                        <div class="item-details">
-                            <h4>Fess Little Noses Spray - Xịt rửa mũi...</h4>
-                            <span class="sku">SKU: 933739</span>
-                            <div class="promo-badge">
-                                <i class="fa-solid fa-circle-check"></i> Giảm giá 38.000đ
-                            </div>
-                        </div>
-                    </div>
-                    <div class="item-unit-price">
-                        <span class="price-orig">280.000đ</span>
-                        <span class="price-now">242.000đ</span>
-                        <div class="unit-label">/ Chai</div>
-                    </div>
-                    <div class="item-qty">
-                        <div class="qty-controls">
-                            <button class="qty-btn">-</button>
-                            <input type="text" value="1" class="qty-input">
-                            <button class="qty-btn">+</button>
-                        </div>
-                    </div>
-                    <div class="item-total">242.000đ</div>
-                    <div class="item-delete"><i class="fa-regular fa-trash-can"></i></div>
-                </div>
-
-                <!-- Gift Item -->
-                <div class="cart-item gift">
-                    <div class="item-check"></div>
-                    <div class="item-info">
-                        <div style="position:relative;">
-                            <img src="../assets/images/cart_gift.png" alt="Nước súc miệng" class="item-img"
-                                onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><rect width=\'100\' height=\'100\' fill=\'#f3f4f6\'/><text x=\'50\' y=\'50\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-size=\'10\' fill=\'#9ca3af\'>Gift</text></svg>'">
-                            <span class="gift-tag"
-                                style="position:absolute; bottom: -5px; left: 50%; transform: translateX(-50%);">TẶNG</span>
-                        </div>
-                        <div class="item-details">
-                            <h4>Nước Súc Miệng Lisdoub làm sạch...</h4>
-                            <span class="sku">SKU: 932988 - Đã bán: 101</span>
-                        </div>
-                    </div>
-                    <div class="item-unit-price">
-                        <span class="price-orig">29.000đ</span>
-                        <span class="price-now">0đ</span>
-                        <div class="unit-label">/ Chai</div>
-                    </div>
-                    <div class="item-qty">
-                        <span style="font-size: 14px; color: #6b7280;">x1</span>
-                    </div>
-                    <div class="item-total free">Miễn phí</div>
-                    <div class="item-delete"></div>
-                </div>
-
-                <div class="cart-actions">
-                    <div>
-                        <a href="index.html" class="btn-secondary">Tiếp tục mua sắm</a>
-                        <button class="btn-clear" style="margin-left: 10px;">Xóa giỏ hàng</button>
-                    </div>
-                    <button class="btn-checkout">Tiến hành thanh toán</button>
+            <div class="cart-main" id="cartMainContainer">
+                <!-- Nội dung giỏ hàng sẽ được nạp tự động từ cart-page.js -->
+                <div style="padding: 40px; text-align: center;">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; color: #0b7a3e;"></i>
+                    <p style="margin-top: 10px; color: #6b7280;">Đang nạp giỏ hàng...</p>
                 </div>
             </div>
 
@@ -507,17 +439,17 @@
 
                     <div class="points-reward">
                         <span>Điểm thưởng</span>
-                        <span class="reward-val">+121 điểm</span>
+                        <span class="reward-val" id="rewardPoints">+0 điểm</span>
                     </div>
 
                     <div class="price-breakdown">
                         <div class="breakdown-row">
                             <span>Tổng tiền sản phẩm</span>
-                            <span>280.000đ</span>
+                            <span id="subtotalVal">0đ</span>
                         </div>
                         <div class="breakdown-row">
                             <span>Giảm giá sản phẩm</span>
-                            <span class="saving-val">-38.000đ</span>
+                            <span class="saving-val" id="discountVal">0đ</span>
                         </div>
                         <div class="breakdown-row">
                             <span>Giảm giá khuyến mãi</span>
@@ -531,18 +463,18 @@
                         </div>
                         <div class="breakdown-row">
                             <span>Bạn tiết kiệm</span>
-                            <span class="saving-val">38.000đ</span>
+                            <span class="saving-val" id="totalSavingVal">0đ</span>
                         </div>
 
                         <div class="breakdown-row total">
                             <span>Tổng tiền:</span>
-                            <span class="total-val">242.000đ</span>
+                            <span class="total-val" id="totalVal">0đ</span>
                         </div>
                     </div>
 
                     <p class="terms-hint">
                         Khi tiến hành đặt mua hàng, bạn đồng ý với <a href="#">Chính sách mua hàng</a> và <a
-                            href="#">Bảo mật</a> của Trung Sơn Pharma
+                            href="#">Bảo mật</a> của Minh Giang Pharma
                     </p>
                 </div>
             </aside>

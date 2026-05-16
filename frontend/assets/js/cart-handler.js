@@ -1,116 +1,145 @@
 /**
  * cart-handler.js
- * Quản lý giỏ hàng phía Client (localStorage)
+ * Quản lý giỏ hàng phía Client và đồng bộ Server
  */
 
-const CART_KEY = 'mg_cart';
-
-function getCart() {
-    try {
-        return JSON.parse(localStorage.getItem(CART_KEY)) || [];
-    } catch (e) {
-        return [];
-    }
-}
-
-function saveCart(cart) {
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
-    updateCartBadge();
-}
+const API_BASE_ORDER = 'http://localhost:8000/api/order';
 
 /**
- * Thêm sản phẩm vào giỏ
+ * Thêm sản phẩm vào giỏ (Xử lý cả Local và Server)
  */
-async function addToCart(productId, event) {
+async function addToCart(productId, event, options = {}) {
     if (event) {
         event.preventDefault();
         event.stopPropagation();
     }
 
-    console.log(`[Cart] Adding product ID: ${productId}`);
+    const auth = _getAuth();
+    if (auth && auth.accessToken) {
+        // 1. Thêm lên SERVER nếu đã login
+        return await _addToCartServer(productId, options);
+    } else {
+        // 2. Fallback: Báo lỗi yêu cầu đăng nhập
+        alert('Vui lòng đăng nhập để thêm vào giỏ hàng');
+        window.location.href = 'login.html';
+        return;
+    }
+}
 
+/**
+ * Gọi API thêm vào giỏ hàng trên server
+ */
+async function _addToCartServer(productId, options) {
     try {
-        // Fetch product info to get name, price, image for the cart
-        const response = await fetch(`http://localhost:8000/api/catalog/products/${productId}`);
+        const auth = _getAuth();
+        
+        // Lấy thêm thông tin sản phẩm từ catalog (để snapshot)
+        const resProd = await fetch(`http://localhost:8000/api/catalog/products/${productId}`);
+        const prodData = await resProd.json();
+        
+        if (!prodData.success) throw new Error('Không lấy được thông tin sản phẩm');
+        const p = prodData.data;
+
+        const response = await fetch(`${API_BASE_ORDER}/cart/items`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${auth.accessToken}`
+            },
+            body: JSON.stringify({
+                product_id: productId,
+                product_name: p.name,
+                product_sku: p.sku,
+                thumbnail: p.thumbnail || p.image_url,
+                quantity: options.quantity || 1,
+                unit_name: p.base_unit || 'Hộp',
+                unit_price: p.retail_price || p.price
+            })
+        });
+
         const result = await response.json();
-
-        if (!result.success || !result.data) {
-            alert('Không tìm thấy thông tin sản phẩm.');
-            return;
-        }
-
-        const product = result.data;
-        let cart = getCart();
-        
-        const existingItem = cart.find(item => item.id == productId);
-        if (existingItem) {
-            existingItem.quantity += 1;
+        if (result.success) {
+            showToast(`Đã thêm ${p.name} vào giỏ hàng`);
+            updateCartBadge();
+            return true;
         } else {
-            cart.push({
-                id: product.id,
-                name: product.name,
-                price: product.retail_price || product.price,
-                image: product.image_url || product.thumbnail,
-                unit: product.base_unit || 'Hộp',
-                quantity: 1
-            });
+            alert(result.message || 'Lỗi khi thêm vào giỏ hàng');
+            return false;
         }
-
-        saveCart(cart);
-        
-        // Hiệu ứng thông báo
-        showToast(`Đã thêm ${product.name} vào giỏ hàng`);
-        
     } catch (error) {
-        console.error('[Cart] Error adding to cart:', error);
+        console.error('[Cart] Error:', error);
+        alert('Không thể kết nối đến máy chủ giỏ hàng');
+        return false;
     }
 }
 
 /**
  * Cập nhật số lượng hiển thị trên icon giỏ hàng
  */
-function updateCartBadge() {
-    const cart = getCart();
-    const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-    
-    const badge = document.querySelector('.cart-count'); // Giả định class này tồn tại trong header
-    if (badge) {
-        badge.textContent = totalCount;
-        badge.style.display = totalCount > 0 ? 'flex' : 'none';
+async function updateCartBadge() {
+    const auth = _getAuth();
+    const badge = document.querySelector('.cart-count');
+    if (!badge) return;
+
+    if (auth && auth.accessToken) {
+        try {
+            const response = await fetch(`${API_BASE_ORDER}/cart`, {
+                headers: { 'Authorization': `Bearer ${auth.accessToken}` }
+            });
+            const result = await response.json();
+            if (result.success) {
+                const totalCount = (result.data.items || []).reduce((sum, item) => sum + item.quantity, 0);
+                badge.textContent = totalCount;
+                badge.style.display = totalCount > 0 ? 'flex' : 'none';
+            }
+        } catch (e) { badge.style.display = 'none'; }
+    } else {
+        badge.style.display = 'none';
     }
+}
+
+function _getAuth() {
+    try {
+        return JSON.parse(localStorage.getItem('MG_CLIENT_AUTH'));
+    } catch (e) { return null; }
 }
 
 /**
  * Hiển thị Toast thông báo nhanh
  */
 function showToast(message) {
+    const old = document.getElementById('mg-toast');
+    if (old) old.remove();
+
     const toast = document.createElement('div');
+    toast.id = 'mg-toast';
     toast.style.cssText = `
         position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: #0b7a3e;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(11, 122, 62, 0.95);
         color: #fff;
         padding: 12px 24px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border-radius: 50px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.2);
         z-index: 10000;
         font-family: 'Sarabun', sans-serif;
-        font-weight: 500;
-        transition: opacity 0.3s;
+        font-size: 14px;
+        font-weight: 600;
+        transition: opacity 0.3s, transform 0.3s;
     `;
-    toast.textContent = message;
+    toast.innerHTML = `<i class="fa-solid fa-circle-check" style="margin-right:8px;"></i> ${message}`;
     document.body.appendChild(toast);
     
     setTimeout(() => {
         toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(20px)';
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
 
-// Khởi tạo badge khi load script
+// Khởi tạo
 document.addEventListener('DOMContentLoaded', updateCartBadge);
 window.addToCart = addToCart;
 window.updateCartBadge = updateCartBadge;
-window.getCart = getCart;
-window.saveCart = saveCart;
