@@ -13,7 +13,8 @@ router.post('/', async (req, res) => {
             customer_name, customer_phone,
             shipping_address, payment_method,
             shipping_fee = 0, discount_amount = 0,
-            requires_vat_invoice = false, customer_notes = null
+            requires_vat_invoice = false, customer_notes = null,
+            order_code = null
         } = req.body;
 
         if (!userId) {
@@ -47,9 +48,12 @@ router.post('/', async (req, res) => {
         const totalAmount = subtotal + parsedShippingFee - parsedDiscountAmount;
 
         // 4. Tạo mã đơn hàng độc nhất dạng WEB-YYYYMMDD-XXXX
-        const todayStr = new Date().toISOString().slice(2, 10).replace(/-/g, '');
-        const randomStr = Math.floor(1000 + Math.random() * 9000);
-        const orderCode = `WEB-${todayStr}-${randomStr}`;
+        let orderCode = order_code;
+        if (!orderCode) {
+            const todayStr = new Date().toISOString().slice(2, 10).replace(/-/g, '');
+            const randomStr = Math.floor(1000 + Math.random() * 9000);
+            orderCode = `WEB-${todayStr}-${randomStr}`;
+        }
 
         // Validate payment method matches ENUM ('cash','cod','vnpay','momo','card_visa','qr_transfer')
         const validPaymentMethods = ['cash', 'cod', 'vnpay', 'momo', 'card_visa', 'qr_transfer'];
