@@ -80,7 +80,7 @@ function renderProductCard(p, discountPercent = 0) {
                 <div class="product-price">
                     ${priceHtml}
                 </div>
-                <button class="btn-add-cart" onclick="addToCart(${p.id}, event)">Thêm giỏ hàng</button>
+                <button class="btn-add-cart" onclick="event.stopPropagation(); event.preventDefault(); addToCart(${p.id}, event)">Thêm giỏ hàng</button>
             </div>
         </div>
     `;

@@ -493,9 +493,9 @@ function renderProductCard(p) {
         `;
     }
 
-    let actionHtml = `<button class="btn-add-cart" onclick="addToCart(${p.id}, event)">Thêm giỏ hàng</button>`;
+    let actionHtml = `<button class="btn-add-cart" onclick="event.stopPropagation(); event.preventDefault(); addToCart(${p.id}, event)">Thêm giỏ hàng</button>`;
     if (isRx) {
-        actionHtml = `<button class="btn-consult" onclick="consult(${p.id}, event)">Tư vấn ngay</button>`;
+        actionHtml = `<button class="btn-consult" onclick="event.stopPropagation(); event.preventDefault(); consult(${p.id}, event)">Tư vấn ngay</button>`;
     }
 
     return `

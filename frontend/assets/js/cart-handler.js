@@ -60,6 +60,9 @@ async function _addToCartLocal(productId, options) {
         localStorage.setItem('MG_CLIENT_CART', JSON.stringify(cart));
         showToast(`Đã thêm ${p.name} vào giỏ hàng (Local)`);
         updateCartBadge();
+        if (typeof window.loadCartData === 'function') {
+            window.loadCartData();
+        }
         return true;
     } catch (error) {
         console.error('[Cart Local] Error:', error);
@@ -103,6 +106,9 @@ async function _addToCartServer(productId, options) {
         if (result.success) {
             showToast(`Đã thêm ${p.name} vào giỏ hàng`);
             updateCartBadge();
+            if (typeof window.loadCartData === 'function') {
+                window.loadCartData();
+            }
             return true;
         } else {
             alert(result.message || 'Lỗi khi thêm vào giỏ hàng');

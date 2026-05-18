@@ -66,8 +66,8 @@ function renderProducts(products) {
             : `<span class="price-new">${new Intl.NumberFormat('vi-VN').format(Math.round(p.price))}đ</span>`;
 
         const clickAction = p.requires_prescription 
-            ? `window.location.href='product.html?id=${p.id}'`
-            : `addToCart(${p.id}, event)`;
+            ? `event.stopPropagation(); event.preventDefault(); window.location.href='product.html?id=${p.id}'`
+            : `event.stopPropagation(); event.preventDefault(); addToCart(${p.id}, event)`;
 
         return `
             <div class="product-card" data-product-id="${p.id}">

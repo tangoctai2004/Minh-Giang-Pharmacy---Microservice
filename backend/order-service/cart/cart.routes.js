@@ -32,7 +32,7 @@ router.get('/', async (req, res) => {
         `, [cartId]);
 
         // Tính toán summary
-        const total_items = items.reduce((sum, item) => sum + item.quantity, 0);
+        const total_items = items.length;
         const subtotal = items.reduce((sum, item) => sum + parseFloat(item.subtotal), 0);
 
         res.json({
@@ -103,7 +103,7 @@ router.post('/items', async (req, res) => {
             );
         }
 
-        const [countResult] = await pool.query('SELECT SUM(quantity) as count FROM cart_items WHERE cart_id = ? AND is_active = 1', [cartId]);
+        const [countResult] = await pool.query('SELECT COUNT(*) as count FROM cart_items WHERE cart_id = ? AND is_active = 1', [cartId]);
 
         res.json({
             success: true,
@@ -125,15 +125,25 @@ router.put('/items/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { quantity } = req.body;
+        const userId = req.userId;
+
+        if (!userId) return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập' });
         if (quantity < 1) return res.status(400).json({ success: false, message: 'Số lượng không hợp lệ' });
 
-        await pool.query('UPDATE cart_items SET quantity = ? WHERE id = ? AND is_active = 1', [quantity, id]);
+        await pool.query(`
+            UPDATE cart_items ci
+            JOIN carts c ON ci.cart_id = c.id
+            SET ci.quantity = ? 
+            WHERE ci.id = ? AND c.customer_id = ? AND ci.is_active = 1
+        `, [quantity, id, userId]);
 
         const [item] = await pool.query('SELECT quantity, unit_price FROM cart_items WHERE id = ?', [id]);
+        if (item.length === 0) return res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm trong giỏ' });
         const subtotal = item[0].quantity * item[0].unit_price;
 
         res.json({ success: true, data: { item: { id: parseInt(id), quantity, subtotal } } });
     } catch (error) {
+        console.error('[Cart Item PUT] Error:', error);
         res.status(500).json({ success: false, message: 'Lỗi khi cập nhật giỏ hàng' });
     }
 });
@@ -145,9 +155,20 @@ router.put('/items/:id', async (req, res) => {
 router.delete('/items/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        await pool.query('UPDATE cart_items SET is_active = 0 WHERE id = ?', [id]);
+        const userId = req.userId;
+
+        if (!userId) return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập' });
+
+        await pool.query(`
+            UPDATE cart_items ci
+            JOIN carts c ON ci.cart_id = c.id
+            SET ci.is_active = 0 
+            WHERE ci.id = ? AND c.customer_id = ?
+        `, [id, userId]);
+
         res.json({ success: true, message: 'Đã xóa sản phẩm khỏi giỏ hàng' });
     } catch (error) {
+        console.error('[Cart Item DELETE] Error:', error);
         res.status(500).json({ success: false, message: 'Lỗi khi xoá sản phẩm' });
     }
 });

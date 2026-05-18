@@ -422,19 +422,20 @@
             <!-- RIGHT: SUMMARY -->
             <aside class="cart-summary">
                 <div class="summary-card">
-                    <div class="voucher-header">
+                    <div class="voucher-header" id="promoSelector" style="cursor: pointer;">
                         <span><i class="fa-solid fa-ticket"></i> Chọn ưu đãi & giảm giá</span>
                         <i class="fa-solid fa-chevron-right"></i>
                     </div>
 
                     <div class="voucher-input">
-                        <input type="text" placeholder="Thẻ quà tặng hoặc mã giảm giá">
-                        <button class="btn-apply">Áp dụng</button>
+                        <input type="text" id="voucherInput" placeholder="Thẻ quà tặng hoặc mã giảm giá">
+                        <button class="btn-apply" id="btnApplyVoucher" type="button">Áp dụng</button>
                     </div>
 
-                    <div class="active-promo">
+                    <div class="active-promo" id="appliedPromoContainer" style="display: none;">
                         <i class="fa-solid fa-circle-check"></i>
-                        <span>Tặng nước súc miệng LISDOUB bill 199K</span>
+                        <span id="appliedPromoText">Tặng nước súc miệng LISDOUB bill 199K</span>
+                        <button id="btnRemoveVoucher" type="button" style="margin-left: auto; background: none; border: none; color: #ef4444; cursor: pointer; font-size: 11px; font-weight: 600;">Hủy</button>
                     </div>
 
                     <div class="points-reward">
@@ -495,6 +496,19 @@
     <script src="../assets/js/mega-menu-loader.js"></script>
     <script src="../assets/js/components.js"></script>
     <script src="../assets/js/cart-page.js"></script>
+
+    <!-- Voucher Selection Modal -->
+    <div id="voucherModal" class="mg-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; font-family: 'Sarabun', sans-serif;">
+        <div class="mg-modal-content" style="background: #fff; border-radius: 12px; width: 95%; max-width: 500px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; max-height: 80vh; overflow-y: auto; box-sizing: border-box;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 12px; margin-bottom: 16px;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #111827;"><i class="fa-solid fa-ticket" style="color: #0b7a3e;"></i> Chọn mã giảm giá</h3>
+                <span class="close-modal" id="closeVoucherModal" style="cursor: pointer; font-size: 24px; color: #9ca3af; font-weight: bold; line-height: 1;">&times;</span>
+            </div>
+            <div id="modalVoucherList" style="display: flex; flex-direction: column; gap: 12px;">
+                <!-- Vouchers dynamically loaded here -->
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

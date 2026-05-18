@@ -248,9 +248,9 @@ async function _loadFeaturedProducts() {
                     `;
                 }
 
-                let actionHtml = `<button class="btn-add-cart" style="background:#0b7a3e; color:#fff; border:none; width:100%; padding:10px 16px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#096532'" onmouseout="this.style.background='#0b7a3e'" onclick="addToCart(${p.id}, event)">Thêm giỏ hàng</button>`;
+                let actionHtml = `<button class="btn-add-cart" style="background:#0b7a3e; color:#fff; border:none; width:100%; padding:10px 16px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#096532'" onmouseout="this.style.background='#0b7a3e'" onclick="event.stopPropagation(); event.preventDefault(); addToCart(${p.id}, event)">Thêm giỏ hàng</button>`;
                 if (isRx) {
-                    actionHtml = `<button class="btn-add-cart" style="background:#0b7a3e; color:#fff; border:none; width:100%; padding:10px 16px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#096532'" onmouseout="this.style.background='#0b7a3e'" onclick="window.location.href='product.html?id=${p.id}'">Tư vấn ngay</button>`;
+                    actionHtml = `<button class="btn-add-cart" style="background:#0b7a3e; color:#fff; border:none; width:100%; padding:10px 16px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#096532'" onmouseout="this.style.background='#0b7a3e'" onclick="event.stopPropagation(); event.preventDefault(); window.location.href='product.html?id=${p.id}'">Tư vấn ngay</button>`;
                 }
 
                 return `
