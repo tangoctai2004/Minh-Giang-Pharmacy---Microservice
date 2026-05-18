@@ -65,6 +65,10 @@ function renderProducts(products) {
             ? '<span class="price-new" style="font-size:15px; color:#666;">Cần tư vấn từ dược sỹ</span>'
             : `<span class="price-new">${new Intl.NumberFormat('vi-VN').format(Math.round(p.price))}đ</span>`;
 
+        const clickAction = p.requires_prescription 
+            ? `window.location.href='product.html?id=${p.id}'`
+            : `addToCart(${p.id}, event)`;
+
         return `
             <div class="product-card" data-product-id="${p.id}">
                 <div class="product-image">
@@ -76,7 +80,7 @@ function renderProducts(products) {
                     <div class="product-price">
                         ${priceHtml}
                     </div>
-                    <button class="${btnClass}">${btnText}</button>
+                    <button class="${btnClass}" onclick="${clickAction}">${btnText}</button>
                 </div>
             </div>
         `;

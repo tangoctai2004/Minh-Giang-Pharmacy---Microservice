@@ -130,7 +130,7 @@ async function updateCartBadge() {
             });
             const result = await response.json();
             if (result.success) {
-                const totalCount = (result.data.items || []).reduce((sum, item) => sum + item.quantity, 0);
+                const totalCount = (result.data.items || []).length;
                 badge.textContent = totalCount;
                 badge.style.display = totalCount > 0 ? 'flex' : 'none';
             }
@@ -138,7 +138,7 @@ async function updateCartBadge() {
     } else {
         try {
             const cart = JSON.parse(localStorage.getItem('MG_CLIENT_CART') || '[]');
-            const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+            const totalCount = cart.length;
             badge.textContent = totalCount;
             badge.style.display = totalCount > 0 ? 'flex' : 'none';
         } catch (e) {
@@ -189,6 +189,10 @@ function showToast(message) {
 }
 
 // Khởi tạo
-document.addEventListener('DOMContentLoaded', updateCartBadge);
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', updateCartBadge);
+} else {
+    updateCartBadge();
+}
 window.addToCart = addToCart;
 window.updateCartBadge = updateCartBadge;

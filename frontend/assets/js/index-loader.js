@@ -38,29 +38,47 @@ async function loadProductGrid(containerId, params) {
         const result = await response.json();
 
         if (result.success && result.data.length > 0) {
-            container.innerHTML = result.data.map(p => renderProductCard(p)).join('');
+            let discountPercent = 0;
+            if (containerId === 'giamGiaGrid') {
+                discountPercent = 38;
+            } else if (containerId === 'flashSaleGrid') {
+                discountPercent = 25;
+            } else if (containerId === 'dealSieuKhungGrid') {
+                discountPercent = 15;
+            }
+            container.innerHTML = result.data.map(p => renderProductCard(p, discountPercent)).join('');
         }
     } catch (error) {
         console.error(`[IndexLoader] Error loading ${containerId}:`, error);
     }
 }
 
-function renderProductCard(p) {
-    const oldPrice = Math.round(p.retail_price * 1.1);
+function renderProductCard(p, discountPercent = 0) {
     const newPrice = Math.round(p.retail_price);
     const format = (v) => new Intl.NumberFormat('vi-VN').format(v) + 'đ';
+
+    let badgeHtml = '';
+    let priceHtml = `<span class="price-now">${format(newPrice)}</span>`;
+
+    if (discountPercent > 0) {
+        const oldPrice = Math.round(p.retail_price / (1 - discountPercent / 100));
+        badgeHtml = `<span class="discount-badge">-${discountPercent}%</span>`;
+        priceHtml = `
+            <span class="price-old">${format(oldPrice)}</span>
+            <span class="price-now">${format(newPrice)}</span>
+        `;
+    }
 
     return `
         <div class="product-card" data-product-id="${p.id}">
             <div class="product-image">
-                <span class="discount-badge">-10%</span>
+                ${badgeHtml}
                 <img src="${p.thumbnail || p.image_url || '../assets/images/product1.png'}" alt="${p.name}" onerror="this.src='../assets/images/product1.png'">
             </div>
             <div class="product-info">
                 <h5><a href="product.html?id=${p.id}">${p.name}</a></h5>
                 <div class="product-price">
-                    <span class="price-old">${format(oldPrice)}</span>
-                    <span class="price-now">${format(newPrice)}</span>
+                    ${priceHtml}
                 </div>
                 <button class="btn-add-cart" onclick="addToCart(${p.id}, event)">Thêm giỏ hàng</button>
             </div>

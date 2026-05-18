@@ -310,7 +310,7 @@ class CategoryPage {
             actionHtml = `<button class="btn-add-cart" style="background:#0b7a3e; color:#fff; border:none; width:100%; padding:10px 16px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#096532'" onmouseout="this.style.background='#0b7a3e'" onclick="window.location.href='product.html?id=${p.id}'">Tư vấn ngay</button>`;
         } else {
             infoHtml = `<div class="product-price" style="height: 20px;"><span class="price-new" style="color:#ea580c; font-weight:700;">${priceFmt}</span></div>`;
-            actionHtml = `<button class="btn-add-cart" style="background:#0b7a3e; color:#fff; border:none; width:100%; padding:10px 16px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#096532'" onmouseout="this.style.background='#0b7a3e'" onclick="window.location.href='product.html?id=${p.id}'">Thêm giỏ hàng</button>`;
+            actionHtml = `<button class="btn-add-cart" style="background:#0b7a3e; color:#fff; border:none; width:100%; padding:10px 16px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#096532'" onmouseout="this.style.background='#0b7a3e'" onclick="addToCart(${p.id}, event)">Thêm giỏ hàng</button>`;
         }
 
         // Tái sử dụng thẻ sản phẩm chuẩn của Minh Giang Pharmacy
