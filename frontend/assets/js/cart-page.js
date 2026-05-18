@@ -21,10 +21,10 @@ async function initCartPage() {
     }, 5000);
 
     try {
-        console.log('[CartPage] Starting loadCartFromServer...');
-        await loadCartFromServer();
+        console.log('[CartPage] Starting loadCartData...');
+        await loadCartData();
         clearTimeout(timeout);
-        console.log('[CartPage] loadCartFromServer finished');
+        console.log('[CartPage] loadCartData finished');
     } catch (err) {
         clearTimeout(timeout);
         console.error('[CartPage] Critical Error:', err);
@@ -32,11 +32,11 @@ async function initCartPage() {
     }
 }
 
-async function loadCartFromServer() {
+async function loadCartData() {
     const auth = getAuth();
     if (!auth || !auth.accessToken) {
-        console.warn('[CartPage] No auth token found, rendering empty cart');
-        renderEmptyCart();
+        console.log('[CartPage] Not logged in, loading local cart');
+        loadCartFromLocal();
         return;
     }
 
@@ -48,7 +48,7 @@ async function loadCartFromServer() {
         if (!response.ok) {
             if (response.status === 401) {
                 console.error('[CartPage] Unauthorized. Token might be expired.');
-                renderEmptyCart();
+                loadCartFromLocal();
                 return;
             }
             throw new Error(`Server responded with ${response.status}`);
@@ -64,6 +64,31 @@ async function loadCartFromServer() {
         }
     } catch (error) {
         console.error('[CartPage] Fetch error:', error);
+        renderEmptyCart();
+    }
+}
+
+function loadCartFromLocal() {
+    try {
+        const cart = JSON.parse(localStorage.getItem('MG_CLIENT_CART') || '[]');
+        if (cart.length === 0) {
+            renderEmptyCart();
+            return;
+        }
+        
+        const total_items = cart.reduce((sum, item) => sum + item.quantity, 0);
+        const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
+        
+        const data = {
+            items: cart,
+            summary: {
+                total_items,
+                subtotal,
+                total: subtotal
+            }
+        };
+        renderCartUI(data);
+    } catch (e) {
         renderEmptyCart();
     }
 }
@@ -118,13 +143,13 @@ function renderCartUI(data) {
                 </div>
                 <div class="item-qty">
                     <div class="qty-controls">
-                        <button class="qty-btn" onclick="changeQtyServer(${item.id}, ${item.quantity - 1})">-</button>
+                        <button class="qty-btn" onclick="changeQty(${item.id}, ${item.quantity - 1})">-</button>
                         <input type="text" value="${item.quantity}" class="qty-input" readonly>
-                        <button class="qty-btn" onclick="changeQtyServer(${item.id}, ${item.quantity + 1})">+</button>
+                        <button class="qty-btn" onclick="changeQty(${item.id}, ${item.quantity + 1})">+</button>
                     </div>
                 </div>
                 <div class="item-total">${formatPrice(subtotal)}</div>
-                <div class="item-delete" onclick="removeItemServer(${item.id})"><i class="fa-regular fa-trash-can"></i></div>
+                <div class="item-delete" onclick="removeItem(${item.id})"><i class="fa-regular fa-trash-can"></i></div>
             </div>
         `;
     }).join('');
@@ -134,7 +159,7 @@ function renderCartUI(data) {
         <div class="cart-actions">
             <div>
                 <a href="index.html" class="btn-secondary">Tiếp tục mua sắm</a>
-                <button class="btn-clear" style="margin-left: 10px;" onclick="clearCartServer()">Xóa giỏ hàng</button>
+                <button class="btn-clear" style="margin-left: 10px;" onclick="clearCart()">Xóa giỏ hàng</button>
             </div>
             <button class="btn-checkout" onclick="goToCheckout()">Tiến hành thanh toán</button>
         </div>
@@ -180,9 +205,22 @@ function updateSummaryUI(summary) {
     }
 }
 
-async function changeQtyServer(itemId, newQty) {
+async function changeQty(itemId, newQty) {
     if (newQty < 1) return;
     const auth = getAuth();
+    if (!auth || !auth.accessToken) {
+        let cart = JSON.parse(localStorage.getItem('MG_CLIENT_CART') || '[]');
+        const item = cart.find(i => i.id === itemId);
+        if (item) {
+            item.quantity = newQty;
+            item.subtotal = item.quantity * item.unit_price;
+            localStorage.setItem('MG_CLIENT_CART', JSON.stringify(cart));
+            loadCartData();
+            if (window.updateCartBadge) window.updateCartBadge();
+        }
+        return;
+    }
+
     try {
         const response = await fetch(`${API_BASE}/cart/items/${itemId}`, {
             method: 'PUT',
@@ -192,35 +230,66 @@ async function changeQtyServer(itemId, newQty) {
             },
             body: JSON.stringify({ quantity: newQty })
         });
-        if (response.ok) loadCartFromServer();
+        if (response.ok) {
+            loadCartData();
+            if (window.updateCartBadge) window.updateCartBadge();
+        }
     } catch (e) { console.error(e); }
 }
 
-async function removeItemServer(itemId) {
+async function removeItem(itemId) {
     if (!confirm('Bạn có chắc muốn xóa sản phẩm này?')) return;
     const auth = getAuth();
+    if (!auth || !auth.accessToken) {
+        let cart = JSON.parse(localStorage.getItem('MG_CLIENT_CART') || '[]');
+        cart = cart.filter(i => i.id !== itemId);
+        localStorage.setItem('MG_CLIENT_CART', JSON.stringify(cart));
+        loadCartData();
+        if (window.updateCartBadge) window.updateCartBadge();
+        return;
+    }
+
     try {
         const response = await fetch(`${API_BASE}/cart/items/${itemId}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${auth.accessToken}` }
         });
-        if (response.ok) loadCartFromServer();
+        if (response.ok) {
+            loadCartData();
+            if (window.updateCartBadge) window.updateCartBadge();
+        }
     } catch (e) { console.error(e); }
 }
 
-async function clearCartServer() {
+async function clearCart() {
     if (!confirm('Bạn có chắc muốn xóa toàn bộ giỏ hàng?')) return;
     const auth = getAuth();
+    if (!auth || !auth.accessToken) {
+        localStorage.removeItem('MG_CLIENT_CART');
+        loadCartData();
+        if (window.updateCartBadge) window.updateCartBadge();
+        return;
+    }
+
     try {
         const response = await fetch(`${API_BASE}/cart`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${auth.accessToken}` }
         });
-        if (response.ok) loadCartFromServer();
+        if (response.ok) {
+            loadCartData();
+            if (window.updateCartBadge) window.updateCartBadge();
+        }
     } catch (e) { console.error(e); }
 }
 
 function goToCheckout() {
+    const auth = getAuth();
+    if (!auth || !auth.accessToken) {
+        alert('Vui lòng đăng nhập để tiến hành thanh toán');
+        window.location.href = 'login.html';
+        return;
+    }
     window.location.href = 'checkout.html';
 }
 
@@ -230,7 +299,7 @@ function getAuth() {
     } catch (e) { return null; }
 }
 
-window.changeQtyServer = changeQtyServer;
-window.removeItemServer = removeItemServer;
-window.clearCartServer = clearCartServer;
+window.changeQty = changeQty;
+window.removeItem = removeItem;
+window.clearCart = clearCart;
 window.goToCheckout = goToCheckout;

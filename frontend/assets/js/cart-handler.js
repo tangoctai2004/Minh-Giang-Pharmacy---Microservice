@@ -19,10 +19,52 @@ async function addToCart(productId, event, options = {}) {
         // 1. Thêm lên SERVER nếu đã login
         return await _addToCartServer(productId, options);
     } else {
-        // 2. Fallback: Báo lỗi yêu cầu đăng nhập
-        alert('Vui lòng đăng nhập để thêm vào giỏ hàng');
-        window.location.href = 'login.html';
-        return;
+        // 2. Fallback: Lưu tạm vào local storage
+        return await _addToCartLocal(productId, options);
+    }
+}
+
+/**
+ * Gọi API thêm vào giỏ hàng cục bộ (localStorage)
+ */
+async function _addToCartLocal(productId, options) {
+    try {
+        const resProd = await fetch(`http://localhost:8000/api/catalog/products/${productId}`);
+        const prodData = await resProd.json();
+        
+        if (!prodData.success) throw new Error('Không lấy được thông tin sản phẩm');
+        const p = prodData.data;
+
+        let cart = JSON.parse(localStorage.getItem('MG_CLIENT_CART') || '[]');
+        const existingItem = cart.find(item => item.product_id === productId);
+        const quantity = options.quantity || 1;
+
+        if (existingItem) {
+            existingItem.quantity += quantity;
+            existingItem.subtotal = existingItem.quantity * existingItem.unit_price;
+        } else {
+            // Dùng id timestamp làm id ảo cho cart item cục bộ
+            cart.push({
+                id: Date.now(),
+                product_id: productId,
+                product_name: p.name,
+                product_sku: p.sku,
+                thumbnail: p.thumbnail || p.image_url,
+                quantity: quantity,
+                unit_name: p.base_unit || 'Hộp',
+                unit_price: p.retail_price || p.price,
+                subtotal: (p.retail_price || p.price) * quantity
+            });
+        }
+
+        localStorage.setItem('MG_CLIENT_CART', JSON.stringify(cart));
+        showToast(`Đã thêm ${p.name} vào giỏ hàng (Local)`);
+        updateCartBadge();
+        return true;
+    } catch (error) {
+        console.error('[Cart Local] Error:', error);
+        alert('Lỗi khi thêm vào giỏ hàng cục bộ');
+        return false;
     }
 }
 
@@ -94,7 +136,14 @@ async function updateCartBadge() {
             }
         } catch (e) { badge.style.display = 'none'; }
     } else {
-        badge.style.display = 'none';
+        try {
+            const cart = JSON.parse(localStorage.getItem('MG_CLIENT_CART') || '[]');
+            const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+            badge.textContent = totalCount;
+            badge.style.display = totalCount > 0 ? 'flex' : 'none';
+        } catch (e) {
+            badge.style.display = 'none';
+        }
     }
 }
 

@@ -209,7 +209,7 @@ async function loadProducts(parentId, categoryId, event) {
                             <span class="price-old">${new Intl.NumberFormat('en-US').format(Math.round(p.price * 1.1))}đ</span>
                             <span class="price-new">${new Intl.NumberFormat('en-US').format(Math.round(p.price))}đ</span>
                         </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
+                        <button class="btn-add-cart" onclick="addToCart(${p.id}, event)">Thêm giỏ hàng</button>
                     </div>
                 </div>
             `).join('');

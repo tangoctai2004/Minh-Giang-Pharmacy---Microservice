@@ -14,6 +14,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. Nạp Sản phẩm mới
     loadProductGrid('sanPhamMoiGrid', { limit: 5, sort: 'newest' });
+
+    // 4. Nạp Sản phẩm bán chạy
+    loadProductGrid('sanPhamBanChayGrid', { limit: 5, sort: 'best_seller' });
+
+    // 5. Nạp Giảm giá 38%
+    loadProductGrid('giamGiaGrid', { limit: 4, sort: 'discount' });
+
+    // 6. Nạp Nhập khẩu 100%
+    loadProductGrid('nhapKhauGrid', { limit: 4, sort: 'newest' });
+
+    // 7. Nạp Sản phẩm đang thu hút
+    loadProductGrid('sanPhamThuHutGrid', { limit: 5, sort: 'best_seller' });
 });
 
 async function loadProductGrid(containerId, params) {
