@@ -879,6 +879,13 @@
                     detailInput.addEventListener('input', () => {
                         calculateDistanceByAddress();
                     });
+                    detailInput.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault(); // Ngăn chặn submit form đặt hàng
+                            clearTimeout(geocodeTimeout);
+                            geocodeAddress(); // Tìm đường ngay lập tức
+                        }
+                    });
                 }
             }
         }

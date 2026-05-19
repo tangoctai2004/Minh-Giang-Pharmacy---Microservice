@@ -45,8 +45,8 @@
                 style="position:relative;background:none;border:none;color:#fff;font-size:18px;cursor:pointer;margin-right:8px;transition:opacity 0.2s;"
                 onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
                 <i class="fa-solid fa-bell"></i>
-                <span class="online-pulse"
-                    style="position:absolute;top:-4px;right:-6px;background:#ef4444;color:white;font-size:10px;font-weight:700;padding:2px 5px;border-radius:10px;line-height:1;animation: pulse-red 2s infinite;">2</span>
+                <span class="online-pulse" id="onlineOrdersBadge"
+                    style="position:absolute;top:-4px;right:-6px;background:#ef4444;color:white;font-size:10px;font-weight:700;padding:2px 5px;border-radius:10px;line-height:1;animation: pulse-red 2s infinite; display: none;">0</span>
             </button>
             <div class="pos-topbar-time">
                 <i class="fa-regular fa-clock"></i>
@@ -112,142 +112,7 @@
 
             <!-- Product Grid -->
             <div class="pos-product-grid">
-
-                <!-- Product 1 -->
-                <div class="pos-product-card" onclick="addToCart('Panadol Extra', 65000)">
-                    <img src="../assets/images/product_frame.png" alt="Panadol Extra" class="pos-product-img">
-                    <div class="pos-product-name">Panadol Extra (Hộp 12 viên)</div>
-                    <div class="pos-product-price">65,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ A2</span>
-                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 45</span>
-                    </div>
-                </div>
-
-                <!-- Product 2 -->
-                <div class="pos-product-card" onclick="addToCart('Vitamin C DHC', 120000)">
-                    <img src="../assets/images/product_frame_2.png" alt="Vitamin C" class="pos-product-img">
-                    <div class="pos-product-name">Vitamin C DHC 1000mg (60 ngày)</div>
-                    <div class="pos-product-price">120,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ B1</span>
-                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 28</span>
-                    </div>
-                </div>
-
-                <!-- Product 3 -->
-                <div class="pos-product-card" onclick="addToCart('Amoxicillin 500mg', 35000)">
-                    <img src="../assets/images/product_frame.png" alt="Amoxicillin" class="pos-product-img">
-                    <div class="pos-product-name">Amoxicillin 500mg (Hộp 20 viên)</div>
-                    <div class="pos-product-price">35,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ A5</span>
-                        <span class="pos-meta-badge pos-meta-stock low"><i class="fa-solid fa-box"></i> SL: 5</span>
-                    </div>
-                </div>
-
-                <!-- Product 4 -->
-                <div class="pos-product-card" onclick="addToCart('Omeprazole 20mg', 48000)">
-                    <img src="../assets/images/product_frame_2.png" alt="Omeprazole" class="pos-product-img">
-                    <div class="pos-product-name">Omeprazole 20mg (Hộp 30 viên)</div>
-                    <div class="pos-product-price">48,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ C3</span>
-                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 67</span>
-                    </div>
-                </div>
-
-                <!-- Product 5 -->
-                <div class="pos-product-card" onclick="addToCart('Dầu gió xanh', 25000)">
-                    <img src="../assets/images/product_frame.png" alt="Dầu gió" class="pos-product-img">
-                    <div class="pos-product-name">Dầu gió xanh Eagle Brand 24ml</div>
-                    <div class="pos-product-price">25,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ D1</span>
-                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 120</span>
-                    </div>
-                </div>
-
-                <!-- Product 6 -->
-                <div class="pos-product-card" onclick="addToCart('Thuốc ho Prospan', 95000)">
-                    <img src="../assets/images/product_frame_2.png" alt="Prospan" class="pos-product-img">
-                    <div class="pos-product-name">Thuốc ho Prospan (Chai 100ml)</div>
-                    <div class="pos-product-price">95,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ B4</span>
-                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 15</span>
-                    </div>
-                </div>
-
-                <!-- Product 7 - OUT OF STOCK -->
-                <div class="pos-product-card out-of-stock" onclick="openAltDrawer()">
-                    <div class="pos-oos-overlay">
-                        <span class="pos-oos-label"><i class="fa-solid fa-ban"></i> Hết hàng</span>
-                    </div>
-                    <img src="../assets/images/product_frame.png" alt="Thuốc" class="pos-product-img">
-                    <div class="pos-product-name">Efferalgan 500mg (Hộp 16 viên)</div>
-                    <div class="pos-product-price">42,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ A1</span>
-                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 0</span>
-                    </div>
-                </div>
-
-                <!-- Product 8 -->
-                <div class="pos-product-card" onclick="addToCart('Smecta', 55000)">
-                    <img src="../assets/images/product_frame_2.png" alt="Smecta" class="pos-product-img">
-                    <div class="pos-product-name">Smecta bột hương cam (Hộp 30 gói)</div>
-                    <div class="pos-product-price">55,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ C1</span>
-                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 33</span>
-                    </div>
-                </div>
-
-                <!-- Product 9 -->
-                <div class="pos-product-card" onclick="addToCart('Betadine 10%', 72000)">
-                    <img src="../assets/images/product_frame.png" alt="Betadine" class="pos-product-img">
-                    <div class="pos-product-name">Dung dịch sát khuẩn Betadine 10%</div>
-                    <div class="pos-product-price">72,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ E2</span>
-                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 21</span>
-                    </div>
-                </div>
-
-                <!-- Product 10 -->
-                <div class="pos-product-card" onclick="addToCart('Nhiệt kế điện tử', 85000)">
-                    <img src="../assets/images/product_frame_2.png" alt="Nhiệt kế" class="pos-product-img">
-                    <div class="pos-product-name">Nhiệt kế điện tử Omron MC-246</div>
-                    <div class="pos-product-price">85,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ F1</span>
-                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 8</span>
-                    </div>
-                </div>
-
-                <!-- Product 11 -->
-                <div class="pos-product-card" onclick="addToCart('Bông băng urgo', 18000)">
-                    <img src="../assets/images/product_frame.png" alt="Urgo" class="pos-product-img">
-                    <div class="pos-product-name">Bông băng cá nhân Urgo (Hộp 100)</div>
-                    <div class="pos-product-price">18,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ E3</span>
-                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 55</span>
-                    </div>
-                </div>
-
-                <!-- Product 12 -->
-                <div class="pos-product-card" onclick="addToCart('Sữa Ensure Gold', 520000)">
-                    <img src="../assets/images/product_frame_2.png" alt="Ensure" class="pos-product-img">
-                    <div class="pos-product-name">Sữa Ensure Gold 850g (Hương Vani)</div>
-                    <div class="pos-product-price">520,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ G1</span>
-                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 12</span>
-                    </div>
-                </div>
-
+                <!-- Tải động sản phẩm tại đây -->
             </div>
         </div>
 
@@ -261,110 +126,29 @@
                     Đơn hàng
                     <span class="pos-cart-count" id="cartCount">3</span>
                 </div>
-                <div class="pos-customer-input">
+                <div class="pos-customer-input" style="position:relative;">
                     <i class="fa-solid fa-user"></i>
-                    <input type="text" placeholder="Nhập SĐT khách hàng để tích điểm...">
+                    <input type="text" id="customerPhoneInput" placeholder="Nhập SĐT khách hàng để tích điểm...">
+                </div>
+                <div id="selectedCustomerBadge" style="display: none; align-items: center; justify-content: space-between; background: #ecfdf5; border: 1px solid #10b981; border-radius: 6px; padding: 6px 10px; margin-top: 8px; font-size: 13px; color: #065f46; width: 100%;">
+                    <div style="text-align: left; line-height: 1.4;">
+                        <i class="fa-solid fa-user-tag" style="color:#10b981;"></i> <strong id="selCustName">Khách hàng</strong> (<span id="selCustPhone">SĐT</span>)<br>
+                        <span style="font-size: 11px; color: #047857;"><i class="fa-solid fa-star"></i> Tích lũy: <strong id="selCustPoints">0</strong> điểm (<span id="selCustTier" style="text-transform: capitalize;">Member</span>)</span>
+                    </div>
+                    <button onclick="clearSelectedCustomer()" style="background: none; border: none; color: #dc2626; cursor: pointer; font-size: 14px; padding: 2px; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             </div>
 
             <!-- Cart Items -->
             <div class="pos-cart-items" id="cartItems">
-
-                <!-- Item 1 -->
-                <div class="pos-cart-item" data-price-box="130000" data-price-blister="13000" data-price-pill="1300">
-                    <div class="pos-cart-item-top">
-                        <div style="flex:1;">
-                            <div class="pos-cart-item-name">Panadol Extra (Hộp 12 viên)</div>
-                            <div style="font-size: 11px; color: #6b7280; margin-top: 2px;"><i class="fa-solid fa-tag"
-                                    style="margin-right:4px;"></i>Lô: L-2025</div>
-                        </div>
-                        <button class="pos-cart-item-delete"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
-                    <div class="pos-cart-item-bottom">
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                            <div class="pos-qty-stepper">
-                                <button class="pos-qty-btn on-decrement">−</button>
-                                <div class="pos-qty-value">2</div>
-                                <button class="pos-qty-btn on-increment">+</button>
-                            </div>
-                            <select class="pos-uom-select on-uom-change"
-                                style="font-size: 13px; padding: 4px 24px 4px 8px; border: 1px solid #e5e7eb; border-radius: 6px; background: #f8fafc; color: #334155; outline: none; cursor: pointer; height: 32px; font-weight: 500; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010l5%205%205-5z%22%20fill%3D%22%2364748b%22%20%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 4px center; background-size: 20px;">
-                                <option value="box" selected>Hộp</option>
-                                <option value="blister">Vỉ</option>
-                                <option value="pill">Viên</option>
-                            </select>
-                        </div>
-                        <div class="pos-cart-item-price">130,000₫</div>
-                    </div>
-                </div>
-
-                <!-- Item 2 - Prescription Alert -->
-                <div class="pos-cart-item prescription-alert" data-price-box="35000" data-price-blister="3500"
-                    data-price-pill="350">
-                    <div class="pos-cart-item-top">
-                        <div style="flex:1;">
-                            <div class="pos-cart-item-name">Amoxicillin 500mg (Hộp 20 viên)</div>
-                            <div style="font-size: 11px; color: #6b7280; margin-top: 2px;"><i class="fa-solid fa-tag"
-                                    style="margin-right:4px;"></i>Lô: L-1049</div>
-                        </div>
-                        <button class="pos-cart-item-delete"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
-                    <div class="pos-rx-alert">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                        Thuốc kê đơn — Cần nhập tên bác sĩ
-                    </div>
-                    <div class="pos-cart-item-bottom">
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                            <div class="pos-qty-stepper">
-                                <button class="pos-qty-btn on-decrement">−</button>
-                                <div class="pos-qty-value">3</div>
-                                <button class="pos-qty-btn on-increment">+</button>
-                            </div>
-                            <select class="pos-uom-select on-uom-change"
-                                style="font-size: 13px; padding: 4px 24px 4px 8px; border: 1px solid #e5e7eb; border-radius: 6px; background: #f8fafc; color: #334155; outline: none; cursor: pointer; height: 32px; font-weight: 500; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010l5%205%205-5z%22%20fill%3D%22%2364748b%22%20%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 4px center; background-size: 20px;">
-                                <option value="box">Hộp</option>
-                                <option value="blister" selected>Vỉ</option>
-                                <option value="pill">Viên</option>
-                            </select>
-                        </div>
-                        <div class="pos-cart-item-price">10,500₫</div>
-                    </div>
-                </div>
-
-                <!-- Item 3 -->
-                <div class="pos-cart-item" data-price-box="120000" data-price-pill="2000">
-                    <div class="pos-cart-item-top">
-                        <div style="flex:1;">
-                            <div class="pos-cart-item-name">Vitamin C DHC 1000mg (60 ngày)</div>
-                            <div style="font-size: 11px; color: #6b7280; margin-top: 2px;"><i class="fa-solid fa-tag"
-                                    style="margin-right:4px;"></i>Lô: L-9382</div>
-                        </div>
-                        <button class="pos-cart-item-delete"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
-                    <div class="pos-cart-item-bottom">
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                            <div class="pos-qty-stepper">
-                                <button class="pos-qty-btn on-decrement">−</button>
-                                <div class="pos-qty-value">1</div>
-                                <button class="pos-qty-btn on-increment">+</button>
-                            </div>
-                            <select class="pos-uom-select on-uom-change"
-                                style="font-size: 13px; padding: 4px 24px 4px 8px; border: 1px solid #e5e7eb; border-radius: 6px; background: #f8fafc; color: #334155; outline: none; cursor: pointer; height: 32px; font-weight: 500; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010l5%205%205-5z%22%20fill%3D%22%2364748b%22%20%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 4px center; background-size: 20px;">
-                                <option value="box" selected>Gói</option>
-                                <option value="pill">Viên</option>
-                            </select>
-                        </div>
-                        <div class="pos-cart-item-price">120,000₫</div>
-                    </div>
-                </div>
-
+                <!-- Tải động giỏ hàng tại đây -->
             </div>
 
             <!-- Checkout -->
             <div class="pos-checkout">
                 <div class="pos-checkout-row">
-                    <span class="pos-checkout-label">Tạm tính (4 sản phẩm)</span>
-                    <span class="pos-checkout-value">285,000₫</span>
+                    <span class="pos-checkout-label">Tạm tính (0 sản phẩm)</span>
+                    <span class="pos-checkout-value">0₫</span>
                 </div>
                 <div class="pos-checkout-row">
                     <span class="pos-checkout-label">Giảm giá</span>
@@ -373,14 +157,14 @@
 
                 <div class="pos-checkout-total">
                     <span class="label">TỔNG THANH TOÁN</span>
-                    <span class="amount">270,000₫</span>
+                    <span class="amount">0₫</span>
                 </div>
 
                 <div class="pos-checkout-actions">
                     <button class="pos-btn-secondary" onclick="openHoldDrawer()">
                         <i class="fa-solid fa-pause"></i> Giữ đơn
                     </button>
-                    <button class="pos-btn-secondary">
+                    <button class="pos-btn-secondary" onclick="clearCart()">
                         <i class="fa-solid fa-trash"></i> Xoá đơn
                     </button>
                 </div>
@@ -441,10 +225,9 @@
 
                         <!-- Simulated Loyalty Info -->
                         <div id="loyaltyPointsBox"
-                            style="background:#fffbeb;border:1px dashed #fde047;border-radius:6px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;">
-                            <div style="font-size:12px;color:#854d0e;"><i class="fa-solid fa-star"
-                                    style="color:#eab308;margin-right:4px;"></i> KH có <strong>25,000 điểm</strong> khả
-                                dụng</div>
+                            style="background:#fffbeb;border:1px dashed #fde047;border-radius:6px;padding:8px 10px;display:none;align-items:center;justify-content:space-between;margin-top:8px;">
+                            <div id="loyaltyPointsLabel" style="font-size:12px;color:#854d0e;"><i class="fa-solid fa-star"
+                                    style="color:#eab308;margin-right:4px;"></i> KH có <strong>0 điểm</strong> khả dụng</div>
                             <label
                                 style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:#15803d;cursor:pointer;">
                                 <input type="checkbox" id="usePointsCheckbox" onchange="togglePoints()"
@@ -453,18 +236,18 @@
                         </div>
                     </div>
 
-                    <div class="checkout-summary-item">
+                     <div class="checkout-summary-item">
                         <span>Tạm tính</span>
-                        <span>285,000₫</span>
+                        <span id="checkoutSubtotal">0₫</span>
                     </div>
                     <div class="checkout-summary-item discount">
                         <span>Giảm giá</span>
-                        <span>-15,000₫</span>
+                        <span id="checkoutDiscount">0₫</span>
                     </div>
                     <div class="checkout-summary-divider"></div>
                     <div class="checkout-summary-total">
                         <span>TỔNG CỘNG</span>
-                        <span>270,000₫</span>
+                        <span id="checkoutTotal">0₫</span>
                     </div>
                 </div>
 
@@ -500,7 +283,7 @@
                             <span class="checkout-cash-suffix">₫</span>
                         </div>
                         <div class="quick-cash-grid">
-                            <button class="quick-cash-chip" onclick="setQuickCash(270000)">270K<br><small>Đúng
+                            <button class="quick-cash-chip" id="exactCashBtn" onclick="setQuickCash(0)">0K<br><small>Đúng
                                     tiền</small></button>
                             <button class="quick-cash-chip" onclick="setQuickCash(300000)">300K</button>
                             <button class="quick-cash-chip" onclick="setQuickCash(500000)">500K</button>
@@ -508,7 +291,7 @@
                         </div>
                         <div class="change-display" id="changeDisplay">
                             <span class="change-label">Tiền thối lại:</span>
-                            <span class="change-amount" id="changeAmount">30,000₫</span>
+                            <span class="change-amount" id="changeAmount">0₫</span>
                         </div>
                     </div>
 
@@ -517,7 +300,7 @@
                         <div class="qr-placeholder">
                             <i class="fa-solid fa-qrcode"></i>
                             <p>Quét mã QR để thanh toán</p>
-                            <span class="qr-amount">270,000₫</span>
+                            <span class="qr-amount" id="qrAmountText">0₫</span>
                         </div>
                     </div>
 
@@ -581,58 +364,8 @@
             <button class="modal-close" style="color:#ea580c;" onclick="closeOnlineDrawer()"><i
                     class="fa-solid fa-xmark"></i></button>
         </div>
-        <div class="drawer-body" style="background:#fffaf5;">
-
-            <!-- Online Order 1 -->
-            <div class="hold-order-card" style="border-left:4px solid #f97316;">
-                <div class="hold-order-top" style="margin-bottom:8px;">
-                    <div class="hold-order-id" style="color:#c2410c;font-size:14px;">
-                        <i class="fa-solid fa-globe"></i> WEB-5931
-                    </div>
-                    <div class="hold-order-time" style="color:#ea580c;font-weight:600;">
-                        <i class="fa-regular fa-clock"></i> 5 phút trước
-                    </div>
-                </div>
-                <div class="hold-order-items" style="color:#334155;">
-                    <span>Khách: <strong>Trần Quốc Bảo</strong> (0982xxx991)</span><br>
-                    <span style="color:#10b981;font-size:12px;font-weight:600;"><i
-                            class="fa-solid fa-money-check-dollar"></i> Đã thanh toán ZaloPay</span>
-                </div>
-                <div class="hold-order-bottom">
-                    <div class="hold-order-total">340,000₫</div>
-                    <div class="hold-order-actions">
-                        <button class="hold-btn-resume" style="background:#f97316;color:white;border-color:#ea580c;"
-                            onclick="processOnlineOrder(this)"><i class="fa-solid fa-box-open"></i> Nhận đơn lấy
-                            hàng</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Online Order 2 -->
-            <div class="hold-order-card" style="border-left:4px solid #f97316;">
-                <div class="hold-order-top" style="margin-bottom:8px;">
-                    <div class="hold-order-id" style="color:#c2410c;font-size:14px;">
-                        <i class="fa-solid fa-globe"></i> WEB-5928
-                    </div>
-                    <div class="hold-order-time" style="color:#ea580c;font-weight:600;">
-                        <i class="fa-regular fa-clock"></i> 12 phút trước
-                    </div>
-                </div>
-                <div class="hold-order-items" style="color:#334155;">
-                    <span>Khách: <strong>Lê Thùy Hương</strong> (0911xxx334)</span><br>
-                    <span style="color:#6b7280;font-size:12px;font-weight:600;"><i
-                            class="fa-solid fa-hand-holding-dollar"></i> COD (Thu tiền hộ)</span>
-                </div>
-                <div class="hold-order-bottom">
-                    <div class="hold-order-total">125,000₫</div>
-                    <div class="hold-order-actions">
-                        <button class="hold-btn-resume" style="background:#f97316;color:white;border-color:#ea580c;"
-                            onclick="processOnlineOrder(this)"><i class="fa-solid fa-box-open"></i> Nhận đơn lấy
-                            hàng</button>
-                    </div>
-                </div>
-            </div>
-
+        <div class="drawer-body" id="onlineOrdersContainer" style="background:#fffaf5;">
+            <!-- Danh sách đơn hàng Web chờ xử lý sẽ được nạp động từ API -->
         </div>
         <div class="drawer-footer" style="background:#fff7ed; border-top-color:#fed7aa;">
             <span class="drawer-footer-text" style="color:#ea580c;"><i class="fa-solid fa-bolt"></i> Vui lòng xử lý đơn
@@ -867,97 +600,8 @@
     <!-- ============ ALTERNATIVE MEDICINES SLIDE-OVER ============ -->
     <div class="hold-drawer-overlay" id="altDrawerOverlay" onclick="closeAltDrawer()"></div>
     <div class="hold-drawer" id="altDrawer">
-        <div class="hold-drawer-header">
-            <div>
-                <h2>Thay Thế Hết Hàng</h2>
-                <div style="font-size:13px;color:#cbd5e1;margin-top:2px;">
-                    <i class="fa-solid fa-flask" style="margin-right:4px;"></i>Hoạt chất: Paracetamol 500mg
-                </div>
-            </div>
-            <button class="modal-close" style="color:white;opacity:0.8;" onclick="closeAltDrawer()">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-
-        <div class="hold-drawer-body" style="background:#f8fafc;padding:0;">
-            <div
-                style="padding:16px;background:#fff1f2;border-bottom:1px solid #ffe4e6;display:flex;align-items:center;gap:12px;">
-                <i class="fa-solid fa-circle-exclamation" style="font-size:20px;color:#e11d48;"></i>
-                <div>
-                    <div style="font-size:14px;font-weight:700;color:#9f1239;">Efferalgan 500mg (Hộp 16 viên) đã hết
-                        hàng.</div>
-                    <div style="font-size:12px;color:#e11d48;margin-top:2px;">Vui lòng tư vấn các sản phẩm thay thế cùng
-                        thành phần bên dưới:</div>
-                </div>
-            </div>
-
-            <div style="padding:16px;display:flex;flex-direction:column;gap:12px;">
-
-                <!-- Alt 1 -->
-                <div
-                    style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:12px;display:flex;gap:16px;align-items:center;">
-                    <img src="../assets/images/product_frame_2.png"
-                        style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #f3f4f6;">
-                    <div style="flex:1;">
-                        <div style="font-size:14px;font-weight:700;color:#1e293b;">Panadol Extra (Hộp 12 viên)</div>
-                        <div style="font-size:15px;font-weight:800;color:#059669;margin-top:4px;">65,000₫</div>
-                        <div
-                            style="font-size:12px;color:#047857;margin-top:4px;display:flex;align-items:center;gap:4px;">
-                            <i class="fa-solid fa-boxes-stacked"></i> Tồn kho: <span style="font-weight:700;">45
-                                Hộp</span>
-                        </div>
-                    </div>
-                    <button
-                        style="height:40px;padding:0 16px;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;"
-                        onclick="closeAltDrawer(); setTimeout(() => addToCart('Panadol Extra', 65000), 300)">
-                        <i class="fa-solid fa-plus" style="margin-right:6px;"></i>THÊM
-                    </button>
-                </div>
-
-                <!-- Alt 2 -->
-                <div
-                    style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:12px;display:flex;gap:16px;align-items:center;">
-                    <img src="../assets/images/product_frame.png"
-                        style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #f3f4f6;">
-                    <div style="flex:1;">
-                        <div style="font-size:14px;font-weight:700;color:#1e293b;">Hapacol 500 (Hộp 10 vỉ)</div>
-                        <div style="font-size:15px;font-weight:800;color:#059669;margin-top:4px;">32,000₫</div>
-                        <div
-                            style="font-size:12px;color:#047857;margin-top:4px;display:flex;align-items:center;gap:4px;">
-                            <i class="fa-solid fa-boxes-stacked"></i> Tồn kho: <span style="font-weight:700;">112
-                                Hộp</span>
-                        </div>
-                    </div>
-                    <button
-                        style="height:40px;padding:0 16px;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;"
-                        onclick="closeAltDrawer(); setTimeout(() => addToCart('Hapacol 500', 32000), 300)">
-                        <i class="fa-solid fa-plus" style="margin-right:6px;"></i>THÊM
-                    </button>
-                </div>
-
-                <!-- Alt 3 -->
-                <div
-                    style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:12px;display:flex;gap:16px;align-items:center;">
-                    <img src="../assets/images/product_frame_2.png"
-                        style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #f3f4f6;">
-                    <div style="flex:1;">
-                        <div style="font-size:14px;font-weight:700;color:#1e293b;">Tylenol 500mg (Hộp 100 viên)</div>
-                        <div style="font-size:15px;font-weight:800;color:#059669;margin-top:4px;">210,000₫</div>
-                        <div
-                            style="font-size:12px;color:#047857;margin-top:4px;display:flex;align-items:center;gap:4px;">
-                            <i class="fa-solid fa-boxes-stacked"></i> Tồn kho: <span style="font-weight:700;">8
-                                Lọ</span>
-                        </div>
-                    </div>
-                    <button
-                        style="height:40px;padding:0 16px;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;"
-                        onclick="closeAltDrawer(); setTimeout(() => addToCart('Tylenol 500mg', 210000), 300)">
-                        <i class="fa-solid fa-plus" style="margin-right:6px;"></i>THÊM
-                    </button>
-                </div>
-
-            </div>
-        </div>
+        <!-- Tải động đề xuất thay thế thuốc hết hàng -->
+    </div>
         <!-- ============ PRESCRIPTION MODAL ============ -->
         <div class="modal-overlay" id="rxModal">
             <div class="modal-box" style="max-width:500px; padding:0;">
@@ -1037,6 +681,10 @@
 
         <!-- ============ SCRIPTS ============ -->
         <script>
+            // Extract POS Auth
+            const authRaw = localStorage.getItem('MG_POS_AUTH');
+            const auth = authRaw ? JSON.parse(authRaw) : null;
+
             // Update clock
             function updateClock() {
                 const now = new Date();
@@ -1047,97 +695,629 @@
             updateClock();
             setInterval(updateClock, 1000);
 
-            // Category pill toggle
-            document.querySelectorAll('.pos-cat-pill').forEach(pill => {
-                pill.addEventListener('click', () => {
-                    document.querySelectorAll('.pos-cat-pill').forEach(p => p.classList.remove('active'));
-                    pill.classList.add('active');
-                });
-            });
+            // Dynamic Kiosk State
+            window.allProducts = [];
+            window.cart = [];
+            window.allCustomers = [];
+            window.selectedCustomer = null;
+            window.checkoutPointsDiscount = 0;
 
-            // Cart Update Logic
-            function updateCartTotal() {
+            // API Endpoint configuration
+            const API_BASE_URL = 'http://localhost:8000/api/catalog';
+
+            async function fetchCustomersFromApi() {
+                if (!auth || !auth.accessToken) return;
+                try {
+                    const res = await fetch('http://localhost:8000/api/identity/customers', {
+                        headers: {
+                            'Authorization': `Bearer ${auth.accessToken}`
+                        }
+                    });
+                    const data = await res.json();
+                    if (data.success && Array.isArray(data.data)) {
+                        window.allCustomers = data.data;
+                        console.log('[POS] Loaded customers:', window.allCustomers.length);
+                    }
+                } catch (err) {
+                    console.error('[POS] Failed to fetch customers:', err);
+                }
+            }
+
+            function initCustomerLoyaltySearch() {
+                const input = document.getElementById('customerPhoneInput');
+                if (!input) return;
+
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const query = input.value.trim();
+                        if (!query) return;
+
+                        const customer = window.allCustomers.find(c => c.phone === query || c.phone.replace(/[^0-9]/g, '') === query.replace(/[^0-9]/g, ''));
+                        if (customer) {
+                            selectCustomer(customer);
+                        } else {
+                            const toast = document.createElement('div');
+                            toast.className = 'pos-toast';
+                            toast.style.background = '#dc2626';
+                            toast.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Không tìm thấy khách hàng với SĐT này!';
+                            document.body.appendChild(toast);
+                            setTimeout(() => { toast.classList.add('show'); }, 10);
+                            setTimeout(() => {
+                                toast.classList.remove('show');
+                                setTimeout(() => { toast.remove(); }, 300);
+                            }, 2500);
+                        }
+                    }
+                });
+            }
+
+            function selectCustomer(customer) {
+                window.selectedCustomer = customer;
+                document.getElementById('selCustName').textContent = customer.full_name;
+                document.getElementById('selCustPhone').textContent = customer.phone;
+                document.getElementById('selCustPoints').textContent = customer.loyalty_points.toLocaleString('vi-VN');
+                document.getElementById('selCustTier').textContent = customer.loyalty_tier || 'member';
+                
+                document.getElementById('selectedCustomerBadge').style.display = 'flex';
+                document.querySelector('.pos-customer-input').style.display = 'none';
+
+                const toast = document.createElement('div');
+                toast.className = 'pos-toast';
+                toast.style.background = '#065f46';
+                toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> Đã nhận diện khách hàng: ${customer.full_name}!`;
+                document.body.appendChild(toast);
+                setTimeout(() => { toast.classList.add('show'); }, 10);
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => { toast.remove(); }, 300);
+                }, 2500);
+
+                document.getElementById('usePointsCheckbox').checked = false;
+                window.checkoutPointsDiscount = 0;
+                renderCart();
+            }
+
+            function clearSelectedCustomer() {
+                window.selectedCustomer = null;
+                window.checkoutPointsDiscount = 0;
+
+                document.getElementById('selectedCustomerBadge').style.display = 'none';
+                const inputWrapper = document.querySelector('.pos-customer-input');
+                inputWrapper.style.display = 'flex';
+                const input = document.getElementById('customerPhoneInput');
+                if (input) {
+                    input.value = '';
+                    input.focus();
+                }
+
+                document.getElementById('usePointsCheckbox').checked = false;
+                renderCart();
+            }
+
+            // Global pagination variables
+            window.currentProductPage = 1;
+            window.lastProductParams = {};
+            window.loadedProducts = [];
+            window.hasMoreProducts = false;
+
+            // Load products on startup or dynamic filters
+            async function loadProductsFromApi(params = {}, isLoadMore = false) {
+                const grid = document.querySelector('.pos-product-grid');
+                
+                if (!isLoadMore) {
+                    window.currentProductPage = 1;
+                    window.lastProductParams = params;
+                    window.loadedProducts = [];
+                    window.hasMoreProducts = false;
+                    
+                    if (grid) {
+                        grid.innerHTML = `
+                            <div style="grid-column: 1/-1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; color: #6b7280; gap: 12px;">
+                                <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 32px; color: #10b981;"></i>
+                                <span style="font-size: 14px; font-weight: 500;">Đang tìm sản phẩm từ API...</span>
+                            </div>
+                        `;
+                    }
+                } else {
+                    params = window.lastProductParams || {};
+                }
+
+                try {
+                    const queryParams = new URLSearchParams({ limit: 100 });
+                    queryParams.set('page', window.currentProductPage);
+                    if (params.category_id) {
+                        queryParams.set('category_id', params.category_id);
+                    }
+                    if (params.requires_prescription !== undefined) {
+                        queryParams.set('requires_prescription', params.requires_prescription);
+                    }
+                    if (params.q) {
+                        queryParams.set('q', params.q);
+                    }
+
+                    const response = await fetch(`${API_BASE_URL}/products?${queryParams.toString()}`);
+                    const result = await response.json();
+
+                    if (result.success && Array.isArray(result.data)) {
+                        const newProducts = result.data.map(p => ({
+                            id: p.id,
+                            sku: p.sku || 'N/A',
+                            name: p.name,
+                            retail_price: p.retail_price || p.price || 0,
+                            requires_prescription: p.requires_prescription === 1 || p.requires_prescription === true,
+                            image_url: p.image_url,
+                            total_stock: (p.total_stock !== undefined && p.total_stock !== null) ? Number(p.total_stock) : (p.in_stock ? 15 : 0),
+                            category_id: p.category_id,
+                            category_parent_id: p.category_parent_id,
+                            category_name: p.category_name || 'Dược phẩm',
+                            active_ingredient: p.active_ingredient || ''
+                        }));
+
+                        window.loadedProducts = window.loadedProducts.concat(newProducts);
+                        window.hasMoreProducts = newProducts.length === 100;
+                        
+                        newProducts.forEach(np => {
+                            if (!window.allProducts.some(p => p.id === np.id)) {
+                                window.allProducts.push(np);
+                            }
+                        });
+
+                        console.log('[POS] Loaded products page:', window.currentProductPage, 'Current total:', window.loadedProducts.length);
+                        renderProductGrid(window.loadedProducts);
+                    } else {
+                        throw new Error('API returned unsuccessful response structure');
+                    }
+                } catch (error) {
+                    console.error('[POS] Failed to fetch products:', error);
+                    if (grid && !isLoadMore) {
+                        grid.innerHTML = `
+                            <div style="grid-column: 1/-1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; color: #ef4444; gap: 12px; text-align: center;">
+                                <i class="fa-solid fa-triangle-exclamation" style="font-size: 32px;"></i>
+                                <span style="font-size: 14px; font-weight: 600;">Không thể tải sản phẩm từ máy chủ.</span>
+                                <span style="font-size: 12px; color: #6b7280; max-width: 400px;">Chi tiết: ${error.message}. Đảm bảo catalog-service đang hoạt động tại cổng 8000.</span>
+                                <button onclick="loadProductsFromApi()" style="margin-top: 8px; padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Tải lại</button>
+                            </div>
+                        `;
+                    }
+                }
+            }
+
+            async function loadMoreProducts() {
+                const btn = document.getElementById('loadMoreBtn');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tải thêm...';
+                }
+                
+                window.currentProductPage++;
+                await loadProductsFromApi({}, true);
+            }
+
+            // Map category or ID to shelf locations for realistic metadata
+            function getShelfLocation(product) {
+                const id = product.id || 0;
+                if (product.requires_prescription) return `Kệ A${(id % 5) + 1}`;
+                if (product.category_name && product.category_name.includes('Sữa')) return `Kệ G${(id % 3) + 1}`;
+                if (id % 4 === 0) return `Kệ B${(id % 3) + 1}`;
+                if (id % 4 === 1) return `Kệ C${(id % 3) + 1}`;
+                if (id % 4 === 2) return `Kệ D${(id % 3) + 1}`;
+                return `Kệ E${(id % 3) + 1}`;
+            }
+
+            // Real-time API-driven filtering & searching
+            function filterProducts() {
+                const searchInput = document.querySelector('.pos-search-input');
+                const searchQuery = searchInput ? searchInput.value.trim() : '';
+
+                const activePill = document.querySelector('.pos-cat-pill.active');
+                const catText = activePill ? activePill.textContent : 'Tất cả';
+
+                const params = {};
+
+                if (catText.includes('Thuốc kê đơn')) {
+                    params.requires_prescription = 1;
+                } else if (catText.includes('Giảm đau')) {
+                    params.category_id = 1300;
+                } else if (catText.includes('Vitamin & TPCN')) {
+                    params.category_id = 2000;
+                } else if (catText.includes('Dụng cụ y tế')) {
+                    params.category_id = 6000;
+                } else if (catText.includes('Mẹ & Bé')) {
+                    params.category_id = 5000;
+                } else if (catText.includes('Chăm sóc cá nhân')) {
+                    params.category_id = 4000;
+                }
+
+                if (searchQuery) {
+                    params.q = searchQuery;
+                }
+
+                loadProductsFromApi(params);
+            }
+
+            // Render Product cards
+            function renderProductGrid(products) {
+                const grid = document.querySelector('.pos-product-grid');
+                if (!grid) return;
+
+                if (products.length === 0) {
+                    grid.innerHTML = `
+                        <div style="grid-column: 1/-1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px; color: #6b7280; gap: 8px;">
+                            <i class="fa-solid fa-magnifying-glass" style="font-size: 32px; color: #9ca3af;"></i>
+                            <span style="font-size: 14px; font-weight: 500;">Không tìm thấy sản phẩm nào phù hợp</span>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let cardsHtml = products.map(p => {
+                    const isOOS = p.total_stock <= 0;
+                    const shelf = getShelfLocation(p);
+                    
+                    return `
+                        <div class="pos-product-card ${isOOS ? 'out-of-stock' : ''}" 
+                             onclick="${isOOS ? `openAltDrawer(${p.id})` : `addOrIncrementInCart(${p.id})`}">
+                            
+                            ${isOOS ? `
+                            <div class="pos-oos-overlay">
+                                <span class="pos-oos-label"><i class="fa-solid fa-ban"></i> Hết hàng</span>
+                            </div>
+                            ` : ''}
+                            
+                            <img src="${p.image_url || '../assets/images/product_frame.png'}" 
+                                 alt="${p.name}" class="pos-product-img"
+                                 onerror="this.src='../assets/images/product_frame.png'">
+                            
+                            <div class="pos-product-name">
+                                ${p.requires_prescription ? '<span style="background: #fee2e2; color: #dc2626; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-right: 4px; display: inline-block;">Rx</span>' : ''}
+                                ${p.name}
+                            </div>
+                            <div class="pos-product-price">${p.retail_price.toLocaleString('vi-VN')}₫</div>
+                            <div class="pos-product-meta">
+                                <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> ${shelf}</span>
+                                <span class="pos-meta-badge pos-meta-stock ${p.total_stock <= 5 ? 'low' : ''}"><i class="fa-solid fa-box"></i> SL: ${p.total_stock}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                if (window.hasMoreProducts) {
+                    cardsHtml += `
+                        <div id="loadMoreContainer" style="grid-column: 1/-1; display: flex; justify-content: center; padding: 20px 0;">
+                            <button id="loadMoreBtn" onclick="loadMoreProducts()" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: none; border-radius: 8px; color: white; padding: 12px 35px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); transition: all 0.2s; font-size: 14px;">
+                                <i class="fa-solid fa-arrows-spin"></i> Xem thêm sản phẩm
+                            </button>
+                        </div>
+                    `;
+                }
+
+                grid.innerHTML = cardsHtml;
+            }
+
+            // Add or increment item in Cart
+            function addOrIncrementInCart(productId) {
+                const product = window.allProducts.find(p => p.id === productId);
+                if (!product) return;
+
+                const existing = window.cart.find(item => item.id === productId);
+                if (existing) {
+                    existing.quantity += 1;
+                } else {
+                    window.cart.push({
+                        id: product.id,
+                        name: product.name,
+                        requiresPrescription: product.requires_prescription,
+                        basePrice: product.retail_price,
+                        price: product.retail_price,
+                        quantity: 1,
+                        unit: 'box', // Default unit: Box (Hộp)
+                        availableUnits: ['box', 'blister', 'pill']
+                    });
+                }
+                renderCart();
+            }
+
+            // Remove item from Cart
+            function removeFromCart(productId) {
+                window.cart = window.cart.filter(item => item.id !== productId);
+                renderCart();
+            }
+
+            // Clear entire Cart
+            function clearCart() {
+                if (window.cart.length === 0) return;
+                if (confirm('Bạn có chắc chắn muốn xoá toàn bộ giỏ hàng hiện tại?')) {
+                    window.cart = [];
+                    renderCart();
+                }
+            }
+
+            // Update item quantity in Cart
+            function updateQty(productId, delta) {
+                const item = window.cart.find(item => item.id === productId);
+                if (!item) return;
+
+                item.quantity += delta;
+                if (item.quantity <= 0) {
+                    removeFromCart(productId);
+                } else {
+                    renderCart();
+                }
+            }
+
+            // Update unit of measure (UOM) for a Cart item
+            function updateUom(productId, unit) {
+                const item = window.cart.find(item => item.id === productId);
+                if (!item) return;
+
+                item.unit = unit;
+                if (unit === 'box') {
+                    item.price = item.basePrice;
+                } else if (unit === 'blister') {
+                    item.price = Math.round(item.basePrice / 10);
+                } else if (unit === 'pill') {
+                    item.price = Math.round(item.basePrice / 100);
+                }
+                renderCart();
+            }
+
+            // Render Sidebar Cart dynamically from window.cart
+            function renderCart() {
+                const container = document.getElementById('cartItems');
+                if (!container) return;
+
+                if (window.cart.length === 0) {
+                    container.innerHTML = `
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #9ca3af; padding: 40px; gap: 12px; text-align: center;">
+                            <i class="fa-solid fa-basket-shopping" style="font-size: 40px; opacity: 0.5;"></i>
+                            <span style="font-size: 13px; font-weight: 500;">Giỏ hàng trống.<br>Click chọn sản phẩm bên trái để bán hàng.</span>
+                        </div>
+                    `;
+                    updateCartTotal(0, 0);
+                    return;
+                }
+
+                container.innerHTML = window.cart.map(item => {
+                    const itemTotal = item.quantity * item.price;
+                    return `
+                        <div class="pos-cart-item ${item.requiresPrescription ? 'prescription-alert' : ''}" 
+                             id="cart-item-${item.id}"
+                             style="transition: all 0.2s ease;">
+                            <div class="pos-cart-item-top">
+                                <div style="flex:1; padding-right: 8px;">
+                                    <div class="pos-cart-item-name" style="font-weight: 600; font-size: 13px; color: #1e293b;">
+                                        ${item.name}
+                                    </div>
+                                    <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">
+                                        <i class="fa-solid fa-tag" style="margin-right:4px;"></i>Lô: L-2026
+                                    </div>
+                                </div>
+                                <button class="pos-cart-item-delete" onclick="triggerDeleteAnimation(${item.id})" style="color: #94a3b8; transition: 0.2s;"><i class="fa-solid fa-trash-can"></i></button>
+                            </div>
+                            
+                            ${item.requiresPrescription ? `
+                            <div class="pos-rx-alert" style="margin: 6px 0; background: #fef2f2; color: #dc2626; border-radius: 6px; padding: 6px 10px; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                Thuốc kê đơn — Yêu cầu lưu đơn GPP
+                            </div>
+                            ` : ''}
+
+                            <div class="pos-cart-item-bottom">
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <div class="pos-qty-stepper">
+                                        <button class="pos-qty-btn" onclick="updateQty(${item.id}, -1)">−</button>
+                                        <div class="pos-qty-value">${item.quantity}</div>
+                                        <button class="pos-qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
+                                    </div>
+                                    <select class="pos-uom-select" onchange="updateUom(${item.id}, this.value)"
+                                        style="font-size: 13px; padding: 4px 24px 4px 8px; border: 1px solid #e5e7eb; border-radius: 6px; background: #f8fafc; color: #334155; outline: none; cursor: pointer; height: 32px; font-weight: 500; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010l5%205%205-5z%22%20fill%3D%22%2364748b%22%20%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 4px center; background-size: 20px;">
+                                        <option value="box" ${item.unit === 'box' ? 'selected' : ''}>Hộp</option>
+                                        <option value="blister" ${item.unit === 'blister' ? 'selected' : ''}>Vỉ</option>
+                                        <option value="pill" ${item.unit === 'pill' ? 'selected' : ''}>Viên</option>
+                                    </select>
+                                </div>
+                                <div class="pos-cart-item-price" style="font-weight: 700; color: #1e293b;">${itemTotal.toLocaleString('vi-VN')}₫</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                // Calculate subtotal and items count
                 let subtotal = 0;
                 let count = 0;
-
-                document.querySelectorAll('.pos-cart-item').forEach(item => {
-                    const qtyNode = item.querySelector('.pos-qty-value');
-                    const uomNode = item.querySelector('.pos-uom-select');
-                    if (!qtyNode || !uomNode) return;
-
-                    const qty = parseInt(qtyNode.textContent) || 0;
-                    const uom = uomNode.value;
-                    const priceAttr = item.getAttribute('data-price-' + uom);
-                    const price = priceAttr ? parseInt(priceAttr) : 0;
-
-                    const itemTotal = qty * price;
-                    subtotal += itemTotal;
-                    count += qty;
-
-                    item.querySelector('.pos-cart-item-price').textContent = itemTotal.toLocaleString('vi-VN') + '₫';
+                window.cart.forEach(item => {
+                    subtotal += item.quantity * item.price;
+                    count += item.quantity;
                 });
+                updateCartTotal(subtotal, count);
+            }
 
-                const discount = 15000;
+            // Smooth trash slide-out animation
+            function triggerDeleteAnimation(productId) {
+                const el = document.getElementById(`cart-item-${productId}`);
+                if (el) {
+                    el.style.transform = 'translateX(100%)';
+                    el.style.opacity = '0';
+                    el.style.transition = 'all 0.3s ease';
+                    setTimeout(() => {
+                        removeFromCart(productId);
+                    }, 300);
+                } else {
+                    removeFromCart(productId);
+                }
+            }
+
+            // Update Cart checkout summary
+            function updateCartTotal(subtotal, count) {
+                const discount = 0;
                 const total = Math.max(0, subtotal - discount);
 
-                // Update Sidebar Checkout UI
+                // Update Sidebar checkout totals
                 const checkoutRows = document.querySelectorAll('.pos-checkout-row');
                 if (checkoutRows.length > 0) {
                     checkoutRows[0].querySelector('.pos-checkout-label').textContent = `Tạm tính (${count} sản phẩm)`;
                     checkoutRows[0].querySelector('.pos-checkout-value').textContent = subtotal.toLocaleString('vi-VN') + '₫';
+                    checkoutRows[1].querySelector('.pos-checkout-value').textContent = `-${discount.toLocaleString('vi-VN')}₫`;
                 }
+
                 const totalEl = document.querySelector('.pos-checkout-total .amount');
                 if (totalEl) totalEl.textContent = total.toLocaleString('vi-VN') + '₫';
 
-                // Update Cart Header Count
                 const cartCountEl = document.getElementById('cartCount');
                 if (cartCountEl) cartCountEl.textContent = count;
             }
 
-            // Initialize Cart Interactivity
-            document.querySelectorAll('.pos-cart-item').forEach(item => {
-                const btnMinus = item.querySelector('.pos-qty-stepper .pos-qty-btn:first-child');
-                const btnPlus = item.querySelector('.pos-qty-stepper .pos-qty-btn:last-child');
-                const valEl = item.querySelector('.pos-qty-value');
-                const uomSelect = item.querySelector('.pos-uom-select');
-                const deleteBtn = item.querySelector('.pos-cart-item-delete');
+            // Open Alternative Medicines Drawer from API
+            async function openAltDrawer(productId) {
+                const product = window.allProducts.find(p => p.id === productId);
+                const oosName = product ? product.name : 'Sản phẩm';
+                const oosIngredient = product ? product.active_ingredient || 'Hoạt chất chính' : 'Hoạt chất';
 
-                if (btnMinus) {
-                    btnMinus.addEventListener('click', () => {
-                        let val = parseInt(valEl.textContent);
-                        if (val > 1) {
-                            valEl.textContent = val - 1;
-                            updateCartTotal();
-                        }
-                    });
+                const drawer = document.getElementById('altDrawer');
+                if (!drawer) return;
+
+                document.getElementById('altDrawerOverlay').classList.add('open');
+                drawer.classList.add('open');
+                document.body.style.overflow = 'hidden';
+
+                drawer.innerHTML = `
+                    <div class="hold-drawer-header">
+                        <div>
+                            <h2>Tư vấn thuốc thay thế</h2>
+                            <div style="font-size:13px;color:#cbd5e1;margin-top:2px;">
+                                <i class="fa-solid fa-flask" style="margin-right:4px;"></i>Hoạt chất: ${oosIngredient}
+                            </div>
+                        </div>
+                        <button class="modal-close" style="color:white;opacity:0.8;background:transparent;border:none;cursor:pointer;font-size:20px;" onclick="closeAltDrawer()">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <div class="hold-drawer-body" style="background:#f8fafc;padding:0; overflow-y:auto; height: calc(100% - 70px);">
+                        <div style="padding:16px;background:#fff1f2;border-bottom:1px solid #ffe4e6;display:flex;align-items:center;gap:12px;">
+                            <i class="fa-solid fa-circle-exclamation" style="font-size:20px;color:#e11d48;"></i>
+                            <div>
+                                <div style="font-size:14px;font-weight:700;color:#9f1239;">${oosName} đã hết hàng.</div>
+                                <div style="font-size:12px;color:#e11d48;margin-top:2px;">Dưới đây là các thuốc có cùng hoạt chất và nhóm dược lý theo chuẩn GPP:</div>
+                            </div>
+                        </div>
+
+                        <div id="altListContainer" style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+                            <div style="display: flex; align-items: center; justify-content: center; padding: 40px; color: #6b7280; gap: 8px;">
+                                <i class="fa-solid fa-circle-notch fa-spin"></i> Tải đề xuất thay thế từ GPP...
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/products/${productId}/alternatives`);
+                    const result = await response.json();
+
+                    const container = document.getElementById('altListContainer');
+                    if (!container) return;
+
+                    if (result.success && Array.isArray(result.data) && result.data.length > 0) {
+                        container.innerHTML = result.data.map(alt => {
+                            const isAltOOS = alt.total_stock <= 0;
+                            return `
+                                <div style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:12px;display:flex;gap:16px;align-items:center;box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                                    <img src="${alt.image_url || '../assets/images/product_frame_2.png'}"
+                                        style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #f3f4f6;"
+                                        onerror="this.src='../assets/images/product_frame_2.png'">
+                                    <div style="flex:1;">
+                                        <div style="font-size:14px;font-weight:700;color:#1e293b;">${alt.name}</div>
+                                        <div style="font-size:15px;font-weight:800;color:#059669;margin-top:4px;">${alt.price.toLocaleString('vi-VN')}₫</div>
+                                        <div style="font-size:12px;color:#047857;margin-top:4px;display:flex;align-items:center;gap:4px;">
+                                            <i class="fa-solid fa-boxes-stacked"></i> Tồn kho: <span style="font-weight:700;">${alt.total_stock || 10} Hộp</span>
+                                        </div>
+                                    </div>
+                                    <button
+                                        style="height:40px;padding:0 16px;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;transition: 0.2s;"
+                                        onmouseover="this.style.background='#e8fbf0'"
+                                        onmouseout="this.style.background='#f0fdf4'"
+                                        onclick="addAlternativeToCart(${alt.id})">
+                                        <i class="fa-solid fa-plus"></i> CHỌN
+                                    </button>
+                                </div>
+                            `;
+                        }).join('');
+                    } else {
+                        container.innerHTML = `
+                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; color: #6b7280; gap: 8px;">
+                                <i class="fa-solid fa-flask-cross" style="font-size: 24px; opacity: 0.5;"></i>
+                                <span style="font-size: 13px; font-weight: 500;">Không tìm thấy sản phẩm thay thế cùng hoạt chất trong tầm giá (+/- 50%).</span>
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error('[POS] Failed to fetch alternatives:', error);
+                    const container = document.getElementById('altListContainer');
+                    if (container) {
+                        container.innerHTML = `
+                            <div style="color: #ef4444; font-size: 13px; text-align: center; padding: 20px;">
+                                Lỗi khi tải dữ liệu thay thế thuốc từ máy chủ.
+                            </div>
+                        `;
+                    }
                 }
-                if (btnPlus) {
-                    btnPlus.addEventListener('click', () => {
-                        let val = parseInt(valEl.textContent);
-                        valEl.textContent = val + 1;
-                        updateCartTotal();
+            }
+
+            function addAlternativeToCart(productId) {
+                // Add to cart directly
+                addOrIncrementInCart(productId);
+                closeAltDrawer();
+
+                // Show toast notification
+                const toast = document.createElement('div');
+                toast.className = 'pos-toast';
+                toast.innerHTML = '<i class="fa-solid fa-circle-check"></i> Đã chọn sản phẩm thay thế!';
+                document.body.appendChild(toast);
+                setTimeout(() => { toast.classList.add('show'); }, 10);
+                setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 2000);
+            }
+
+            function closeAltDrawer() {
+                document.getElementById('altDrawer').classList.remove('open');
+                document.getElementById('altDrawerOverlay').classList.remove('open');
+                document.body.style.overflow = '';
+            }
+
+            // Wire search input events & category selectors on page load
+            document.addEventListener('DOMContentLoaded', () => {
+                // Fetch online orders initially & setup polling
+                fetchOnlineOrders();
+                setInterval(fetchOnlineOrders, 30000);
+
+                // Fetch customer catalog & initialize loyalty event listener
+                fetchCustomersFromApi();
+                initCustomerLoyaltySearch();
+
+                // Load products initially
+                loadProductsFromApi();
+
+                // Category selection trigger
+                document.querySelectorAll('.pos-cat-pill').forEach(pill => {
+                    pill.addEventListener('click', () => {
+                        document.querySelectorAll('.pos-cat-pill').forEach(p => p.classList.remove('active'));
+                        pill.classList.add('active');
+                        filterProducts();
                     });
-                }
-                if (uomSelect) {
-                    uomSelect.addEventListener('change', () => {
-                        updateCartTotal();
-                    });
-                }
-                if (deleteBtn) {
-                    deleteBtn.addEventListener('click', () => {
-                        item.style.transform = 'translateX(100%)';
-                        item.style.opacity = '0';
-                        item.style.transition = 'all 0.3s ease';
-                        setTimeout(() => {
-                            item.remove();
-                            updateCartTotal();
-                        }, 300);
+                });
+
+                // Real-time search debouncing
+                const searchInput = document.querySelector('.pos-search-input');
+                if (searchInput) {
+                    let searchTimeout;
+                    searchInput.addEventListener('input', () => {
+                        clearTimeout(searchTimeout);
+                        searchTimeout = setTimeout(() => {
+                            filterProducts();
+                        }, 150);
                     });
                 }
             });
-
-            // Initial Calculation
-            updateCartTotal();
 
             // ========== PRESCRIPTION VALIDATION ==========
             function attemptCheckout() {
@@ -1168,20 +1348,18 @@
             function checkRxForm() {
                 const docName = document.getElementById('rxDoctorName').value.trim();
                 const btn = document.getElementById('rxVerifyBtn');
-                if (docName.length > 0) {
-                    btn.disabled = false;
-                    btn.style.cursor = 'pointer';
-                    btn.style.opacity = '1';
-                    btn.style.background = '#059669';
-                    btn.onmouseover = function () { this.style.background = '#047857' };
-                    btn.onmouseout = function () { this.style.background = '#059669' };
-                } else {
-                    btn.disabled = true;
-                    btn.style.cursor = 'not-allowed';
-                    btn.style.opacity = '0.6';
-                    btn.style.background = '#10b981';
-                    btn.onmouseover = null;
-                    btn.onmouseout = null;
+                if (btn) {
+                    if (docName.length > 0) {
+                        btn.disabled = false;
+                        btn.style.cursor = 'pointer';
+                        btn.style.opacity = '1';
+                        btn.style.background = '#059669';
+                    } else {
+                        btn.disabled = true;
+                        btn.style.cursor = 'not-allowed';
+                        btn.style.opacity = '0.6';
+                        btn.style.background = '#10b981';
+                    }
                 }
             }
 
@@ -1192,11 +1370,104 @@
                 }, 300);
             }
 
+            // Global billing variables
+            window.checkoutTotalAmount = 0;
+
             // ========== CHECKOUT MODAL ==========
             function openCheckoutModal() {
+                if (window.cart.length === 0) {
+                    alert('Giỏ hàng trống! Vui lòng chọn sản phẩm trước khi thanh toán.');
+                    return;
+                }
+
+                // 1. Calculate dynamic values
+                let subtotal = 0;
+                window.cart.forEach(item => {
+                    subtotal += item.quantity * item.price;
+                });
+                
+                window.checkoutSubtotal = subtotal;
+                window.checkoutPromoDiscount = 0;
+                window.checkoutPointsDiscount = 0; // reset by default when opening
+
+                // 2. Render itemized summary
+                const listContainer = document.querySelector('.checkout-summary-list');
+                if (listContainer) {
+                    listContainer.innerHTML = window.cart.map(item => {
+                        let unitName = 'Hộp';
+                        if (item.unit === 'blister') unitName = 'Vỉ';
+                        else if (item.unit === 'pill') unitName = 'Viên';
+                        
+                        return `
+                            <div class="checkout-summary-item">
+                                <span>${item.name} (${unitName}) × ${item.quantity}</span>
+                                <span>${(item.quantity * item.price).toLocaleString('vi-VN')}₫</span>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                // 3. Setup Loyalty Info Box dynamically
+                const pointsBox = document.getElementById('loyaltyPointsBox');
+                const pointsLabel = document.getElementById('loyaltyPointsLabel');
+                const pointsCheckbox = document.getElementById('usePointsCheckbox');
+                
+                if (window.selectedCustomer) {
+                    if (pointsBox) pointsBox.style.display = 'flex';
+                    if (pointsLabel) {
+                        pointsLabel.innerHTML = `<i class="fa-solid fa-star" style="color:#eab308;margin-right:4px;"></i> KH <strong>${window.selectedCustomer.full_name}</strong> có <strong>${window.selectedCustomer.loyalty_points.toLocaleString('vi-VN')} điểm</strong> khả dụng`;
+                    }
+                    if (pointsCheckbox) pointsCheckbox.checked = false;
+                } else {
+                    if (pointsBox) pointsBox.style.display = 'none';
+                    if (pointsCheckbox) pointsCheckbox.checked = false;
+                }
+
+                // 4. Update elements via helper
+                const subtotalEl = document.getElementById('checkoutSubtotal');
+                if (subtotalEl) subtotalEl.textContent = subtotal.toLocaleString('vi-VN') + '₫';
+
+                updateCheckoutTotals();
+
+                // Open modal
                 document.getElementById('checkoutModal').classList.add('open');
                 document.body.style.overflow = 'hidden';
             }
+
+            function updateCheckoutTotals() {
+                const subtotal = window.checkoutSubtotal || 0;
+                const promoDiscount = window.checkoutPromoDiscount || 0;
+                const pointsDiscount = window.checkoutPointsDiscount || 0;
+                
+                const totalDiscount = promoDiscount + pointsDiscount;
+                const total = Math.max(0, subtotal - totalDiscount);
+                window.checkoutTotalAmount = total;
+
+                const discountEl = document.getElementById('checkoutDiscount');
+                const totalEl = document.getElementById('checkoutTotal');
+                
+                if (discountEl) discountEl.textContent = `-${totalDiscount.toLocaleString('vi-VN')}₫`;
+                if (totalEl) totalEl.textContent = total.toLocaleString('vi-VN') + '₫';
+
+                const exactCashBtn = document.getElementById('exactCashBtn');
+                if (exactCashBtn) {
+                    exactCashBtn.setAttribute('onclick', `setQuickCash(${total})`);
+                    const valK = Math.round(total / 1000);
+                    exactCashBtn.innerHTML = `${valK}K<br><small>Đúng tiền</small>`;
+                }
+
+                const qrAmountText = document.getElementById('qrAmountText');
+                if (qrAmountText) {
+                    qrAmountText.textContent = total.toLocaleString('vi-VN') + '₫';
+                }
+
+                const cashInput = document.getElementById('cashReceived');
+                if (cashInput) {
+                    cashInput.value = total.toLocaleString('vi-VN');
+                }
+                calcChange();
+            }
+
             function closeCheckoutModal() {
                 document.getElementById('checkoutModal').classList.remove('open');
                 document.body.style.overflow = '';
@@ -1211,7 +1482,6 @@
                 document.getElementById('cardPaySection').style.display = method === 'card' ? 'block' : 'none';
                 document.getElementById('debtPaySection').style.display = method === 'debt' ? 'block' : 'none';
 
-                // Swap Checkout Button
                 const completeBtn = document.querySelector('.modal-btn-primary');
                 if (method === 'debt') {
                     completeBtn.innerHTML = '<i class="fa-solid fa-book-journal-whills"></i> GHI NỢ & HOÀN TẤT';
@@ -1234,7 +1504,7 @@
             }
 
             function calcChange() {
-                const totalAmount = 270000;
+                const totalAmount = window.checkoutTotalAmount || 0;
                 const raw = document.getElementById('cashReceived').value.replace(/[^0-9]/g, '');
                 const received = parseInt(raw) || 0;
                 const change = received - totalAmount;
@@ -1253,15 +1523,115 @@
                 }
             }
 
-            function completeSale() {
+            async function completeSale() {
+                if (window.cart.length === 0) {
+                    alert('Giỏ hàng trống!');
+                    return;
+                }
+
+                // Get checked values and active state
+                const paymentMethod = document.querySelector('input[name="posPayment"]:checked')?.value || 'cash';
+                const discount = window.checkoutPromoDiscount + window.checkoutPointsDiscount;
+                const total = Math.max(0, window.checkoutSubtotal - discount);
+
+                // Prepare checkout body
+                const orderData = {
+                    customer_id: window.selectedCustomer ? window.selectedCustomer.id : null,
+                    customer_name: window.selectedCustomer ? window.selectedCustomer.full_name : 'Khách vãng lai',
+                    customer_phone: window.selectedCustomer ? window.selectedCustomer.phone : null,
+                    subtotal: window.checkoutSubtotal,
+                    discount_amount: discount,
+                    total_amount: total,
+                    payment_method: paymentMethod,
+                    items: window.cart.map(item => {
+                        let unitName = 'Hộp';
+                        if (item.unit === 'blister') unitName = 'Vỉ';
+                        else if (item.unit === 'pill') unitName = 'Viên';
+                        
+                        return {
+                            product_id: item.id,
+                            product_name: item.name,
+                            unit_name: unitName,
+                            quantity: item.quantity,
+                            unit_price: item.price
+                        };
+                    })
+                };
+
                 closeCheckoutModal();
-                // Show a quick success feedback
+
                 const toast = document.createElement('div');
                 toast.className = 'pos-toast';
-                toast.innerHTML = '<i class="fa-solid fa-circle-check"></i> Thanh toán thành công! Đang in hoá đơn...';
+                toast.style.background = '#0284c7';
+                toast.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý thanh toán & cập nhật tồn kho...';
                 document.body.appendChild(toast);
                 setTimeout(() => { toast.classList.add('show'); }, 10);
-                setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3000);
+
+                try {
+                    const authRaw = localStorage.getItem('MG_POS_AUTH');
+                    const auth = authRaw ? JSON.parse(authRaw) : null;
+                    const token = auth ? auth.accessToken : null;
+                    const headers = {
+                        'Content-Type': 'application/json'
+                    };
+                    if (token) {
+                        headers['Authorization'] = `Bearer ${token}`;
+                    }
+
+                    const response = await fetch('http://localhost:8000/api/order/orders', {
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify(orderData)
+                    });
+                    const result = await response.json();
+
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300);
+
+                    if (result.success) {
+                        const successToast = document.createElement('div');
+                        successToast.className = 'pos-toast';
+                        successToast.style.background = '#059669';
+                        
+                        let successMessage = `<i class="fa-solid fa-circle-check"></i> Đơn hàng <strong>${result.data.order_code}</strong> thanh toán thành công! Đã cập nhật trừ tồn kho thực tế.`;
+                        if (window.selectedCustomer) {
+                            successMessage += `<br><small style="color:#a7f3d0;">Đã ghi nhận điểm tích luỹ thành công cho khách hàng <strong>${window.selectedCustomer.full_name}</strong>.</small>`;
+                        }
+                        successToast.innerHTML = successMessage;
+                        document.body.appendChild(successToast);
+                        
+                        setTimeout(() => { successToast.classList.add('show'); }, 10);
+                        setTimeout(() => {
+                            successToast.classList.remove('show');
+                            setTimeout(() => successToast.remove(), 300);
+                        }, 4000);
+
+                        // Clear cart & selections
+                        window.cart = [];
+                        renderCart();
+                        clearSelectedCustomer();
+
+                        // Reload dynamic product grid so the updated stock levels are reflected immediately!
+                        loadProductsFromApi();
+                    } else {
+                        throw new Error(result.message || 'Thanh toán thất bại');
+                    }
+                } catch (error) {
+                    console.error('[POS Sale Error]:', error);
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300);
+
+                    const errToast = document.createElement('div');
+                    errToast.className = 'pos-toast';
+                    errToast.style.background = '#dc2626';
+                    errToast.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Lỗi thanh toán: ${error.message}`;
+                    document.body.appendChild(errToast);
+                    setTimeout(() => { errToast.classList.add('show'); }, 10);
+                    setTimeout(() => {
+                        errToast.classList.remove('show');
+                        setTimeout(() => errToast.remove(), 300);
+                    }, 4000);
+                }
             }
 
             // ========== HOLD ORDERS DRAWER ==========
@@ -1345,9 +1715,113 @@
             }
 
             // ========== ONLINE ORDERS DRAWER ==========
+            let onlineOrdersList = [];
+
+            async function fetchOnlineOrders() {
+                if (!auth || !auth.accessToken) return;
+                try {
+                    const res = await fetch('http://localhost:8000/api/order/orders?channel=web&status=pending_approval', {
+                        headers: {
+                            'Authorization': `Bearer ${auth.accessToken}`
+                        }
+                    });
+                    const data = await res.json();
+                    if (data.success && Array.isArray(data.data)) {
+                        onlineOrdersList = data.data;
+                        updateOnlineOrdersUI();
+                    }
+                } catch (err) {
+                    console.error('[Fetch Online Orders Error]', err);
+                }
+            }
+
+            function updateOnlineOrdersUI() {
+                const badge = document.getElementById('onlineOrdersBadge');
+                const container = document.getElementById('onlineOrdersContainer');
+                
+                const count = onlineOrdersList.length;
+                if (badge) {
+                    if (count > 0) {
+                        badge.textContent = count;
+                        badge.style.display = 'block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+
+                if (container) {
+                    if (count === 0) {
+                        container.innerHTML = `
+                            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:240px;color:#9ca3af;gap:12px;">
+                                <i class="fa-solid fa-circle-check" style="font-size:48px;color:#10b981;"></i>
+                                <span style="font-size:14px;font-weight:600;">Không có đơn Web nào chờ xử lý</span>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    container.innerHTML = onlineOrdersList.map(order => {
+                        const timeStr = formatOrderTime(order.created_at);
+                        const isPaid = order.payment_status === 'paid';
+                        const paymentLabel = isPaid 
+                            ? `<span style="color:#10b981;font-size:12px;font-weight:600;"><i class="fa-solid fa-money-check-dollar"></i> Đã thanh toán ${order.payment_method === 'zalopay' ? 'ZaloPay' : (order.payment_method === 'momo' ? 'Momo' : 'Thẻ')}</span>`
+                            : `<span style="color:#6b7280;font-size:12px;font-weight:600;"><i class="fa-solid fa-hand-holding-dollar"></i> COD (Thu tiền hộ)</span>`;
+
+                        const totalStr = parseFloat(order.total_amount).toLocaleString('vi-VN') + '₫';
+                        const phoneMasked = order.customer_phone ? order.customer_phone.replace(/(\d{4})\d{3}(\d{3})/, '$1xxx$2') : '';
+
+                        return `
+                            <div class="hold-order-card" style="border-left:4px solid #f97316;" data-id="${order.id}">
+                                <div class="hold-order-top" style="margin-bottom:8px;">
+                                    <div class="hold-order-id" style="color:#c2410c;font-size:14px;">
+                                        <i class="fa-solid fa-globe"></i> ${order.order_code}
+                                    </div>
+                                    <div class="hold-order-time" style="color:#ea580c;font-weight:600;">
+                                        <i class="fa-regular fa-clock"></i> ${timeStr}
+                                    </div>
+                                </div>
+                                <div class="hold-order-items" style="color:#334155; margin-bottom:8px;">
+                                    <span>Khách: <strong>${order.customer_name}</strong> (${phoneMasked})</span><br>
+                                    ${paymentLabel}
+                                </div>
+                                <div class="hold-order-bottom">
+                                    <div class="hold-order-total">${totalStr}</div>
+                                    <div class="hold-order-actions">
+                                        <button class="hold-btn-resume" style="background:#f97316;color:white;border-color:#ea580c;"
+                                            onclick="processOnlineOrder('${order.id}')">
+                                            <i class="fa-solid fa-box-open"></i> Nhận đơn lấy hàng
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+
+            function formatOrderTime(isoString) {
+                try {
+                    const date = new Date(isoString);
+                    const now = new Date();
+                    const diffMs = now - date;
+                    const diffMins = Math.floor(diffMs / 60000);
+                    if (diffMins < 1) return 'Vừa xong';
+                    if (diffMins < 60) return `${diffMins} phút trước`;
+                    
+                    const hours = String(date.getHours()).padStart(2, '0');
+                    const mins = String(date.getMinutes()).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    return `${hours}:${mins} — ${day}/${month}`;
+                } catch(e) {
+                    return 'Vừa xong';
+                }
+            }
+
             function openOnlineDrawer() {
                 document.getElementById('onlineDrawer').classList.add('open');
                 document.getElementById('onlineDrawerOverlay').classList.add('open');
+                fetchOnlineOrders(); // Refresh dynamically when opened
             }
 
             function closeOnlineDrawer() {
@@ -1355,26 +1829,39 @@
                 document.getElementById('onlineDrawerOverlay').classList.remove('open');
             }
 
-            function processOnlineOrder(btn) {
-                alert('Nhận đơn thành công! Cửa sổ xử lý Pick & Pack sẽ được mở ra (tích hợp sau).');
-                // Xoá card khỏi drawer
-                btn.closest('.hold-order-card').remove();
-
-                // Giảm số trên chuông thông báo
-                const bell = document.querySelector('.online-pulse');
-                if (bell) {
-                    let current = parseInt(bell.innerText, 10);
-                    if (current > 1) {
-                        bell.innerText = current - 1;
+            async function processOnlineOrder(orderId) {
+                if (!auth || !auth.accessToken) return;
+                
+                try {
+                    const res = await fetch(`http://localhost:8000/api/order/orders/${orderId}/status`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${auth.accessToken}`
+                        },
+                        body: JSON.stringify({ status: 'picking' })
+                    });
+                    
+                    const data = await res.json();
+                    if (data.success) {
+                        const toast = document.createElement('div');
+                        toast.className = 'pos-toast';
+                        toast.style.background = '#005824';
+                        toast.innerHTML = '<i class="fa-solid fa-circle-check"></i> Nhận đơn lấy hàng thành công!';
+                        document.body.appendChild(toast);
+                        setTimeout(() => { toast.classList.add('show'); }, 10);
+                        setTimeout(() => {
+                            toast.classList.remove('show');
+                            setTimeout(() => { toast.remove(); }, 300);
+                        }, 2500);
+                        
+                        await fetchOnlineOrders();
                     } else {
-                        bell.remove();
+                        alert(data.message || 'Lỗi khi nhận đơn hàng');
                     }
-                }
-
-                // Đóng drawer nếu hết đơn
-                const remainingOrders = document.querySelectorAll('#onlineDrawer .hold-order-card').length;
-                if (remainingOrders === 0) {
-                    closeOnlineDrawer();
+                } catch (err) {
+                    console.error('[Process Online Order Error]', err);
+                    alert('Không thể kết nối đến máy chủ.');
                 }
             }
 
@@ -1391,11 +1878,42 @@
 
             function togglePoints() {
                 const isChecked = document.getElementById('usePointsCheckbox').checked;
-                if (isChecked) {
-                    alert('Đã trừ 25,000 điểm tương ứng -25,000₫ vào hóa đơn.');
-                } else {
-                    alert('Đã hoàn lại điểm. Tính lại tỷ giá hoá đơn gốc.');
+                if (!window.selectedCustomer) {
+                    window.checkoutPointsDiscount = 0;
+                    updateCheckoutTotals();
+                    return;
                 }
+
+                if (isChecked) {
+                    const maxDiscount = Math.max(0, window.checkoutSubtotal - window.checkoutPromoDiscount);
+                    const appliedDiscount = Math.min(window.selectedCustomer.loyalty_points, maxDiscount);
+                    window.checkoutPointsDiscount = appliedDiscount;
+                    
+                    const toast = document.createElement('div');
+                    toast.className = 'pos-toast';
+                    toast.style.background = '#065f46';
+                    toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> Đã dùng ${appliedDiscount.toLocaleString('vi-VN')} điểm, giảm -${appliedDiscount.toLocaleString('vi-VN')}₫!`;
+                    document.body.appendChild(toast);
+                    setTimeout(() => { toast.classList.add('show'); }, 10);
+                    setTimeout(() => {
+                        toast.classList.remove('show');
+                        setTimeout(() => { toast.remove(); }, 300);
+                    }, 2500);
+                } else {
+                    window.checkoutPointsDiscount = 0;
+                    
+                    const toast = document.createElement('div');
+                    toast.className = 'pos-toast';
+                    toast.style.background = '#475569';
+                    toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> Đã hoàn lại điểm tích luỹ.`;
+                    document.body.appendChild(toast);
+                    setTimeout(() => { toast.classList.add('show'); }, 10);
+                    setTimeout(() => {
+                        toast.classList.remove('show');
+                        setTimeout(() => { toast.remove(); }, 300);
+                    }, 2500);
+                }
+                updateCheckoutTotals();
             }
 
             // ========== KEYBOARD SHORTCUTS ==========

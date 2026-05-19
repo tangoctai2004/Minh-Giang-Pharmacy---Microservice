@@ -2,6 +2,150 @@ const router = require('express').Router();
 const pool = require('../db/pool');
 
 /**
+ * [MAPPING: POST /api/order/orders]
+ * Tạo đơn hàng POS mới & trừ tồn kho thực tế trong mg_catalog.batch_items (FEFO)
+ */
+router.post('/', async (req, res) => {
+    let connection;
+    try {
+        const {
+            customer_id,
+            customer_name,
+            customer_phone,
+            subtotal,
+            discount_amount,
+            total_amount,
+            payment_method,
+            items
+        } = req.body;
+
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({ success: false, message: 'Danh sách sản phẩm không hợp lệ' });
+        }
+
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
+        // 1. Tạo mã đơn hàng độc nhất dạng POS-YYYYMMDD-XXXX
+        const todayStr = new Date().toISOString().slice(2, 10).replace(/-/g, '');
+        const randomStr = Math.floor(1000 + Math.random() * 9000);
+        const orderCode = `POS-${todayStr}-${randomStr}`;
+
+        // 2. Thêm đơn hàng vào bảng orders
+        const [orderResult] = await connection.query(`
+            INSERT INTO orders (
+                order_code, order_channel, customer_id, customer_name, customer_phone,
+                shipping_address, subtotal, shipping_fee, discount_amount, total_amount,
+                payment_method, payment_status, order_status, requires_vat_invoice
+            ) VALUES (?, 'pos', ?, ?, ?, NULL, ?, 0, ?, ?, ?, 'paid', 'completed', 0)
+        `, [
+            orderCode, customer_id || null, customer_name || 'Khách vãng lai', customer_phone || null,
+            subtotal, discount_amount || 0, total_amount, payment_method || 'cash'
+        ]);
+        const orderId = orderResult.insertId;
+
+        // 3. Thêm các chi tiết đơn hàng (order_items) & trừ tồn kho thực tế trong mg_catalog.batch_items
+        for (const item of items) {
+            await connection.query(`
+                INSERT INTO order_items (
+                    order_id, product_id, product_name, unit_name,
+                    quantity, unit_price, total_price
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            `, [
+                orderId, item.product_id, item.product_name, item.unit_name || 'Hộp',
+                item.quantity, item.unit_price, item.quantity * item.unit_price
+            ]);
+
+            // Trừ tồn kho trong mg_catalog.batch_items theo FEFO
+            let remainingToDeduct = item.quantity;
+
+            const [batches] = await connection.query(`
+                SELECT id, quantity_remaining, lot_number, expiry_date 
+                FROM mg_catalog.batch_items 
+                WHERE product_id = ? AND quantity_remaining > 0 AND status IN ('available', 'near_expiry')
+                ORDER BY expiry_date ASC
+            `, [item.product_id]);
+
+            for (const batch of batches) {
+                if (remainingToDeduct <= 0) break;
+
+                const deductAmount = Math.min(remainingToDeduct, batch.quantity_remaining);
+                await connection.query(`
+                    UPDATE mg_catalog.batch_items 
+                    SET quantity_remaining = quantity_remaining - ? 
+                    WHERE id = ?
+                `, [deductAmount, batch.id]);
+
+                remainingToDeduct -= deductAmount;
+            }
+
+            if (remainingToDeduct > 0 && batches.length > 0) {
+                await connection.query(`
+                    UPDATE mg_catalog.batch_items 
+                    SET quantity_remaining = quantity_remaining - ? 
+                    WHERE id = ?
+                `, [remainingToDeduct, batches[0].id]);
+            }
+        }
+
+        // 4. Tích lũy điểm & Khấu trừ điểm trong mg_identity.customers & ghi nhận lịch sử vào mg_identity.loyalty_points_transactions
+        if (customer_id) {
+            const pointsEarned = Math.floor(total_amount / 10000);
+            const pointsRedeemed = discount_amount || 0;
+            const netPointsChange = pointsEarned - pointsRedeemed;
+
+            if (netPointsChange !== 0) {
+                await connection.query(`
+                    UPDATE mg_identity.customers 
+                    SET loyalty_points = loyalty_points + ? 
+                    WHERE id = ?
+                `, [netPointsChange, customer_id]);
+            }
+
+            if (pointsEarned > 0) {
+                await connection.query(`
+                    INSERT INTO mg_identity.loyalty_points_transactions (
+                        customer_id, transaction_type, points_change, description, reference_order_id
+                    ) VALUES (?, 'earn_purchase', ?, ?, ?)
+                `, [
+                    customer_id,
+                    pointsEarned,
+                    `Tích điểm mua hàng tại POS - Đơn ${orderCode}`,
+                    orderId
+                ]);
+            }
+
+            if (pointsRedeemed > 0) {
+                await connection.query(`
+                    INSERT INTO mg_identity.loyalty_points_transactions (
+                        customer_id, transaction_type, points_change, description, reference_order_id
+                    ) VALUES (?, 'redeem', ?, ?, ?)
+                `, [
+                    customer_id,
+                    -pointsRedeemed,
+                    `Quy đổi điểm giảm giá tại POS - Đơn ${orderCode}`,
+                    orderId
+                ]);
+            }
+        }
+
+        await connection.commit();
+        res.json({
+            success: true,
+            message: 'Thanh toán & trừ kho thành công!',
+            data: { order_id: orderId, order_code: orderCode }
+        });
+
+    } catch (error) {
+        if (connection) await connection.rollback();
+        console.error('[POS Checkout API Error]:', error);
+        res.status(500).json({ success: false, message: error.message || 'Lỗi xử lý thanh toán đơn hàng' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
+/**
  * [MAPPING: GET /api/order/orders/stats]
  * Thống kê đơn hàng (dành cho Admin/Dashboard)
  */
@@ -39,8 +183,9 @@ router.get('/', async (req, res) => {
         let query = 'SELECT * FROM orders WHERE is_active = 1';
         let params = [];
 
-        // Nếu là khách hàng, chỉ xem đơn của mình
-        if (userRole !== 'admin') {
+        // Nếu là khách hàng (không phải staff/admin), chỉ xem đơn của mình
+        const isStaffOrAdmin = req.userType === 'staff' || ['admin', 'pharmacist', 'cashier', 'staff'].includes(userRole);
+        if (!isStaffOrAdmin) {
             query += ' AND customer_id = ?';
             params.push(userId);
         }
