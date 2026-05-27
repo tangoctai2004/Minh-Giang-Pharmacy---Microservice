@@ -1,216 +1,133 @@
 # API Mapping — admin/batches.html
 
-> **Trang**: Nhập kho & Lô hàng (Inbound/Outbound)  
-> **Auth yêu cầu**: Có (Admin/Warehouse)  
-> **Ngày phân tích**: 2026-04-10
+> **Trang**: Nhập kho & Lô hàng
+> **Auth yêu cầu**: Có token admin/manager khi gọi qua API Gateway
+> **Cập nhật theo code hiện tại**: backend hiện quản lý phiếu nhập qua `/api/catalog/batches`, chưa tách riêng `/inbound` và `/outbound`.
 
 ---
 
-## Sơ đồ bố cục
+## Trạng thái hiện tại
 
-```
-┌──────────────────────────────────────────────────────────┐
-│  [Sidebar] + [Header]                                    │
-├──────────────────────────────────────────────────────────┤
-│  Page Header: "Nhập Kho & Lô Hàng"                      │
-│  Tab: [Lịch sử Nhập (Inbound)] [Lịch sử Xuất (Outbound)]│
-│  Actions: [Xuất Báo Cáo] [Tạo Phiếu Mới]               │
-├──────────────────────────────────────────────────────────┤
-│  Filters: [Search mã phiếu/NCC] [Trạng thái▼]          │
-├──────────────────────────────────────────────────────────┤
-│  TAB INBOUND:                                            │
-│  Table: Mã Phiếu|NCC|Ngày tạo|Tổng tiền|TT|Thao tác    │
-│  ▶ Expand: Thuốc|Số Lô|NSX|HSD|SL Nhập|Thành Tiền      │
-│  Nút: [In Phiếu Nhập] [Cài Giá Thanh Lý Cận Date]      │
-├──────────────────────────────────────────────────────────┤
-│  TAB OUTBOUND:                                           │
-│  Table: Mã Phiếu Xuất|Ngày|Lý do|Tham chiếu|Tổng tiền  │
-│  Filters: [Lý do xuất▼]                                 │
-├──────────────────────────────────────────────────────────┤
-│  MODAL 1: "Tạo Đơn Nhập Hàng" (wide)                    │
-│  NCC*|Người giao|Ngày nhập|Dynamic items table           │
-│  [Quét mã vạch] Ghi chú|Summary (SL,Tiền,VAT,Tổng)     │
-├──────────────────────────────────────────────────────────┤
-│  MODAL 2: "Chiết Khấu Thanh Lý"                         │
-│  Radio: Giảm%/Giảm tiền | Value | Calculated price      │
-└──────────────────────────────────────────────────────────┘
-```
+| Nhu cầu trên màn hình | API hiện có | Trạng thái |
+|---|---|---|
+| Xem danh sách phiếu nhập/lô hàng | `GET /api/catalog/batches` | Đã có |
+| Xem chi tiết phiếu nhập kèm danh sách item | `GET /api/catalog/batches/{id}` | Đã có |
+| Tạo phiếu nhập | `POST /api/catalog/batches` | Đã có |
+| Sửa phiếu nhập khi còn draft | `PUT /api/catalog/batches/{id}` | Đã có |
+| Quét mã vạch lấy sản phẩm | `GET /api/catalog/products/barcode/{barcode}` | Đã có |
+| Lấy nhà cung cấp cho dropdown | `GET /api/catalog/suppliers` | Đã có |
+
+Các API trong bản thiết kế cũ nhưng **chưa có trong backend hiện tại**:
+
+| API | Trạng thái |
+|---|---|
+| `GET /api/catalog/batches/inbound` | Chưa có. Dùng tạm `GET /api/catalog/batches` |
+| `GET /api/catalog/batches/outbound` | Chưa có |
+| `GET /api/catalog/batches/inbound/{id}/items` | Chưa có. Dùng `GET /api/catalog/batches/{id}` |
+| `POST /api/catalog/batches/inbound` | Chưa có. Dùng `POST /api/catalog/batches` |
+| `PUT /api/catalog/batches/{id}/clearance` | Chưa có |
+| `GET /api/catalog/batches/inbound/{id}/print` | Chưa có |
+| `GET /api/catalog/batches/export` | Chưa có |
 
 ---
 
-## API chi tiết
+## API chi tiết đang dùng được
 
-### 1. Danh sách phiếu nhập (Inbound)
+### 1. Danh sách phiếu nhập
 
+```http
+GET /api/catalog/batches
 ```
-GET /api/catalog/batches/inbound?page=1&limit=20&q={search}&status={status}
-```
 
-| Param | Type | Mô tả |
-|-------|------|-------|
-| `q` | string | Tìm mã phiếu, tên NCC |
-| `status` | string | `completed`, `draft` |
+Backend hiện trả tối đa 50 phiếu mới nhất, chưa có phân trang/filter.
 
-**Response mẫu:**
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": 1,
-      "code": "PN-2026-0045",
-      "supplier_name": "Công ty Dược Hậu Giang",
-      "created_at": "2026-03-05T08:30:00",
-      "total_amount": 45000000,
-      "status": "completed",
-      "items": [
-        {
-          "product_name": "Amoxicillin 500mg",
-          "batch_code": "LO-2026-0112",
-          "mfg_date": "2025-12-01",
-          "expiry_date": "2027-12-01",
-          "quantity": 500,
-          "unit_cost": 3000,
-          "subtotal": 1500000
-        }
-      ]
-    }
-  ],
-  "pagination": { "page": 1, "limit": 20, "total": 120 }
-}
-```
+Response chính gồm: `id`, `batch_code`, `status`, `supplier_name`, `total_amount`, `paid_amount`, `received_date`, `created_at`.
 
 ---
 
-### 2. Danh sách phiếu xuất (Outbound)
+### 2. Chi tiết phiếu nhập
 
-```
-GET /api/catalog/batches/outbound?page=1&limit=20&q={search}&reason={reason}
+```http
+GET /api/catalog/batches/{id}
 ```
 
-| Param | Type | Mô tả |
-|-------|------|-------|
-| `reason` | string | `pos_sale`, `web_order`, `destroyed`, `return_supplier` |
-
-**Response mẫu:**
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": 1,
-      "code": "PX-2026-0089",
-      "created_at": "2026-03-05",
-      "reason": "pos_sale",
-      "reference": "POS-2026-0312",
-      "total_amount": 850000
-    }
-  ],
-  "pagination": { "page": 1, "limit": 20, "total": 450 }
-}
-```
+Trả thông tin phiếu nhập và mảng `items`. Mỗi item có thêm `product_name`, `product_sku`, `base_unit`.
 
 ---
 
-### 3. Chi tiết phiếu nhập (expand row)
+### 3. Tạo phiếu nhập
 
-```
-GET /api/catalog/batches/inbound/{id}/items
-```
-
----
-
-### 4. Tạo phiếu nhập hàng mới
-
-```
-POST /api/catalog/batches/inbound
+```http
+POST /api/catalog/batches
 ```
 
-**Body:**
+Body hiện backend nhận:
+
 ```json
 {
   "supplier_id": 5,
-  "delivered_by": "Nguyễn Văn B",
-  "import_date": "2026-03-05",
+  "delivery_person": "Nguyễn Văn B",
+  "received_date": "2026-03-05",
+  "paid_amount": 3000000,
   "notes": "Lô hàng tháng 3",
+  "status": "draft",
   "items": [
     {
       "product_id": 42,
-      "batch_code": "LO-2026-0112",
-      "mfg_date": "2025-12-01",
+      "lot_number": "LO-2026-0112",
+      "manufacture_date": "2025-12-01",
       "expiry_date": "2027-12-01",
-      "quantity": 500,
-      "unit_cost": 3000
+      "quantity_received": 500,
+      "quantity_remaining": 500,
+      "cost_price": 3000,
+      "location_id": 1
     }
   ]
 }
 ```
 
+Bắt buộc: `supplier_id`, `received_date`, `items`.
+Mỗi item bắt buộc có: `product_id`, `lot_number`, `expiry_date`, `quantity_received`, `cost_price`.
+
+---
+
+### 4. Sửa phiếu nhập
+
+```http
+PUT /api/catalog/batches/{id}
+```
+
+Chỉ sửa được phiếu đang ở trạng thái `draft`. Nếu phiếu đã `completed`, backend sẽ trả lỗi.
+
 ---
 
 ### 5. Quét mã vạch tra cứu sản phẩm
 
-```
+```http
 GET /api/catalog/products/barcode/{barcode}
 ```
 
-**Response:** Trả về thông tin sản phẩm để tự động điền vào dòng trong modal.
+Dùng trong modal nhập hàng để tự điền thông tin sản phẩm.
 
 ---
 
-### 6. Danh sách NCC (cho dropdown modal)
+### 6. Danh sách nhà cung cấp
 
+```http
+GET /api/catalog/suppliers?page=1&limit=100&q={search}
 ```
-GET /api/catalog/suppliers?active=true
-```
+
+Backend hiện chỉ trả nhà cung cấp `active`.
 
 ---
 
-### 7. Cài giá thanh lý cận date
-
-```
-PUT /api/catalog/batches/{batch_id}/clearance
-```
-
-**Body:**
-```json
-{
-  "discount_type": "percent",
-  "discount_value": 30,
-  "clearance_price": 56000
-}
-```
-
----
-
-### 8. In phiếu nhập
-
-```
-GET /api/catalog/batches/inbound/{id}/print
-```
-
-Trả về PDF hoặc HTML printable.
-
----
-
-### 9. Xuất báo cáo
-
-```
-GET /api/catalog/batches/export?tab=inbound&format=xlsx
-```
-
----
-
-## 📊 TỔNG HỢP API
+## Tổng hợp API đúng với code hiện tại
 
 | # | API Endpoint | Method | Service | Auth | Gọi khi |
-|---|-------------|--------|---------|------|---------|
-| 1 | `/api/catalog/batches/inbound` | GET | catalog | Yes | Tab Inbound + filter |
-| 2 | `/api/catalog/batches/outbound` | GET | catalog | Yes | Tab Outbound + filter |
-| 3 | `/api/catalog/batches/inbound/{id}/items` | GET | catalog | Yes | Expand row |
-| 4 | `/api/catalog/batches/inbound` | POST | catalog | Yes | Submit tạo phiếu |
+|---|---|---|---|---|---|
+| 1 | `/api/catalog/batches` | GET | catalog | Yes | Tab phiếu nhập |
+| 2 | `/api/catalog/batches/{id}` | GET | catalog | Yes | Mở chi tiết/expand row |
+| 3 | `/api/catalog/batches` | POST | catalog | Yes | Tạo phiếu nhập |
+| 4 | `/api/catalog/batches/{id}` | PUT | catalog | Yes | Sửa phiếu draft |
 | 5 | `/api/catalog/products/barcode/{barcode}` | GET | catalog | Yes | Quét mã vạch |
-| 6 | `/api/catalog/suppliers?active=true` | GET | catalog | Yes | Open modal (dropdown) |
-| 7 | `/api/catalog/batches/{id}/clearance` | PUT | catalog | Yes | Cài giá thanh lý |
-| 8 | `/api/catalog/batches/inbound/{id}/print` | GET | catalog | Yes | Click In phiếu |
-| 9 | `/api/catalog/batches/export` | GET | catalog | Yes | Click Xuất báo cáo |
+| 6 | `/api/catalog/suppliers` | GET | catalog | Yes | Dropdown NCC |

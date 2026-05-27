@@ -73,6 +73,8 @@ data/
 logs/
 *.log
 *.log.*
+.local-frontend.pid
+.local-frontend.log
 
 # ─── Test & Coverage ──────────────────────────────────────────────
 .cache/

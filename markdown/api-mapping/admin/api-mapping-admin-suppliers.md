@@ -1,44 +1,44 @@
 # API Mapping — admin/suppliers.html
 
-> **Trang**: Nhà cung cấp & Công nợ (Accounts Payable)  
-> **Auth yêu cầu**: Có (Admin/Manager)  
-> **Ngày phân tích**: 2026-04-10
+> **Trang**: Nhà cung cấp & Công nợ
+> **Auth yêu cầu**: Có token admin/manager khi gọi qua API Gateway
+> **Cập nhật theo code hiện tại**: backend hiện đã có CRUD nhà cung cấp cơ bản. Phần công nợ chi tiết, thanh toán nợ và export chưa có API riêng.
 
 ---
 
-## Sơ đồ bố cục
+## Trạng thái hiện tại
 
-```
-┌────────────────────────────────────────────────────────────┐
-│  [Sidebar] + [Header]                                      │
-├────────────────────────────────────────────────────────────┤
-│  Page Header: "Nhà Cung Cấp & Công Nợ"                    │
-│  Filters: [Tình trạng nợ▼] [TT đối tác▼]                 │
-│  Actions: [Xuất Excel] [Thêm Nhà Cung Cấp]               │
-├────────────────────────────────────────────────────────────┤
-│  Table: Mã|Tên NCC|Liên hệ/SĐT|Tổng GT Nhập|Công Nợ|Actions│
-│  ▶ Expand: Mã Nhập Hàng|Ngày|GT đơn|Đã trả|Còn nợ       │
-│  Actions: [Lịch sử] [Thanh toán nợ]                       │
-│  Quick action: [Trả trước/Thanh toán nhanh toàn bộ]       │
-└────────────────────────────────────────────────────────────┘
-```
+| Nhu cầu trên màn hình | API hiện có | Trạng thái |
+|---|---|---|
+| Xem danh sách nhà cung cấp | `GET /api/catalog/suppliers` | Đã có |
+| Tìm nhà cung cấp theo tên/mã/SĐT | `GET /api/catalog/suppliers?q={search}` | Đã có |
+| Xem chi tiết nhà cung cấp | `GET /api/catalog/suppliers/{id}` | Đã có |
+| Thêm nhà cung cấp | `POST /api/catalog/suppliers` | Đã có |
+| Sửa nhà cung cấp | `PUT /api/catalog/suppliers/{id}` | Đã có |
+| Ẩn nhà cung cấp | `DELETE /api/catalog/suppliers/{id}` | Đã có |
+
+Các API trong bản thiết kế cũ nhưng **chưa có trong backend hiện tại**:
+
+| API | Trạng thái |
+|---|---|
+| `GET /api/catalog/suppliers/{id}/purchase-orders` | Chưa có |
+| `POST /api/catalog/suppliers/{id}/payments` | Chưa có |
+| `POST /api/catalog/suppliers/{id}/payments/full` | Chưa có |
+| `GET /api/catalog/suppliers/export` | Chưa có |
+| Filter `debt_status`, `partner_status` | Chưa hỗ trợ. Backend hiện chỉ hỗ trợ `q`, `page`, `limit` |
 
 ---
 
-## API chi tiết
+## API chi tiết đang dùng được
 
-### 1. Danh sách NCC
+### 1. Danh sách nhà cung cấp
 
+```http
+GET /api/catalog/suppliers?page=1&limit=20&q={search}
 ```
-GET /api/catalog/suppliers?page=1&limit=20&debt_status={status}&partner_status={status}
-```
 
-| Param | Type | Mô tả |
-|-------|------|-------|
-| `debt_status` | string | `has_debt`, `no_debt` |
-| `partner_status` | string | `active`, `inactive` |
+Backend hiện luôn lọc `status = active`. Response có các trường:
 
-**Response mẫu:**
 ```json
 {
   "success": true,
@@ -49,112 +49,79 @@ GET /api/catalog/suppliers?page=1&limit=20&debt_status={status}&partner_status={
       "name": "Công ty Dược Hậu Giang",
       "contact_name": "Trần Văn B",
       "phone": "0909888777",
-      "total_purchase_value": 450000000,
+      "email": "contact@dhg.com",
+      "address": "TP.HCM",
+      "tax_code": "0123456789",
       "current_debt": 25000000,
+      "total_purchase_value": 450000000,
       "status": "active"
     }
   ],
-  "pagination": { "page": 1, "limit": 20, "total": 18 }
+  "pagination": { "total": 18, "page": 1, "limit": 20, "pages": 1, "total_pages": 1 }
 }
 ```
 
 ---
 
-### 2. Chi tiết NCC + lịch sử phiếu nhập (expand row)
+### 2. Chi tiết nhà cung cấp
 
-```
-GET /api/catalog/suppliers/{id}/purchase-orders?page=1&limit=10
-```
-
-**Response mẫu:**
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": 45,
-      "po_code": "PN-2026-0045",
-      "created_at": "2026-03-05",
-      "order_value": 45000000,
-      "paid_amount": 30000000,
-      "remaining_debt": 15000000
-    }
-  ],
-  "pagination": { "page": 1, "limit": 10, "total": 24 }
-}
+```http
+GET /api/catalog/suppliers/{id}
 ```
 
 ---
 
-### 3. Thêm NCC mới
+### 3. Thêm nhà cung cấp
 
-```
+```http
 POST /api/catalog/suppliers
 ```
 
-**Body:**
+Body hiện backend nhận:
+
 ```json
 {
+  "code": "NCC-005",
   "name": "Công ty Dược ABC",
   "contact_name": "Lê Thị C",
   "phone": "0901234567",
   "email": "contact@abc.com",
   "address": "123 Nguyễn Trãi, Q5, TP.HCM",
-  "tax_code": "0123456789"
+  "tax_code": "0123456789",
+  "status": "active"
 }
 ```
 
----
-
-### 4. Thanh toán công nợ
-
-```
-POST /api/catalog/suppliers/{id}/payments
-```
-
-**Body:**
-```json
-{
-  "amount": 15000000,
-  "payment_method": "bank_transfer",
-  "purchase_order_id": 45,
-  "notes": "Thanh toán lô hàng tháng 3"
-}
-```
+Bắt buộc: `code`, `name`.
 
 ---
 
-### 5. Thanh toán nhanh toàn bộ nợ
+### 4. Cập nhật nhà cung cấp
 
-```
-POST /api/catalog/suppliers/{id}/payments/full
+```http
+PUT /api/catalog/suppliers/{id}
 ```
 
-**Body:**
-```json
-{
-  "payment_method": "bank_transfer",
-  "notes": "Thanh toán toàn bộ nợ"
-}
-```
+Cho phép cập nhật: `code`, `name`, `contact_name`, `phone`, `email`, `address`, `tax_code`, `status`.
 
 ---
 
-### 6. Xuất Excel danh sách NCC
+### 5. Ẩn nhà cung cấp
 
+```http
+DELETE /api/catalog/suppliers/{id}
 ```
-GET /api/catalog/suppliers/export?format=xlsx
-```
+
+Backend hiện đổi `status = inactive`, không xóa dữ liệu thật.
 
 ---
 
-## 📊 TỔNG HỢP API
+## Tổng hợp API đúng với code hiện tại
 
 | # | API Endpoint | Method | Service | Auth | Gọi khi |
-|---|-------------|--------|---------|------|---------|
-| 1 | `/api/catalog/suppliers` | GET | catalog | Yes | Page load + filter |
-| 2 | `/api/catalog/suppliers/{id}/purchase-orders` | GET | catalog | Yes | Expand row |
-| 3 | `/api/catalog/suppliers` | POST | catalog | Yes | Submit "Thêm NCC" |
-| 4 | `/api/catalog/suppliers/{id}/payments` | POST | catalog | Yes | Click "Thanh toán nợ" |
-| 5 | `/api/catalog/suppliers/{id}/payments/full` | POST | catalog | Yes | Click "TT nhanh toàn bộ" |
-| 6 | `/api/catalog/suppliers/export` | GET | catalog | Yes | Click "Xuất Excel" |
+|---|---|---|---|---|---|
+| 1 | `/api/catalog/suppliers` | GET | catalog | Yes | Page load + tìm kiếm |
+| 2 | `/api/catalog/suppliers/{id}` | GET | catalog | Yes | Xem chi tiết |
+| 3 | `/api/catalog/suppliers` | POST | catalog | Yes | Thêm NCC |
+| 4 | `/api/catalog/suppliers/{id}` | PUT | catalog | Yes | Sửa NCC |
+| 5 | `/api/catalog/suppliers/{id}` | DELETE | catalog | Yes | Ẩn NCC |

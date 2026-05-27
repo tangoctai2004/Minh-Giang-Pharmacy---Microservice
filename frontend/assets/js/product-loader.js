@@ -3,6 +3,49 @@
  * Cập nhật dữ liệu động cho trang chi tiết sản phẩm mới.
  */
 
+function catalogApi() {
+    if (window.MGCatalogApi) return window.MGCatalogApi;
+    const baseUrl = window.MG_CATALOG_API_BASE || 'http://localhost:8000/api/catalog';
+    return {
+        async get(path, params) {
+            const url = new URL(`${baseUrl.replace(/\/+$/, '')}/${String(path).replace(/^\/+/, '')}`);
+            Object.entries(params || {}).forEach(([key, value]) => {
+                if (value === undefined || value === null || value === '') return;
+                if (Array.isArray(value)) {
+                    if (value.length > 0) url.searchParams.set(key, value.join(','));
+                    return;
+                }
+                url.searchParams.set(key, value);
+            });
+            const response = await fetch(url.toString());
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.json();
+        }
+    };
+}
+
+function escapeProductHtml(value) {
+    if (window.MGClientApi && typeof window.MGClientApi.escapeHtml === 'function') {
+        return window.MGClientApi.escapeHtml(value);
+    }
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function consult(productId, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    window.location.href = `product.html?id=${encodeURIComponent(productId)}`;
+}
+
+let currentProduct = null;
+
 document.addEventListener("DOMContentLoaded", function () {
     const params = new URLSearchParams(window.location.search);
     const productId = params.get('id');
@@ -55,9 +98,7 @@ function showErrorMessage(message) {
  */
 async function fetchProductData(id) {
     try {
-        const response = await fetch(`http://localhost:8000/api/catalog/products/${id}`);
-        if (!response.ok) throw new Error("HTTP " + response.status);
-        const result = await response.json();
+        const result = await catalogApi().get(`products/${id}`);
 
         if (result.success && result.data) {
             updateProductUI(result.data);
@@ -72,13 +113,18 @@ async function fetchProductData(id) {
 }
 
 function updateProductUI(p) {
+    currentProduct = p;
+
     // 1. Breadcrumb
     const bc = document.getElementById('pdBreadcrumb');
     if (bc) {
+        const productName = escapeProductHtml(p.name);
+        const categoryName = escapeProductHtml(p.category?.name);
+        const categoryId = Number(p.category?.id);
         bc.innerHTML = `
             <a href="index.html">Trang chủ</a> <span>›</span> 
-            ${p.category ? `<a href="category.html?id=${p.category.id}">${p.category.name}</a> <span>›</span>` : ''} 
-            <strong style="color:#1f2937;">${p.name}</strong>
+            ${p.category ? `<a href="category.html?id=${categoryId}">${categoryName}</a> <span>›</span>` : ''} 
+            <strong style="color:#1f2937;">${productName}</strong>
         `;
     }
     document.title = p.name + " — Nhà Thuốc Minh Giang";
@@ -164,9 +210,101 @@ function updateProductUI(p) {
     // 6. Action buttons
     const btnBuy = document.getElementById('btnBuyNow');
     const btnCart = document.getElementById('btnAddToCart');
-    if (!p.in_stock) {
+    if (p.requires_prescription) {
+        if (btnBuy) {
+            btnBuy.disabled = false;
+            btnBuy.textContent = "Tư vấn dược sĩ";
+            btnBuy.onclick = (event) => consult(p.id, event);
+        }
+        if (btnCart) {
+            btnCart.disabled = true;
+            btnCart.textContent = "Không bán online";
+            btnCart.style.opacity = 0.6;
+        }
+    } else if (!p.in_stock) {
         if (btnBuy) { btnBuy.disabled = true; btnBuy.textContent = "Hết hàng"; btnBuy.style.opacity = 0.5; }
         if (btnCart) { btnCart.disabled = true; btnCart.textContent = "Hết hàng"; btnCart.style.opacity = 0.5; }
+    } else {
+        if (btnCart) {
+            btnCart.disabled = false;
+            btnCart.onclick = (event) => addCurrentProductToCart(event, false);
+        }
+        if (btnBuy) {
+            btnBuy.disabled = false;
+            btnBuy.onclick = (event) => addCurrentProductToCart(event, true);
+        }
+    }
+}
+
+function getSelectedQuantity() {
+    const input = document.getElementById('pdQty');
+    const quantity = Math.max(1, Number.parseInt(input?.value, 10) || 1);
+    if (input) input.value = quantity;
+    return quantity;
+}
+
+function readCart() {
+    if (typeof window.getCart === 'function') return window.getCart();
+    try {
+        return JSON.parse(localStorage.getItem('mg_cart')) || [];
+    } catch (error) {
+        return [];
+    }
+}
+
+function writeCart(cart) {
+    if (typeof window.saveCart === 'function') {
+        window.saveCart(cart);
+        return;
+    }
+    localStorage.setItem('mg_cart', JSON.stringify(cart));
+    if (typeof window.updateCartBadge === 'function') window.updateCartBadge();
+}
+
+function addCurrentProductToCart(event, goCheckout) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    if (!currentProduct) return;
+
+    if (currentProduct.requires_prescription) {
+        alert('Thuốc kê đơn cần được dược sĩ tư vấn và kiểm tra toa trước khi bán.');
+        return;
+    }
+    if (currentProduct.in_stock === false) {
+        alert('Sản phẩm hiện đã hết hàng.');
+        return;
+    }
+
+    const quantity = getSelectedQuantity();
+    const cart = readCart();
+    const productId = Number(currentProduct.id);
+    const existing = cart.find((item) => Number(item.id) === productId);
+    if (existing) {
+        existing.quantity = Number(existing.quantity || 0) + quantity;
+    } else {
+        cart.push({
+            id: productId,
+            sku: currentProduct.sku || '',
+            name: currentProduct.name,
+            price: Number(currentProduct.retail_price || currentProduct.price || 0),
+            original_price: Number(currentProduct.original_price || currentProduct.retail_price || currentProduct.price || 0),
+            image: currentProduct.image_url || currentProduct.thumbnail,
+            unit: currentProduct.base_unit || 'Hộp',
+            quantity,
+            requires_prescription: Boolean(Number(currentProduct.requires_prescription || 0)),
+            in_stock: currentProduct.in_stock !== false
+        });
+    }
+
+    writeCart(cart);
+    if (goCheckout) {
+        window.location.href = 'checkout.html';
+    } else if (typeof window.showToast === 'function') {
+        window.showToast(`Đã thêm ${currentProduct.name} vào giỏ hàng`);
+    } else {
+        alert('Đã thêm sản phẩm vào giỏ hàng.');
     }
 }
 
@@ -179,16 +317,17 @@ async function fetchAlternativeProducts(id, categoryId) {
     const container = document.getElementById('pdSimilarProducts');
     if (!container) return;
     try {
-        const response = await fetch(`http://localhost:8000/api/catalog/products/${id}/alternatives`);
-        if (!response.ok) throw new Error();
-        const result = await response.json();
+        const result = await catalogApi().get(`products/${id}/alternatives`);
         
         let items = result.data?.alternatives || [];
         
         // Fallback: Nếu không tìm thấy thuốc thay thế cùng hoạt chất, tìm theo Danh mục (Category)
         if (items.length === 0 && categoryId) {
-            const res2 = await fetch(`http://localhost:8000/api/catalog/products?category_id=${categoryId}&limit=5&exclude_id=${id}`);
-            const json2 = await res2.json();
+            const json2 = await catalogApi().get('products', {
+                category_id: categoryId,
+                limit: 5,
+                exclude_id: id
+            });
             items = json2.data || [];
         }
 
@@ -229,8 +368,7 @@ async function fetchPopularProducts() {
     if (!container) return;
     try {
         // Lọc sort=popular (sales_volume cao nhất)
-        const response = await fetch(`http://localhost:8000/api/catalog/products?limit=6&sort=popular`);
-        const result = await response.json();
+        const result = await catalogApi().get('products', { limit: 6, sort: 'popular' });
         renderMiniList(container, result.data || []);
     } catch (e) {
         container.innerHTML = '';
@@ -247,15 +385,18 @@ function renderMiniList(container, products) {
     }
     const html = products.map(p => {
         const price = p.retail_price || p.price || 0;
+        const id = Number(p.id);
+        const name = escapeProductHtml(p.name || 'Sản phẩm');
+        const image = escapeProductHtml(p.image_url || p.thumbnail || '../assets/images/placeholder.png');
         const consultHtml = p.requires_prescription 
             ? `<div class="pd-mini-consult">Cần tư vấn từ dược sỹ</div>` 
             : `<div class="pd-mini-price">${new Intl.NumberFormat('vi-VN').format(Math.round(price))}đ</div>`;
 
         return `
-            <a href="product.html?id=${p.id}" class="pd-mini-item">
-                <img src="${p.image_url || '../assets/images/placeholder.png'}" class="pd-mini-img" alt="${p.name}">
+            <a href="product.html?id=${id}" class="pd-mini-item">
+                <img src="${image}" class="pd-mini-img" alt="${name}">
                 <div class="pd-mini-info">
-                    <div class="pd-mini-name">${p.name}</div>
+                    <div class="pd-mini-name">${name}</div>
                     ${consultHtml}
                 </div>
             </a>
@@ -271,21 +412,16 @@ async function fetchTopSearches() {
     const container = document.getElementById('pdTopSearches');
     if (!container) return;
     try {
-        const response = await fetch(`http://localhost:8000/api/catalog/products/top-searches`);
-        if (!response.ok) throw new Error();
-        const result = await response.json();
+        const result = await catalogApi().get('products/top-searches');
         const items = result.data || [];
         
         if (items.length > 0) {
-            container.innerHTML = items.map(t => `<a href="search.html?q=${encodeURIComponent(t.keyword)}" class="pd-tag">${t.keyword}</a>`).join('');
+            container.innerHTML = items.map(t => {
+                const keyword = String(t.keyword || '');
+                return `<a href="search.html?q=${encodeURIComponent(keyword)}" class="pd-tag">${escapeProductHtml(keyword)}</a>`;
+            }).join('');
         } else {
-            container.innerHTML = `
-                <a href="#" class="pd-tag">Nước hồng sâm</a>
-                <a href="#" class="pd-tag">Vitamin nhóm B</a>
-                <a href="#" class="pd-tag">Bổ sung canxi</a>
-                <a href="#" class="pd-tag">Men vi sinh</a>
-                <a href="#" class="pd-tag">Khẩu trang</a>
-            `;
+            container.innerHTML = '<span class="catalog-widget-loading">Chưa có tìm kiếm hàng đầu.</span>';
         }
     } catch (e) {
         container.innerHTML = '';
@@ -302,8 +438,7 @@ async function fetchTrendingProducts() {
     if (!container) return;
     try {
         // Lấy tối đa 15 sản phẩm để làm Carousel
-        const response = await fetch(`http://localhost:8000/api/catalog/products?limit=15&sort=trending`);
-        const result = await response.json();
+        const result = await catalogApi().get('products', { limit: 15, sort: 'trending' });
         
         if (result.data) {
             container.innerHTML = result.data.map(p => renderProductCard(p)).join('');
@@ -330,8 +465,7 @@ async function renderRecentlyViewed() {
     try {
         const productIds = viewed.map(v => v.id).join(',');
         // Vẫn dùng limit nhỏ thôi vì list này local (nhưng có thể lên đến 15)
-        const response = await fetch(`http://localhost:8000/api/catalog/products?limit=15&ids=${productIds}`);
-        const result = await response.json();
+        const result = await catalogApi().get('products', { limit: 15, ids: productIds });
         
         if (result.data) {
             // Sắp xếp lại theo thứ tự local (mới nhất trước)
@@ -456,7 +590,7 @@ async function renderRecentlyViewed() {
 
     try {
         // Fetch all in parallel
-        const promises = viewedIds.map(id => fetch(`http://localhost:8000/api/catalog/products/${id}`).then(r => r.ok ? r.json() : null));
+        const promises = viewedIds.map(id => catalogApi().get(`products/${id}`).catch(() => null));
         const results = await Promise.all(promises);
         
         const validProducts = results.filter(r => r && r.success && r.data).map(r => r.data);
@@ -474,9 +608,19 @@ async function renderRecentlyViewed() {
  * Render Product Card (For Grids)
  */
 function renderProductCard(p) {
+    if (window.MGClientApi && typeof window.MGClientApi.renderProductCard === 'function') {
+        return window.MGClientApi.renderProductCard(p, {
+            showOldPrice: Boolean(p.retail_price && !p.requires_prescription),
+            oldPrice: p.retail_price ? Number(p.retail_price) * 1.05 : 0
+        });
+    }
+
     const isRx = p.requires_prescription;
     const priceStr = p.retail_price ? new Intl.NumberFormat('en-US').format(Math.round(p.retail_price)) + 'đ' : 'Liên hệ';
     const oldPriceStr = p.retail_price ? new Intl.NumberFormat('en-US').format(Math.round(p.retail_price * 1.05)) + 'đ' : '';
+    const id = Number(p.id);
+    const name = escapeProductHtml(p.name || 'Sản phẩm');
+    const image = escapeProductHtml(p.thumbnail || p.image_url || '../assets/images/placeholder.png');
 
     let infoHtml = `
         <div class="product-price">
@@ -493,24 +637,28 @@ function renderProductCard(p) {
         `;
     }
 
-    let actionHtml = `<button class="btn-add-cart" onclick="addToCart(${p.id}, event)">Thêm giỏ hàng</button>`;
+    let actionHtml = `<button class="btn-add-cart" onclick="addToCart(${id}, event)">Thêm giỏ hàng</button>`;
     if (isRx) {
-        actionHtml = `<button class="btn-consult" onclick="consult(${p.id}, event)">Tư vấn ngay</button>`;
+        actionHtml = `<button class="btn-consult" onclick="consult(${id}, event)">Tư vấn ngay</button>`;
+    } else if (p.in_stock === false) {
+        actionHtml = '<button class="btn-add-cart" disabled>Hết hàng</button>';
     }
 
     return `
-        <div class="product-card">
-            <div class="product-image" onclick="window.location.href='product.html?id=${p.id}'" style="cursor:pointer;">
-                <img src="${p.thumbnail || p.image_url || '../assets/images/placeholder.png'}" alt="${p.name}">
+        <div class="product-card" data-product-id="${id}">
+            <div class="product-image" onclick="window.location.href='product.html?id=${id}'" style="cursor:pointer;">
+                <img src="${image}" alt="${name}">
             </div>
             <div class="product-info">
-                <h5><a href="product.html?id=${p.id}">${p.name}</a></h5>
+                <h5><a href="product.html?id=${id}">${name}</a></h5>
                 ${infoHtml}
             </div>
             ${actionHtml}
         </div>
     `;
 }
+
+window.consult = consult;
 
 /**
  * Tab Scroll Spy logic

@@ -3,7 +3,21 @@
  * Fetches category tree and handles dynamic rendering of the navigation menu.
  */
 
-const API_GATEWAY = 'http://localhost:8000/api/catalog';
+function catalogApi() {
+    if (window.MGCatalogApi) return window.MGCatalogApi;
+    const baseUrl = window.MG_CATALOG_API_BASE || 'http://localhost:8000/api/catalog';
+    return {
+        async get(path, params) {
+            const url = new URL(`${baseUrl.replace(/\/+$/, '')}/${String(path).replace(/^\/+/, '')}`);
+            Object.entries(params || {}).forEach(([key, value]) => {
+                if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, value);
+            });
+            const response = await fetch(url.toString());
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.json();
+        }
+    };
+}
 
 // Gắn vào window để components.js có thể gọi sau khi nạp xong HTML
 window.initMegaMenu = initMegaMenu;
@@ -14,8 +28,7 @@ async function initMegaMenu() {
     if (!navList) return;
 
     try {
-        const response = await fetch(`${API_GATEWAY}/categories/tree`);
-        const result = await response.json();
+        const result = await catalogApi().get('categories/tree');
 
         if (result.success && result.data) {
             renderNavList(navList, result.data);
@@ -154,8 +167,7 @@ async function handleSubCategoryHover(parentId, subId) {
     // Tìm dữ liệu cache từ tree hoặc fetch lại nếu cần
     // Để đơn giản và nhanh, ta có thể lưu tree vào biến toàn cục
     if (!window.categoryTree) {
-        const response = await fetch(`${API_GATEWAY}/categories/tree`);
-        const result = await response.json();
+        const result = await catalogApi().get('categories/tree');
         window.categoryTree = result.data;
     }
 
@@ -193,10 +205,18 @@ async function loadProducts(parentId, categoryId, event) {
     grid.innerHTML = '<div class="loading">Đang tải...</div>';
 
     try {
-        const response = await fetch(`${API_GATEWAY}/products?category_id=${categoryId}&limit=4&sort=best_seller`);
-        const result = await response.json();
+        const result = await catalogApi().get('products', {
+            category_id: categoryId,
+            limit: 4,
+            sort: 'best_seller'
+        });
 
         if (result.success && result.data.length > 0) {
+            if (window.MGClientApi && typeof window.MGClientApi.renderProductCard === 'function') {
+                grid.innerHTML = result.data.map((product) => window.MGClientApi.renderProductCard(product)).join('');
+                return;
+            }
+
             grid.innerHTML = result.data.map(p => `
                 <div class="product-card" data-product-id="${p.id}">
                     <div class="product-image">

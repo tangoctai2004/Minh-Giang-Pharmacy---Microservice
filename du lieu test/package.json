@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "crawl:trungson": "REFRESH_SITEMAP=1 node crawl_trungson.js",
+    "crawl:trungson:reset": "RESET_OUTPUT=1 node crawl_trungson.js",
+    "test": "node --check crawl_trungson.js && node --check crawl_blogs.js"
   },
   "keywords": [],
   "author": "",

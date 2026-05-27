@@ -1,77 +1,194 @@
-# API Mapping — pos/index.html (POS Main)
+# API Mapping — pos/index.html
 
-> **Trang**: POS Kiosk — Giao diện bán hàng tại quầy  
-> **Auth yêu cầu**: Có (Cashier — đã mở ca)  
-> **Ngày phân tích**: 2026-04-10
-
----
-
-## Sơ đồ bố cục
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│  Navbar: Logo | KIOSK #01 | 🔔(2) | Clock | Lịch sử | User | Đóng ca │
-├──────────────────────────┬───────────────────────────────────────┤
-│  LEFT — Products Panel   │  RIGHT — Cart Panel                  │
-│                          │                                      │
-│  [🔍 Search F2]          │  Cart Header (3 sản phẩm)            │
-│  Filters: Tất cả|Rx|     │  [📱 SĐT khách F5]                  │
-│  Giảm đau|Vitamin|DCYT|  │                                      │
-│  Mẹ&Bé|CSCC             │  Cart Items:                         │
-│                          │  Name|Lô|[−][qty][+]|UOM▼|Price|🗑   │
-│  Product Grid (12 cards) │  (Rx items: cảnh báo thuốc kê đơn)  │
-│  Name|Price|Shelf|Stock  │                                      │
-│  [Hết hàng] → Alt drawer│  Checkout Summary:                    │
-│                          │  Tạm tính | Giảm giá → Tổng          │
-│                          │  [Giữ đơn] [Xoá đơn] [THANH TOÁN F12]│
-├──────────────────────────┴───────────────────────────────────────┤
-│  Status Bar: System ✓ | Printer ✓ | Scanner ✓ | F2/F5/F12/ESC  │
-├──────────────────────────────────────────────────────────────────┤
-│  MODALS:                                                         │
-│  1. Checkout: Voucher|Loyalty|Payment(Cash/QR/Card/Debt)|Print   │
-│  2. Online Orders Drawer: 2 web orders → Nhận đơn                │
-│  3. Hold Orders Drawer: 3 held orders → Resume/Discard           │
-│  4. Close Shift: Revenue summary + Cash reconciliation           │
-│  5. Alt Medicines Drawer: 3 alternatives for OOS product         │
-│  6. Prescription (Rx) Modal: Doctor name + Prescription ID       │
-└──────────────────────────────────────────────────────────────────┘
-```
+> **Trang**: POS Kiosk — giao diện bán hàng tại quầy
+> **Auth yêu cầu**: Có token nhân viên POS
+> **Cập nhật theo code hiện tại**: catalog-service đã có một số API cần cho POS, nhưng POS frontend hiện vẫn là mock/static. Các API order POS vẫn chưa được implement đầy đủ trong order-service.
 
 ---
 
-## API chi tiết
+## Trạng thái hiện tại
 
-### 1. Tìm kiếm sản phẩm (Search bar + Barcode scan)
+API catalog đang có thể dùng cho POS:
 
+| Nhu cầu POS | API hiện có | Trạng thái |
+|---|---|---|
+| Tìm thuốc theo tên/SKU/barcode | `GET /api/catalog/products/pos-search` | Đã có, dữ liệu còn mỏng |
+| Quét mã vạch | `GET /api/catalog/products/barcode/{barcode}` | Đã có, trả đủ dữ liệu POS |
+| Lấy danh mục POS | `GET /api/catalog/categories/pos-tree` | Đã có, trả cây danh mục gọn kèm số thuốc/còn hàng |
+| Thuốc thay thế | `GET /api/catalog/products/{id}/alternatives` | Đã có |
+| Kiểm tra tồn có thể bán | `GET /api/catalog/inventory/availability?product_ids=...` | Đã có |
+| Chi tiết thuốc cho POS | `GET /api/catalog/products/pos-detail/{id}` | Đã có |
+| Giữ tồn tạm thời | `POST /api/catalog/inventory/reservations` | Đã có, giữ theo FEFO |
+| Nhả giữ tồn | `POST /api/catalog/inventory/reservations/release` | Đã có |
+| Kiểm tra voucher | `POST /api/catalog/promotions/vouchers/validate` | Backend có, nhưng gateway chưa public whitelist |
+
+Các API trong bản thiết kế cũ nhưng **chưa có hoặc chưa chạy thật**:
+
+| API | Trạng thái |
+|---|---|
+| `POST /api/order/pos/checkout` | Chưa thấy route POS checkout thật trong order-service |
+| `POST /api/order/pos/prescription-verify` | Chưa có |
+| `POST /api/order/pos/hold` | Chưa có |
+| `GET /api/order/pos/hold` | Chưa có |
+| `GET /api/order/pos/online-orders` | Chưa có |
+| `PUT /api/order/pos/online-orders/{id}/accept` | Chưa có |
+| `GET /api/order/pos/receipts/{code}/print` | Chưa có |
+
+---
+
+## API catalog chi tiết đang dùng được
+
+### 1. Tìm kiếm sản phẩm cho POS
+
+```http
+GET /api/catalog/products/pos-search?q={keyword}&barcode={code}&category_id={id}&limit=20&offset=0&in_stock=1&requires_prescription=1
 ```
-GET /api/catalog/products/pos-search?q={keyword}&barcode={code}&category={cat}
-```
 
-| Param | Type | Mô tả |
-|-------|------|-------|
-| `q` | string | Tên thuốc, hoạt chất |
-| `barcode` | string | Mã vạch scan |
-| `category` | string | `all`, `rx`, `pain`, `vitamin`, `device`, `baby`, `care` |
+Backend hiện hỗ trợ:
 
-**Response mẫu:**
+| Param | Ghi chú |
+|---|---|
+| `q` | Tìm theo tên, SKU, mã vạch |
+| `barcode` | Tìm đúng mã vạch |
+| `category_id` | Lọc danh mục |
+| `limit` | Mặc định 20, tối đa 100 |
+| `offset` | Dùng để tải thêm trên POS |
+| `in_stock` | `1` để chỉ lấy thuốc còn tồn có thể bán |
+| `requires_prescription` | `1` để lọc thuốc kê đơn |
+
+Response hiện tại có dạng:
+
 ```json
 {
   "success": true,
   "data": [
     {
       "id": 42,
+      "sku": "MED-0042",
+      "barcode": "893000000001",
       "name": "Amoxicillin 500mg",
       "price": 5000,
-      "shelf_location": "Kệ A2",
-      "stock_qty": 45,
-      "is_prescription": true,
-      "batch_code": "L-2025-0112",
-      "thumbnail": "...",
-      "units": [
-        { "unit": "Viên", "price": 5000, "is_base": true },
-        { "unit": "Vỉ", "price": 48000, "qty_per_unit": 10 },
-        { "unit": "Hộp", "price": 450000, "qty_per_unit": 100 }
-      ]
+      "base_unit": "Viên",
+      "image_url": "/assets/images/product.png",
+      "category_id": 2,
+      "category_name": "Kháng sinh",
+      "total_stock": 45,
+      "available_stock": 43,
+      "nearest_expiry": "2026-12-31",
+      "location_name": "Khu OTC / Tủ A / Kệ 2",
+      "requires_prescription": true,
+      "units": [],
+      "sale_units": [],
+      "warnings": [],
+      "pos_flags": {
+        "can_sell": true,
+        "requires_prescription": true,
+        "near_expiry": false,
+        "low_stock": false
+      },
+      "in_stock": true
+    }
+  ],
+  "pagination": { "total": 1536, "page": 1, "limit": 20, "pages": 77, "total_pages": 77 }
+}
+```
+
+Response hiện đã có các field POS cần để hiển thị card sản phẩm, cảnh báo thuốc kê đơn, tồn có thể bán, hạn dùng gần nhất, vị trí kệ và đơn vị bán.
+
+---
+
+### 2. Quét mã vạch
+
+```http
+GET /api/catalog/products/barcode/{barcode}
+```
+
+Trả thông tin sản phẩm theo barcode.
+
+Response trả 1 object trong `data`, gồm các field chính tương tự `/products/pos-search`: `id`, `sku`, `barcode`, `name`, `price`, `base_unit`, `requires_prescription`, `total_stock`, `available_stock`, `nearest_expiry`, `location_name`, `units`, `in_stock`.
+
+---
+
+### 3. Danh mục cho POS
+
+```http
+GET /api/catalog/categories/pos-tree
+```
+
+Trả cây danh mục gọn cho POS, có `product_count` và `in_stock_count` để người bán biết nhóm nào còn hàng.
+
+`GET /api/catalog/categories?for=pos` vẫn còn để tương thích cũ.
+
+---
+
+### 4. Thuốc thay thế
+
+```http
+GET /api/catalog/products/{id}/alternatives
+```
+
+Dùng khi sản phẩm hết hàng hoặc cần gợi ý sản phẩm cùng hoạt chất/danh mục.
+
+---
+
+### 5. Kiểm tra tồn có thể bán
+
+```http
+GET /api/catalog/inventory/availability?product_ids=1,2,3
+```
+
+### 6. Giữ tồn tạm thời
+
+```http
+POST /api/catalog/inventory/reservations
+```
+
+Body:
+
+```json
+{
+  "source_type": "pos_hold",
+  "source_id": 123,
+  "ttl_minutes": 30,
+  "items": [{ "product_id": 42, "quantity": 2 }]
+}
+```
+
+Catalog giữ tồn theo FEFO. Order/POS phải gọi release khi huỷ đơn hoặc hoàn tất.
+
+```http
+POST /api/catalog/inventory/reservations/release
+```
+
+Body:
+
+```json
+{
+  "source_type": "pos_hold",
+  "source_id": 123,
+  "reason": "cancelled"
+}
+```
+
+Dùng trước khi thêm vào giỏ, tăng số lượng hoặc mở màn thanh toán.
+
+Response:
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "product_id": 42,
+      "sku": "MED-0042",
+      "name": "Amoxicillin 500mg",
+      "base_unit": "Viên",
+      "total_stock": 45,
+      "reserved_stock": 2,
+      "available_stock": 43,
+      "nearest_expiry": "2026-12-31",
+      "location_name": "Khu Rx / Tủ A / Kệ 5",
+      "in_stock": true
     }
   ]
 }
@@ -79,36 +196,14 @@ GET /api/catalog/products/pos-search?q={keyword}&barcode={code}&category={cat}
 
 ---
 
-### 2. Tra cứu khách hàng qua SĐT (Loyalty)
+### 6. Kiểm tra voucher
 
-```
-GET /api/identity/customers/lookup?phone={phone}
-```
-
-**Response mẫu:**
-```json
-{
-  "success": true,
-  "data": {
-    "id": 15,
-    "name": "Nguyễn Thị Mai",
-    "phone": "0901234567",
-    "tier": "silver",
-    "current_points": 520,
-    "redeemable_value": 25000
-  }
-}
-```
-
----
-
-### 3. Áp dụng voucher
-
-```
+```http
 POST /api/catalog/promotions/vouchers/validate
 ```
 
-**Body:**
+Body:
+
 ```json
 {
   "code": "MINGIANG50",
@@ -117,258 +212,30 @@ POST /api/catalog/promotions/vouchers/validate
 }
 ```
 
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "code": "MINGIANG50",
-    "discount_amount": 50000,
-    "message": "Giảm 50,000₫"
-  }
-}
-```
+Ghi chú quan trọng: backend catalog có route này, nhưng API Gateway hiện chưa đưa `POST /api/catalog/promotions/vouchers/validate` vào danh sách public. Nếu POS gọi có token thì vẫn ổn; nếu client/POS public gọi không token thì sẽ bị chặn.
 
 ---
 
-### 4. Tạo hoá đơn POS (Thanh toán)
-
-```
-POST /api/order/pos/checkout
-```
-
-**Body:**
-```json
-{
-  "kiosk_id": "KIOSK-01",
-  "shift_id": 12,
-  "customer_id": 15,
-  "items": [
-    { "product_id": 42, "batch_code": "L-2025-0112", "qty": 2, "unit": "Viên", "price": 5000 },
-    { "product_id": 15, "batch_code": "L-2025-0089", "qty": 1, "unit": "Hộp", "price": 120000 }
-  ],
-  "voucher_code": "MINGIANG50",
-  "loyalty_points_used": 0,
-  "payment_method": "cash",
-  "cash_received": 300000,
-  "subtotal": 130000,
-  "discount": 50000,
-  "total": 80000,
-  "prescription": null,
-  "debt_note": null
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "invoice_code": "T1-1929",
-    "total": 80000,
-    "change": 220000,
-    "loyalty_points_earned": 8,
-    "receipt_url": "/api/order/pos/receipts/T1-1929/print"
-  }
-}
-```
-
----
-
-### 5. Xác minh đơn thuốc kê đơn (Rx/GPP)
-
-```
-POST /api/order/pos/prescription-verify
-```
-
-**Body:**
-```json
-{
-  "doctor_name": "BS. Nguyễn Văn A - Viện E",
-  "prescription_id": "TOA-2026-0045",
-  "prescription_image_url": null,
-  "items": [
-    { "product_id": 42, "name": "Amoxicillin 500mg", "qty": 2 }
-  ]
-}
-```
-
----
-
-### 6. Ghi nợ khách hàng
-
-```
-POST /api/order/pos/checkout
-```
-
-(Cùng API #4, nhưng `payment_method: "debt"` và `debt_note` có nội dung)
-
----
-
-### 7. Giữ đơn (Hold)
-
-```
-POST /api/order/pos/hold
-```
-
-**Body:**
-```json
-{
-  "kiosk_id": "KIOSK-01",
-  "shift_id": 12,
-  "customer_id": null,
-  "items": [
-    { "product_id": 42, "qty": 2, "unit": "Viên", "price": 5000 }
-  ],
-  "expires_in": 14400
-}
-```
-
-**Response:** `{ "success": true, "data": { "hold_id": "0041" } }`
-
----
-
-### 8. Danh sách đơn đang giữ
-
-```
-GET /api/order/pos/hold?kiosk_id=KIOSK-01
-```
-
----
-
-### 9. Khôi phục đơn giữ
-
-```
-PUT /api/order/pos/hold/{hold_id}/resume
-```
-
----
-
-### 10. Huỷ đơn giữ
-
-```
-DELETE /api/order/pos/hold/{hold_id}
-```
-
----
-
-### 11. Đơn online chờ lấy hàng (bell icon)
-
-```
-GET /api/order/pos/online-orders?status=ready_for_pickup&kiosk_id=KIOSK-01
-```
-
-**Response mẫu:**
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": 5931,
-      "order_code": "WEB-5931",
-      "customer_name": "Trần Thị B",
-      "items_summary": "Paracetamol ×2, Vitamin C ×1",
-      "total": 285000,
-      "payment_status": "paid",
-      "payment_method": "zalopay"
-    }
-  ],
-  "count": 2
-}
-```
-
----
-
-### 12. Nhận đơn online để lấy hàng
-
-```
-PUT /api/order/pos/online-orders/{id}/accept
-```
-
----
-
-### 13. Thuốc thay thế (khi hết hàng)
-
-```
-GET /api/catalog/products/{id}/alternatives
-```
-
-**Response mẫu:**
-```json
-{
-  "success": true,
-  "data": {
-    "active_ingredient": "Paracetamol 500mg",
-    "alternatives": [
-      { "id": 15, "name": "Panadol Extra", "price": 4500, "stock_qty": 120, "shelf": "Kệ B1" },
-      { "id": 16, "name": "Hapacol 500", "price": 3000, "stock_qty": 200, "shelf": "Kệ B2" }
-    ]
-  }
-}
-```
-
----
-
-### 14. Đóng ca
-
-```
-POST /api/identity/shifts/close
-```
-
-**Body:**
-```json
-{
-  "shift_id": 12,
-  "kiosk_id": "KIOSK-01",
-  "cashier_counted": 4300000,
-  "system_total": 4320000,
-  "discrepancy": -20000
-}
-```
-
----
-
-### 15. In báo cáo ca
-
-```
-GET /api/identity/shifts/{id}/print
-```
-
----
-
-### 16. Danh sách category filters
-
-```
-GET /api/catalog/categories?for=pos
-```
-
----
-
-### 17. In hoá đơn
-
-```
-GET /api/order/pos/receipts/{invoice_code}/print
-```
-
----
-
-## 📊 TỔNG HỢP API
+## Tổng hợp API catalog đúng với code hiện tại
 
 | # | API Endpoint | Method | Service | Auth | Gọi khi |
-|---|-------------|--------|---------|------|---------|
-| 1 | `/api/catalog/products/pos-search` | GET | catalog | Yes | Search/scan (F2) |
-| 2 | `/api/identity/customers/lookup?phone=X` | GET | identity | Yes | Nhập SĐT (F5) |
-| 3 | `/api/catalog/promotions/vouchers/validate` | POST | catalog | Yes | Áp dụng voucher |
-| 4 | `/api/order/pos/checkout` | POST | order | Yes | Click "IN HOÁ ĐƠN & HOÀN TẤT" |
-| 5 | `/api/order/pos/prescription-verify` | POST | order | Yes | Submit Rx modal |
-| 6 | `/api/order/pos/hold` | POST | order | Yes | Click "Giữ đơn" |
-| 7 | `/api/order/pos/hold?kiosk_id=X` | GET | order | Yes | Open hold drawer |
-| 8 | `/api/order/pos/hold/{id}/resume` | PUT | order | Yes | Click "Tiếp tục" |
-| 9 | `/api/order/pos/hold/{id}` | DELETE | order | Yes | Click discard |
-| 10 | `/api/order/pos/online-orders` | GET | order | Yes | Click bell icon |
-| 11 | `/api/order/pos/online-orders/{id}/accept` | PUT | order | Yes | Click "Nhận đơn" |
-| 12 | `/api/catalog/products/{id}/alternatives` | GET | catalog | Yes | Click out-of-stock |
-| 13 | `/api/identity/shifts/close` | POST | identity | Yes | Click "Đóng ca" |
-| 14 | `/api/identity/shifts/{id}/print` | GET | identity | Yes | In báo cáo ca |
-| 15 | `/api/catalog/categories?for=pos` | GET | catalog | Yes | Page load |
-| 16 | `/api/order/pos/receipts/{code}/print` | GET | order | Yes | In hoá đơn |
+|---|---|---|---|---|---|
+| 1 | `/api/catalog/products/pos-search` | GET | catalog | Yes | Search/scan |
+| 2 | `/api/catalog/products/barcode/{barcode}` | GET | catalog | Yes | Quét mã vạch |
+| 3 | `/api/catalog/categories/pos-tree` | GET | catalog | Yes | Page load |
+| 4 | `/api/catalog/products/{id}/alternatives` | GET | catalog | Yes | Gợi ý thuốc thay thế |
+| 5 | `/api/catalog/inventory/availability?product_ids=...` | GET | catalog | Yes | Kiểm tra tồn có thể bán |
+| 6 | `/api/catalog/products/pos-detail/{id}` | GET | catalog | Yes | Xem chi tiết thuốc tại quầy |
+| 7 | `/api/catalog/inventory/reservations` | POST | catalog | Yes | Giữ tồn tạm thời |
+| 8 | `/api/catalog/inventory/reservations/release` | POST | catalog | Yes | Nhả giữ tồn |
+| 9 | `/api/catalog/promotions/vouchers/validate` | POST | catalog | Yes | Áp voucher |
+
+---
+
+## Ghi chú cho bước tiếp theo
+
+Để POS bán hàng thật, catalog cần bổ sung hoặc mở rộng:
+
+1. Luồng order-service/POS gọi catalog để giữ hàng và trừ hàng sau khi thanh toán.
+2. Voucher validate cần thống nhất quyền gọi qua gateway.
+3. Frontend POS cần thay dữ liệu mock bằng các API catalog hiện có.

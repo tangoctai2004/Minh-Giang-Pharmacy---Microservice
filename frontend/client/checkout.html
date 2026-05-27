@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thanh toán — Nhà Thuốc Minh Giang</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css?v=phase1-catalog">
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -522,6 +522,19 @@
             color: #0b7a3e;
             text-decoration: none;
         }
+
+        .checkout-warning {
+            margin-top: 4px;
+            color: #dc2626;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .summary-item-warning {
+            background: #fff7f7;
+            border-radius: 8px;
+            padding: 8px;
+        }
     </style>
 </head>
 
@@ -642,7 +655,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn-order">Đặt hàng ( 242,000đ )</button>
+                <button type="submit" class="btn-order">Đặt hàng ( 0đ )</button>
             </form>
 
             <!-- RIGHT: ORDER SUMMARY -->
@@ -650,24 +663,7 @@
                 <h3 class="summary-title">Giỏ hàng</h3>
 
                 <div class="summary-list">
-                    <!-- Item 1 -->
-                    <div class="summary-item">
-                        <img src="../assets/images/cart_product_1.png" alt="Item" class="summary-img"
-                            onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'50\' height=\'50\'><rect width=\'50\' height=\'50\' fill=\'#f3f4f6\'/></svg>'">
-                        <div class="summary-info">
-                            <h4>Fess Little Noses Spray - Xịt rửa mũi cho trẻ sơ sinh kèm bóng hú...</h4>
-                            <div class="qty-price">1 x 242,000đ <span class="price-orig">280,000đ</span></div>
-                        </div>
-                    </div>
-                    <!-- Gift -->
-                    <div class="summary-item">
-                        <img src="../assets/images/cart_gift.png" alt="Gift" class="summary-img"
-                            onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'50\' height=\'50\'><rect width=\'50\' height=\'50\' fill=\'#f3f4f6\'/></svg>'">
-                        <div class="summary-info">
-                            <h4>Nước Súc Miệng Lisdoub làm sạch răng miệng và họng, giúp hơi thở...</h4>
-                            <div class="qty-price">1 x 0đ <span class="price-orig">29,000đ</span></div>
-                        </div>
-                    </div>
+                    <div class="summary-empty">Đang tải giỏ hàng...</div>
                 </div>
 
                 <div class="promo-selector">
@@ -682,38 +678,38 @@
 
                 <div class="applied-promo">
                     <i class="fa-solid fa-circle-check"></i>
-                    <span>Tặng nước súc miệng LISDOUB bill <i style="border-bottom: 1px dashed #0b7a3e;">199K</i></span>
+                    <span>Chưa áp dụng ưu đãi</span>
                 </div>
 
                 <div class="summary-details">
                     <div class="summary-row">
                         <span>Điểm thưởng</span>
-                        <span style="color: #0b7a3e;">+121 điểm</span>
+                        <span class="checkout-reward-val" style="color: #0b7a3e;">+0 điểm</span>
                     </div>
                     <div class="summary-row">
                         <span>Tổng tiền sản phẩm</span>
-                        <span>280,000đ</span>
+                        <span class="checkout-subtotal-val">0đ</span>
                     </div>
                     <div class="summary-row">
                         <span>Giảm giá sản phẩm</span>
-                        <span class="val-savings">-38,000đ</span>
+                        <span class="val-savings checkout-product-saving-val">0đ</span>
                     </div>
                     <div class="summary-row">
                         <span>Giảm giá khuyến mãi</span>
-                        <span>0đ</span>
+                        <span class="checkout-promo-discount-val">0đ</span>
                     </div>
                     <div class="summary-row">
                         <span>Phí vận chuyển tham khảo</span>
-                        <span>0đ</span>
+                        <span class="checkout-shipping-val">0đ</span>
                     </div>
                     <div class="summary-row">
                         <span>Bạn tiết kiệm</span>
-                        <span class="val-savings">38,000đ</span>
+                        <span class="val-savings checkout-saving-val">0đ</span>
                     </div>
 
                     <div class="summary-row total">
                         <span>Tổng tiền:</span>
-                        <span class="val-total">242,000đ</span>
+                        <span class="val-total">0đ</span>
                     </div>
                 </div>
 
@@ -733,24 +729,10 @@
 
     <script src="../assets/js/dropdown-handler.js"></script>
     <script src="../assets/js/mega-menu-loader.js"></script>
-    <script src="../assets/js/components.js"></script>
-    <script>
-        // Simple UI Toggle for Delivery Options
-        document.querySelectorAll('.delivery-box').forEach(box => {
-            box.addEventListener('click', () => {
-                document.querySelectorAll('.delivery-box').forEach(b => b.classList.remove('active'));
-                box.classList.add('active');
-            });
-        });
-
-        // Simple UI Toggle for Payment Methods
-        document.querySelectorAll('.payment-box').forEach(box => {
-            box.addEventListener('click', () => {
-                document.querySelectorAll('.payment-box').forEach(b => b.classList.remove('active'));
-                box.classList.add('active');
-            });
-        });
-    </script>
+    <script src="../assets/js/client-api.js?v=phase1-catalog"></script>
+    <script src="../assets/js/components.js?v=phase1-catalog"></script>
+    <script src="../assets/js/cart-handler.js?v=phase1-catalog"></script>
+    <script src="../assets/js/checkout-page.js?v=phase1-catalog"></script>
 </body>
 
 </html>

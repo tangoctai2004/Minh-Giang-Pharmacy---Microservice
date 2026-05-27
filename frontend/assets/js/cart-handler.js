@@ -5,6 +5,37 @@
 
 const CART_KEY = 'mg_cart';
 
+function catalogApi() {
+    if (window.MGCatalogApi) return window.MGCatalogApi;
+    const baseUrl = window.MG_CATALOG_API_BASE || 'http://localhost:8000/api/catalog';
+    return {
+        async get(path, params) {
+            const url = new URL(`${baseUrl.replace(/\/+$/, '')}/${String(path).replace(/^\/+/, '')}`);
+            Object.entries(params || {}).forEach(([key, value]) => {
+                if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, value);
+            });
+            const response = await fetch(url.toString());
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.json();
+        }
+    };
+}
+
+function normalizeCartProduct(product) {
+    if (window.MGClientApi && typeof window.MGClientApi.normalizeProduct === 'function') {
+        return window.MGClientApi.normalizeProduct(product);
+    }
+    const price = Number(product.retail_price || product.price || 0);
+    return {
+        ...product,
+        price,
+        retail_price: price,
+        requires_prescription: Boolean(Number(product.requires_prescription || 0)),
+        in_stock: product.in_stock !== false,
+        image_url: product.image_url || product.thumbnail || product.image
+    };
+}
+
 function getCart() {
     try {
         return JSON.parse(localStorage.getItem(CART_KEY)) || [];
@@ -31,8 +62,7 @@ async function addToCart(productId, event) {
 
     try {
         // Fetch product info to get name, price, image for the cart
-        const response = await fetch(`http://localhost:8000/api/catalog/products/${productId}`);
-        const result = await response.json();
+        const result = await catalogApi().get(`products/${productId}`);
 
         if (!result.success || !result.data) {
             alert('Không tìm thấy thông tin sản phẩm.');
@@ -40,6 +70,23 @@ async function addToCart(productId, event) {
         }
 
         const product = result.data;
+        const normalizedProduct = normalizeCartProduct(product);
+
+        if (normalizedProduct.requires_prescription) {
+            showToast('Thuốc kê đơn cần tư vấn dược sĩ trước khi đặt mua.');
+            return;
+        }
+
+        if (!normalizedProduct.in_stock) {
+            showToast('Sản phẩm hiện đã hết hàng.');
+            return;
+        }
+
+        if (!normalizedProduct.price) {
+            showToast('Sản phẩm chưa có giá bán, vui lòng liên hệ nhà thuốc.');
+            return;
+        }
+
         let cart = getCart();
         
         const existingItem = cart.find(item => item.id == productId);
@@ -47,22 +94,26 @@ async function addToCart(productId, event) {
             existingItem.quantity += 1;
         } else {
             cart.push({
-                id: product.id,
-                name: product.name,
-                price: product.retail_price || product.price,
-                image: product.image_url || product.thumbnail,
-                unit: product.base_unit || 'Hộp',
-                quantity: 1
+                id: normalizedProduct.id,
+                sku: normalizedProduct.sku || '',
+                name: normalizedProduct.name,
+                price: normalizedProduct.price,
+                image: normalizedProduct.image_url || normalizedProduct.thumbnail,
+                unit: normalizedProduct.base_unit || 'Hộp',
+                quantity: 1,
+                requires_prescription: normalizedProduct.requires_prescription,
+                in_stock: normalizedProduct.in_stock
             });
         }
 
         saveCart(cart);
         
         // Hiệu ứng thông báo
-        showToast(`Đã thêm ${product.name} vào giỏ hàng`);
+        showToast(`Đã thêm ${normalizedProduct.name} vào giỏ hàng`);
         
     } catch (error) {
         console.error('[Cart] Error adding to cart:', error);
+        showToast('Không thể thêm sản phẩm vào giỏ hàng lúc này.');
     }
 }
 
@@ -114,3 +165,4 @@ window.addToCart = addToCart;
 window.updateCartBadge = updateCartBadge;
 window.getCart = getCart;
 window.saveCart = saveCart;
+window.showToast = showToast;
