@@ -3,6 +3,62 @@ const pool = require('../db/pool');
 const requireRoles = require('../middlewares/requireRoles');
 const { requireFields } = require('../middlewares/validate');
 const canWriteCatalog = requireRoles(['admin', 'manager']);
+let productUnitBarcodeColumnCache = null;
+
+async function hasProductUnitBarcodeColumn() {
+  if (productUnitBarcodeColumnCache !== null) return productUnitBarcodeColumnCache;
+  const [rows] = await pool.query(
+    `SELECT COUNT(*) AS count
+       FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+        AND TABLE_NAME = 'product_units'
+        AND COLUMN_NAME = 'barcode'`
+  );
+  productUnitBarcodeColumnCache = Number(rows[0]?.count || 0) > 0;
+  return productUnitBarcodeColumnCache;
+}
+
+function productUnitBarcodeSelect(hasBarcodeColumn) {
+  return hasBarcodeColumn ? 'barcode' : 'NULL AS barcode';
+}
+
+async function insertProductUnits(conn, productId, unitConversions = []) {
+  if (!Array.isArray(unitConversions) || unitConversions.length === 0) return;
+  const hasUnitBarcode = await hasProductUnitBarcodeColumn();
+  if (hasUnitBarcode) {
+    const unitValues = unitConversions.map((u, index) => [
+      productId,
+      u.unit_name,
+      u.conversion_qty,
+      u.of_unit,
+      u.retail_price,
+      index,
+      u.barcode || null
+    ]);
+    await conn.query(
+      `INSERT INTO product_units
+        (product_id, unit_name, conversion_qty, of_unit, retail_price, sort_order, barcode)
+       VALUES ?`,
+      [unitValues]
+    );
+    return;
+  }
+
+  const unitValues = unitConversions.map((u, index) => [
+    productId,
+    u.unit_name,
+    u.conversion_qty,
+    u.of_unit,
+    u.retail_price,
+    index
+  ]);
+  await conn.query(
+    `INSERT INTO product_units
+      (product_id, unit_name, conversion_qty, of_unit, retail_price, sort_order)
+     VALUES ?`,
+    [unitValues]
+  );
+}
 
 function normalizeSearchText(value = '') {
   return String(value)
@@ -387,6 +443,37 @@ router.get('/filters', async (req, res) => {
 // GET /products/barcode/:barcode — Tra cứu theo mã vạch
 router.get('/barcode/:barcode', async (req, res) => {
   try {
+    const hasUnitBarcode = await hasProductUnitBarcodeColumn();
+    let barcodeMatch = {
+      type: 'product',
+      unit_name: null,
+      conversion_qty: 1,
+    };
+    let productId = null;
+
+    if (hasUnitBarcode) {
+      const [[unitMatch]] = await pool.query(
+        `SELECT product_id, unit_name, conversion_qty
+           FROM product_units
+          WHERE barcode = ?
+          LIMIT 1`,
+        [req.params.barcode]
+      );
+      if (unitMatch) {
+        productId = Number(unitMatch.product_id);
+        barcodeMatch = {
+          type: 'unit',
+          unit_name: unitMatch.unit_name,
+          conversion_qty: Number(unitMatch.conversion_qty || 1),
+        };
+      }
+    }
+
+    const whereClause = productId
+      ? 'p.id = ? AND p.status = \'active\''
+      : 'p.barcode = ? AND p.status = \'active\'';
+    const queryParam = productId || req.params.barcode;
+
     const [[row]] = await pool.query(
       `SELECT p.id, p.sku, p.barcode, p.name, p.status, p.retail_price, p.base_unit,
               p.requires_prescription, p.image_url, p.active_ingredient, p.manufacturer,
@@ -441,17 +528,17 @@ router.get('/barcode/:barcode', async (req, res) => {
        LEFT JOIN brands b ON b.id = p.brand_id
        LEFT JOIN batch_items bi ON bi.product_id = p.id
        LEFT JOIN locations l ON l.id = bi.location_id
-       WHERE p.barcode = ? AND p.status = 'active'
+       WHERE ${whereClause}
        GROUP BY p.id, p.sku, p.barcode, p.name, p.status, p.retail_price,
                 p.base_unit, p.requires_prescription, p.image_url, p.active_ingredient,
                 p.manufacturer, p.registration_number, p.description, p.min_stock_alert,
                 c.id, c.name, b.id, b.name`,
-      [req.params.barcode]
+      [queryParam]
     );
     if (!row) return res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm' });
 
     const [units] = await pool.query(
-      `SELECT id, product_id, unit_name, conversion_qty, of_unit, retail_price, sort_order
+      `SELECT id, product_id, unit_name, conversion_qty, of_unit, retail_price, sort_order, ${productUnitBarcodeSelect(hasUnitBarcode)}
        FROM product_units
        WHERE product_id = ?
        ORDER BY sort_order ASC`,
@@ -463,9 +550,8 @@ router.get('/barcode/:barcode', async (req, res) => {
       data: {
         ...toPosProduct(row, units),
         barcode_match: {
-          type: 'product',
-          unit_name: row.base_unit,
-          conversion_qty: 1,
+          ...barcodeMatch,
+          unit_name: barcodeMatch.unit_name || row.base_unit,
         }
       }
     });
@@ -512,6 +598,7 @@ router.get('/search-suggest', async (req, res) => {
 // GET /products/pos-search — Tìm kiếm nhanh cho POS (theo keyword/barcode/category)
 router.get('/pos-search', async (req, res) => {
   try {
+    const hasUnitBarcode = await hasProductUnitBarcodeColumn();
     const searchTerms = req.query.q ? buildPosSearchTerms(req.query.q) : [];
     const barcode = req.query.barcode || null;
     const category = req.query.category_id ? Number(req.query.category_id) : (req.query.category ? Number(req.query.category) : null);
@@ -526,8 +613,19 @@ router.get('/pos-search', async (req, res) => {
     const params = [];
 
     if (barcode) {
-      where += ' AND p.barcode = ?';
-      params.push(barcode);
+      if (hasUnitBarcode) {
+        where += ` AND (
+          p.barcode = ?
+          OR EXISTS (
+            SELECT 1 FROM product_units pu_barcode
+            WHERE pu_barcode.product_id = p.id AND pu_barcode.barcode = ?
+          )
+        )`;
+        params.push(barcode, barcode);
+      } else {
+        where += ' AND p.barcode = ?';
+        params.push(barcode);
+      }
     } else if (searchTerms.length > 0) {
       const searchBlocks = searchTerms.map(() => `(
         p.name LIKE ?
@@ -536,12 +634,17 @@ router.get('/pos-search', async (req, res) => {
         OR p.active_ingredient LIKE ?
         OR REPLACE(REPLACE(REPLACE(LOWER(p.name), ' ', ''), '-', ''), '/', '') LIKE ?
         OR REPLACE(REPLACE(REPLACE(LOWER(COALESCE(p.active_ingredient, '')), ' ', ''), '-', ''), '/', '') LIKE ?
+        ${hasUnitBarcode ? `OR EXISTS (
+          SELECT 1 FROM product_units pu_search
+          WHERE pu_search.product_id = p.id AND pu_search.barcode LIKE ?
+        )` : ''}
       )`);
       where += ` AND (${searchBlocks.join(' OR ')})`;
       searchTerms.forEach((term) => {
         const likeTerm = `%${term}%`;
         const compactTerm = `%${compactSearchText(term)}%`;
         params.push(likeTerm, likeTerm, likeTerm, likeTerm, compactTerm, compactTerm);
+        if (hasUnitBarcode) params.push(likeTerm);
       });
     }
 
@@ -634,7 +737,7 @@ router.get('/pos-search', async (req, res) => {
     let unitsByProductId = {};
     if (productIds.length > 0) {
       const [units] = await pool.query(
-        `SELECT product_id, id, unit_name, conversion_qty, of_unit, retail_price, sort_order
+        `SELECT product_id, id, unit_name, conversion_qty, of_unit, retail_price, sort_order, ${productUnitBarcodeSelect(hasUnitBarcode)}
          FROM product_units
          WHERE product_id IN (${productIds.map(() => '?').join(',')})
          ORDER BY product_id ASC, sort_order ASC`,
@@ -675,6 +778,7 @@ router.get('/pos-search', async (req, res) => {
 router.get('/pos-detail/:id', async (req, res) => {
   try {
     const productId = Number(req.params.id);
+    const hasUnitBarcode = await hasProductUnitBarcodeColumn();
     if (!Number.isInteger(productId) || productId <= 0) {
       return res.status(400).json({ success: false, message: 'product_id không hợp lệ' });
     }
@@ -736,7 +840,7 @@ router.get('/pos-detail/:id', async (req, res) => {
     }
 
     const [units] = await pool.query(
-      `SELECT id, product_id, unit_name, conversion_qty, of_unit, retail_price, sort_order
+      `SELECT id, product_id, unit_name, conversion_qty, of_unit, retail_price, sort_order, ${productUnitBarcodeSelect(hasUnitBarcode)}
        FROM product_units
        WHERE product_id = ?
        ORDER BY sort_order ASC`,
@@ -1024,13 +1128,7 @@ router.post('/', canWriteCatalog, requireFields(['name', 'category_id', 'base_un
     await conn.query(`UPDATE products SET sku = ? WHERE id = ?`, [sku, productId]);
 
     if (unit_conversions && Array.isArray(unit_conversions) && unit_conversions.length > 0) {
-      const unitValues = unit_conversions.map((u, index) => [
-        productId, u.unit_name, u.conversion_qty, u.of_unit, u.retail_price, index
-      ]);
-      await conn.query(
-        `INSERT INTO product_units (product_id, unit_name, conversion_qty, of_unit, retail_price, sort_order) VALUES ?`,
-        [unitValues]
-      );
+      await insertProductUnits(conn, productId, unit_conversions);
     }
 
     if (specifications && Array.isArray(specifications) && specifications.length > 0) {
@@ -1099,8 +1197,7 @@ router.put('/:id', canWriteCatalog, async (req, res) => {
     if (unit_conversions && Array.isArray(unit_conversions)) {
       await conn.query(`DELETE FROM product_units WHERE product_id = ?`, [productId]);
       if (unit_conversions.length > 0) {
-        const unitValues = unit_conversions.map((u, index) => [productId, u.unit_name, u.conversion_qty, u.of_unit, u.retail_price, index]);
-        await conn.query(`INSERT INTO product_units (product_id, unit_name, conversion_qty, of_unit, retail_price, sort_order) VALUES ?`, [unitValues]);
+        await insertProductUnits(conn, productId, unit_conversions);
       }
     }
 

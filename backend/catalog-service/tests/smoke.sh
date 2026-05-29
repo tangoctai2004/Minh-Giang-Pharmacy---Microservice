@@ -52,6 +52,8 @@ R="$(curl -sS "$BASE/products/barcode/$BARCODE")"
 check_success_true "GET /products/barcode/:barcode enriched" "$R"
 HAS_BARCODE_FIELDS="$(echo "$R" | python3 -c "import sys,json; d=json.load(sys.stdin).get('data',{}); print('true' if all(k in d for k in ['requires_prescription','available_stock','nearest_expiry','location_name','units']) else 'false')" 2>/dev/null)"
 if [ "$HAS_BARCODE_FIELDS" = "true" ]; then ok "GET /products/barcode includes POS fields"; else ng "GET /products/barcode includes POS fields" "$(echo "$R" | cut -c1-120)"; fi
+HAS_BARCODE_MATCH="$(echo "$R" | python3 -c "import sys,json; d=json.load(sys.stdin).get('data',{}).get('barcode_match',{}); print('true' if all(k in d for k in ['type','unit_name','conversion_qty']) else 'false')" 2>/dev/null)"
+if [ "$HAS_BARCODE_MATCH" = "true" ]; then ok "GET /products/barcode includes barcode_match"; else ng "GET /products/barcode includes barcode_match" "$(echo "$R" | cut -c1-120)"; fi
 
 R="$(curl -sS "$BASE/products/1/alternatives")"
 check_success_true "GET /products/:id/alternatives" "$R"

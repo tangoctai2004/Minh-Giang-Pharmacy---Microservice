@@ -745,6 +745,21 @@ body {
     color: #dc2626;
 }
 
+.pos-meta-expiry {
+    background: #f8fafc;
+    color: #64748b;
+}
+
+.pos-meta-expiry.warning {
+    background: var(--pos-warning-light);
+    color: var(--pos-warning);
+}
+
+.pos-meta-expiry.danger {
+    background: var(--pos-danger-light);
+    color: var(--pos-danger);
+}
+
 @media (max-width: 1360px) {
     .pos-product-grid {
         grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1060,6 +1075,10 @@ body {
 
 .pos-rx-alert i {
     font-size: 12px;
+}
+
+.pos-rx-alert.warning {
+    color: var(--pos-warning);
 }
 
 /* ============================================

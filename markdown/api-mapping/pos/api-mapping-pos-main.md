@@ -2,7 +2,7 @@
 
 > **Trang**: POS Kiosk — giao diện bán hàng tại quầy
 > **Auth yêu cầu**: Có token nhân viên POS
-> **Cập nhật theo code hiện tại**: catalog-service đã có một số API cần cho POS, nhưng POS frontend hiện vẫn là mock/static. Các API order POS vẫn chưa được implement đầy đủ trong order-service.
+> **Cập nhật theo code hiện tại**: phần catalog trong POS đã gọi API động qua gateway và có helper riêng ở `frontend/pos/js/pos-catalog-api.js`. Các API order POS vẫn chưa được implement đầy đủ trong order-service.
 
 ---
 
@@ -12,8 +12,8 @@ API catalog đang có thể dùng cho POS:
 
 | Nhu cầu POS | API hiện có | Trạng thái |
 |---|---|---|
-| Tìm thuốc theo tên/SKU/barcode | `GET /api/catalog/products/pos-search` | Đã có, dữ liệu còn mỏng |
-| Quét mã vạch | `GET /api/catalog/products/barcode/{barcode}` | Đã có, trả đủ dữ liệu POS |
+| Tìm thuốc theo tên/SKU/barcode | `GET /api/catalog/products/pos-search` | Đã có; hỗ trợ barcode sản phẩm và chuẩn bị barcode đơn vị bán |
+| Quét mã vạch | `GET /api/catalog/products/barcode/{barcode}` | Đã có, trả đủ dữ liệu POS và `barcode_match` |
 | Lấy danh mục POS | `GET /api/catalog/categories/pos-tree` | Đã có, trả cây danh mục gọn kèm số thuốc/còn hàng |
 | Thuốc thay thế | `GET /api/catalog/products/{id}/alternatives` | Đã có |
 | Kiểm tra tồn có thể bán | `GET /api/catalog/inventory/availability?product_ids=...` | Đã có |
@@ -49,7 +49,7 @@ Backend hiện hỗ trợ:
 | Param | Ghi chú |
 |---|---|
 | `q` | Tìm theo tên, SKU, mã vạch |
-| `barcode` | Tìm đúng mã vạch |
+| `barcode` | Tìm đúng mã vạch sản phẩm; nếu DB có `product_units.barcode` thì tìm cả mã vạch đơn vị bán |
 | `category_id` | Lọc danh mục |
 | `limit` | Mặc định 20, tối đa 100 |
 | `offset` | Dùng để tải thêm trên POS |
@@ -103,7 +103,7 @@ Response hiện đã có các field POS cần để hiển thị card sản ph�
 GET /api/catalog/products/barcode/{barcode}
 ```
 
-Trả thông tin sản phẩm theo barcode.
+Trả thông tin sản phẩm theo barcode. Nếu barcode khớp với đơn vị bán, response có `barcode_match.type = "unit"` và `barcode_match.unit_name` để POS chọn đúng đơn vị bán.
 
 Response trả 1 object trong `data`, gồm các field chính tương tự `/products/pos-search`: `id`, `sku`, `barcode`, `name`, `price`, `base_unit`, `requires_prescription`, `total_stock`, `available_stock`, `nearest_expiry`, `location_name`, `units`, `in_stock`.
 
