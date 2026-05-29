@@ -41,6 +41,8 @@ R="$(curl -sS "$BASE/products/barcode/$BARCODE")"
 assert_success "Flow1 - barcode lookup enriched" "$R"
 HAS_BARCODE_FIELDS="$(echo "$R" | python3 -c "import sys,json; d=json.load(sys.stdin).get('data',{}); print('true' if all(k in d for k in ['requires_prescription','available_stock','nearest_expiry','location_name','units']) else 'false')" 2>/dev/null)"
 if [ "$HAS_BARCODE_FIELDS" = "true" ]; then ok "Flow1 - barcode includes POS fields"; else ng "Flow1 - barcode includes POS fields" "$(echo "$R" | cut -c1-120)"; fi
+HAS_BARCODE_MATCH="$(echo "$R" | python3 -c "import sys,json; d=json.load(sys.stdin).get('data',{}).get('barcode_match',{}); print('true' if all(k in d for k in ['type','unit_name','conversion_qty']) else 'false')" 2>/dev/null)"
+if [ "$HAS_BARCODE_MATCH" = "true" ]; then ok "Flow1 - barcode includes barcode_match"; else ng "Flow1 - barcode includes barcode_match" "$(echo "$R" | cut -c1-120)"; fi
 R="$(curl -sS "$BASE/products/pos-search?barcode=$BARCODE&limit=1")"
 assert_success "Flow1 - pos-search enriched" "$R"
 HAS_POS_FIELDS="$(echo "$R" | python3 -c "import sys,json; d=json.load(sys.stdin).get('data',[]); print('true' if d and all(k in d[0] for k in ['requires_prescription','available_stock','nearest_expiry','location_name','units','sale_units','warnings','pos_flags']) else 'false')" 2>/dev/null)"

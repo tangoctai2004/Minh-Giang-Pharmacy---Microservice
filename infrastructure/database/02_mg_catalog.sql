@@ -563,8 +563,10 @@ CREATE TABLE `product_units` (
   `of_unit` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'ÄÆ¡n vá»‹ bÃªn dÆ°á»›i trong chuá»—i quy Ä‘á»•i, VD: "ViÃªn" hoáº·c "Vá»‰"',
   `retail_price` decimal(15,2) NOT NULL DEFAULT '0.00' COMMENT 'GiÃ¡ bÃ¡n láº» khi bÃ¡n theo Ä‘Æ¡n vá»‹ nÃ y (thÆ°á»ng = conversion_qty Ã— retail_price)',
   `sort_order` int NOT NULL DEFAULT '0' COMMENT 'Thá»© tá»± sáº¯p xáº¿p (0=nhá» nháº¥t, tÄƒng dáº§n)',
+  `barcode` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'MÃ£ váº¡ch riÃªng cho Ä‘Æ¡n vá»‹ bÃ¡n nÃ y náº¿u cÃ³',
   PRIMARY KEY (`id`),
   KEY `idx_product_units_product_id` (`product_id`),
+  KEY `idx_product_units_barcode` (`barcode`),
   CONSTRAINT `fk_product_units_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ÄÆ¡n vá»‹ Ä‘Ã³ng gÃ³i vÃ  quy Ä‘á»•i cá»§a sáº£n pháº©m';
 /*!40101 SET character_set_client = @saved_cs_client */;

@@ -332,142 +332,10 @@
 
             <!-- Product Grid -->
             <div class="pos-product-grid">
-
-                <!-- Product 1 -->
-                <div class="pos-product-card" onclick="addToCart('Panadol Extra', 65000)">
-                    <img src="../assets/images/product_frame.png" alt="Panadol Extra" class="pos-product-img">
-                    <div class="pos-product-name">Panadol Extra (Hộp 12 viên)</div>
-                    <div class="pos-product-price">65,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ A2</span>
-                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 45</span>
-                    </div>
+                <div class="pos-cart-empty" style="grid-column:1/-1;">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <p>Đang tải danh sách thuốc từ catalog...</p>
                 </div>
-
-                <!-- Product 2 -->
-                <div class="pos-product-card" onclick="addToCart('Vitamin C DHC', 120000)">
-                    <img src="../assets/images/product_frame_2.png" alt="Vitamin C" class="pos-product-img">
-                    <div class="pos-product-name">Vitamin C DHC 1000mg (60 ngày)</div>
-                    <div class="pos-product-price">120,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ B1</span>
-                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 28</span>
-                    </div>
-                </div>
-
-                <!-- Product 3 -->
-                <div class="pos-product-card" onclick="addToCart('Amoxicillin 500mg', 35000)">
-                    <img src="../assets/images/product_frame.png" alt="Amoxicillin" class="pos-product-img">
-                    <div class="pos-product-name">Amoxicillin 500mg (Hộp 20 viên)</div>
-                    <div class="pos-product-price">35,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ A5</span>
-                        <span class="pos-meta-badge pos-meta-stock low"><i class="fa-solid fa-box"></i> SL: 5</span>
-                    </div>
-                </div>
-
-                <!-- Product 4 -->
-                <div class="pos-product-card" onclick="addToCart('Omeprazole 20mg', 48000)">
-                    <img src="../assets/images/product_frame_2.png" alt="Omeprazole" class="pos-product-img">
-                    <div class="pos-product-name">Omeprazole 20mg (Hộp 30 viên)</div>
-                    <div class="pos-product-price">48,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ C3</span>
-                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 67</span>
-                    </div>
-                </div>
-
-                <!-- Product 5 -->
-                <div class="pos-product-card" onclick="addToCart('Dầu gió xanh', 25000)">
-                    <img src="../assets/images/product_frame.png" alt="Dầu gió" class="pos-product-img">
-                    <div class="pos-product-name">Dầu gió xanh Eagle Brand 24ml</div>
-                    <div class="pos-product-price">25,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ D1</span>
-                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 120</span>
-                    </div>
-                </div>
-
-                <!-- Product 6 -->
-                <div class="pos-product-card" onclick="addToCart('Thuốc ho Prospan', 95000)">
-                    <img src="../assets/images/product_frame_2.png" alt="Prospan" class="pos-product-img">
-                    <div class="pos-product-name">Thuốc ho Prospan (Chai 100ml)</div>
-                    <div class="pos-product-price">95,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ B4</span>
-                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 15</span>
-                    </div>
-                </div>
-
-                <!-- Product 7 - OUT OF STOCK -->
-                <div class="pos-product-card out-of-stock" onclick="openAltDrawer()">
-                    <div class="pos-oos-overlay">
-                        <span class="pos-oos-label"><i class="fa-solid fa-ban"></i> Hết hàng</span>
-                    </div>
-                    <img src="../assets/images/product_frame.png" alt="Thuốc" class="pos-product-img">
-                    <div class="pos-product-name">Efferalgan 500mg (Hộp 16 viên)</div>
-                    <div class="pos-product-price">42,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ A1</span>
-                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 0</span>
-                    </div>
-                </div>
-
-                <!-- Product 8 -->
-                <div class="pos-product-card" onclick="addToCart('Smecta', 55000)">
-                    <img src="../assets/images/product_frame_2.png" alt="Smecta" class="pos-product-img">
-                    <div class="pos-product-name">Smecta bột hương cam (Hộp 30 gói)</div>
-                    <div class="pos-product-price">55,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ C1</span>
-                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 33</span>
-                    </div>
-                </div>
-
-                <!-- Product 9 -->
-                <div class="pos-product-card" onclick="addToCart('Betadine 10%', 72000)">
-                    <img src="../assets/images/product_frame.png" alt="Betadine" class="pos-product-img">
-                    <div class="pos-product-name">Dung dịch sát khuẩn Betadine 10%</div>
-                    <div class="pos-product-price">72,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ E2</span>
-                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 21</span>
-                    </div>
-                </div>
-
-                <!-- Product 10 -->
-                <div class="pos-product-card" onclick="addToCart('Nhiệt kế điện tử', 85000)">
-                    <img src="../assets/images/product_frame_2.png" alt="Nhiệt kế" class="pos-product-img">
-                    <div class="pos-product-name">Nhiệt kế điện tử Omron MC-246</div>
-                    <div class="pos-product-price">85,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ F1</span>
-                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 8</span>
-                    </div>
-                </div>
-
-                <!-- Product 11 -->
-                <div class="pos-product-card" onclick="addToCart('Bông băng urgo', 18000)">
-                    <img src="../assets/images/product_frame.png" alt="Urgo" class="pos-product-img">
-                    <div class="pos-product-name">Bông băng cá nhân Urgo (Hộp 100)</div>
-                    <div class="pos-product-price">18,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ E3</span>
-                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 55</span>
-                    </div>
-                </div>
-
-                <!-- Product 12 -->
-                <div class="pos-product-card" onclick="addToCart('Sữa Ensure Gold', 520000)">
-                    <img src="../assets/images/product_frame_2.png" alt="Ensure" class="pos-product-img">
-                    <div class="pos-product-name">Sữa Ensure Gold 850g (Hương Vani)</div>
-                    <div class="pos-product-price">520,000₫</div>
-                    <div class="pos-product-meta">
-                        <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ G1</span>
-                        <span class="pos-meta-badge pos-meta-stock"><i class="fa-solid fa-box"></i> SL: 12</span>
-                    </div>
-                </div>
-
             </div>
             <div class="pos-product-footer">
                 <span id="productResultText">Đang tải sản phẩm...</span>
@@ -485,7 +353,7 @@
                 <div class="pos-cart-title">
                     <i class="fa-solid fa-cart-shopping"></i>
                     Đơn hàng
-                    <span class="pos-cart-count" id="cartCount">3</span>
+                    <span class="pos-cart-count" id="cartCount">0</span>
                 </div>
                 <div class="pos-customer-input">
                     <i class="fa-solid fa-user"></i>
@@ -495,111 +363,26 @@
 
             <!-- Cart Items -->
             <div class="pos-cart-items" id="cartItems">
-
-                <!-- Item 1 -->
-                <div class="pos-cart-item" data-price-box="130000" data-price-blister="13000" data-price-pill="1300">
-                    <div class="pos-cart-item-top">
-                        <div style="flex:1;">
-                            <div class="pos-cart-item-name">Panadol Extra (Hộp 12 viên)</div>
-                            <div style="font-size: 11px; color: #6b7280; margin-top: 2px;"><i class="fa-solid fa-tag"
-                                    style="margin-right:4px;"></i>Lô: L-2025</div>
-                        </div>
-                        <button class="pos-cart-item-delete"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
-                    <div class="pos-cart-item-bottom">
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                            <div class="pos-qty-stepper">
-                                <button class="pos-qty-btn on-decrement">−</button>
-                                <div class="pos-qty-value">2</div>
-                                <button class="pos-qty-btn on-increment">+</button>
-                            </div>
-                            <select class="pos-uom-select on-uom-change"
-                                style="font-size: 13px; padding: 4px 24px 4px 8px; border: 1px solid #e5e7eb; border-radius: 6px; background: #f8fafc; color: #334155; outline: none; cursor: pointer; height: 32px; font-weight: 500; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010l5%205%205-5z%22%20fill%3D%22%2364748b%22%20%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 4px center; background-size: 20px;">
-                                <option value="box" selected>Hộp</option>
-                                <option value="blister">Vỉ</option>
-                                <option value="pill">Viên</option>
-                            </select>
-                        </div>
-                        <div class="pos-cart-item-price">130,000₫</div>
-                    </div>
+                <div class="pos-cart-empty">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <p>Chưa có sản phẩm trong đơn</p>
                 </div>
-
-                <!-- Item 2 - Prescription Alert -->
-                <div class="pos-cart-item prescription-alert" data-price-box="35000" data-price-blister="3500"
-                    data-price-pill="350">
-                    <div class="pos-cart-item-top">
-                        <div style="flex:1;">
-                            <div class="pos-cart-item-name">Amoxicillin 500mg (Hộp 20 viên)</div>
-                            <div style="font-size: 11px; color: #6b7280; margin-top: 2px;"><i class="fa-solid fa-tag"
-                                    style="margin-right:4px;"></i>Lô: L-1049</div>
-                        </div>
-                        <button class="pos-cart-item-delete"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
-                    <div class="pos-rx-alert">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                        Thuốc kê đơn — Cần nhập tên bác sĩ
-                    </div>
-                    <div class="pos-cart-item-bottom">
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                            <div class="pos-qty-stepper">
-                                <button class="pos-qty-btn on-decrement">−</button>
-                                <div class="pos-qty-value">3</div>
-                                <button class="pos-qty-btn on-increment">+</button>
-                            </div>
-                            <select class="pos-uom-select on-uom-change"
-                                style="font-size: 13px; padding: 4px 24px 4px 8px; border: 1px solid #e5e7eb; border-radius: 6px; background: #f8fafc; color: #334155; outline: none; cursor: pointer; height: 32px; font-weight: 500; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010l5%205%205-5z%22%20fill%3D%22%2364748b%22%20%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 4px center; background-size: 20px;">
-                                <option value="box">Hộp</option>
-                                <option value="blister" selected>Vỉ</option>
-                                <option value="pill">Viên</option>
-                            </select>
-                        </div>
-                        <div class="pos-cart-item-price">10,500₫</div>
-                    </div>
-                </div>
-
-                <!-- Item 3 -->
-                <div class="pos-cart-item" data-price-box="120000" data-price-pill="2000">
-                    <div class="pos-cart-item-top">
-                        <div style="flex:1;">
-                            <div class="pos-cart-item-name">Vitamin C DHC 1000mg (60 ngày)</div>
-                            <div style="font-size: 11px; color: #6b7280; margin-top: 2px;"><i class="fa-solid fa-tag"
-                                    style="margin-right:4px;"></i>Lô: L-9382</div>
-                        </div>
-                        <button class="pos-cart-item-delete"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
-                    <div class="pos-cart-item-bottom">
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                            <div class="pos-qty-stepper">
-                                <button class="pos-qty-btn on-decrement">−</button>
-                                <div class="pos-qty-value">1</div>
-                                <button class="pos-qty-btn on-increment">+</button>
-                            </div>
-                            <select class="pos-uom-select on-uom-change"
-                                style="font-size: 13px; padding: 4px 24px 4px 8px; border: 1px solid #e5e7eb; border-radius: 6px; background: #f8fafc; color: #334155; outline: none; cursor: pointer; height: 32px; font-weight: 500; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010l5%205%205-5z%22%20fill%3D%22%2364748b%22%20%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 4px center; background-size: 20px;">
-                                <option value="box" selected>Gói</option>
-                                <option value="pill">Viên</option>
-                            </select>
-                        </div>
-                        <div class="pos-cart-item-price">120,000₫</div>
-                    </div>
-                </div>
-
             </div>
 
             <!-- Checkout -->
             <div class="pos-checkout">
                 <div class="pos-checkout-row">
-                    <span class="pos-checkout-label">Tạm tính (4 sản phẩm)</span>
-                    <span class="pos-checkout-value">285,000₫</span>
+                    <span class="pos-checkout-label">Tạm tính (0 sản phẩm)</span>
+                    <span class="pos-checkout-value">0₫</span>
                 </div>
                 <div class="pos-checkout-row">
                     <span class="pos-checkout-label">Giảm giá</span>
-                    <span class="pos-checkout-value pos-checkout-discount">-15,000₫</span>
+                    <span class="pos-checkout-value pos-checkout-discount">-0₫</span>
                 </div>
 
                 <div class="pos-checkout-total">
                     <span class="label">TỔNG THANH TOÁN</span>
-                    <span class="amount">270,000₫</span>
+                    <span class="amount">0₫</span>
                 </div>
 
                 <div class="pos-checkout-actions">
@@ -642,16 +425,8 @@
                     </div>
                     <div class="checkout-summary-list">
                         <div class="checkout-summary-item">
-                            <span>Panadol Extra × 2</span>
-                            <span>130,000₫</span>
-                        </div>
-                        <div class="checkout-summary-item">
-                            <span>Amoxicillin 500mg × 1</span>
-                            <span>35,000₫</span>
-                        </div>
-                        <div class="checkout-summary-item">
-                            <span>Vitamin C DHC × 1</span>
-                            <span>120,000₫</span>
+                            <span>Chưa có sản phẩm</span>
+                            <span>0₫</span>
                         </div>
                     </div>
                     <div class="checkout-summary-divider"></div>
@@ -689,16 +464,16 @@
 
                     <div class="checkout-summary-item">
                         <span>Tạm tính</span>
-                        <span>285,000₫</span>
+                        <span>0₫</span>
                     </div>
                     <div class="checkout-summary-item discount">
                         <span>Giảm giá</span>
-                        <span>-15,000₫</span>
+                        <span>-0₫</span>
                     </div>
                     <div class="checkout-summary-divider"></div>
                     <div class="checkout-summary-total">
                         <span>TỔNG CỘNG</span>
-                        <span>270,000₫</span>
+                        <span>0₫</span>
                     </div>
                 </div>
 
@@ -728,12 +503,12 @@
                     <div class="cash-payment-section" id="cashPaySection">
                         <label class="checkout-field-label">Tiền khách đưa</label>
                         <div class="checkout-cash-input-wrapper">
-                            <input type="text" class="checkout-cash-input" id="cashReceived" value="300,000"
+                            <input type="text" class="checkout-cash-input" id="cashReceived" value="0"
                                 oninput="calcChange()">
                             <span class="checkout-cash-suffix">₫</span>
                         </div>
                         <div class="quick-cash-grid">
-                            <button class="quick-cash-chip" onclick="setQuickCash(270000)">270K<br><small>Đúng
+                            <button class="quick-cash-chip" onclick="setQuickCash(0)">0K<br><small>Đúng
                                     tiền</small></button>
                             <button class="quick-cash-chip" onclick="setQuickCash(300000)">300K</button>
                             <button class="quick-cash-chip" onclick="setQuickCash(500000)">500K</button>
@@ -741,7 +516,7 @@
                         </div>
                         <div class="change-display" id="changeDisplay">
                             <span class="change-label">Tiền thối lại:</span>
-                            <span class="change-amount" id="changeAmount">30,000₫</span>
+                            <span class="change-amount" id="changeAmount">0₫</span>
                         </div>
                     </div>
 
@@ -750,7 +525,7 @@
                         <div class="qr-placeholder">
                             <i class="fa-solid fa-qrcode"></i>
                             <p>Quét mã QR để thanh toán</p>
-                            <span class="qr-amount">270,000₫</span>
+                            <span class="qr-amount">0₫</span>
                         </div>
                     </div>
 
@@ -783,7 +558,7 @@
                             <div
                                 style="background:#fff7ed; border:1px solid #fed7aa; border-radius:8px; padding:16px; margin-bottom:16px;">
                                 <div style="font-size:14px; font-weight:600; color:#9a3412;">Adding <span
-                                        style="font-weight:800;">270,000₫</span> to Customer Tab:</div>
+                                        style="font-weight:800;">0₫</span> to Customer Tab:</div>
                                 <div style="font-size:16px; font-weight:700; color:#ea580c; margin-top:4px;"><i
                                         class="fa-solid fa-user"></i> Nguyễn Văn A (090xxxx123)</div>
                             </div>
@@ -1135,7 +910,7 @@
             <div>
                 <h2>Thay Thế Hết Hàng</h2>
                 <div style="font-size:13px;color:#cbd5e1;margin-top:2px;">
-                    <i class="fa-solid fa-flask" style="margin-right:4px;"></i>Hoạt chất: Paracetamol 500mg
+                    <i class="fa-solid fa-flask" style="margin-right:4px;"></i>Chọn sản phẩm cần tư vấn thay thế
                 </div>
             </div>
             <button class="modal-close" style="color:white;opacity:0.8;" onclick="closeAltDrawer()">
@@ -1144,82 +919,10 @@
         </div>
 
         <div class="hold-drawer-body" style="background:#f8fafc;padding:0;">
-            <div
-                style="padding:16px;background:#fff1f2;border-bottom:1px solid #ffe4e6;display:flex;align-items:center;gap:12px;">
-                <i class="fa-solid fa-circle-exclamation" style="font-size:20px;color:#e11d48;"></i>
-                <div>
-                    <div style="font-size:14px;font-weight:700;color:#9f1239;">Efferalgan 500mg (Hộp 16 viên) đã hết
-                        hàng.</div>
-                    <div style="font-size:12px;color:#e11d48;margin-top:2px;">Vui lòng tư vấn các sản phẩm thay thế cùng
-                        thành phần bên dưới:</div>
-                </div>
-            </div>
-
-            <div style="padding:16px;display:flex;flex-direction:column;gap:12px;">
-
-                <!-- Alt 1 -->
-                <div
-                    style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:12px;display:flex;gap:16px;align-items:center;">
-                    <img src="../assets/images/product_frame_2.png"
-                        style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #f3f4f6;">
-                    <div style="flex:1;">
-                        <div style="font-size:14px;font-weight:700;color:#1e293b;">Panadol Extra (Hộp 12 viên)</div>
-                        <div style="font-size:15px;font-weight:800;color:#059669;margin-top:4px;">65,000₫</div>
-                        <div
-                            style="font-size:12px;color:#047857;margin-top:4px;display:flex;align-items:center;gap:4px;">
-                            <i class="fa-solid fa-boxes-stacked"></i> Tồn kho: <span style="font-weight:700;">45
-                                Hộp</span>
-                        </div>
-                    </div>
-                    <button
-                        style="height:40px;padding:0 16px;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;"
-                        onclick="closeAltDrawer(); setTimeout(() => addToCart('Panadol Extra', 65000), 300)">
-                        <i class="fa-solid fa-plus" style="margin-right:6px;"></i>THÊM
-                    </button>
-                </div>
-
-                <!-- Alt 2 -->
-                <div
-                    style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:12px;display:flex;gap:16px;align-items:center;">
-                    <img src="../assets/images/product_frame.png"
-                        style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #f3f4f6;">
-                    <div style="flex:1;">
-                        <div style="font-size:14px;font-weight:700;color:#1e293b;">Hapacol 500 (Hộp 10 vỉ)</div>
-                        <div style="font-size:15px;font-weight:800;color:#059669;margin-top:4px;">32,000₫</div>
-                        <div
-                            style="font-size:12px;color:#047857;margin-top:4px;display:flex;align-items:center;gap:4px;">
-                            <i class="fa-solid fa-boxes-stacked"></i> Tồn kho: <span style="font-weight:700;">112
-                                Hộp</span>
-                        </div>
-                    </div>
-                    <button
-                        style="height:40px;padding:0 16px;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;"
-                        onclick="closeAltDrawer(); setTimeout(() => addToCart('Hapacol 500', 32000), 300)">
-                        <i class="fa-solid fa-plus" style="margin-right:6px;"></i>THÊM
-                    </button>
-                </div>
-
-                <!-- Alt 3 -->
-                <div
-                    style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:12px;display:flex;gap:16px;align-items:center;">
-                    <img src="../assets/images/product_frame_2.png"
-                        style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #f3f4f6;">
-                    <div style="flex:1;">
-                        <div style="font-size:14px;font-weight:700;color:#1e293b;">Tylenol 500mg (Hộp 100 viên)</div>
-                        <div style="font-size:15px;font-weight:800;color:#059669;margin-top:4px;">210,000₫</div>
-                        <div
-                            style="font-size:12px;color:#047857;margin-top:4px;display:flex;align-items:center;gap:4px;">
-                            <i class="fa-solid fa-boxes-stacked"></i> Tồn kho: <span style="font-weight:700;">8
-                                Lọ</span>
-                        </div>
-                    </div>
-                    <button
-                        style="height:40px;padding:0 16px;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;"
-                        onclick="closeAltDrawer(); setTimeout(() => addToCart('Tylenol 500mg', 210000), 300)">
-                        <i class="fa-solid fa-plus" style="margin-right:6px;"></i>THÊM
-                    </button>
-                </div>
-
+            <div class="alt-empty">
+                <i class="fa-solid fa-box-open"></i>
+                <p>Chưa chọn sản phẩm để gợi ý thay thế</p>
+                <button type="button" onclick="closeAltDrawer()">Quay lại danh sách thuốc</button>
             </div>
         </div>
     </div>
@@ -1329,11 +1032,13 @@
         </footer>
 
         <!-- ============ SCRIPTS ============ -->
+        <script src="js/pos-catalog-api.js"></script>
+        <script src="js/pos-catalog-state.js"></script>
         <script>
             const POS_API_BASE = localStorage.getItem('MG_API_BASE') || 'http://localhost:8000/api';
             const CATALOG_DIRECT_BASE = 'http://localhost:8002';
             const FALLBACK_IMAGE = '../assets/images/product_frame.png';
-            const posState = {
+            const posState = window.MGPOSCatalogState?.createInitialState() || {
                 products: [],
                 categories: [],
                 categoryTree: [],
@@ -1390,6 +1095,9 @@
             }
 
             async function catalogFetch(path, options = {}) {
+                if (window.MGPOSCatalogApi && typeof window.MGPOSCatalogApi.request === 'function') {
+                    return window.MGPOSCatalogApi.request(path, options);
+                }
                 const token = getPosAuthToken();
                 const headers = {
                     ...(options.headers || {}),
@@ -1418,6 +1126,9 @@
             }
 
             function getProductUnits(product) {
+                if (window.MGPOSCatalogApi && typeof window.MGPOSCatalogApi.normalizeUnits === 'function') {
+                    return window.MGPOSCatalogApi.normalizeUnits(product);
+                }
                 const sourceUnits = Array.isArray(product.sale_units)
                     ? product.sale_units
                     : (Array.isArray(product.units) ? product.units : []);
@@ -1449,6 +1160,13 @@
                 return units.find((unit) => unit.unit_name === unitName) || units[0];
             }
 
+            function getPreferredUnitName(product) {
+                if (!product) return null;
+                if (product.preferred_unit_name) return product.preferred_unit_name;
+                if (product.barcode_match?.type === 'unit') return product.barcode_match.unit_name;
+                return null;
+            }
+
             function getUnitAvailableQty(productOrItem, unitName) {
                 const units = getProductUnits(productOrItem);
                 const unit = getUnitByName(units, unitName);
@@ -1470,6 +1188,9 @@
             }
 
             function isBarcodeLike(value) {
+                if (window.MGPOSCatalogApi && typeof window.MGPOSCatalogApi.isBarcodeLike === 'function') {
+                    return window.MGPOSCatalogApi.isBarcodeLike(value);
+                }
                 return /^[0-9]{8,14}$/.test(String(value || '').trim());
             }
 
@@ -1650,10 +1371,47 @@
                 return text || fallback;
             }
 
+            function getDaysUntilExpiry(expiryDate) {
+                if (!expiryDate) return null;
+                const expiry = new Date(expiryDate);
+                if (Number.isNaN(expiry.getTime())) return null;
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                expiry.setHours(0, 0, 0, 0);
+                return Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+            }
+
+            function getExpiryWarning(expiryDate) {
+                const days = getDaysUntilExpiry(expiryDate);
+                if (days === null) return null;
+                if (days < 0) {
+                    return { level: 'danger', label: 'Đã hết hạn', message: `Đã quá hạn ${Math.abs(days).toLocaleString('vi-VN')} ngày` };
+                }
+                if (days <= 30) {
+                    return { level: 'danger', label: 'Cận date', message: `Còn ${days.toLocaleString('vi-VN')} ngày đến hạn` };
+                }
+                if (days <= 90) {
+                    return { level: 'warning', label: 'Gần hết hạn', message: `Còn ${days.toLocaleString('vi-VN')} ngày đến hạn` };
+                }
+                return null;
+            }
+
+            function getUnitStockText(item, unitName = item.unit_name) {
+                const unit = getUnitByName(item.units || getProductUnits(item), unitName);
+                const conversionQty = Number(unit?.conversion_qty || 1);
+                const availableBase = Number(item.available_stock || 0);
+                const availableUnitQty = Math.floor(availableBase / conversionQty);
+                return `Còn ${availableUnitQty.toLocaleString('vi-VN')} ${unit?.unit_name || unitName || 'đơn vị'} (${availableBase.toLocaleString('vi-VN')} ${unit?.of_unit || item.base_unit || 'đơn vị gốc'})`;
+            }
+
             function renderProductDetail(product) {
                 const body = document.getElementById('productDetailBody');
                 if (!body) return;
-                const warnings = Array.isArray(product.warnings) ? product.warnings : [];
+                const expiryWarning = getExpiryWarning(product.nearest_expiry);
+                const warnings = [
+                    ...(expiryWarning ? [{ level: expiryWarning.level, message: `${expiryWarning.label}: ${expiryWarning.message}` }] : []),
+                    ...(Array.isArray(product.warnings) ? product.warnings : [])
+                ];
                 const units = getProductUnits(product);
                 const batches = Array.isArray(product.batches) ? product.batches : [];
                 const specs = Array.isArray(product.specifications) ? product.specifications : [];
@@ -1704,6 +1462,7 @@
                                 <span class="product-detail-tag"><i class="fa-solid fa-barcode"></i> ${escapeHtml(getDetailValue(product.barcode, 'Chưa có barcode'))}</span>
                                 <span class="product-detail-tag"><i class="fa-solid fa-hashtag"></i> ${escapeHtml(getDetailValue(product.sku, 'Chưa có SKU'))}</span>
                                 <span class="product-detail-tag"><i class="fa-solid fa-layer-group"></i> ${escapeHtml(parentCategoryName ? `${parentCategoryName} / ${categoryName}` : categoryName)}</span>
+                                ${expiryWarning ? `<span class="product-detail-warning ${escapeHtml(expiryWarning.level)}"><i class="fa-solid fa-triangle-exclamation"></i> ${escapeHtml(expiryWarning.label)}</span>` : ''}
                                 ${product.requires_prescription ? '<span class="product-detail-warning danger"><i class="fa-solid fa-prescription"></i> Thuốc kê đơn</span>' : '<span class="product-detail-tag"><i class="fa-solid fa-cart-shopping"></i> Bán không cần toa</span>'}
                             </div>
 
@@ -1741,6 +1500,7 @@
                                             <strong>${escapeHtml(unit.unit_name)}</strong>
                                             <span>${Number(unit.conversion_qty || 1).toLocaleString('vi-VN')} ${escapeHtml(unit.of_unit || product.base_unit || '')}</span>
                                             <em>${formatMoney(unit.retail_price || product.retail_price)}</em>
+                                            ${unit.barcode ? `<small><i class="fa-solid fa-barcode"></i> ${escapeHtml(unit.barcode)}</small>` : ''}
                                             <small>Còn ${getUnitAvailableQty(product, unit.unit_name).toLocaleString('vi-VN')}</small>
                                         </button>
                                     `).join('') : '<span class="product-detail-tag">Chưa có đơn vị bán</span>'}
@@ -1752,7 +1512,7 @@
                                 <div class="product-detail-batches">
                                     ${batches.length ? batches.map((batch) => `
                                         <span class="product-detail-batch">
-                                            ${escapeHtml(batch.lot_number || 'Không số lô')} · HSD ${formatDate(batch.expiry_date)} · SL ${Number(batch.quantity_remaining || 0).toLocaleString('vi-VN')}
+                                            ${escapeHtml(batch.lot_number || 'Không số lô')} · HSD ${formatDate(batch.expiry_date)}${getExpiryWarning(batch.expiry_date) ? ` · ${escapeHtml(getExpiryWarning(batch.expiry_date).label)}` : ''} · SL ${Number(batch.quantity_remaining || 0).toLocaleString('vi-VN')}
                                         </span>
                                     `).join('') : '<span class="product-detail-tag">Chưa có lô còn bán</span>'}
                                 </div>
@@ -1783,15 +1543,17 @@
                 const modal = document.getElementById('productDetailModal');
                 const body = document.getElementById('productDetailBody');
                 if (!modal || !body) return;
+                const preferredUnitName = getPreferredUnitName(product);
                 posState.detailProduct = product;
-                posState.detailSelectedUnitName = null;
+                posState.detailSelectedUnitName = preferredUnitName;
                 body.innerHTML = '<div class="product-detail-loading"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải thông tin thuốc...</div>';
                 modal.classList.add('open');
                 try {
                     const result = await catalogFetch(`/products/pos-detail/${encodeURIComponent(product.id)}`);
                     if (!result.success || !result.data) throw new Error(result.message || 'Không tải được thông tin thuốc');
                     posState.detailProduct = result.data;
-                    posState.detailSelectedUnitName = getProductUnits(result.data)[0]?.unit_name || null;
+                    const units = getProductUnits(result.data);
+                    posState.detailSelectedUnitName = getUnitByName(units, preferredUnitName)?.unit_name || units[0]?.unit_name || null;
                     renderProductDetail(result.data);
                 } catch (err) {
                     body.innerHTML = `
@@ -1838,7 +1600,7 @@
                 const { subtotal, discount, total } = getOrderTotals();
                 summaryList.innerHTML = posState.cart.length ? posState.cart.map((item) => `
                     <div class="checkout-summary-item">
-                        <span>${item.name} × ${item.quantity} ${item.unit_name}</span>
+                    <span>${escapeHtml(item.name)} × ${item.quantity} ${escapeHtml(item.unit_name)}</span>
                         <span>${formatMoney(item.quantity * getCartItemPrice(item))}</span>
                     </div>
                 `).join('') : `
@@ -1883,22 +1645,27 @@
                     const isOut = stock <= 0;
                     const isLow = stock > 0 && stock <= 10;
                     const rxBadge = product.requires_prescription ? '<span class="pos-meta-badge pos-meta-rx"><i class="fa-solid fa-prescription"></i> Cần toa</span>' : '';
+                    const expiryWarning = getExpiryWarning(product.nearest_expiry);
+                    const expiryBadgeClass = expiryWarning ? `pos-meta-expiry ${expiryWarning.level}` : '';
+                    const expiryLabel = expiryWarning
+                        ? `${expiryWarning.label}: ${expiryWarning.message}`
+                        : (product.nearest_expiry ? new Date(product.nearest_expiry).toLocaleDateString('vi-VN') : 'N/A');
                     return `
                         <div class="pos-product-card ${isOut ? 'out-of-stock' : ''} ${product.requires_prescription ? 'requires-rx' : ''}" data-product-id="${product.id}">
                             ${product.requires_prescription ? '<div class="pos-rx-corner"><i class="fa-solid fa-prescription"></i> Rx</div>' : ''}
                             <div class="pos-oos-overlay">
                                 <span class="pos-oos-label"><i class="fa-solid fa-ban"></i> Hết hàng</span>
                             </div>
-                            <img src="${product.image_url || FALLBACK_IMAGE}" alt="${product.name}" class="pos-product-img" onerror="this.src='${FALLBACK_IMAGE}'">
-                            <div class="pos-product-name">${product.name}</div>
+                            <img src="${escapeHtml(product.image_url || FALLBACK_IMAGE)}" alt="${escapeHtml(product.name)}" class="pos-product-img" onerror="this.src='${FALLBACK_IMAGE}'">
+                            <div class="pos-product-name">${escapeHtml(product.name)}</div>
                             <div class="pos-product-price">${formatMoney(product.price || product.retail_price)}</div>
                             <div class="pos-product-meta">
-                                <span class="pos-meta-badge pos-meta-loc" title="${product.location_name || 'Chưa có vị trí'}"><i class="fa-solid fa-location-dot"></i> ${(product.location_name || 'N/A').split('/').pop().trim()}</span>
+                                <span class="pos-meta-badge pos-meta-loc" title="${escapeHtml(product.location_name || 'Chưa có vị trí')}"><i class="fa-solid fa-location-dot"></i> ${escapeHtml((product.location_name || 'N/A').split('/').pop().trim())}</span>
                                 <span class="pos-meta-badge pos-meta-stock ${isLow ? 'low' : ''}"><i class="fa-solid fa-box"></i> SL: ${stock}</span>
                             </div>
                             <div class="pos-product-meta" style="margin-top:6px;">
                                 ${rxBadge}
-                                <span class="pos-meta-badge" style="background:#f8fafc;color:#64748b;"><i class="fa-regular fa-calendar"></i> ${product.nearest_expiry ? new Date(product.nearest_expiry).toLocaleDateString('vi-VN') : 'N/A'}</span>
+                                <span class="pos-meta-badge ${expiryBadgeClass}" title="${escapeHtml(expiryLabel)}"><i class="fa-regular fa-calendar"></i> ${escapeHtml(expiryLabel)}</span>
                             </div>
                         </div>`;
                 }).join('');
@@ -1935,12 +1702,28 @@
                             openAltDrawer(product);
                             return;
                         }
-                        addToCart(product);
+                        addToCart(product, getPreferredUnitName(product));
                     });
                     card.addEventListener('pointerleave', clearHoldTimer);
                     card.addEventListener('pointercancel', clearHoldTimer);
                 });
                 updateProductFooter();
+            }
+
+            function renderProductLoadError(message) {
+                const grid = document.querySelector('.pos-product-grid');
+                if (!grid) return;
+                grid.innerHTML = `
+                    <div class="pos-cart-empty" style="grid-column:1/-1;">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <p>${escapeHtml(message || 'Không tải được danh sách thuốc từ catalog')}</p>
+                        <button class="pos-load-more" id="retryLoadProducts" type="button" style="display:inline-flex;margin-top:12px;">
+                            <i class="fa-solid fa-rotate-right"></i> Tải lại
+                        </button>
+                    </div>`;
+                document.getElementById('retryLoadProducts')?.addEventListener('click', () => {
+                    loadProducts().catch(() => showToast('Không tải được sản phẩm', 'error'));
+                });
             }
 
             function updateProductFooter() {
@@ -2019,16 +1802,69 @@
                 if (posState.inStockOnly) params.set('in_stock', '1');
 
                 try {
-                    const result = await catalogFetch(`/products/pos-search?${params.toString()}`);
+                    let result;
+                    if (!append && q && isBarcodeLike(q) && window.MGPOSCatalogApi?.findByBarcode) {
+                        const product = await window.MGPOSCatalogApi.findByBarcode(q);
+                        result = {
+                            success: true,
+                            data: product ? [product] : [],
+                            meta: { total: product ? 1 : 0, has_more: false }
+                        };
+                    } else if (window.MGPOSCatalogApi?.searchProducts) {
+                        result = await window.MGPOSCatalogApi.searchProducts(Object.fromEntries(params.entries()));
+                    } else {
+                        result = await catalogFetch(`/products/pos-search?${params.toString()}`);
+                    }
                     const products = result.success ? result.data : [];
                     posState.products = append ? [...posState.products, ...products] : products;
                     posState.productTotal = Number(result.meta?.total || posState.products.length);
                     posState.hasMoreProducts = Boolean(result.meta?.has_more);
                     posState.productOffset = posState.products.length;
                     renderProductGrid(products, append);
+                } catch (err) {
+                    if (append) {
+                        showToast(err.message || 'Không tải thêm được sản phẩm', 'error');
+                    } else {
+                        posState.products = [];
+                        posState.productTotal = 0;
+                        posState.hasMoreProducts = false;
+                        posState.productOffset = 0;
+                        renderProductLoadError(err.message || 'Không tải được danh sách thuốc từ catalog');
+                    }
                 } finally {
                     posState.loadingProducts = false;
                     updateProductFooter();
+                }
+            }
+
+            async function submitBarcodeToCart(barcode) {
+                const cleanBarcode = String(barcode || '').trim();
+                if (!isBarcodeLike(cleanBarcode) || !window.MGPOSCatalogApi?.findByBarcode) {
+                    await loadProducts();
+                    return;
+                }
+                try {
+                    const product = await window.MGPOSCatalogApi.findByBarcode(cleanBarcode);
+                    if (!product) {
+                        posState.products = [];
+                        posState.productTotal = 0;
+                        posState.hasMoreProducts = false;
+                        renderProductGrid([]);
+                        showToast('Không tìm thấy thuốc theo barcode này', 'error');
+                        return;
+                    }
+                    posState.products = [product];
+                    posState.productTotal = 1;
+                    posState.hasMoreProducts = false;
+                    posState.productOffset = 1;
+                    renderProductGrid([product]);
+                    if (Number(product.available_stock || 0) <= 0) {
+                        openAltDrawer(product);
+                        return;
+                    }
+                    await addToCart(product, getPreferredUnitName(product));
+                } catch (err) {
+                    showToast(err.message || 'Không quét được barcode', 'error');
                 }
             }
 
@@ -2073,14 +1909,14 @@
                         <div class="pos-category-roots">
                             ${roots.map((root) => `
                                 <button class="pos-category-root ${String(root.id) === String(activeRoot?.id) ? 'active' : ''}" data-root-id="${root.id}">
-                                    <span>${root.name}</span>
+                                    <span>${escapeHtml(root.name)}</span>
                                     <small>${root.in_stock_count || 0}</small>
                                 </button>
                             `).join('')}
                         </div>
                         <div class="pos-category-groups">
                             <div class="pos-category-heading">
-                                <strong>${activeRoot?.name || 'Danh mục'}</strong>
+                                <strong>${escapeHtml(activeRoot?.name || 'Danh mục')}</strong>
                                 <span>Chọn nhóm để lọc nhanh danh sách thuốc</span>
                             </div>
                             <button class="pos-category-clear" data-category-clear="1">
@@ -2088,15 +1924,15 @@
                             </button>
                             ${groups.map((group) => `
                                 <div class="pos-category-group">
-                                    <button class="pos-category-group-title" data-category-id="${group.id}" data-category-name="${group.name}">
-                                        ${group.name}
+                                    <button class="pos-category-group-title" data-category-id="${group.id}" data-category-name="${escapeHtml(group.name)}">
+                                        ${escapeHtml(group.name)}
                                         <small>${group.in_stock_count || 0} còn hàng</small>
                                     </button>
                                     <div class="pos-category-leaves">
                                         ${(group.children || []).map((child) => `
                                             <button class="pos-category-leaf ${String(child.id) === String(posState.selectedCategoryId) ? 'active' : ''}"
-                                                data-category-id="${child.id}" data-category-name="${child.name}">
-                                                ${child.name}
+                                                data-category-id="${child.id}" data-category-name="${escapeHtml(child.name)}">
+                                                ${escapeHtml(child.name)}
                                                 <small>${child.in_stock_count || 0}</small>
                                             </button>
                                         `).join('')}
@@ -2182,6 +2018,7 @@
                     const selectedUnit = getCartUnit(item);
                     const baseQty = getCartBaseQty(item);
                     const unitAvailableQty = getUnitAvailableQty(item, item.unit_name);
+                    const expiryWarning = getExpiryWarning(item.nearest_expiry);
                     const unitOptions = item.units.map((unit) => {
                         const availableByUnit = Math.floor(Number(item.available_stock || 0) / Number(unit.conversion_qty || 1));
                         return `<option value="${escapeHtml(unit.unit_name)}" ${unit.unit_name === item.unit_name ? 'selected' : ''}>
@@ -2192,6 +2029,11 @@
                         <div class="pos-rx-alert">
                             <i class="fa-solid fa-triangle-exclamation"></i>
                             Thuốc kê đơn — ${hasValidPrescriptionInfo() ? 'Đã ghi nhận toa' : 'Cần nhập thông tin toa thuốc'}
+                        </div>` : '';
+                    const expiryAlert = expiryWarning ? `
+                        <div class="pos-rx-alert ${expiryWarning.level === 'danger' ? '' : 'warning'}">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            ${escapeHtml(expiryWarning.label)} — ${escapeHtml(expiryWarning.message)}
                         </div>` : '';
                     return `
                         <div class="pos-cart-item ${item.requires_prescription ? 'prescription-alert' : ''}" data-cart-index="${index}">
@@ -2206,6 +2048,7 @@
                                 <button class="pos-cart-item-delete"><i class="fa-solid fa-trash-can"></i></button>
                             </div>
                             ${rxAlert}
+                            ${expiryAlert}
                             <div class="pos-cart-unit-summary">
                                 <span>Đang bán: <strong>${escapeHtml(item.unit_name)}</strong></span>
                                 <span>Quy đổi: <strong>${baseQty.toLocaleString('vi-VN')} ${escapeHtml(selectedUnit?.of_unit || selectedUnit?.unit_name || item.unit_name)}</strong></span>
@@ -2255,9 +2098,9 @@
                     return;
                 }
                 const units = getProductUnits(product);
-                const selectedUnit = getUnitByName(units, preferredUnitName) || units[0];
+                const selectedUnit = getUnitByName(units, preferredUnitName || getPreferredUnitName(product)) || units[0];
                 if (!selectedUnit || getUnitAvailableQty(product, selectedUnit.unit_name) <= 0) {
-                    showToast('Đơn vị đã chọn không còn đủ tồn để bán', 'error');
+                    showToast(`Đơn vị đã chọn không còn đủ tồn để bán. ${getUnitStockText(product, selectedUnit?.unit_name)}`, 'error');
                     return;
                 }
                 const existingIndex = posState.cart.findIndex((item) => item.product_id === product.id && item.unit_name === selectedUnit.unit_name);
@@ -2290,7 +2133,7 @@
                     return;
                 }
                 if (getCartBaseQty(item, nextQty) > item.available_stock) {
-                    showToast('Số lượng vượt tồn có thể bán', 'error');
+                    showToast(`Số lượng vượt tồn có thể bán. ${getUnitStockText(item, item.unit_name)}`, 'error');
                     return;
                 }
                 item.quantity = nextQty;
@@ -2301,7 +2144,7 @@
                 const item = posState.cart[index];
                 if (!item) return;
                 if (getCartBaseQty(item, item.quantity, unitName) > item.available_stock) {
-                    showToast('Đơn vị này vượt tồn có thể bán', 'error');
+                    showToast(`Đơn vị này vượt tồn có thể bán. ${getUnitStockText(item, unitName)}`, 'error');
                     renderCart();
                     return;
                 }
@@ -2351,6 +2194,14 @@
                     posState.searchTimer = setTimeout(() => {
                         loadProducts().catch(() => showToast('Không tải được sản phẩm', 'error'));
                     }, 250);
+                });
+                searchInput.addEventListener('keydown', (event) => {
+                    if (event.key !== 'Enter') return;
+                    const value = searchInput.value.trim();
+                    if (!value) return;
+                    event.preventDefault();
+                    clearTimeout(posState.searchTimer);
+                    submitBarcodeToCart(value);
                 });
             }
 
@@ -2613,12 +2464,45 @@
             }
 
             function openAltDrawer(product, context = {}) {
+                const drawer = document.getElementById('altDrawer');
+                const overlay = document.getElementById('altDrawerOverlay');
+                const body = drawer?.querySelector('.hold-drawer-body');
+                const subtitle = drawer?.querySelector('.hold-drawer-header div div');
                 if (!product || !product.id) {
-                    document.getElementById('altDrawer').classList.add('open');
-                    document.getElementById('altDrawerOverlay').classList.add('open');
+                    if (subtitle) subtitle.innerHTML = '<i class="fa-solid fa-flask" style="margin-right:4px;"></i>Chọn sản phẩm cần tư vấn thay thế';
+                    if (body) {
+                        body.innerHTML = `
+                            <div class="alt-empty">
+                                <i class="fa-solid fa-box-open"></i>
+                                <p>Chưa chọn sản phẩm để gợi ý thay thế</p>
+                                <button type="button" onclick="closeAltDrawer()">Quay lại danh sách thuốc</button>
+                            </div>`;
+                    }
+                    drawer?.classList.add('open');
+                    overlay?.classList.add('open');
                     return;
                 }
-                loadAlternatives(product, context).catch(() => showToast('Không tải được thuốc thay thế', 'error'));
+                if (subtitle) subtitle.innerHTML = `<i class="fa-solid fa-flask" style="margin-right:4px;"></i>${escapeHtml(product.active_ingredient || product.category_name || 'Sản phẩm thay thế')}`;
+                if (body) {
+                    body.innerHTML = `
+                        <div class="alt-empty">
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+                            <p>Đang tải sản phẩm thay thế từ catalog...</p>
+                        </div>`;
+                }
+                drawer?.classList.add('open');
+                overlay?.classList.add('open');
+                loadAlternatives(product, context).catch((err) => {
+                    if (body) {
+                        body.innerHTML = `
+                            <div class="alt-empty">
+                                <i class="fa-solid fa-circle-exclamation"></i>
+                                <p>${escapeHtml(err.message || 'Không tải được thuốc thay thế')}</p>
+                                <button type="button" onclick="closeAltDrawer()">Quay lại danh sách thuốc</button>
+                            </div>`;
+                    }
+                    showToast('Không tải được thuốc thay thế', 'error');
+                });
             }
 
             async function loadAlternatives(product, context = {}) {
