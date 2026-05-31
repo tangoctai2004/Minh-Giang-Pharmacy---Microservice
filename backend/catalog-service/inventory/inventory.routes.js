@@ -24,7 +24,12 @@ router.get('/stats', async (_req, res) => {
     const [[expiry]] = await pool.query(
       `SELECT
          SUM(CASE WHEN status = 'near_expiry' THEN 1 ELSE 0 END) AS near_expiry_batches,
-         SUM(CASE WHEN status = 'expired' THEN 1 ELSE 0 END) AS expired_batches
+         SUM(CASE WHEN status = 'expired' THEN 1 ELSE 0 END) AS expired_batches,
+         COALESCE(SUM(CASE
+           WHEN status IN ('available', 'near_expiry')
+           THEN quantity_remaining * cost_price
+           ELSE 0
+         END), 0) AS total_inventory_cost
        FROM batch_items`
     );
 
@@ -34,6 +39,7 @@ router.get('/stats', async (_req, res) => {
         ...overview,
         near_expiry_batches: Number(expiry.near_expiry_batches || 0),
         expired_batches: Number(expiry.expired_batches || 0),
+        total_inventory_cost: Number(expiry.total_inventory_cost || 0),
       }
     });
   } catch (err) {
