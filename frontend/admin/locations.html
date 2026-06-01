@@ -8,322 +8,492 @@
     <link rel="stylesheet" href="css/admin-style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .storage-toolbar {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .storage-toolbar .filter-control {
+            height: 44px;
+        }
+
+        .storage-type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            width: fit-content;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            border: 1px solid #dbeafe;
+            color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .storage-type-badge.cold {
+            color: #0369a1;
+            background: #e0f2fe;
+            border-color: #bae6fd;
+        }
+
+        .storage-type-badge.controlled {
+            color: #b45309;
+            background: #fffbeb;
+            border-color: #fde68a;
+        }
+
+        .storage-meta {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .storage-empty-state {
+            padding: 36px 20px;
+            text-align: center;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .location-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .location-actions .btn-icon {
+            width: 32px;
+            height: 32px;
+        }
+
+        .storage-modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: rgba(15, 23, 42, .45);
+        }
+
+        .storage-modal-overlay.open {
+            display: flex;
+        }
+
+        .storage-modal {
+            width: min(720px, 100%);
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 24px 80px rgba(15, 23, 42, .24);
+            overflow: hidden;
+        }
+
+        .storage-modal-header,
+        .storage-modal-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        .storage-modal-footer {
+            border-top: 1px solid var(--admin-border);
+            border-bottom: none;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .storage-modal-body {
+            padding: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .storage-toolbar {
+                grid-template-columns: 1fr;
+            }
+
+            .storage-panels-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 
 <body>
+    <aside class="admin-sidebar"></aside>
+    <header class="admin-header"></header>
 
-    <!-- ============ SIDEBAR ============ -->
-    <aside class="admin-sidebar">
-        <!-- Inject via admin-components.js -->
-    </aside>
-
-    <!-- ============ HEADER ============ -->
-    <header class="admin-header">
-        <!-- Inject via admin-components.js -->
-    </header>
-
-    <!-- ============ MAIN CONTENT ============ -->
     <main class="admin-main">
-
-        <!-- Page Header -->
         <div class="page-header">
             <div>
                 <h1 class="page-title">Pharmacy Layout & Storage</h1>
-                <p class="page-subtitle">Quản lý không gian vật lý, thiết lập Khu vực (Zones), Tủ (Cabinets) và Kệ
-                    (Shelves).</p>
+                <p class="page-subtitle">Quản lý vị trí lưu trữ thuốc theo khu vực, tủ và kệ. Vị trí đang có tồn kho không được xoá/ẩn.</p>
             </div>
         </div>
 
-        <!-- 3-Column Cascading Panels -->
+        <div class="storage-toolbar">
+            <input id="locationSearch" type="text" class="filter-control" placeholder="Tìm theo khu vực, tủ, kệ hoặc nhãn vị trí...">
+            <button class="btn-primary" onclick="openLocationModal()">
+                <i class="fa-solid fa-plus"></i> Thêm vị trí
+            </button>
+        </div>
+
         <div class="storage-panels-container">
-
-            <!-- PANEL 1: ZONES -->
             <div class="storage-panel">
                 <div class="panel-header">
-                    <div class="panel-title">Khu vực (Zones) <span class="panel-count">3</span></div>
-                    <button class="btn-add-small" onclick="alert('Thêm Khu vực mới')"><i class="fa-solid fa-plus"></i>
-                        Thêm</button>
+                    <div class="panel-title">Khu vực (Zones) <span class="panel-count" id="zoneCount">0</span></div>
                 </div>
-                <div class="panel-body" id="zones-list">
-
-                    <div class="storage-item active" onclick="selectZone(this, 'rx')">
-                        <div class="item-info">
-                            <div class="item-icon"><i class="fa-solid fa-prescription-bottle-medical"></i></div>
-                            <div class="item-text">
-                                <span class="item-name">Khu Thuốc Kê Đơn (Rx)</span>
-                                <span class="item-desc">4 Tủ đang hoạt động</span>
-                            </div>
-                        </div>
-                        <i class="fa-solid fa-chevron-right item-arrow"></i>
-                    </div>
-
-                    <div class="storage-item" onclick="selectZone(this, 'otc')">
-                        <div class="item-info">
-                            <div class="item-icon"><i class="fa-solid fa-pills"></i></div>
-                            <div class="item-text">
-                                <span class="item-name">Khu Thuốc Không Kê Đơn (OTC)</span>
-                                <span class="item-desc">6 Tủ đang hoạt động</span>
-                            </div>
-                        </div>
-                        <i class="fa-solid fa-chevron-right item-arrow"></i>
-                    </div>
-
-                    <div class="storage-item" onclick="selectZone(this, 'sup')">
-                        <div class="item-info">
-                            <div class="item-icon"><i class="fa-solid fa-leaf"></i></div>
-                            <div class="item-text">
-                                <span class="item-name">Thực phẩm chức năng</span>
-                                <span class="item-desc">2 Tủ đang hoạt động</span>
-                            </div>
-                        </div>
-                        <i class="fa-solid fa-chevron-right item-arrow"></i>
-                    </div>
-
-                </div>
+                <div class="panel-body" id="zonesList"></div>
             </div>
 
-            <!-- PANEL 2: CABINETS -->
             <div class="storage-panel">
                 <div class="panel-header">
-                    <div class="panel-title">Tủ thuốc (Cabinets) <span class="panel-count" id="cabinet-count">4</span>
-                    </div>
-                    <button class="btn-add-small" onclick="alert('Thêm Tủ mới vào khu vực này')"><i
-                            class="fa-solid fa-plus"></i> Thêm</button>
+                    <div class="panel-title">Tủ thuốc (Cabinets) <span class="panel-count" id="cabinetCount">0</span></div>
                 </div>
-                <div class="panel-body" id="cabinets-list">
-                    <!-- Default content (Rx Zone) -->
-                    <div class="storage-item active" onclick="selectCabinet(this, 't1')">
-                        <div class="item-info">
-                            <div class="item-icon"><i class="fa-solid fa-door-closed"></i></div>
-                            <div class="item-text">
-                                <span class="item-name">Tủ Rx - Kháng sinh</span>
-                                <span class="item-desc">Mã: CAB-RX-01 • 5 Kệ</span>
-                            </div>
-                        </div>
-                        <i class="fa-solid fa-chevron-right item-arrow"></i>
-                    </div>
-
-                    <div class="storage-item" onclick="selectCabinet(this, 't2')">
-                        <div class="item-info">
-                            <div class="item-icon"><i class="fa-solid fa-door-closed"></i></div>
-                            <div class="item-text">
-                                <span class="item-name">Tủ Rx - Tim mạch & Huyết áp</span>
-                                <span class="item-desc">Mã: CAB-RX-02 • 4 Kệ</span>
-                            </div>
-                        </div>
-                        <i class="fa-solid fa-chevron-right item-arrow"></i>
-                    </div>
-                    <div class="storage-item" onclick="selectCabinet(this, 't3')">
-                        <div class="item-info">
-                            <div class="item-icon"><i class="fa-solid fa-door-closed"></i></div>
-                            <div class="item-text">
-                                <span class="item-name">Tủ Rx - Tiểu đường</span>
-                                <span class="item-desc">Mã: CAB-RX-03 • 3 Kệ</span>
-                            </div>
-                        </div>
-                        <i class="fa-solid fa-chevron-right item-arrow"></i>
-                    </div>
-                    <div class="storage-item" onclick="selectCabinet(this, 't4')">
-                        <div class="item-info">
-                            <div class="item-icon" style="color:#b91c1c;background:#fef2f2;"><i
-                                    class="fa-solid fa-snowflake"></i></div>
-                            <div class="item-text">
-                                <span class="item-name">Tủ Lạnh (Bảo quản 2-8°C)</span>
-                                <span class="item-desc">Mã: CAB-RX-04 • 2 Kệ</span>
-                            </div>
-                        </div>
-                        <i class="fa-solid fa-chevron-right item-arrow"></i>
-                    </div>
-                </div>
+                <div class="panel-body" id="cabinetsList"></div>
             </div>
 
-            <!-- PANEL 3: SHELVES -->
             <div class="storage-panel">
                 <div class="panel-header">
-                    <div class="panel-title">Kệ chứa (Shelves) <span class="panel-count" id="shelf-count">5</span></div>
-                    <button class="btn-add-small" onclick="alert('Thêm Kệ mới vào tủ này')"><i
-                            class="fa-solid fa-plus"></i> Thêm</button>
+                    <div class="panel-title">Kệ / vị trí (Shelves) <span class="panel-count" id="shelfCount">0</span></div>
                 </div>
-                <div class="panel-body" id="shelves-list">
-                    <!-- Default content (Cabinet T1) -->
-                    <div class="storage-item">
-                        <div class="item-info">
-                            <div class="item-icon"><i class="fa-solid fa-list-ol"></i></div>
-                            <div class="item-text">
-                                <span class="item-name">Kệ 1 (Cao nhất)</span>
-                                <span class="item-desc">Nhóm Penicillin • 12 SP</span>
-                            </div>
-                        </div>
-                        <button class="btn-add-small" style="height:24px;border:none;background:transparent;"><i
-                                class="fa-solid fa-pen"></i></button>
-                    </div>
-
-                    <div class="storage-item">
-                        <div class="item-info">
-                            <div class="item-icon"><i class="fa-solid fa-list-ol"></i></div>
-                            <div class="item-text">
-                                <span class="item-name">Kệ 2</span>
-                                <span class="item-desc">Nhóm Cephalosporin • 18 SP</span>
-                            </div>
-                        </div>
-                        <button class="btn-add-small" style="height:24px;border:none;background:transparent;"><i
-                                class="fa-solid fa-pen"></i></button>
-                    </div>
-
-                    <div class="storage-item">
-                        <div class="item-info">
-                            <div class="item-icon"><i class="fa-solid fa-list-ol"></i></div>
-                            <div class="item-text">
-                                <span class="item-name">Kệ 3</span>
-                                <span class="item-desc">Nhóm Macrolid • 8 SP</span>
-                            </div>
-                        </div>
-                        <button class="btn-add-small" style="height:24px;border:none;background:transparent;"><i
-                                class="fa-solid fa-pen"></i></button>
-                    </div>
-
-                    <div class="storage-item">
-                        <div class="item-info">
-                            <div class="item-icon"><i class="fa-solid fa-list-ol"></i></div>
-                            <div class="item-text">
-                                <span class="item-name">Kệ 4</span>
-                                <span class="item-desc">Nhóm Quinolon • 15 SP</span>
-                            </div>
-                        </div>
-                        <button class="btn-add-small" style="height:24px;border:none;background:transparent;"><i
-                                class="fa-solid fa-pen"></i></button>
-                    </div>
-
-                    <div class="storage-item">
-                        <div class="item-info">
-                            <div class="item-icon"><i class="fa-solid fa-list-ol"></i></div>
-                            <div class="item-text">
-                                <span class="item-name">Kệ 5 (Thấp nhất)</span>
-                                <span class="item-desc">Hàng tồn kho dự trữ • 40 Hộp</span>
-                            </div>
-                        </div>
-                        <button class="btn-add-small" style="height:24px;border:none;background:transparent;"><i
-                                class="fa-solid fa-pen"></i></button>
-                    </div>
-                </div>
+                <div class="panel-body" id="shelvesList"></div>
             </div>
-
         </div>
-
     </main>
 
-    <!-- ============ SCRIPTS ============ -->
-    <script>
-        // Mock Data for cascading view demonstration
-        const mockCabinets = {
-            'rx': [
-                { id: 't1', name: 'Tủ Rx - Kháng sinh', code: 'CAB-RX-01', shelves: 5, icon: 'fa-door-closed' },
-                { id: 't2', name: 'Tủ Rx - Tim mạch & Huyết áp', code: 'CAB-RX-02', shelves: 4, icon: 'fa-door-closed' },
-                { id: 't3', name: 'Tủ Rx - Tiểu đường', code: 'CAB-RX-03', shelves: 3, icon: 'fa-door-closed' },
-                { id: 't4', name: 'Tủ Lạnh (Bảo quản 2-8°C)', code: 'CAB-RX-04', shelves: 2, icon: 'fa-snowflake', danger: true }
-            ],
-            'otc': [
-                { id: 'o1', name: 'Tủ OTC - Giảm đau, hạ sốt', code: 'CAB-OTC-01', shelves: 6, icon: 'fa-door-open' },
-                { id: 'o2', name: 'Tủ OTC - Tiêu hoá', code: 'CAB-OTC-02', shelves: 5, icon: 'fa-door-open' },
-                { id: 'o3', name: 'Tủ OTC - Hô hấp', code: 'CAB-OTC-03', shelves: 5, icon: 'fa-door-open' }
-            ],
-            'sup': [
-                { id: 's1', name: 'Kệ trưng bày TPCN', code: 'CAB-SUP-01', shelves: 4, icon: 'fa-layer-group' },
-                { id: 's2', name: 'Tủ kính Dược mỹ phẩm', code: 'CAB-SUP-02', shelves: 3, icon: 'fa-box-open' }
-            ]
-        };
-
-        const mockShelves = {
-            't2': [
-                { name: 'Kệ 1', desc: 'Nhóm chẹn Beta • 10 SP' },
-                { name: 'Kệ 2', desc: 'Nhóm lợi tiểu • 8 SP' },
-                { name: 'Kệ 3', desc: 'Nhóm ức chế men chuyển • 12 SP' },
-                { name: 'Kệ 4', desc: 'Khác • 15 SP' }
-            ],
-            'o1': [
-                { name: 'Kệ 1', desc: 'Paracetamol các loại • 20 SP' },
-                { name: 'Kệ 2', desc: 'Ibuprofen • 15 SP' },
-                { name: 'Kệ 3', desc: 'Thuốc dán, xoa bóp ngoài da • 25 SP' }
-            ]
-        };
-
-        function selectZone(element, zoneId) {
-            // Update active styling
-            document.querySelectorAll('#zones-list .storage-item').forEach(el => el.classList.remove('active'));
-            element.classList.add('active');
-
-            // Render Cabinets
-            const cabinets = mockCabinets[zoneId] || [];
-            document.getElementById('cabinet-count').innerText = cabinets.length;
-
-            const cabinetsHtml = cabinets.map((c, index) => `
-                <div class="storage-item ${index === 0 ? 'active' : ''}" onclick="selectCabinet(this, '${c.id}')">
-                    <div class="item-info">
-                        <div class="item-icon" ${c.danger ? 'style="color:#b91c1c;background:#fef2f2;"' : ''}><i class="fa-solid ${c.icon}"></i></div>
-                        <div class="item-text">
-                            <span class="item-name">${c.name}</span>
-                            <span class="item-desc">Mã: ${c.code} • ${c.shelves} Kệ</span>
+    <div class="storage-modal-overlay" id="locationModal">
+        <div class="storage-modal">
+            <div class="storage-modal-header">
+                <div>
+                    <h2 class="slide-title" id="locationModalTitle">Thêm vị trí lưu trữ</h2>
+                    <p style="font-size:13px;color:#64748b;margin-top:4px;">Khai báo đúng khu/tủ/kệ để phục vụ nhập kho, FEFO và kiểm kê GPP.</p>
+                </div>
+                <button class="slide-close" onclick="closeLocationModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="locationForm">
+                <div class="storage-modal-body">
+                    <div class="form-row" style="grid-template-columns:1fr 1fr;">
+                        <div class="form-group">
+                            <label class="form-label">Khu vực <span style="color:#ef4444">*</span></label>
+                            <input id="locationZone" class="form-input" list="zoneOptions" autocomplete="off" placeholder="Gõ mới hoặc chọn khu vực có sẵn">
+                            <datalist id="zoneOptions"></datalist>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tủ <span style="color:#ef4444">*</span></label>
+                            <input id="locationCabinet" class="form-input" list="cabinetOptions" autocomplete="off" placeholder="Gõ mới hoặc chọn tủ có sẵn">
+                            <datalist id="cabinetOptions"></datalist>
                         </div>
                     </div>
-                    <i class="fa-solid fa-chevron-right item-arrow"></i>
-                </div>
-            `).join('');
-
-            document.getElementById('cabinets-list').innerHTML = cabinetsHtml || `<div class="panel-empty"><i class="fa-solid fa-box-open"></i><p>Khu vực này chưa có tủ thuốc nào</p></div>`;
-
-            // Auto Select First Cabinet to render shelves if available
-            if (cabinets.length > 0) {
-                // Call render shelves directly since DOM update is fast enough in this mock
-                renderShelves(cabinets[0].id);
-            } else {
-                renderShelves('none');
-            }
-        }
-
-        function selectCabinet(element, cabinetId) {
-            // Update active styling
-            document.querySelectorAll('#cabinets-list .storage-item').forEach(el => el.classList.remove('active'));
-            element.classList.add('active');
-
-            renderShelves(cabinetId);
-        }
-
-        function renderShelves(cabinetId) {
-            const shelves = mockShelves[cabinetId] || [
-                { name: 'Kệ 1', desc: 'Chưa phân loại • 0 SP' },
-                { name: 'Kệ 2', desc: 'Chưa phân loại • 0 SP' }
-            ]; // Default mock for demo
-
-            if (cabinetId === 'none') {
-                document.getElementById('shelf-count').innerText = '0';
-                document.getElementById('shelves-list').innerHTML = `<div class="panel-empty"><i class="fa-solid fa-bars-staggered"></i><p>Chọn tủ để xem kệ</p></div>`;
-                return;
-            }
-
-            document.getElementById('shelf-count').innerText = shelves.length;
-
-            const shelvesHtml = shelves.map(s => `
-                <div class="storage-item">
-                    <div class="item-info">
-                        <div class="item-icon"><i class="fa-solid fa-list-ol"></i></div>
-                        <div class="item-text">
-                            <span class="item-name">${s.name}</span>
-                            <span class="item-desc">${s.desc}</span>
+                    <div class="form-row" style="grid-template-columns:1fr 1fr;">
+                        <div class="form-group">
+                            <label class="form-label">Kệ / ngăn <span style="color:#ef4444">*</span></label>
+                            <input id="locationShelf" class="form-input" list="shelfOptions" autocomplete="off" placeholder="Gõ mới hoặc chọn kệ/ngăn có sẵn">
+                            <datalist id="shelfOptions"></datalist>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Điều kiện lưu trữ</label>
+                            <select id="locationStorageType" class="form-select">
+                                <option value="normal">Điều kiện thường</option>
+                                <option value="cold">Kho lạnh 2-8°C</option>
+                                <option value="controlled">Tủ khóa kiểm soát đặc biệt</option>
+                            </select>
                         </div>
                     </div>
-                    <button class="btn-add-small" style="height:24px;border:none;background:transparent;"><i class="fa-solid fa-pen"></i></button>
+                    <div class="form-group">
+                        <label class="form-label">Nhãn hiển thị đầy đủ <span style="color:#ef4444">*</span></label>
+                        <input id="locationLabel" class="form-input" placeholder="VD: Khu thuốc kê đơn / Tủ Rx - Kháng sinh / Kệ 1">
+                    </div>
+                    <div style="font-size:12px;color:#64748b;line-height:1.6;">
+                        Thuốc kho lạnh chỉ được nhập vào vị trí có nhãn kho lạnh. Thuốc gây nghiện, hướng tâm thần, tiền chất hoặc thuốc độc cần vị trí tủ khóa kiểm soát.
+                    </div>
                 </div>
-            `).join('');
+                <div class="storage-modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeLocationModal()">Huỷ</button>
+                    <button type="submit" class="btn-primary"><i class="fa-solid fa-floppy-disk"></i> Lưu vị trí</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-            document.getElementById('shelves-list').innerHTML = shelvesHtml;
-        }
-    </script>
-
-    <!-- Shared Layout Components -->
+    <script src="js/admin-catalog-api.js"></script>
     <script src="js/admin-components.js"></script>
     <script>
+        const locationState = {
+            locations: [],
+            selectedZone: '',
+            selectedCabinet: '',
+            editingId: null
+        };
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            }[char]));
+        }
+
+        function toast(message, type = 'success') {
+            const el = document.createElement('div');
+            el.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:14px 18px;border-radius:10px;font-size:13px;font-weight:700;z-index:9999;box-shadow:0 8px 24px rgba(15,23,42,.24);display:flex;align-items:center;gap:10px;max-width:420px;';
+            el.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check'}" style="color:${type === 'error' ? '#ef4444' : '#10b981'}"></i><span>${escapeHtml(message)}</span>`;
+            document.body.appendChild(el);
+            setTimeout(() => { el.style.transition = 'opacity .25s, transform .25s'; el.style.opacity = '0'; el.style.transform = 'translateY(8px)'; setTimeout(() => el.remove(), 260); }, 3000);
+        }
+
+        function storageTypeLabel(type) {
+            if (type === 'cold') return 'Kho lạnh 2-8°C';
+            if (type === 'controlled') return 'Tủ khóa kiểm soát';
+            return 'Điều kiện thường';
+        }
+
+        function storageTypeIcon(type) {
+            if (type === 'cold') return 'fa-snowflake';
+            if (type === 'controlled') return 'fa-lock';
+            return 'fa-layer-group';
+        }
+
+        function groupBy(items, key) {
+            return items.reduce((acc, item) => {
+                const value = item[key] || 'Chưa phân loại';
+                if (!acc[value]) acc[value] = [];
+                acc[value].push(item);
+                return acc;
+            }, {});
+        }
+
+        function uniqueSorted(values) {
+            return [...new Set(values.map((value) => String(value || '').trim()).filter(Boolean))]
+                .sort((a, b) => a.localeCompare(b, 'vi'));
+        }
+
+        function renderDatalist(id, values) {
+            const datalist = document.getElementById(id);
+            if (!datalist) return;
+            datalist.innerHTML = uniqueSorted(values)
+                .map((value) => `<option value="${escapeHtml(value)}"></option>`)
+                .join('');
+        }
+
+        function updateLocationSuggestions() {
+            const zone = document.getElementById('locationZone')?.value.trim() || '';
+            const cabinet = document.getElementById('locationCabinet')?.value.trim() || '';
+
+            renderDatalist('zoneOptions', locationState.locations.map((item) => item.zone));
+
+            const cabinetSource = zone
+                ? locationState.locations.filter((item) => item.zone === zone)
+                : locationState.locations;
+            renderDatalist('cabinetOptions', cabinetSource.map((item) => item.cabinet));
+
+            const shelfSource = locationState.locations.filter((item) => {
+                if (zone && item.zone !== zone) return false;
+                if (cabinet && item.cabinet !== cabinet) return false;
+                return true;
+            });
+            renderDatalist('shelfOptions', shelfSource.map((item) => item.shelf));
+        }
+
+        async function loadLocations() {
+            const q = document.getElementById('locationSearch').value.trim();
+            try {
+                const result = await window.MGAdminCatalogApi.get('/locations', { limit: 100, q });
+                locationState.locations = result.data || [];
+                updateLocationSuggestions();
+                const zones = Object.keys(groupBy(locationState.locations, 'zone'));
+                if (!zones.includes(locationState.selectedZone)) {
+                    locationState.selectedZone = zones[0] || '';
+                    locationState.selectedCabinet = '';
+                }
+                renderLocations();
+            } catch (error) {
+                toast(error.message || 'Không tải được vị trí lưu trữ', 'error');
+            }
+        }
+
+        function renderLocations() {
+            const zones = groupBy(locationState.locations, 'zone');
+            const zoneNames = Object.keys(zones);
+            document.getElementById('zoneCount').textContent = zoneNames.length;
+            document.getElementById('zonesList').innerHTML = zoneNames.length ? zoneNames.map((zone) => {
+                const items = zones[zone];
+                const stock = items.reduce((sum, item) => sum + Number(item.total_stock || 0), 0);
+                const type = items.find((item) => item.storage_type !== 'normal')?.storage_type || 'normal';
+                return `
+                    <div class="storage-item ${zone === locationState.selectedZone ? 'active' : ''}" onclick="selectZone('${encodeURIComponent(zone)}')">
+                        <div class="item-info">
+                            <div class="item-icon"><i class="fa-solid ${storageTypeIcon(type)}"></i></div>
+                            <div class="item-text">
+                                <span class="item-name">${escapeHtml(zone)}</span>
+                                <span class="item-desc">${items.length} vị trí • ${stock} đơn vị tồn</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right item-arrow"></i>
+                    </div>`;
+            }).join('') : `<div class="storage-empty-state">Chưa có vị trí lưu trữ</div>`;
+
+            renderCabinets();
+        }
+
+        function selectZone(zone) {
+            locationState.selectedZone = decodeURIComponent(zone);
+            locationState.selectedCabinet = '';
+            renderLocations();
+        }
+
+        function renderCabinets() {
+            const zoneItems = locationState.locations.filter((item) => item.zone === locationState.selectedZone);
+            const cabinets = groupBy(zoneItems, 'cabinet');
+            const cabinetNames = Object.keys(cabinets);
+            if (!cabinetNames.includes(locationState.selectedCabinet)) {
+                locationState.selectedCabinet = cabinetNames[0] || '';
+            }
+            document.getElementById('cabinetCount').textContent = cabinetNames.length;
+            document.getElementById('cabinetsList').innerHTML = cabinetNames.length ? cabinetNames.map((cabinet) => {
+                const items = cabinets[cabinet];
+                const stock = items.reduce((sum, item) => sum + Number(item.total_stock || 0), 0);
+                const type = items.find((item) => item.storage_type !== 'normal')?.storage_type || 'normal';
+                return `
+                    <div class="storage-item ${cabinet === locationState.selectedCabinet ? 'active' : ''}" onclick="selectCabinet('${encodeURIComponent(cabinet)}')">
+                        <div class="item-info">
+                            <div class="item-icon"><i class="fa-solid ${storageTypeIcon(type)}"></i></div>
+                            <div class="item-text">
+                                <span class="item-name">${escapeHtml(cabinet)}</span>
+                                <span class="item-desc">${items.length} kệ/vị trí • ${stock} đơn vị tồn</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right item-arrow"></i>
+                    </div>`;
+            }).join('') : `<div class="storage-empty-state">Chọn khu vực để xem tủ</div>`;
+            renderShelves();
+        }
+
+        function selectCabinet(cabinet) {
+            locationState.selectedCabinet = decodeURIComponent(cabinet);
+            renderCabinets();
+        }
+
+        function renderShelves() {
+            const shelves = locationState.locations.filter((item) => item.zone === locationState.selectedZone && item.cabinet === locationState.selectedCabinet);
+            document.getElementById('shelfCount').textContent = shelves.length;
+            document.getElementById('shelvesList').innerHTML = shelves.length ? shelves.map((item) => `
+                <div class="storage-item">
+                    <div class="item-info">
+                        <div class="item-icon"><i class="fa-solid ${storageTypeIcon(item.storage_type)}"></i></div>
+                        <div class="item-text">
+                            <span class="item-name">${escapeHtml(item.shelf)}</span>
+                            <span class="item-desc">${escapeHtml(item.label)}</span>
+                            <div class="storage-meta">
+                                <span class="storage-type-badge ${escapeHtml(item.storage_type)}"><i class="fa-solid ${storageTypeIcon(item.storage_type)}"></i>${storageTypeLabel(item.storage_type)}</span>
+                                <span class="item-desc">${Number(item.active_lot_count || 0)} lô • ${Number(item.total_stock || 0)} đơn vị tồn</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="location-actions">
+                        <button class="btn-icon" title="Sửa vị trí" onclick="event.stopPropagation(); openLocationModal(${Number(item.id)})"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn-icon" title="Ngừng dùng" onclick="event.stopPropagation(); deactivateLocation(${Number(item.id)})"><i class="fa-solid fa-ban"></i></button>
+                    </div>
+                </div>`).join('') : `<div class="storage-empty-state">Chọn tủ để xem kệ/vị trí</div>`;
+        }
+
+        function syncLabel() {
+            const zone = document.getElementById('locationZone').value.trim();
+            const cabinet = document.getElementById('locationCabinet').value.trim();
+            const shelf = document.getElementById('locationShelf').value.trim();
+            const type = document.getElementById('locationStorageType').value;
+            const suffix = type === 'cold' ? 'Kho lạnh 2-8°C' : type === 'controlled' ? 'Tủ khóa kiểm soát đặc biệt' : '';
+            const label = [zone, cabinet, shelf, suffix].filter(Boolean).join(' / ');
+            document.getElementById('locationLabel').value = label;
+            updateLocationSuggestions();
+        }
+
+        function openLocationModal(id = null) {
+            locationState.editingId = id;
+            document.getElementById('locationModalTitle').textContent = id ? 'Cập nhật vị trí lưu trữ' : 'Thêm vị trí lưu trữ';
+            const item = id ? locationState.locations.find((location) => Number(location.id) === Number(id)) : null;
+            document.getElementById('locationZone').value = item?.zone || '';
+            document.getElementById('locationCabinet').value = item?.cabinet || '';
+            document.getElementById('locationShelf').value = item?.shelf || '';
+            document.getElementById('locationStorageType').value = item?.storage_type || 'normal';
+            document.getElementById('locationLabel').value = item?.label || '';
+            updateLocationSuggestions();
+            if (!item) syncLabel();
+            document.getElementById('locationModal').classList.add('open');
+        }
+
+        function closeLocationModal() {
+            document.getElementById('locationModal').classList.remove('open');
+            locationState.editingId = null;
+        }
+
+        async function saveLocation(event) {
+            event.preventDefault();
+            const payload = {
+                zone: document.getElementById('locationZone').value.trim(),
+                cabinet: document.getElementById('locationCabinet').value.trim(),
+                shelf: document.getElementById('locationShelf').value.trim(),
+                label: document.getElementById('locationLabel').value.trim()
+            };
+            if (!payload.zone || !payload.cabinet || !payload.shelf || !payload.label) {
+                toast('Vui lòng nhập đủ khu vực, tủ, kệ và nhãn vị trí', 'error');
+                return;
+            }
+            try {
+                if (locationState.editingId) {
+                    await window.MGAdminCatalogApi.put(`/locations/${encodeURIComponent(locationState.editingId)}`, payload);
+                    toast('Đã cập nhật vị trí lưu trữ');
+                } else {
+                    await window.MGAdminCatalogApi.post('/locations', payload);
+                    toast('Đã thêm vị trí lưu trữ');
+                }
+                closeLocationModal();
+                await loadLocations();
+            } catch (error) {
+                toast(error.message || 'Không lưu được vị trí', 'error');
+            }
+        }
+
+        async function deactivateLocation(id) {
+            const item = locationState.locations.find((location) => Number(location.id) === Number(id));
+            if (!item) return;
+            if (Number(item.total_stock || 0) > 0) {
+                toast('Không thể ngừng dùng vị trí đang còn tồn kho', 'error');
+                return;
+            }
+            if (!confirm(`Ngừng dùng vị trí "${item.label}"?`)) return;
+            try {
+                await window.MGAdminCatalogApi.delete(`/locations/${encodeURIComponent(id)}`);
+                toast('Đã ngừng dùng vị trí');
+                await loadLocations();
+            } catch (error) {
+                toast(error.message || 'Không thể ngừng dùng vị trí', 'error');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             renderAdminLayout('locations');
+            document.getElementById('locationForm').addEventListener('submit', saveLocation);
+            ['locationZone', 'locationCabinet', 'locationShelf', 'locationStorageType'].forEach((id) => {
+                document.getElementById(id).addEventListener('input', syncLabel);
+                document.getElementById(id).addEventListener('change', syncLabel);
+                document.getElementById(id).addEventListener('focus', updateLocationSuggestions);
+            });
+            document.getElementById('locationSearch').addEventListener('input', () => {
+                clearTimeout(window.__locationSearchTimer);
+                window.__locationSearchTimer = setTimeout(loadLocations, 250);
+            });
+            loadLocations();
         });
     </script>
 </body>

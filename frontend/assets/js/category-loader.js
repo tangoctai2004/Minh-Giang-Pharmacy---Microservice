@@ -51,7 +51,7 @@ class CategoryPage {
             page: Math.max(1, Number(this.params.get('page')) || 1),
             limit: Number(this.params.get('limit')) || 28,
             sort: this.params.get('sort') || 'popular',
-            requires_prescription: this.params.get('rx') || '0',
+            requires_prescription: this.params.has('rx') ? this.params.get('rx') : '',
             price_min: this.params.get('price_min'),
             price_max: this.params.get('price_max'),
             brand_ids: toList(this.params.get('brand_ids')),
@@ -65,6 +65,7 @@ class CategoryPage {
             subCatGrid: document.getElementById('subCategoriesGrid'),
             subCatsWrapper: document.getElementById('subCatsWrapper'),
             btnViewMoreSub: document.getElementById('btnViewMoreSubcats'),
+            tabAll: document.getElementById('tabAllProducts'),
             tabNonRx: document.getElementById('tabNonRxProducts'),
             tabRx: document.getElementById('tabRxProducts'),
             
@@ -91,7 +92,7 @@ class CategoryPage {
         if (this.els.sortSelect) this.els.sortSelect.value = this.filters.sort;
         if (this.els.limitSelect) this.els.limitSelect.value = String(this.filters.limit);
         document.querySelectorAll('.cat-tab-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.getAttribute('data-rx') === this.filters.requires_prescription);
+            btn.classList.toggle('active', (btn.getAttribute('data-rx') || '') === (this.filters.requires_prescription || ''));
         });
         if (this.els.priceBlock && this.filters.price_min !== null) {
             this.els.priceBlock.querySelectorAll('.price-block-btn').forEach(btn => {
@@ -108,7 +109,9 @@ class CategoryPage {
         if (Number(this.filters.page) > 1) params.set('page', this.filters.page);
         if (String(this.filters.sort) !== 'popular') params.set('sort', this.filters.sort);
         if (Number(this.filters.limit) !== 28) params.set('limit', this.filters.limit);
-        if (this.filters.requires_prescription !== '0') params.set('rx', this.filters.requires_prescription);
+        if (this.filters.requires_prescription === '0' || this.filters.requires_prescription === '1') {
+            params.set('rx', this.filters.requires_prescription);
+        }
         if (this.filters.price_min) params.set('price_min', this.filters.price_min);
         if (this.filters.price_max) params.set('price_max', this.filters.price_max);
         if (this.filters.brand_ids.length > 0) params.set('brand_ids', this.filters.brand_ids.join(','));
@@ -154,12 +157,12 @@ class CategoryPage {
         }
 
         // Tabs
-        [this.els.tabNonRx, this.els.tabRx].forEach(tab => {
+        [this.els.tabAll, this.els.tabNonRx, this.els.tabRx].forEach(tab => {
             if (!tab) return;
             tab.addEventListener('click', (e) => {
                 document.querySelectorAll('.cat-tab-btn').forEach(btn => btn.classList.remove('active'));
-                e.target.classList.add('active');
-                this.filters.requires_prescription = e.target.getAttribute('data-rx');
+                e.currentTarget.classList.add('active');
+                this.filters.requires_prescription = e.currentTarget.getAttribute('data-rx') || '';
                 this.filters.page = 1;
                 this.updateUrl();
                 this.loadProducts();
@@ -300,6 +303,9 @@ class CategoryPage {
                 if (this.els.tabRx && rx_count !== undefined) {
                     this.els.tabRx.textContent = `Thuốc kê đơn (${rx_count})`;
                 }
+                if (this.els.tabAll) {
+                    this.els.tabAll.textContent = `Tất cả (${Number(non_rx_count || 0) + Number(rx_count || 0)})`;
+                }
             }
         } catch (e) {
             console.error(e);
@@ -350,7 +356,7 @@ class CategoryPage {
                 brand_ids: this.filters.brand_ids,
                 origins: this.filters.origins,
                 indications: this.filters.indications,
-                requires_prescription: this.filters.requires_prescription
+                requires_prescription: this.filters.requires_prescription || undefined
             });
             
             if (json.success && json.data) {
