@@ -1234,66 +1234,8 @@
                     <div class="content-card">
                         <h2 class="content-card-title">Ưu đãi dành cho bạn</h2>
 
-                        <div class="voucher-list">
-
-                            <div class="voucher-card">
-                                <div class="voucher-badge" style="background:linear-gradient(135deg,#fca5a5,#ef4444);">
-                                    38k<span>VOUCHER</span>
-                                </div>
-                                <div class="voucher-info">
-                                    <p class="voucher-title">
-                                        [Voucher 38k] đơn hàng từ 399k [Khách hàng lần đầu đăng nhập website]
-                                        <i class="fa-solid fa-circle-info"></i>
-                                    </p>
-                                    <p class="voucher-desc">Áp dụng: Khách hàng lần đầu đăng nhập website<br>Không áp
-                                        dụng cho các sản phẩm thuộc danh mục Flash Sale. Thuốc và danh mục hạn chế...
-                                    </p>
-                                    <p class="voucher-expiry">HSD: 23:59, 31/03/2026</p>
-                                </div>
-                                <div class="voucher-actions">
-                                    <button class="btn-copy">Sao chép mã</button>
-                                    <button class="btn-apply">Áp dụng</button>
-                                </div>
-                            </div>
-
-                            <div class="voucher-card">
-                                <div class="voucher-badge" style="background:linear-gradient(135deg,#fbbf24,#f59e0b);">
-                                    70k<span>VOUCHER</span>
-                                </div>
-                                <div class="voucher-info">
-                                    <p class="voucher-title">
-                                        Voucher 70K [Bill 699K]
-                                        <i class="fa-solid fa-circle-info"></i>
-                                    </p>
-                                    <p class="voucher-desc">Không áp dụng cho các sản phẩm thuộc danh mục Flash Sale.
-                                        Thuốc và danh mục hạn chế...</p>
-                                    <p class="voucher-expiry">HSD: 23:59, 31/03/2026</p>
-                                </div>
-                                <div class="voucher-actions">
-                                    <button class="btn-copy">Sao chép mã</button>
-                                    <button class="btn-apply">Áp dụng</button>
-                                </div>
-                            </div>
-
-                            <div class="voucher-card">
-                                <div class="voucher-badge" style="background:linear-gradient(135deg,#fca5a5,#dc2626);">
-                                    83k<span>VOUCHER</span>
-                                </div>
-                                <div class="voucher-info">
-                                    <p class="voucher-title">
-                                        [Voucher 83k] đơn hàng từ 830K
-                                        <i class="fa-solid fa-circle-info"></i>
-                                    </p>
-                                    <p class="voucher-desc">Không áp dụng cho các sản phẩm thuộc danh mục Flash Sale...
-                                    </p>
-                                    <p class="voucher-expiry">HSD: 23:59, 31/03/2026</p>
-                                </div>
-                                <div class="voucher-actions">
-                                    <button class="btn-copy">Sao chép mã</button>
-                                    <button class="btn-apply">Áp dụng</button>
-                                </div>
-                            </div>
-
+                        <div class="voucher-list" id="profileVoucherList">
+                            <!-- Vouchers loaded dynamically from localStorage -->
                         </div>
                     </div>
                 </div>
@@ -1393,7 +1335,99 @@
 
             // Load delivery addresses
             await loadDeliveryAddresses(c.id, auth.accessToken);
+
+            // Load and render vouchers
+            renderProfileVouchers();
         })();
+
+        // === DYNAMIC VOUCHER RENDERER ===
+        function renderProfileVouchers() {
+            const defaultVouchers = [
+                {
+                    code: "MG38K",
+                    title: "[Voucher 38k] đơn hàng từ 399k [Khách hàng lần đầu đăng nhập website]",
+                    value: 38000,
+                    min_bill: 399000,
+                    desc: "Áp dụng: Khách hàng lần đầu đăng nhập website<br>Không áp dụng cho các sản phẩm thuộc danh mục Flash Sale. Thuốc và danh mục hạn chế...",
+                    expiry: "HSD: 23:59, 31/03/2026",
+                    badge_color: "linear-gradient(135deg,#fca5a5,#ef4444)",
+                    used: false
+                },
+                {
+                    code: "MG70K",
+                    title: "Voucher 70K [Bill 699K]",
+                    value: 70000,
+                    min_bill: 699000,
+                    desc: "Không áp dụng cho các sản phẩm thuộc danh mục Flash Sale. Thuốc và danh mục hạn chế...",
+                    expiry: "HSD: 23:59, 31/03/2026",
+                    badge_color: "linear-gradient(135deg,#fbbf24,#f59e0b)",
+                    used: false
+                },
+                {
+                    code: "MG83K",
+                    title: "[Voucher 83k] đơn hàng từ 830K",
+                    value: 83000,
+                    min_bill: 830000,
+                    desc: "Không áp dụng cho các sản phẩm thuộc danh mục Flash Sale...",
+                    expiry: "HSD: 23:59, 31/03/2026",
+                    badge_color: "linear-gradient(135deg,#fca5a5,#dc2626)",
+                    used: false
+                }
+            ];
+
+            if (!localStorage.getItem('MG_CLIENT_VOUCHERS')) {
+                localStorage.setItem('MG_CLIENT_VOUCHERS', JSON.stringify(defaultVouchers));
+            }
+
+            const vouchers = JSON.parse(localStorage.getItem('MG_CLIENT_VOUCHERS') || '[]');
+            const unusedVouchers = vouchers.filter(v => !v.used);
+            const container = document.getElementById('profileVoucherList');
+            if (!container) return;
+
+            if (unusedVouchers.length === 0) {
+                container.innerHTML = '<p style="color:#9ca3af;font-size:13px;text-align:center;padding:40px;width:100%;">Bạn chưa có mã giảm giá nào hoặc đã sử dụng hết!</p>';
+                return;
+            }
+
+            container.innerHTML = unusedVouchers.map(v => {
+                const valueK = v.value / 1000 + 'k';
+                return `
+                    <div class="voucher-card">
+                        <div class="voucher-badge" style="background:${v.badge_color};">
+                            ${valueK}<span>VOUCHER</span>
+                        </div>
+                        <div class="voucher-info">
+                            <p class="voucher-title">
+                                ${v.title}
+                                <i class="fa-solid fa-circle-info"></i>
+                            </p>
+                            <p class="voucher-desc">${v.desc}</p>
+                            <p class="voucher-expiry">${v.expiry}</p>
+                        </div>
+                        <div class="voucher-actions">
+                            <button class="btn-copy" onclick="copyVoucherCode('${v.code}', this)">Sao chép mã</button>
+                            <button class="btn-apply" onclick="window.location.href='checkout.html'">Áp dụng</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function copyVoucherCode(code, btn) {
+            navigator.clipboard.writeText(code).then(() => {
+                const originalText = btn.textContent;
+                btn.textContent = 'Đã chép!';
+                btn.style.background = '#e5e7eb';
+                btn.style.color = '#9ca3af';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '';
+                    btn.style.color = '';
+                }, 2000);
+            }).catch(err => {
+                console.error('Không thể sao chép:', err);
+            });
+        }
 
         // clientLogout dùng cho nút Đăng xuất trong sidebar
         function clientLogout() {

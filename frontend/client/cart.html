@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Giỏ hàng — Nhà Thuốc Minh Giang</title>
-    <link rel="stylesheet" href="../assets/css/style.css?v=phase1-catalog">
+    <link rel="stylesheet" href="../assets/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -82,13 +82,6 @@
             border-radius: 8px;
             padding: 16px;
             margin-top: 10px;
-        }
-
-        .cart-item.cart-stock-blocked {
-            background: #fff7f7;
-            border-radius: 8px;
-            padding-left: 12px;
-            padding-right: 12px;
         }
 
         .item-check input {
@@ -418,68 +411,71 @@
 
         <div class="cart-layout">
             <!-- LEFT: PRODUCT LIST -->
-            <div class="cart-main">
-                <div style="padding: 40px; text-align: center; color: #6b7280;">
-                    Đang tải giỏ hàng...
+            <div class="cart-main" id="cartMainContainer">
+                <!-- Nội dung giỏ hàng sẽ được nạp tự động từ cart-page.js -->
+                <div style="padding: 40px; text-align: center;">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; color: #0b7a3e;"></i>
+                    <p style="margin-top: 10px; color: #6b7280;">Đang nạp giỏ hàng...</p>
                 </div>
             </div>
 
             <!-- RIGHT: SUMMARY -->
             <aside class="cart-summary">
                 <div class="summary-card">
-                    <div class="voucher-header">
+                    <div class="voucher-header" id="promoSelector" style="cursor: pointer;">
                         <span><i class="fa-solid fa-ticket"></i> Chọn ưu đãi & giảm giá</span>
                         <i class="fa-solid fa-chevron-right"></i>
                     </div>
 
                     <div class="voucher-input">
-                        <input type="text" placeholder="Thẻ quà tặng hoặc mã giảm giá">
-                        <button class="btn-apply">Áp dụng</button>
+                        <input type="text" id="voucherInput" placeholder="Thẻ quà tặng hoặc mã giảm giá">
+                        <button class="btn-apply" id="btnApplyVoucher" type="button">Áp dụng</button>
                     </div>
 
-                    <div class="active-promo">
+                    <div class="active-promo" id="appliedPromoContainer" style="display: none;">
                         <i class="fa-solid fa-circle-check"></i>
-                        <span>Ưu đãi sẽ được cập nhật theo giỏ hàng</span>
+                        <span id="appliedPromoText">Tặng nước súc miệng LISDOUB bill 199K</span>
+                        <button id="btnRemoveVoucher" type="button" style="margin-left: auto; background: none; border: none; color: #ef4444; cursor: pointer; font-size: 11px; font-weight: 600;">Hủy</button>
                     </div>
 
                     <div class="points-reward">
                         <span>Điểm thưởng</span>
-                        <span class="reward-val">+121 điểm</span>
+                        <span class="reward-val" id="rewardPoints">+0 điểm</span>
                     </div>
 
                     <div class="price-breakdown">
                         <div class="breakdown-row">
                             <span>Tổng tiền sản phẩm</span>
-                            <span class="subtotal-val">0đ</span>
+                            <span id="subtotalVal">0đ</span>
                         </div>
                         <div class="breakdown-row">
                             <span>Giảm giá sản phẩm</span>
-                            <span class="saving-val">-38.000đ</span>
+                            <span class="saving-val" id="productDiscountVal">0đ</span>
                         </div>
                         <div class="breakdown-row">
                             <span>Giảm giá khuyến mãi</span>
-                            <span class="promo-discount-val">0đ</span>
+                            <span class="saving-val" id="discountVal">0đ</span>
                         </div>
                         <div class="breakdown-row">
                             <div class="shipping-hint">
                                 Phí vận chuyển tham khảo <i class="fa-regular fa-circle-question"></i>
                             </div>
-                            <span class="shipping-val">0đ</span>
+                            <span>0đ</span>
                         </div>
                         <div class="breakdown-row">
                             <span>Bạn tiết kiệm</span>
-                            <span class="saving-val">38.000đ</span>
+                            <span class="saving-val" id="totalSavingVal">0đ</span>
                         </div>
 
                         <div class="breakdown-row total">
                             <span>Tổng tiền:</span>
-                            <span class="total-val">242.000đ</span>
+                            <span class="total-val" id="totalVal">0đ</span>
                         </div>
                     </div>
 
                     <p class="terms-hint">
                         Khi tiến hành đặt mua hàng, bạn đồng ý với <a href="#">Chính sách mua hàng</a> và <a
-                            href="#">Bảo mật</a> của Trung Sơn Pharma
+                            href="#">Bảo mật</a> của Minh Giang Pharma
                     </p>
                 </div>
             </aside>
@@ -498,10 +494,21 @@
 
     <script src="../assets/js/dropdown-handler.js"></script>
     <script src="../assets/js/mega-menu-loader.js"></script>
-    <script src="../assets/js/client-api.js?v=phase1-catalog"></script>
-    <script src="../assets/js/components.js?v=phase1-catalog"></script>
-    <script src="../assets/js/catalog-widgets.js?v=phase1-catalog"></script>
-    <script src="../assets/js/cart-page.js?v=phase1-catalog"></script>
+    <script src="../assets/js/components.js"></script>
+    <script src="../assets/js/cart-page.js"></script>
+
+    <!-- Voucher Selection Modal -->
+    <div id="voucherModal" class="mg-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; font-family: 'Sarabun', sans-serif;">
+        <div class="mg-modal-content" style="background: #fff; border-radius: 12px; width: 95%; max-width: 500px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; max-height: 80vh; overflow-y: auto; box-sizing: border-box;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 12px; margin-bottom: 16px;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #111827;"><i class="fa-solid fa-ticket" style="color: #0b7a3e;"></i> Chọn mã giảm giá</h3>
+                <span class="close-modal" id="closeVoucherModal" style="cursor: pointer; font-size: 24px; color: #9ca3af; font-weight: bold; line-height: 1;">&times;</span>
+            </div>
+            <div id="modalVoucherList" style="display: flex; flex-direction: column; gap: 12px;">
+                <!-- Vouchers dynamically loaded here -->
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

@@ -445,6 +445,34 @@
                     loggedInAt:   Date.now(),
                 }));
 
+                // Đồng bộ giỏ hàng từ local storage lên server
+                try {
+                    const localCart = JSON.parse(localStorage.getItem('MG_CLIENT_CART') || '[]');
+                    if (localCart.length > 0) {
+                        for (const item of localCart) {
+                            await fetch('http://localhost:8000/api/order/cart/items', {
+                                method: 'POST',
+                                headers: { 
+                                    'Content-Type': 'application/json',
+                                    'Authorization': 'Bearer ' + data.data.accessToken
+                                },
+                                body: JSON.stringify({
+                                    product_id: item.product_id,
+                                    product_name: item.product_name,
+                                    product_sku: item.product_sku,
+                                    thumbnail: item.thumbnail,
+                                    quantity: item.quantity,
+                                    unit_name: item.unit_name,
+                                    unit_price: item.unit_price
+                                })
+                            });
+                        }
+                        localStorage.removeItem('MG_CLIENT_CART');
+                    }
+                } catch (syncErr) {
+                    console.error('Lỗi đồng bộ giỏ hàng:', syncErr);
+                }
+
                 window.location.href = 'index.html';
 
             } catch (err) {

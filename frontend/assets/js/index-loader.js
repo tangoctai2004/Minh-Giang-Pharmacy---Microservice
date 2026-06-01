@@ -110,7 +110,7 @@ const homeCatalog = {
             ? `<span class="discount-badge">-${Number(product.discount_percent)}%</span>`
             : '';
 
-        let action = `<button class="btn-add-cart" onclick="addToCart(${id}, event)">Thêm giỏ hàng</button>`;
+        let action = `<button class="btn-add-cart" onclick="window.addToCart ? addToCart(${id}, event) : (window.location.href='product.html?id=${id}')">Thêm giỏ hàng</button>`;
         if (isRx) {
             action = `<button class="btn-add-cart btn-consult" onclick="event.preventDefault(); event.stopPropagation(); window.location.href='product.html?id=${id}'">Tư vấn ngay</button>`;
         } else if (!inStock) {

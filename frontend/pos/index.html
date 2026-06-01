@@ -1061,7 +1061,8 @@
                 holdingStock: false,
                 prescriptionInfo: null,
                 calculatorValue: '0',
-                voucherDiscount: 0
+                voucherDiscount: 0,
+                paymentMethod: 'cash'
             };
 
             function formatMoney(value) {
@@ -2324,6 +2325,7 @@
             function selectPayment(btn, method) {
                 document.querySelectorAll('.payment-method-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
+                posState.paymentMethod = method;
 
                 document.getElementById('cashPaySection').style.display = method === 'cash' ? 'block' : 'none';
                 document.getElementById('qrPaySection').style.display = method === 'qr' ? 'block' : 'none';
@@ -2442,19 +2444,76 @@
             }
 
             async function completeSale() {
-                await releaseStockHold('completed');
-                await closeCheckoutModal({ releaseHold: false });
-                posState.cart = [];
-                posState.prescriptionInfo = null;
-                posState.voucherDiscount = 0;
-                renderCart();
-                // Show a quick success feedback
+                if (!posState.cart.length) {
+                    showToast('Giỏ hàng trống', 'error');
+                    return;
+                }
+
+                const { subtotal, discount, total } = getOrderTotals();
+                const methodMap = {
+                    cash: 'cash',
+                    qr: 'qr_transfer',
+                    card: 'card_visa',
+                    debt: 'cash'
+                };
+                const customerPhone = document.querySelector('.pos-customer-input input')?.value?.trim() || null;
+                const orderData = {
+                    customer_id: null,
+                    customer_name: customerPhone ? `Khách POS ${customerPhone}` : 'Khách vãng lai',
+                    customer_phone: customerPhone,
+                    subtotal,
+                    discount_amount: discount,
+                    total_amount: total,
+                    payment_method: methodMap[posState.paymentMethod] || 'cash',
+                    items: posState.cart.map((item) => ({
+                        product_id: item.product_id || item.id,
+                        product_name: item.name,
+                        unit_name: item.unit_name || getCartUnit(item)?.unit_name || 'Hộp',
+                        quantity: item.quantity,
+                        unit_price: getCartItemPrice(item)
+                    }))
+                };
+
                 const toast = document.createElement('div');
                 toast.className = 'pos-toast';
-                toast.innerHTML = '<i class="fa-solid fa-circle-check"></i> Thanh toán thành công! Đang in hoá đơn...';
+                toast.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tạo đơn hàng POS...';
                 document.body.appendChild(toast);
                 setTimeout(() => { toast.classList.add('show'); }, 10);
-                setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3000);
+
+                try {
+                    const token = getPosAuthToken();
+                    const response = await fetch(`${POS_API_BASE}/order/orders`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(token ? { Authorization: `Bearer ${token}` } : {})
+                        },
+                        body: JSON.stringify(orderData)
+                    });
+                    const result = await response.json();
+                    if (!result.success) {
+                        throw new Error(result.message || 'Thanh toán thất bại');
+                    }
+
+                    await releaseStockHold('completed');
+                    await closeCheckoutModal({ releaseHold: false });
+                    posState.cart = [];
+                    posState.prescriptionInfo = null;
+                    posState.voucherDiscount = 0;
+                    renderCart();
+                    await loadProducts();
+
+                    toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> Đơn ${escapeHtml(result.data?.order_code || '')} thanh toán thành công!`;
+                    setTimeout(() => {
+                        toast.classList.remove('show');
+                        setTimeout(() => toast.remove(), 300);
+                    }, 3000);
+                } catch (error) {
+                    console.error('[POS Sale Error]:', error);
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300);
+                    showToast(error.message || 'Không thể tạo đơn hàng POS', 'error');
+                }
             }
 
             function getAlternativeReasonText(reason) {
