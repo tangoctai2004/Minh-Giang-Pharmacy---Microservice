@@ -5,9 +5,14 @@ const path = require('path');
 const crypto = require('crypto');
 const requireRoles = require('../middlewares/requireRoles');
 const { requireFields } = require('../middlewares/validate');
+const { writeAudit } = require('../services/audit.service');
 const canWriteCatalog = requireRoles(['admin', 'manager']);
 let productUnitBarcodeColumnCache = null;
 let productImagesTableCache = null;
+const ALLOWED_PRODUCT_IMAGE_ROLES = ['main', 'gallery', 'packaging', 'label', 'certificate'];
+const CONTROLLED_SPECIAL_GROUPS = ['Thuốc gây nghiện', 'Thuốc hướng tâm thần', 'Tiền chất', 'Thuốc độc'];
+const MEDICINE_ROOT_CATEGORY_ID = 1000;
+const PRODUCT_STATUSES = ['draft', 'pending_review', 'active', 'inactive', 'rejected'];
 
 async function hasProductUnitBarcodeColumn() {
   if (productUnitBarcodeColumnCache !== null) return productUnitBarcodeColumnCache;
@@ -39,7 +44,11 @@ async function hasProductImagesTable() {
 }
 
 function productImageUrlSelect(hasImagesTable) {
-  if (!hasImagesTable) return 'p.image_url AS image_url';
+  return `${productImageUrlExpression(hasImagesTable)} AS image_url`;
+}
+
+function productImageUrlExpression(hasImagesTable) {
+  if (!hasImagesTable) return 'p.image_url';
   return `COALESCE(
             (SELECT pi.public_url
              FROM product_images pi
@@ -47,7 +56,7 @@ function productImageUrlSelect(hasImagesTable) {
              ORDER BY pi.is_primary DESC, pi.sort_order ASC, pi.id ASC
              LIMIT 1),
             p.image_url
-          ) AS image_url`;
+          )`;
 }
 
 function toPublicImageUrl(value, req) {
@@ -65,9 +74,119 @@ function normalizeProductImageFields(product, req) {
   return { ...product, image_url: imageUrl, thumbnail };
 }
 
+function normalizeProductImageRecord(image, req) {
+  if (!image) return image;
+  return {
+    ...image,
+    public_url: toPublicImageUrl(image.public_url, req)
+  };
+}
+
 function cleanNullableText(value) {
   const cleaned = String(value ?? '').trim();
   return cleaned || null;
+}
+
+async function getCategoryLineage(categoryId) {
+  const lineage = [];
+  let currentId = Number(categoryId);
+  const visited = new Set();
+  while (Number.isInteger(currentId) && currentId > 0 && !visited.has(currentId)) {
+    visited.add(currentId);
+    const [[category]] = await pool.query(
+      `SELECT id, name, parent_id FROM categories WHERE id = ?`,
+      [currentId]
+    );
+    if (!category) break;
+    lineage.push(category);
+    currentId = Number(category.parent_id || 0);
+  }
+  return lineage;
+}
+
+function isMedicineCategoryLineage(lineage = []) {
+  return lineage.some((category) => Number(category.id) === MEDICINE_ROOT_CATEGORY_ID)
+    || lineage.some((category) => String(category.name || '').toLowerCase().includes('thuốc'));
+}
+
+function isMedicineCatalogProduct(product = {}) {
+  return Number(product.requires_prescription || 0) === 1
+    || String(product.category_name || '').toLowerCase().includes('thuốc');
+}
+
+function computeProductQuality(product = {}) {
+  const issues = [];
+  const imageUrl = cleanNullableText(product.image_url || product.thumbnail);
+  const isMedicine = isMedicineCatalogProduct(product);
+
+  if (!cleanNullableText(product.name)) issues.push('Thiếu tên sản phẩm');
+  if (!Number(product.category_id || 0) && !cleanNullableText(product.category_name)) issues.push('Thiếu danh mục');
+  if (!cleanNullableText(product.base_unit)) issues.push('Thiếu đơn vị bán cơ bản');
+  if (!cleanNullableText(product.barcode)) issues.push('Thiếu barcode đơn vị cơ bản');
+  if (!Number.isFinite(Number(product.retail_price)) || Number(product.retail_price) <= 0) issues.push('Thiếu giá bán lẻ hợp lệ');
+  if (!imageUrl) issues.push('Thiếu ảnh chính');
+
+  if (isMedicine) {
+    if (!cleanNullableText(product.active_ingredient)) issues.push('Thiếu hoạt chất');
+    if (!cleanNullableText(product.registration_number)) issues.push('Thiếu số đăng ký/SĐK');
+    if (!cleanNullableText(product.manufacturer)) issues.push('Thiếu nhà sản xuất');
+    if (!cleanNullableText(product.strength)) issues.push('Thiếu hàm lượng/nồng độ');
+    if (!cleanNullableText(product.route_of_administration)) issues.push('Thiếu đường dùng');
+  }
+
+  const totalChecks = isMedicine ? 11 : 6;
+  const score = Math.max(0, Math.round(((totalChecks - issues.length) / totalChecks) * 100));
+  return {
+    quality_score: score,
+    quality_issues: issues,
+    is_publish_ready: issues.length === 0
+  };
+}
+
+async function validateProductPublishReadiness(payload = {}, existingProduct = null) {
+  if (payload.status !== 'active') return [];
+  if (existingProduct?.status === 'active') return [];
+
+  const merged = { ...(existingProduct || {}), ...(payload || {}) };
+  const categoryId = Number(merged.category_id);
+  const lineage = Number.isInteger(categoryId) && categoryId > 0 ? await getCategoryLineage(categoryId) : [];
+  const imageFromTable = !cleanNullableText(merged.image_url) && existingProduct?.id
+    ? (await getProductImages(existingProduct.id))[0]?.public_url
+    : null;
+  const quality = computeProductQuality({
+    ...merged,
+    image_url: cleanNullableText(merged.image_url) || imageFromTable,
+    category_name: merged.category_name || lineage.map((category) => category.name).join(' / ')
+  });
+
+  if (quality.is_publish_ready) return [];
+  return [`Không thể chuyển thuốc sang Hoạt động vì còn thiếu dữ liệu: ${quality.quality_issues.join(', ')}`];
+}
+
+function pickAuditProductFields(product = {}) {
+  const fields = [
+    'id', 'sku', 'name', 'strength', 'route_of_administration', 'category_id', 'brand_id',
+    'active_ingredient', 'registration_number', 'manufacturer', 'requires_prescription',
+    'special_control_group', 'storage_condition', 'base_unit', 'retail_price', 'cost_price',
+    'min_stock_alert', 'image_url', 'barcode', 'status'
+  ];
+  return fields.reduce((acc, field) => {
+    if (product[field] !== undefined) acc[field] = product[field];
+    return acc;
+  }, {});
+}
+
+function diffAuditFields(beforeData = {}, afterData = {}) {
+  const changed = {};
+  const keys = new Set([...Object.keys(beforeData), ...Object.keys(afterData)]);
+  keys.forEach((key) => {
+    const beforeValue = beforeData[key] ?? null;
+    const afterValue = afterData[key] ?? null;
+    if (String(beforeValue) !== String(afterValue)) {
+      changed[key] = { before: beforeValue, after: afterValue };
+    }
+  });
+  return changed;
 }
 
 function getPublicBaseUrl(req) {
@@ -287,7 +406,7 @@ function validateProductPayload(payload = {}, { isCreate = false } = {}) {
     const minStockAlert = Number(payload.min_stock_alert);
     if (!Number.isInteger(minStockAlert) || minStockAlert < 0) errors.push('Mức cảnh báo tồn tối thiểu không hợp lệ');
   }
-  if (payload.status !== undefined && !['active', 'inactive'].includes(payload.status)) {
+  if (payload.status !== undefined && !PRODUCT_STATUSES.includes(payload.status)) {
     errors.push('Trạng thái kinh doanh không hợp lệ');
   }
   if (Number(payload.requires_prescription || 0) === 1 && !allowedSpecialGroups.includes(specialControlGroup)) {
@@ -328,6 +447,43 @@ function validateProductPayload(payload = {}, { isCreate = false } = {}) {
       });
     }
   }
+  return errors;
+}
+
+async function validateProductBusinessRules(payload = {}, { isCreate = false, existingProduct = null } = {}) {
+  const errors = [];
+  const merged = { ...(existingProduct || {}), ...(payload || {}) };
+  const categoryId = Number(merged.category_id);
+  const lineage = Number.isInteger(categoryId) && categoryId > 0 ? await getCategoryLineage(categoryId) : [];
+  const isMedicine = isMedicineCategoryLineage(lineage) || Number(merged.requires_prescription || 0) === 1;
+  const specialControlGroup = cleanNullableText(merged.special_control_group);
+  const storageCondition = cleanNullableText(merged.storage_condition) || 'Điều kiện thường';
+
+  if (isMedicine) {
+    if (!cleanNullableText(merged.active_ingredient)) errors.push('Thuốc phải có hoạt chất để đối chiếu hồ sơ GPP/Bộ Y tế');
+    if (!cleanNullableText(merged.registration_number)) errors.push('Thuốc phải có số đăng ký/SĐK');
+    if (!cleanNullableText(merged.manufacturer)) errors.push('Thuốc phải có nhà sản xuất');
+    if (!cleanNullableText(merged.strength)) errors.push('Thuốc phải có hàm lượng/nồng độ');
+    if (!cleanNullableText(merged.route_of_administration)) errors.push('Thuốc phải có đường dùng');
+  }
+
+  if (specialControlGroup === 'Kháng sinh' && Number(merged.requires_prescription || 0) !== 1) {
+    errors.push('Kháng sinh phải được đánh dấu là thuốc bán theo đơn');
+  }
+
+  if (CONTROLLED_SPECIAL_GROUPS.includes(specialControlGroup)) {
+    if (Number(merged.requires_prescription || 0) !== 1) {
+      errors.push('Nhóm thuốc quản lý đặc biệt phải được đánh dấu là thuốc bán theo đơn');
+    }
+    if (storageCondition !== 'Tủ khóa kiểm soát đặc biệt') {
+      errors.push('Thuốc gây nghiện/hướng tâm thần/tiền chất/thuốc độc phải bảo quản trong tủ khóa kiểm soát đặc biệt');
+    }
+  }
+
+  if ((isCreate || payload.storage_condition !== undefined) && storageCondition === 'Tủ khóa kiểm soát đặc biệt' && Number(merged.requires_prescription || 0) !== 1) {
+    errors.push('Chỉ thuốc kê đơn/quản lý đặc biệt mới được chọn tủ khóa kiểm soát đặc biệt');
+  }
+
   return errors;
 }
 
@@ -454,12 +610,18 @@ router.get('/', async (req, res) => {
       ? req.query.ids.split(',').map(Number).filter((id) => Number.isInteger(id) && id > 0)
       : [];
     const status = req.query.status || 'active';
+    const quality = req.query.quality || '';
     const sort = req.query.sort || 'newest';
 
+    if (status !== 'all' && !PRODUCT_STATUSES.includes(status)) {
+      return res.status(400).json({ success: false, message: 'Trạng thái sản phẩm không hợp lệ' });
+    }
+
     let where = status === 'all'
-      ? "WHERE p.status IN ('active', 'inactive')"
+      ? `WHERE p.status IN (${PRODUCT_STATUSES.map(() => '?').join(',')})`
       : "WHERE p.status = ?";
     const params = status === 'all' ? [] : [status];
+    if (status === 'all') params.push(...PRODUCT_STATUSES);
 
     if (req.query.ids && ids.length === 0) {
       return res.json({
@@ -533,6 +695,30 @@ router.get('/', async (req, res) => {
       where += ` AND p.id IN (${ids.map(() => '?').join(',')})`;
       params.push(...ids);
     }
+    const qualityMissingSql = `(
+      p.name IS NULL OR TRIM(p.name) = ''
+      OR p.category_id IS NULL
+      OR p.base_unit IS NULL OR TRIM(p.base_unit) = ''
+      OR p.barcode IS NULL OR TRIM(p.barcode) = ''
+      OR p.retail_price IS NULL OR p.retail_price <= 0
+      OR p.image_url IS NULL OR TRIM(p.image_url) = ''
+      OR (
+        p.requires_prescription = 1 AND (
+          p.active_ingredient IS NULL OR TRIM(p.active_ingredient) = ''
+          OR p.registration_number IS NULL OR TRIM(p.registration_number) = ''
+          OR p.manufacturer IS NULL OR TRIM(p.manufacturer) = ''
+          OR p.strength IS NULL OR TRIM(p.strength) = ''
+          OR p.route_of_administration IS NULL OR TRIM(p.route_of_administration) = ''
+        )
+      )
+    )`;
+    if (quality === 'missing') {
+      where += ` AND ${qualityMissingSql}`;
+    } else if (quality === 'ready') {
+      where += ` AND NOT ${qualityMissingSql}`;
+    } else if (quality && quality !== 'all') {
+      return res.status(400).json({ success: false, message: 'Bộ lọc chất lượng dữ liệu không hợp lệ' });
+    }
 
     // Sort mapping
     let orderBy = 'p.id DESC';
@@ -548,8 +734,10 @@ router.get('/', async (req, res) => {
     const imageUrlSelect = productImageUrlSelect(hasImagesTable);
 
     const [rows] = await pool.query(
-      `SELECT p.id, p.sku, p.name, p.strength, p.route_of_administration, p.retail_price,
+      `SELECT p.id, p.sku, p.name, p.strength, p.route_of_administration, p.category_id,
+              p.active_ingredient, p.registration_number, p.manufacturer, p.barcode, p.retail_price,
               p.base_unit, p.requires_prescription, p.special_control_group, p.storage_condition, p.status,
+              p.min_stock_alert,
               ${imageUrlSelect},
               p.sales_volume, p.tags,
               c.name AS category_name, c.parent_id AS category_parent_id,
@@ -571,14 +759,17 @@ router.get('/', async (req, res) => {
       `SELECT COUNT(*) AS total FROM products p ${where}`, params
     );
 
-    const data = rows.map(r => normalizeProductImageFields({
-      ...r,
-      thumbnail: r.image_url,
-      original_price: r.retail_price,
-      price: r.retail_price,
-      discount_percent: 0,
-      in_stock: Boolean(r.in_stock)
-    }, req));
+    const data = rows.map((r) => {
+      const normalized = normalizeProductImageFields({
+        ...r,
+        thumbnail: r.image_url,
+        original_price: r.retail_price,
+        price: r.retail_price,
+        discount_percent: 0,
+        in_stock: Boolean(r.in_stock)
+      }, req);
+      return { ...normalized, ...computeProductQuality(normalized) };
+    });
 
     let categoryInfo = null;
     if (categoryId) {
@@ -1285,6 +1476,41 @@ router.get('/:id/alternatives', async (req, res) => {
   }
 });
 
+// GET /products/:id/audit — Lịch sử thay đổi catalog của sản phẩm
+router.get('/:id/audit', canWriteCatalog, async (req, res) => {
+  try {
+    const productId = Number(req.params.id);
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 30));
+    if (!Number.isInteger(productId) || productId <= 0) {
+      return res.status(400).json({ success: false, message: 'product_id không hợp lệ' });
+    }
+    const [rows] = await pool.query(
+      `SELECT id, action, entity_type, entity_id, user_id, request_id,
+              before_data, after_data, metadata, created_at
+       FROM catalog_audit_logs
+       WHERE entity_type IN ('product', 'product_image')
+         AND (
+           (entity_type = 'product' AND entity_id = ?)
+           OR JSON_EXTRACT(metadata, '$.product_id') = ?
+         )
+       ORDER BY created_at DESC, id DESC
+       LIMIT ?`,
+      [productId, productId, limit]
+    );
+    res.json({
+      success: true,
+      data: rows.map((row) => ({
+        ...row,
+        before_data: typeof row.before_data === 'string' ? JSON.parse(row.before_data) : row.before_data,
+        after_data: typeof row.after_data === 'string' ? JSON.parse(row.after_data) : row.after_data,
+        metadata: typeof row.metadata === 'string' ? JSON.parse(row.metadata) : row.metadata
+      }))
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // GET /products/:id — Chi tiết sản phẩm
 router.get('/:id', async (req, res) => {
   try {
@@ -1380,12 +1606,20 @@ router.post('/', canWriteCatalog, requireFields(['name', 'category_id', 'base_un
       name, strength, route_of_administration, category_id, brand_id, active_ingredient, registration_number,
       manufacturer, requires_prescription, special_control_group, storage_condition, base_unit, retail_price, cost_price,
       min_stock_alert, image_url, gallery, description, tags, country_of_origin,
-      barcode, unit_conversions, specifications
+      barcode, status, unit_conversions, specifications
     } = req.body;
 
     const validationErrors = validateProductPayload(req.body, { isCreate: true });
     if (validationErrors.length > 0) {
       return res.status(400).json({ success: false, message: validationErrors[0], errors: validationErrors });
+    }
+    const businessErrors = await validateProductBusinessRules(req.body, { isCreate: true });
+    if (businessErrors.length > 0) {
+      return res.status(400).json({ success: false, message: businessErrors[0], errors: businessErrors });
+    }
+    const publishErrors = await validateProductPublishReadiness(req.body);
+    if (publishErrors.length > 0) {
+      return res.status(400).json({ success: false, message: publishErrors[0], errors: publishErrors });
     }
     const barcodeErrors = await validateGlobalBarcodeUniqueness(req.body);
     if (barcodeErrors.length > 0) {
@@ -1395,6 +1629,7 @@ router.post('/', canWriteCatalog, requireFields(['name', 'category_id', 'base_un
     const normalizedRoute = cleanNullableText(route_of_administration);
     const normalizedSpecialGroup = requires_prescription ? cleanNullableText(special_control_group) : null;
     const normalizedStorage = cleanNullableText(storage_condition) || 'Điều kiện thường';
+    const normalizedStatus = status || 'draft';
 
     await conn.query('START TRANSACTION');
 
@@ -1404,13 +1639,13 @@ router.post('/', canWriteCatalog, requireFields(['name', 'category_id', 'base_un
         manufacturer, requires_prescription, special_control_group, storage_condition, base_unit, retail_price, cost_price,
         min_stock_alert, image_url, gallery, description, tags, country_of_origin,
         barcode, status
-      ) VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')`,
+      ) VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         String(name).trim(), normalizedStrength, normalizedRoute, category_id, brand_id || null, cleanNullableText(active_ingredient), cleanNullableText(registration_number),
         cleanNullableText(manufacturer), requires_prescription ? 1 : 0, normalizedSpecialGroup, normalizedStorage, String(base_unit).trim(), retail_price,
         cost_price ?? 0, min_stock_alert ?? 10, cleanNullableText(image_url), gallery ? JSON.stringify(gallery) : null,
         cleanNullableText(description), tags ? JSON.stringify(tags) : null, cleanNullableText(country_of_origin),
-        cleanNullableText(barcode)
+        cleanNullableText(barcode), normalizedStatus
       ]
     );
 
@@ -1431,6 +1666,22 @@ router.post('/', canWriteCatalog, requireFields(['name', 'category_id', 'base_un
         [specValues]
       );
     }
+    await writeAudit({
+      action: 'product_create',
+      entity_type: 'product',
+      entity_id: productId,
+      user_id: req.userId,
+      request_id: req.requestId,
+      after_data: {
+        id: productId,
+        sku,
+        ...pickAuditProductFields({ ...req.body, status: normalizedStatus })
+      },
+      metadata: {
+        unit_conversions_count: Array.isArray(unit_conversions) ? unit_conversions.length : 0,
+        specifications_count: Array.isArray(specifications) ? specifications.length : 0
+      }
+    }, conn);
 
     await conn.query('COMMIT');
     res.status(201).json({ success: true, data: { id: productId, sku } });
@@ -1458,7 +1709,7 @@ router.put('/:id', canWriteCatalog, async (req, res) => {
       barcode, status, unit_conversions, specifications
     } = req.body;
 
-    const [[existing]] = await conn.query(`SELECT id FROM products WHERE id = ?`, [productId]);
+    const [[existing]] = await conn.query(`SELECT * FROM products WHERE id = ?`, [productId]);
     if (!existing) {
       return res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm' });
     }
@@ -1467,10 +1718,25 @@ router.put('/:id', canWriteCatalog, async (req, res) => {
     if (validationErrors.length > 0) {
       return res.status(400).json({ success: false, message: validationErrors[0], errors: validationErrors });
     }
+    const businessErrors = await validateProductBusinessRules(req.body, { existingProduct: existing });
+    if (businessErrors.length > 0) {
+      return res.status(400).json({ success: false, message: businessErrors[0], errors: businessErrors });
+    }
+    const publishErrors = await validateProductPublishReadiness(req.body, existing);
+    if (publishErrors.length > 0) {
+      return res.status(400).json({ success: false, message: publishErrors[0], errors: publishErrors });
+    }
     const barcodeErrors = await validateGlobalBarcodeUniqueness(req.body, productId);
     if (barcodeErrors.length > 0) {
       return res.status(409).json({ success: false, message: barcodeErrors[0], errors: barcodeErrors });
     }
+    const nextRequiresPrescription = requires_prescription !== undefined
+      ? Number(requires_prescription || 0)
+      : Number(existing.requires_prescription || 0);
+    const nextSpecialControlGroup = special_control_group !== undefined
+      ? special_control_group
+      : existing.special_control_group;
+
     const normalizedFields = {
       ...(name !== undefined ? { name: String(name).trim() } : {}),
       ...(strength !== undefined ? { strength: cleanNullableText(strength) } : {}),
@@ -1482,7 +1748,7 @@ router.put('/:id', canWriteCatalog, async (req, res) => {
       ...(manufacturer !== undefined ? { manufacturer: cleanNullableText(manufacturer) } : {}),
       ...(requires_prescription !== undefined ? { requires_prescription } : {}),
       ...(special_control_group !== undefined || requires_prescription !== undefined
-        ? { special_control_group: Number(requires_prescription || 0) === 1 ? cleanNullableText(special_control_group) : null }
+        ? { special_control_group: nextRequiresPrescription === 1 ? cleanNullableText(nextSpecialControlGroup) : null }
         : {}),
       ...(storage_condition !== undefined ? { storage_condition: cleanNullableText(storage_condition) || 'Điều kiện thường' } : {}),
       ...(base_unit !== undefined ? { base_unit: String(base_unit).trim() } : {}),
@@ -1529,6 +1795,23 @@ router.put('/:id', canWriteCatalog, async (req, res) => {
         await conn.query(`INSERT INTO product_specifications (product_id, spec_key, spec_value, sort_order) VALUES ?`, [specValues]);
       }
     }
+    const [[updatedProduct]] = await conn.query(`SELECT * FROM products WHERE id = ?`, [productId]);
+    const beforeAudit = pickAuditProductFields(existing);
+    const afterAudit = pickAuditProductFields(updatedProduct || {});
+    await writeAudit({
+      action: status !== undefined && Object.keys(normalizedFields).length === 1 ? 'product_status_update' : 'product_update',
+      entity_type: 'product',
+      entity_id: productId,
+      user_id: req.userId,
+      request_id: req.requestId,
+      before_data: beforeAudit,
+      after_data: afterAudit,
+      metadata: {
+        changed_fields: diffAuditFields(beforeAudit, afterAudit),
+        unit_conversions_replaced: Array.isArray(unit_conversions),
+        specifications_replaced: Array.isArray(specifications)
+      }
+    }, conn);
 
     await conn.query('COMMIT');
     res.json({ success: true, message: 'Cập nhật sản phẩm thành công' });
@@ -1544,7 +1827,7 @@ router.put('/:id', canWriteCatalog, async (req, res) => {
 router.get('/:id/images', async (req, res) => {
   try {
     const images = await getProductImages(req.params.id);
-    res.json({ success: true, data: images });
+    res.json({ success: true, data: images.map((image) => normalizeProductImageRecord(image, req)) });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -1578,11 +1861,10 @@ router.post('/:id/images', canWriteCatalog, async (req, res) => {
     if (!product) return res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm' });
 
     const allowedMime = ['image/jpeg', 'image/png', 'image/webp'];
-    const allowedRoles = ['main', 'gallery', 'packaging', 'label', 'certificate'];
     if (!allowedMime.includes(mime_type)) {
       return res.status(400).json({ success: false, message: 'Chỉ hỗ trợ ảnh JPG, PNG hoặc WebP' });
     }
-    if (!allowedRoles.includes(image_role)) {
+    if (!ALLOWED_PRODUCT_IMAGE_ROLES.includes(image_role)) {
       return res.status(400).json({ success: false, message: 'Vai trò ảnh sản phẩm không hợp lệ' });
     }
     if (!data_base64 || typeof data_base64 !== 'string') {
@@ -1631,10 +1913,165 @@ router.post('/:id/images', canWriteCatalog, async (req, res) => {
     if (primary) {
       await conn.query(`UPDATE products SET image_url = ? WHERE id = ?`, [publicUrl, productId]);
     }
+    await writeAudit({
+      action: 'product_image_upload',
+      entity_type: 'product_image',
+      entity_id: result.insertId,
+      user_id: req.userId,
+      request_id: req.requestId,
+      after_data: {
+        id: result.insertId,
+        product_id: productId,
+        original_name: original_name || fileName,
+        image_role: primary ? 'main' : image_role,
+        is_primary: primary,
+        public_url: publicUrl
+      },
+      metadata: { product_id: productId }
+    }, conn);
     await conn.query('COMMIT');
 
     const [[image]] = await pool.query(`SELECT * FROM product_images WHERE id = ?`, [result.insertId]);
-    res.status(201).json({ success: true, data: image });
+    res.status(201).json({ success: true, data: normalizeProductImageRecord(image, req) });
+  } catch (err) {
+    try { await conn.query('ROLLBACK'); } catch (_rollbackErr) {}
+    res.status(500).json({ success: false, message: err.message });
+  } finally {
+    conn.release();
+  }
+});
+
+// PUT /:id/images/reorder — Sắp xếp lại thứ tự ảnh sản phẩm
+router.put('/:id/images/reorder', canWriteCatalog, async (req, res) => {
+  const conn = await pool.getConnection();
+  try {
+    if (!(await hasProductImagesTable())) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database chưa có bảng product_images. Vui lòng chạy migration 06_mg_catalog_product_media_gpp.sql trước khi quản lý ảnh.'
+      });
+    }
+    const productId = Number(req.params.id);
+    const imageIds = Array.isArray(req.body?.image_ids)
+      ? req.body.image_ids.map(Number).filter((id) => Number.isInteger(id) && id > 0)
+      : [];
+    if (!Number.isInteger(productId) || productId <= 0) {
+      return res.status(400).json({ success: false, message: 'product_id không hợp lệ' });
+    }
+    if (!imageIds.length) {
+      return res.status(400).json({ success: false, message: 'Danh sách ảnh sắp xếp không hợp lệ' });
+    }
+
+    const [existing] = await conn.query(
+      `SELECT id FROM product_images WHERE product_id = ? AND id IN (${imageIds.map(() => '?').join(',')})`,
+      [productId, ...imageIds]
+    );
+    if (existing.length !== imageIds.length) {
+      return res.status(400).json({ success: false, message: 'Danh sách ảnh không thuộc cùng sản phẩm' });
+    }
+
+    await conn.query('START TRANSACTION');
+    for (let index = 0; index < imageIds.length; index += 1) {
+      await conn.query(`UPDATE product_images SET sort_order = ? WHERE id = ? AND product_id = ?`, [index, imageIds[index], productId]);
+    }
+    await writeAudit({
+      action: 'product_image_reorder',
+      entity_type: 'product_image',
+      entity_id: productId,
+      user_id: req.userId,
+      request_id: req.requestId,
+      after_data: { image_ids: imageIds },
+      metadata: { product_id: productId }
+    }, conn);
+    await conn.query('COMMIT');
+
+    const images = await getProductImages(productId);
+    res.json({
+      success: true,
+      message: 'Đã cập nhật thứ tự ảnh',
+      data: images.map((image) => normalizeProductImageRecord(image, req))
+    });
+  } catch (err) {
+    try { await conn.query('ROLLBACK'); } catch (_rollbackErr) {}
+    res.status(500).json({ success: false, message: err.message });
+  } finally {
+    conn.release();
+  }
+});
+
+// PUT /:id/images/:imageId — Cập nhật metadata ảnh sản phẩm
+router.put('/:id/images/:imageId', canWriteCatalog, async (req, res) => {
+  const conn = await pool.getConnection();
+  try {
+    if (!(await hasProductImagesTable())) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database chưa có bảng product_images. Vui lòng chạy migration 06_mg_catalog_product_media_gpp.sql trước khi quản lý ảnh.'
+      });
+    }
+    const productId = Number(req.params.id);
+    const imageId = Number(req.params.imageId);
+    const { image_role, alt_text, sort_order } = req.body || {};
+    const [[image]] = await conn.query(
+      `SELECT * FROM product_images WHERE id = ? AND product_id = ?`,
+      [imageId, productId]
+    );
+    if (!image) return res.status(404).json({ success: false, message: 'Không tìm thấy ảnh sản phẩm' });
+    if (image_role !== undefined && !ALLOWED_PRODUCT_IMAGE_ROLES.includes(image_role)) {
+      return res.status(400).json({ success: false, message: 'Vai trò ảnh sản phẩm không hợp lệ' });
+    }
+    if (Number(image.is_primary) === 1 && image_role !== undefined && image_role !== 'main') {
+      return res.status(400).json({ success: false, message: 'Ảnh chính phải giữ vai trò main. Hãy chọn ảnh chính khác trước khi đổi vai trò.' });
+    }
+
+    const fields = [];
+    const params = [];
+    if (alt_text !== undefined) {
+      fields.push('alt_text = ?');
+      params.push(cleanNullableText(alt_text));
+    }
+    if (sort_order !== undefined) {
+      fields.push('sort_order = ?');
+      params.push(Number(sort_order) || 0);
+    }
+    if (image_role !== undefined) {
+      fields.push('image_role = ?');
+      params.push(image_role);
+    }
+    if (!fields.length) {
+      return res.status(400).json({ success: false, message: 'Không có dữ liệu ảnh cần cập nhật' });
+    }
+
+    await conn.query('START TRANSACTION');
+    if (image_role === 'main') {
+      await conn.query(`UPDATE product_images SET is_primary = 0, image_role = IF(image_role = 'main', 'gallery', image_role) WHERE product_id = ?`, [productId]);
+      fields.push('is_primary = ?');
+      params.push(1);
+      await conn.query(`UPDATE products SET image_url = ? WHERE id = ?`, [image.public_url, productId]);
+    }
+    await conn.query(`UPDATE product_images SET ${fields.join(', ')} WHERE id = ? AND product_id = ?`, [...params, imageId, productId]);
+    const [[updatedImageInTx]] = await conn.query(`SELECT * FROM product_images WHERE id = ?`, [imageId]);
+    await writeAudit({
+      action: 'product_image_update',
+      entity_type: 'product_image',
+      entity_id: imageId,
+      user_id: req.userId,
+      request_id: req.requestId,
+      before_data: image,
+      after_data: updatedImageInTx,
+      metadata: {
+        product_id: productId,
+        changed_fields: diffAuditFields(image, updatedImageInTx || {})
+      }
+    }, conn);
+    await conn.query('COMMIT');
+
+    const [[updated]] = await pool.query(`SELECT * FROM product_images WHERE id = ?`, [imageId]);
+    res.json({
+      success: true,
+      message: 'Đã cập nhật ảnh sản phẩm',
+      data: normalizeProductImageRecord(updated, req)
+    });
   } catch (err) {
     try { await conn.query('ROLLBACK'); } catch (_rollbackErr) {}
     res.status(500).json({ success: false, message: err.message });
@@ -1656,7 +2093,7 @@ router.put('/:id/images/:imageId/primary', canWriteCatalog, async (req, res) => 
     const productId = Number(req.params.id);
     const imageId = Number(req.params.imageId);
     const [[image]] = await conn.query(
-      `SELECT id, public_url FROM product_images WHERE id = ? AND product_id = ?`,
+      `SELECT * FROM product_images WHERE id = ? AND product_id = ?`,
       [imageId, productId]
     );
     if (!image) return res.status(404).json({ success: false, message: 'Không tìm thấy ảnh sản phẩm' });
@@ -1665,6 +2102,17 @@ router.put('/:id/images/:imageId/primary', canWriteCatalog, async (req, res) => 
     await conn.query(`UPDATE product_images SET is_primary = 0, image_role = IF(image_role = 'main', 'gallery', image_role) WHERE product_id = ?`, [productId]);
     await conn.query(`UPDATE product_images SET is_primary = 1, image_role = 'main' WHERE id = ?`, [imageId]);
     await conn.query(`UPDATE products SET image_url = ? WHERE id = ?`, [image.public_url, productId]);
+    const [[updatedImage]] = await conn.query(`SELECT * FROM product_images WHERE id = ?`, [imageId]);
+    await writeAudit({
+      action: 'product_image_set_primary',
+      entity_type: 'product_image',
+      entity_id: imageId,
+      user_id: req.userId,
+      request_id: req.requestId,
+      before_data: image,
+      after_data: updatedImage,
+      metadata: { product_id: productId }
+    }, conn);
     await conn.query('COMMIT');
     res.json({ success: true, message: 'Đã đặt ảnh chính' });
   } catch (err) {
@@ -1686,7 +2134,7 @@ router.delete('/:id/images/:imageId', canWriteCatalog, async (req, res) => {
       });
     }
     const [[image]] = await conn.query(
-      `SELECT id, storage_path, is_primary FROM product_images WHERE id = ? AND product_id = ?`,
+      `SELECT * FROM product_images WHERE id = ? AND product_id = ?`,
       [req.params.imageId, req.params.id]
     );
     if (!image) return res.status(404).json({ success: false, message: 'Không tìm thấy ảnh sản phẩm' });
@@ -1705,6 +2153,15 @@ router.delete('/:id/images/:imageId', canWriteCatalog, async (req, res) => {
         await conn.query(`UPDATE products SET image_url = NULL WHERE id = ?`, [req.params.id]);
       }
     }
+    await writeAudit({
+      action: 'product_image_delete',
+      entity_type: 'product_image',
+      entity_id: image.id,
+      user_id: req.userId,
+      request_id: req.requestId,
+      before_data: image,
+      metadata: { product_id: Number(req.params.id) }
+    }, conn);
     await conn.query('COMMIT');
 
     if (image.storage_path && !image.storage_path.includes('..')) {
@@ -1721,14 +2178,32 @@ router.delete('/:id/images/:imageId', canWriteCatalog, async (req, res) => {
 
 // DELETE /:id — Xóa sản phẩm
 router.delete('/:id', canWriteCatalog, async (req, res) => {
+  const conn = await pool.getConnection();
   try {
-    const [result] = await pool.query(`UPDATE products SET status = 'inactive' WHERE id = ?`, [req.params.id]);
-    if (result.affectedRows === 0) {
+    const [[existing]] = await conn.query(`SELECT * FROM products WHERE id = ?`, [req.params.id]);
+    if (!existing) {
       return res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm' });
     }
+    await conn.query('START TRANSACTION');
+    await conn.query(`UPDATE products SET status = 'inactive' WHERE id = ?`, [req.params.id]);
+    const [[updated]] = await conn.query(`SELECT * FROM products WHERE id = ?`, [req.params.id]);
+    await writeAudit({
+      action: 'product_status_update',
+      entity_type: 'product',
+      entity_id: Number(req.params.id),
+      user_id: req.userId,
+      request_id: req.requestId,
+      before_data: pickAuditProductFields(existing),
+      after_data: pickAuditProductFields(updated || {}),
+      metadata: { reason: 'soft_delete' }
+    }, conn);
+    await conn.query('COMMIT');
     res.json({ success: true, message: 'Xóa sản phẩm thành công (soft delete)' });
   } catch (err) {
+    try { await conn.query('ROLLBACK'); } catch (_rollbackErr) {}
     res.status(500).json({ success: false, message: err.message });
+  } finally {
+    conn.release();
   }
 });
 

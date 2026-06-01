@@ -30,6 +30,8 @@ router.get('/', (req, res) => {
       'GET    /batches            — Lô nhập hàng',
       'POST   /batches            — Tạo phiếu nhập hàng mới',
       'GET    /inventory          — Tổng quan tồn kho',
+      'GET    /inventory/audits   — Lịch sử phiếu kiểm kê',
+      'POST   /inventory/audits   — Tạo phiếu kiểm kê tồn kho',
       'GET    /inventory/availability — Tồn kho có thể bán cho POS',
       'POST   /inventory/reservations — Giữ tồn tạm thời cho POS/Order',
       'POST   /inventory/reservations/release — Nhả giữ tồn tạm thời',
