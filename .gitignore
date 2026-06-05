@@ -32,6 +32,9 @@ target/                        # Maven build output
 *.war                         # Java web archives
 *.ear                         # Java enterprise archives
 
+# Runtime product image uploads, never commit user files
+backend/catalog-service/uploads/
+
 # ─── IDE & Editor Files ────────────────────────────────────────────
 .vscode/                       # VS Code workspace settings
 .idea/                         # JetBrains IDEs (IntelliJ, WebStorm, etc.)
@@ -73,6 +76,8 @@ data/
 logs/
 *.log
 *.log.*
+.local-frontend.pid
+.local-frontend.log
 
 # ─── Test & Coverage ──────────────────────────────────────────────
 .cache/

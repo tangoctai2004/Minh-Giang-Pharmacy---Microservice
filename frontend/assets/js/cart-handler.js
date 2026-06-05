@@ -24,6 +24,33 @@ async function addToCart(productId, event, options = {}) {
     }
 }
 
+function _normalizeCatalogProduct(product) {
+    const price = Number(product.retail_price || product.price || 0);
+    return {
+        ...product,
+        price,
+        requires_prescription: Boolean(Number(product.requires_prescription || 0)),
+        in_stock: product.in_stock !== false,
+        thumbnail: product.thumbnail || product.image_url || product.image
+    };
+}
+
+function _canAddCatalogProduct(product) {
+    if (product.requires_prescription) {
+        showToast('Thuốc kê đơn cần tư vấn dược sĩ trước khi đặt mua.');
+        return false;
+    }
+    if (!product.in_stock) {
+        showToast('Sản phẩm hiện đã hết hàng.');
+        return false;
+    }
+    if (!product.price) {
+        showToast('Sản phẩm chưa có giá bán, vui lòng liên hệ nhà thuốc.');
+        return false;
+    }
+    return true;
+}
+
 /**
  * Gọi API thêm vào giỏ hàng cục bộ (localStorage)
  */
@@ -33,7 +60,8 @@ async function _addToCartLocal(productId, options) {
         const prodData = await resProd.json();
         
         if (!prodData.success) throw new Error('Không lấy được thông tin sản phẩm');
-        const p = prodData.data;
+        const p = _normalizeCatalogProduct(prodData.data);
+        if (!_canAddCatalogProduct(p)) return false;
 
         let cart = JSON.parse(localStorage.getItem('MG_CLIENT_CART') || '[]');
         const existingItem = cart.find(item => item.product_id === productId);
@@ -49,11 +77,11 @@ async function _addToCartLocal(productId, options) {
                 product_id: productId,
                 product_name: p.name,
                 product_sku: p.sku,
-                thumbnail: p.thumbnail || p.image_url,
+                thumbnail: p.thumbnail,
                 quantity: quantity,
                 unit_name: p.base_unit || 'Hộp',
-                unit_price: p.retail_price || p.price,
-                subtotal: (p.retail_price || p.price) * quantity
+                unit_price: p.price,
+                subtotal: p.price * quantity
             });
         }
 
@@ -83,7 +111,8 @@ async function _addToCartServer(productId, options) {
         const prodData = await resProd.json();
         
         if (!prodData.success) throw new Error('Không lấy được thông tin sản phẩm');
-        const p = prodData.data;
+        const p = _normalizeCatalogProduct(prodData.data);
+        if (!_canAddCatalogProduct(p)) return false;
 
         const response = await fetch(`${API_BASE_ORDER}/cart/items`, {
             method: 'POST',
@@ -95,10 +124,10 @@ async function _addToCartServer(productId, options) {
                 product_id: productId,
                 product_name: p.name,
                 product_sku: p.sku,
-                thumbnail: p.thumbnail || p.image_url,
+                thumbnail: p.thumbnail,
                 quantity: options.quantity || 1,
                 unit_name: p.base_unit || 'Hộp',
-                unit_price: p.retail_price || p.price
+                unit_price: p.price
             })
         });
 

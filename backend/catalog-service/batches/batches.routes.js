@@ -5,28 +5,220 @@ const { requireFields, validateEnum } = require('../middlewares/validate');
 const { writeAudit } = require('../services/audit.service');
 const canWriteCatalog = requireRoles(['admin', 'manager']);
 
+function normalizeText(value) {
+  return String(value || '').trim();
+}
+
+function normalizeDateOnly(value) {
+  if (!value) return '';
+  return String(value).slice(0, 10);
+}
+
+function inferLocationStorageType(location = {}) {
+  const text = `${location.zone || ''} ${location.cabinet || ''} ${location.shelf || ''} ${location.label || ''}`.toLowerCase();
+  if (/(lạnh|kho lạnh|cold|2-8|2 - 8)/i.test(text)) return 'cold';
+  if (/(khóa|khoa|kiểm soát|kiem soat|gây nghiện|gay nghien|hướng tâm|huong tam|hướng thần|huong than|controlled)/i.test(text)) {
+    return 'controlled';
+  }
+  return 'normal';
+}
+
+function isColdChainProduct(product = {}) {
+  return /lạnh|2-8|2 - 8|cold/i.test(String(product.storage_condition || ''));
+}
+
+function isControlledProduct(product = {}) {
+  return /gây nghiện|gay nghien|hướng tâm|huong tam|hướng thần|huong than|tiền chất|tien chat|thuốc độc|thuoc doc|kiểm soát|kiem soat/i
+    .test(`${product.special_control_group || ''} ${product.storage_condition || ''}`);
+}
+
+function batchItemStatus(expiryDate, quantityRemaining) {
+  if (Number(quantityRemaining) <= 0) return 'depleted';
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const expiry = new Date(`${normalizeDateOnly(expiryDate)}T00:00:00`);
+  if (Number.isNaN(expiry.getTime())) return 'available';
+  if (expiry < today) return 'expired';
+  const days = Math.ceil((expiry.getTime() - today.getTime()) / 86400000);
+  return days <= 90 ? 'near_expiry' : 'available';
+}
+
+function validateExpiryDates(manufactureDate, expiryDate, receivedDate) {
+  const expiryText = normalizeDateOnly(expiryDate);
+  if (!expiryText) return 'Thiếu hạn sử dụng của lô';
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const expiry = new Date(`${expiryText}T00:00:00`);
+  if (Number.isNaN(expiry.getTime())) return 'Hạn sử dụng không hợp lệ';
+  if (expiry < today) return 'Không được nhập lô đã hết hạn sử dụng';
+
+  const receivedText = normalizeDateOnly(receivedDate);
+  if (receivedText) {
+    const received = new Date(`${receivedText}T00:00:00`);
+    if (!Number.isNaN(received.getTime()) && expiry < received) {
+      return 'Hạn sử dụng không được trước ngày nhập kho';
+    }
+  }
+
+  const manufactureText = normalizeDateOnly(manufactureDate);
+  if (manufactureText) {
+    const manufacture = new Date(`${manufactureText}T00:00:00`);
+    if (!Number.isNaN(manufacture.getTime()) && manufacture > expiry) {
+      return 'Ngày sản xuất không được sau hạn sử dụng';
+    }
+  }
+  return null;
+}
+
+async function normalizeBatchItems(conn, items, receivedDate, targetStatus) {
+  const normalizedItems = [];
+  let totalAmount = 0;
+
+  for (let index = 0; index < items.length; index += 1) {
+    const item = items[index];
+    const rowNumber = index + 1;
+    const productId = Number(item.product_id);
+    const quantityReceived = Number(item.quantity_received);
+    const costPrice = Number(item.cost_price);
+    const lotNumber = normalizeText(item.lot_number);
+    const expiryDate = normalizeDateOnly(item.expiry_date);
+    const manufactureDate = normalizeDateOnly(item.manufacture_date) || null;
+    const locationId = item.location_id ? Number(item.location_id) : null;
+
+    if (!productId || !lotNumber || !expiryDate || !quantityReceived || quantityReceived <= 0 || !Number.isFinite(costPrice) || costPrice < 0) {
+      throw Object.assign(new Error(`Dòng ${rowNumber}: dữ liệu sản phẩm/lô/số lượng/giá nhập không hợp lệ`), { statusCode: 400 });
+    }
+
+    const expiryError = validateExpiryDates(manufactureDate, expiryDate, receivedDate);
+    if (expiryError) {
+      throw Object.assign(new Error(`Dòng ${rowNumber}: ${expiryError}`), { statusCode: 400 });
+    }
+
+    const [[product]] = await conn.query(
+      `SELECT id, name, status, storage_condition, special_control_group
+       FROM products
+       WHERE id = ? AND status = 'active'`,
+      [productId]
+    );
+    if (!product) {
+      throw Object.assign(new Error(`Dòng ${rowNumber}: sản phẩm #${productId} không tồn tại hoặc chưa ở trạng thái active`), { statusCode: 400 });
+    }
+
+    let location = null;
+    if (locationId) {
+      [[location]] = await conn.query(
+        `SELECT id, zone, cabinet, shelf, label, is_active FROM locations WHERE id = ? AND is_active = 1`,
+        [locationId]
+      );
+      if (!location) {
+        throw Object.assign(new Error(`Dòng ${rowNumber}: vị trí lưu trữ không tồn tại hoặc đã ngừng dùng`), { statusCode: 400 });
+      }
+      const locationType = inferLocationStorageType(location);
+      if (isColdChainProduct(product) && locationType !== 'cold') {
+        throw Object.assign(new Error(`Dòng ${rowNumber}: thuốc cần lưu kho lạnh phải chọn vị trí kho lạnh 2-8°C`), { statusCode: 400 });
+      }
+      if (isControlledProduct(product) && locationType !== 'controlled') {
+        throw Object.assign(new Error(`Dòng ${rowNumber}: thuốc quản lý đặc biệt phải chọn vị trí tủ khóa kiểm soát`), { statusCode: 400 });
+      }
+    } else if (isColdChainProduct(product) || isControlledProduct(product)) {
+      throw Object.assign(new Error(`Dòng ${rowNumber}: thuốc có điều kiện bảo quản đặc biệt bắt buộc chọn vị trí lưu trữ phù hợp`), { statusCode: 400 });
+    }
+
+    const quantityRemaining = targetStatus === 'completed'
+      ? quantityReceived
+      : Number(item.quantity_remaining ?? 0);
+    if (quantityRemaining < 0 || quantityRemaining > quantityReceived) {
+      throw Object.assign(new Error(`Dòng ${rowNumber}: tồn còn lại phải nằm trong khoảng 0 đến số lượng nhập`), { statusCode: 400 });
+    }
+
+    totalAmount += quantityReceived * costPrice;
+    normalizedItems.push({
+      id: item.id ? Number(item.id) : null,
+      product_id: productId,
+      lot_number: lotNumber,
+      manufacture_date: manufactureDate,
+      expiry_date: expiryDate,
+      quantity_received: quantityReceived,
+      quantity_remaining: quantityRemaining,
+      cost_price: costPrice,
+      location_id: locationId,
+      status: targetStatus === 'completed' ? batchItemStatus(expiryDate, quantityRemaining) : 'depleted'
+    });
+  }
+
+  return { normalizedItems, totalAmount };
+}
+
+async function writeInboundMovements(conn, batchId, batchCode, userId) {
+  const [items] = await conn.query(
+    `SELECT id, product_id, quantity_received
+     FROM batch_items
+     WHERE batch_id = ? AND quantity_received > 0`,
+    [batchId]
+  );
+  for (const item of items) {
+    await conn.query(
+      `INSERT INTO stock_movements (
+        movement_code, batch_item_id, product_id, movement_type, quantity,
+        reference_type, reference_id, reason, created_by
+      ) VALUES (?, ?, ?, 'inbound', ?, 'purchase_order', ?, ?, ?)`,
+      [
+        batchCode,
+        item.id,
+        item.product_id,
+        item.quantity_received,
+        batchId,
+        'Nhập kho từ phiếu nhập đã hoàn tất',
+        userId || null
+      ]
+    );
+  }
+}
+
 /**
  * Batches Routes — Phiếu nhập hàng (mg_catalog.batches + batch_items)
  *
  * GET  /batches          — Danh sách phiếu nhập ✅
  * GET  /batches/:id      — Chi tiết phiếu nhập kèm batch_items ✅
- * POST /batches          — Tạo phiếu nhập mới (TODO)
- * PUT  /batches/:id      — Cập nhật phiếu (chỉ khi status=draft) (TODO)
+ * POST /batches          — Tạo phiếu nhập mới, ghi tồn khi status=completed ✅
+ * PUT  /batches/:id      — Cập nhật phiếu (chỉ khi status=draft), hoàn tất nhập kho ✅
  */
 
 router.get('/', async (req, res) => {
   try {
+    const status = req.query.status || '';
+    const q = req.query.q ? `%${req.query.q}%` : null;
+    const params = [];
+    let where = 'WHERE 1 = 1';
+    if (status) {
+      if (!['draft', 'completed'].includes(status)) {
+        return res.status(400).json({ success: false, message: 'status không hợp lệ' });
+      }
+      where += ' AND b.status = ?';
+      params.push(status);
+    }
+    if (q) {
+      where += ' AND (b.batch_code LIKE ? OR s.name LIKE ? OR b.delivery_person LIKE ? OR b.invoice_number LIKE ?)';
+      params.push(q, q, q, q);
+    }
+
     const [rows] = await pool.query(
       `SELECT b.id, b.batch_code, b.status,
               s.name AS supplier_name,
-              b.total_amount, b.paid_amount, b.received_date, b.created_at
+              b.total_amount, b.paid_amount, b.received_date, b.created_at,
+              COUNT(bi.id) AS item_count,
+              COALESCE(SUM(bi.quantity_received), 0) AS total_quantity
        FROM batches b
        LEFT JOIN suppliers s ON s.id = b.supplier_id
-       ORDER BY b.created_at DESC LIMIT 50`
+       LEFT JOIN batch_items bi ON bi.batch_id = b.id
+       ${where}
+       GROUP BY b.id, b.batch_code, b.status, s.name, b.total_amount, b.paid_amount, b.received_date, b.created_at
+       ORDER BY b.created_at DESC LIMIT 50`,
+      params
     );
     res.json({ success: true, data: rows });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    res.status(err.statusCode || 500).json({ success: false, message: err.message });
   }
 });
 
@@ -35,9 +227,11 @@ router.get('/:id', async (req, res) => {
     const [[batch]] = await pool.query('SELECT * FROM batches WHERE id = ?', [req.params.id]);
     if (!batch) return res.status(404).json({ success: false, message: 'Không tìm thấy phiếu nhập' });
     const [items] = await pool.query(
-      `SELECT bi.*, p.name AS product_name, p.sku AS product_sku, p.base_unit
+      `SELECT bi.*, p.name AS product_name, p.sku AS product_sku, p.base_unit,
+              l.zone, l.cabinet, l.shelf, l.label AS location_label
        FROM batch_items bi
        LEFT JOIN products p ON p.id = bi.product_id
+       LEFT JOIN locations l ON l.id = bi.location_id
        WHERE bi.batch_id = ?`,
       [req.params.id]
     );
@@ -83,41 +277,7 @@ router.post('/', canWriteCatalog, requireFields(['supplier_id', 'received_date',
       return res.status(400).json({ success: false, message: 'Nhà cung cấp không tồn tại hoặc đã ngừng hoạt động' });
     }
 
-    const normalizedItems = [];
-    let totalAmount = 0;
-    for (const item of items) {
-      const productId = Number(item.product_id);
-      const quantityReceived = Number(item.quantity_received);
-      const costPrice = Number(item.cost_price);
-
-      if (!productId || !item.lot_number || !item.expiry_date || !quantityReceived || quantityReceived <= 0 || !Number.isFinite(costPrice) || costPrice < 0) {
-        await conn.query('ROLLBACK');
-        return res.status(400).json({ success: false, message: 'Dữ liệu item không hợp lệ' });
-      }
-
-      const [[product]] = await conn.query(
-        `SELECT id FROM products WHERE id = ? AND status = 'active'`,
-        [productId]
-      );
-      if (!product) {
-        await conn.query('ROLLBACK');
-        return res.status(400).json({ success: false, message: `Sản phẩm #${productId} không tồn tại hoặc đang inactive` });
-      }
-
-      const lineTotal = quantityReceived * costPrice;
-      totalAmount += lineTotal;
-
-      normalizedItems.push({
-        product_id: productId,
-        lot_number: item.lot_number,
-        manufacture_date: item.manufacture_date || null,
-        expiry_date: item.expiry_date,
-        quantity_received: quantityReceived,
-        quantity_remaining: Number(item.quantity_remaining ?? quantityReceived),
-        cost_price: costPrice,
-        location_id: item.location_id ? Number(item.location_id) : null,
-      });
-    }
+    const { normalizedItems, totalAmount } = await normalizeBatchItems(conn, items, received_date, status);
 
     const safePaidAmount = Number(paid_amount) || 0;
     if (safePaidAmount < 0 || safePaidAmount > totalAmount) {
@@ -147,12 +307,16 @@ router.post('/', canWriteCatalog, requireFields(['supplier_id', 'received_date',
         `INSERT INTO batch_items (
           batch_id, product_id, lot_number, manufacture_date, expiry_date,
           quantity_received, quantity_remaining, cost_price, location_id, status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'available')`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           batchId, item.product_id, item.lot_number, item.manufacture_date, item.expiry_date,
-          item.quantity_received, item.quantity_remaining, item.cost_price, item.location_id
+          item.quantity_received, item.quantity_remaining, item.cost_price, item.location_id, item.status
         ]
       );
+    }
+
+    if (status === 'completed') {
+      await writeInboundMovements(conn, batchId, batchCode, req.userId);
     }
 
     await conn.query('COMMIT');
@@ -162,12 +326,13 @@ router.post('/', canWriteCatalog, requireFields(['supplier_id', 'received_date',
       entity_id: batchId,
       user_id: req.userId,
       request_id: req.requestId,
-      after_data: { id: batchId, batch_code: batchCode, supplier_id, status, total_amount: totalAmount }
+      after_data: { id: batchId, batch_code: batchCode, supplier_id, status, total_amount: totalAmount },
+      metadata: { item_count: normalizedItems.length }
     });
     res.status(201).json({ success: true, data: { id: batchId, batch_code: batchCode } });
   } catch (err) {
     await conn.query('ROLLBACK');
-    res.status(500).json({ success: false, message: err.message });
+    res.status(err.statusCode || 500).json({ success: false, message: err.message });
   } finally {
     conn.release();
   }
@@ -232,40 +397,22 @@ router.put('/:id', canWriteCatalog, validateEnum('status', ['draft', 'completed'
       updateParams.push(status);
     }
 
+    let normalizedItems = null;
     if (items !== undefined) {
       if (!Array.isArray(items) || items.length === 0) {
         await conn.query('ROLLBACK');
         return res.status(400).json({ success: false, message: 'items phải là mảng và có ít nhất 1 phần tử' });
       }
 
-      for (const item of items) {
-        const productId = Number(item.product_id);
-        const quantityReceived = Number(item.quantity_received);
-        const costPrice = Number(item.cost_price);
-        if (!productId || !item.lot_number || !item.expiry_date || !quantityReceived || quantityReceived <= 0 || !Number.isFinite(costPrice) || costPrice < 0) {
-          await conn.query('ROLLBACK');
-          return res.status(400).json({ success: false, message: 'Dữ liệu item không hợp lệ' });
-        }
+      const targetStatus = status || existingBatch.status;
+      const normalizedResult = await normalizeBatchItems(conn, items, received_date || beforeBatch.received_date, targetStatus);
+      normalizedItems = normalizedResult.normalizedItems;
 
-        const [[product]] = await conn.query(
-          `SELECT id FROM products WHERE id = ? AND status = 'active'`,
-          [productId]
-        );
-        if (!product) {
-          await conn.query('ROLLBACK');
-          return res.status(400).json({ success: false, message: `Sản phẩm #${productId} không tồn tại hoặc đang inactive` });
-        }
-
-        const quantityRemaining = Number(item.quantity_remaining ?? quantityReceived);
-        if (quantityRemaining < 0 || quantityRemaining > quantityReceived) {
-          await conn.query('ROLLBACK');
-          return res.status(400).json({ success: false, message: 'quantity_remaining phải nằm trong [0, quantity_received]' });
-        }
-
+      for (const item of normalizedItems) {
         if (item.id) {
           const [[existingItem]] = await conn.query(
             `SELECT id FROM batch_items WHERE id = ? AND batch_id = ?`,
-            [Number(item.id), batchId]
+            [item.id, batchId]
           );
           if (!existingItem) {
             await conn.query('ROLLBACK');
@@ -275,12 +422,12 @@ router.put('/:id', canWriteCatalog, validateEnum('status', ['draft', 'completed'
           await conn.query(
             `UPDATE batch_items
              SET product_id = ?, lot_number = ?, manufacture_date = ?, expiry_date = ?,
-                 quantity_received = ?, quantity_remaining = ?, cost_price = ?, location_id = ?
+                 quantity_received = ?, quantity_remaining = ?, cost_price = ?, location_id = ?, status = ?
              WHERE id = ?`,
             [
-              productId, item.lot_number, item.manufacture_date || null, item.expiry_date,
-              quantityReceived, quantityRemaining, costPrice, item.location_id ? Number(item.location_id) : null,
-              Number(item.id)
+              item.product_id, item.lot_number, item.manufacture_date || null, item.expiry_date,
+              item.quantity_received, item.quantity_remaining, item.cost_price, item.location_id,
+              item.status, item.id
             ]
           );
         } else {
@@ -288,10 +435,10 @@ router.put('/:id', canWriteCatalog, validateEnum('status', ['draft', 'completed'
             `INSERT INTO batch_items (
               batch_id, product_id, lot_number, manufacture_date, expiry_date,
               quantity_received, quantity_remaining, cost_price, location_id, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'available')`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
-              batchId, productId, item.lot_number, item.manufacture_date || null, item.expiry_date,
-              quantityReceived, quantityRemaining, costPrice, item.location_id ? Number(item.location_id) : null
+              batchId, item.product_id, item.lot_number, item.manufacture_date, item.expiry_date,
+              item.quantity_received, item.quantity_remaining, item.cost_price, item.location_id, item.status
             ]
           );
         }
@@ -314,6 +461,26 @@ router.put('/:id', canWriteCatalog, validateEnum('status', ['draft', 'completed'
       );
     }
 
+    const isCompleting = status === 'completed';
+    if (isCompleting) {
+      await conn.query(
+        `UPDATE batch_items
+         SET quantity_remaining = quantity_received,
+             status = CASE
+               WHEN expiry_date < CURDATE() THEN 'expired'
+               WHEN DATEDIFF(expiry_date, CURDATE()) BETWEEN 0 AND 90 THEN 'near_expiry'
+               ELSE 'available'
+             END
+         WHERE batch_id = ?`,
+        [batchId]
+      );
+      const [[completedBatch]] = await conn.query(
+        `SELECT batch_code FROM batches WHERE id = ?`,
+        [batchId]
+      );
+      await writeInboundMovements(conn, batchId, completedBatch.batch_code, req.userId);
+    }
+
     await conn.query('COMMIT');
     const [[afterBatch]] = await pool.query(`SELECT * FROM batches WHERE id = ?`, [batchId]);
     await writeAudit({
@@ -329,7 +496,7 @@ router.put('/:id', canWriteCatalog, validateEnum('status', ['draft', 'completed'
     res.json({ success: true, message: 'Cập nhật phiếu nhập thành công' });
   } catch (err) {
     await conn.query('ROLLBACK');
-    res.status(500).json({ success: false, message: err.message });
+    res.status(err.statusCode || 500).json({ success: false, message: err.message });
   } finally {
     conn.release();
   }
