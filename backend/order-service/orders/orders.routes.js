@@ -175,7 +175,7 @@ router.get('/stats', async (req, res) => {
  */
 router.get('/', async (req, res) => {
     try {
-        const { status, channel, search, page = 1, limit = 10 } = req.query;
+        const { status, channel, search, date, startDate, endDate, page = 1, limit = 10 } = req.query;
         const offset = (page - 1) * limit;
         const userId = req.userId;
         const userRole = req.userRole;
@@ -203,6 +203,21 @@ router.get('/', async (req, res) => {
         if (search) {
             query += ' AND (order_code LIKE ? OR customer_name LIKE ? OR customer_phone LIKE ?)';
             params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+        }
+
+        if (date) {
+            query += ' AND created_at >= ? AND created_at <= ?';
+            params.push(`${date} 00:00:00`, `${date} 23:59:59`);
+        }
+
+        if (startDate) {
+            query += ' AND created_at >= ?';
+            params.push(`${startDate} 00:00:00`);
+        }
+
+        if (endDate) {
+            query += ' AND created_at <= ?';
+            params.push(`${endDate} 23:59:59`);
         }
 
         // Đếm tổng số đơn để phân trang

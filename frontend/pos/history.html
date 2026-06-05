@@ -1140,6 +1140,23 @@
             }
         }
 
+        function getWeekRange() {
+            const now = new Date();
+            const day = now.getDay();
+            const diffToMonday = now.getDate() - day + (day === 0 ? -6 : 1);
+            const monday = new Date(now.setDate(diffToMonday));
+            monday.setHours(0, 0, 0, 0);
+            
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
+            sunday.setHours(23, 59, 59, 999);
+            
+            return {
+                startDate: monday.toLocaleDateString('en-CA'),
+                endDate: sunday.toLocaleDateString('en-CA')
+            };
+        }
+
         // Load Orders List
         async function loadOrders(page = 1) {
             const searchInput = document.querySelector('.hist-search input');
@@ -1152,6 +1169,24 @@
 
             if (searchVal) {
                 queryParams.set('search', searchVal);
+            }
+
+            // Apply date filters
+            const dateInput = document.querySelector('.hist-date-input');
+            const filterBtns = document.querySelectorAll('.hist-filter-btn');
+            
+            const todayBtn = filterBtns[0];
+            const weekBtn = filterBtns[1];
+            
+            if (todayBtn && todayBtn.classList.contains('active')) {
+                const todayStr = new Date().toLocaleDateString('en-CA');
+                queryParams.set('date', todayStr);
+            } else if (weekBtn && weekBtn.classList.contains('active')) {
+                const range = getWeekRange();
+                queryParams.set('startDate', range.startDate);
+                queryParams.set('endDate', range.endDate);
+            } else if (dateInput && dateInput.value) {
+                queryParams.set('date', dateInput.value);
             }
 
             const tbody = document.querySelector('.hist-table tbody');
@@ -1598,7 +1633,7 @@
 
         // Initialize Page & Event Listeners
         async function initPage() {
-            // Set date input to today
+            // Set date input to today by default
             const dateInput = document.querySelector('.hist-date-input');
             if (dateInput) {
                 dateInput.value = new Date().toLocaleDateString('en-CA');
@@ -1615,6 +1650,39 @@
                     }, 300);
                 });
             }
+
+            // Date input change listener
+            if (dateInput) {
+                dateInput.addEventListener('change', () => {
+                    // Remove active state from preset buttons
+                    const filterBtns = document.querySelectorAll('.hist-filter-btn');
+                    filterBtns.forEach(btn => btn.classList.remove('active'));
+                    loadOrders(1);
+                });
+            }
+
+            // Filter buttons listeners
+            const filterBtns = document.querySelectorAll('.hist-filter-btn');
+            filterBtns.forEach((btn, idx) => {
+                btn.addEventListener('click', () => {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    if (idx === 0) {
+                        // "Hôm nay" button
+                        if (dateInput) {
+                            dateInput.value = new Date().toLocaleDateString('en-CA');
+                        }
+                    } else if (idx === 1) {
+                        // "Tuần này" button
+                        if (dateInput) {
+                            dateInput.value = '';
+                        }
+                    }
+                    
+                    loadOrders(1);
+                });
+            });
 
             // Load data
             if (auth && auth.accessToken) {
