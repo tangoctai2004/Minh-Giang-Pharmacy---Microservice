@@ -13,11 +13,17 @@ DB_DIR="$(dirname "$0")"
 
 # Danh sách file theo thứ tự thực thi
 FILES=(
-  "mg_identity.sql"
-  "mg_catalog.sql"
-  "mg_order.sql"
-  "mg_cms.sql"
-  "mg_notification.sql"
+  "01_mg_identity.sql"
+  "02_mg_catalog.sql"
+  "06_mg_catalog_product_media_gpp.sql"
+  "07_mg_catalog_quality_workflow.sql"
+  "08_mg_catalog_stocktake_adjustments.sql"
+  "99_seed_full_catalog.sql"
+  "99_seed_clean_catalog_products.sql"
+  "03_mg_order.sql"
+  "04_mg_cms.sql"
+  "99_seed_clean_cms_content.sql"
+  "05_mg_notification.sql"
 )
 
 echo "================================================"

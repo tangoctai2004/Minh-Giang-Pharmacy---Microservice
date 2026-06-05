@@ -12,6 +12,8 @@
     "crawl:articles": "node index.js crawl articles",
     "crawl:diseases": "node index.js crawl diseases",
     "crawl:all": "node index.js crawl all",
+    "clean": "node clean.js",
+    "export:sql": "node export-sql.js",
     "validate": "node index.js validate all",
     "validate:products": "node index.js validate products",
     "validate:articles": "node index.js validate articles",

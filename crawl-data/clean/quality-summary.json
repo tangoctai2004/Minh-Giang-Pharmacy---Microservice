@@ -1,0 +1,613 @@
+{
+  "generated_at": "2026-06-04T18:09:45.667Z",
+  "policy": {
+    "product_limit_for_seed_review": 4000,
+    "seed_sql_generated": false,
+    "notes": [
+      "Clean files are review artifacts only. Do not import into DB until SQL seed is generated separately.",
+      "products.recommended_4000.jsonl is balanced across categories for the next seed step."
+    ]
+  },
+  "category_check": {
+    "catalog_categories_loaded": 264,
+    "root_categories": [
+      {
+        "id": 1000,
+        "name": "Thuốc",
+        "slug": "thuoc"
+      },
+      {
+        "id": 2000,
+        "name": "Thực phẩm chức năng",
+        "slug": "thuc-pham-chuc-nang"
+      },
+      {
+        "id": 3000,
+        "name": "Dược mỹ phẩm",
+        "slug": "duoc-my-pham"
+      },
+      {
+        "id": 4000,
+        "name": "Chăm sóc cá nhân",
+        "slug": "cham-soc-ca-nhan"
+      },
+      {
+        "id": 5000,
+        "name": "Mẹ & Bé",
+        "slug": "me-va-be"
+      },
+      {
+        "id": 6000,
+        "name": "Dụng cụ y tế",
+        "slug": "dung-cu-y-te"
+      },
+      {
+        "id": 7000,
+        "name": "Bệnh lý",
+        "slug": "benh-ly"
+      },
+      {
+        "id": 8000,
+        "name": "Góc sức khoẻ",
+        "slug": "goc-suc-khoe"
+      },
+      {
+        "id": 9000,
+        "name": "Tin tức",
+        "slug": "tin-tuc"
+      }
+    ],
+    "cms_categories_loaded": 6
+  },
+  "products": {
+    "raw": 5787,
+    "clean": 5785,
+    "needs_review": 1763,
+    "rejected": 2,
+    "recommended_for_seed_review": 4000,
+    "issue_counts": {
+      "missing_brand_or_manufacturer": 1752,
+      "medicine_missing_active_ingredient": 12,
+      "missing_base_unit": 7,
+      "description_too_short": 1,
+      "missing_product_image": 1
+    },
+    "by_category": {
+      "thuoc-huyet-ap": 208,
+      "thuoc-khang-sinh": 206,
+      "thuoc-da-day": 203,
+      "tpcn-ho-tro-tri-nao": 119,
+      "thuoc-tieu-duong-dai-thao-duong": 115,
+      "thuoc-nho-mat": 103,
+      "thuoc-chong-di-ung": 103,
+      "my-pham-cham-soc-da-mat": 100,
+      "thuoc-giam-dau-ha-sot": 100,
+      "my-pham-sua-rua-mat": 99,
+      "y-te-bang-gac": 98,
+      "ve-sinh-dung-dich": 85,
+      "thuoc-bo-vitamin": 85,
+      "my-pham-tri-mun": 82,
+      "thuoc-mo-mau-cholesterol": 77,
+      "cham-soc-rang-mieng": 76,
+      "thuoc-viem-khop-thoai-hoa": 75,
+      "y-te-dai-nep": 73,
+      "tpcn-canxi-vitamin-d": 73,
+      "tpcn-vitamin-tong-hop": 72,
+      "thuoc-ho-long-dom": 67,
+      "thuoc-tri-benh-gan-mat": 66,
+      "thuoc-tiem": 65,
+      "tpcn-ho-tro-chuc-nang-gan": 64,
+      "thuoc-bo-nao": 58,
+      "tpcn-ho-tro-tieu-hoa": 57,
+      "thuoc-noi-tiet-hormone-sinh-duc": 57,
+      "tpcn-tang-cuong-de-khang": 52,
+      "thuoc-than-kinh-giac-ngu-tam-than": 52,
+      "ve-sinh-tai-mui-hong": 51,
+      "tri-benh-da-lieu": 51,
+      "y-te-ho-tro-khac": 50,
+      "thuoc-tim-mach": 49,
+      "my-pham-tri-gau-rung-toc": 48,
+      "thuoc": 48,
+      "thuoc-bo-xuong-khop-canxi": 47,
+      "y-te-giam-dau-ha-sot": 47,
+      "tpcn-nhan-sam-linh-chi": 47,
+      "tpcn-xuong-khop-tong-hop": 46,
+      "thuoc-cam-mau-chong-dong": 46,
+      "thuoc-chong-viem-nsaids": 45,
+      "tpcn-tieu-hoa-trao-doi-chat": 44,
+      "thuoc-tri-hen-suyen-copd": 43,
+      "y-te-may-do-duong-huyet": 42,
+      "thuc-pham-keo": 42,
+      "my-pham-tri-seo-tham": 41,
+      "y-te-bom-kim-tiem": 41,
+      "tpcn-sinh-ly-nam": 41,
+      "tpcn-sua-dinh-duong": 40,
+      "tpcn-vitamin-khoang-chat": 40,
+      "y-te-gia-dinh": 39,
+      "my-pham-sua-tam": 37,
+      "thuoc-day-hoi-buon-non": 37,
+      "my-pham-cham-soc-toc": 36,
+      "sinh-ly-bao-cao-su": 35,
+      "my-pham-duong-the": 35,
+      "tpcn-keo-ngam-ho": 35,
+      "tpcn-cham-soc-da": 35,
+      "thuoc-tri-tram-cam": 35,
+      "tpcn-giam-ho-dau-hong": 34,
+      "y-te-khu-trung": 34,
+      "tpcn-ho-tro-man-kinh": 34,
+      "tpcn-da-day-ta-trang": 33,
+      "thuoc-tri-tieu-chay": 33,
+      "thuoc-phu-khoa": 32,
+      "tinh-dau-thien-nhien": 31,
+      "thuoc-giam-dau-xuong-khop": 31,
+      "thuoc-roi-loan-cuong-duong": 30,
+      "my-pham-kem-duong-am": 29,
+      "tpcn-bo-phe-ho-hap": 29,
+      "thuc-pham-do-uong": 28,
+      "tpcn-bao-ve-tim-mach": 28,
+      "thuoc-so-mui-xit-mui": 28,
+      "thuoc-khang-virus": 28,
+      "ve-sinh-khan-giay": 26,
+      "tpcn-ho-tro-giac-ngu": 26,
+      "y-te-khau-trang": 25,
+      "tpcn-giam-viem-ho-hap": 25,
+      "thuoc-tri-dau-nua-dau": 25,
+      "my-pham-da-nhay-cam-detail": 24,
+      "thuoc-tim-mach-huyet-ap-mach-mau": 24,
+      "thuoc-chong-co-giat": 24,
+      "y-te-may-do-huyet-ap": 23,
+      "dich-truyen-bu-nuoc": 23,
+      "ve-sinh-bang-ve-sinh": 22,
+      "thuoc-tri-nam-da": 22,
+      "my-pham-cham-soc-da-chuyen-sau": 21,
+      "thuoc-nhuan-trang-tao-bon": 21,
+      "thuc-pham-yen-sao": 21,
+      "my-pham-mat-na": 21,
+      "tpcn-duong-huyet-chuyen-hoa": 21,
+      "thuoc-gian-co": 21,
+      "my-pham-tai-tao-da": 20,
+      "my-pham-serum": 20,
+      "tpcn-giam-viem-dau-khop": 20,
+      "tpcn-sinh-ly-nu": 20,
+      "thuoc-cam": 20,
+      "my-pham-duong-da-tay-chan": 19,
+      "tpcn-chong-lao-hoa": 19,
+      "thuoc-mat-tai-mui-hong": 19,
+      "tpcn-dinh-duong-tong-hop": 19,
+      "my-pham-duong-trang": 18,
+      "thuoc-tri-thieu-mau": 18,
+      "thuoc-khu-trung-sat-khuan": 18,
+      "rang-mieng-ban-chai": 17,
+      "thuc-pham-duong-an-kieng": 17,
+      "thuoc-da-day-tieu-hoa-gan-mat": 17,
+      "thuc-pham-nuoc-uong": 16,
+      "tpcn-ho-tro-tuan-hoan-mau": 16,
+      "tpcn-tai-tao-sun-khop": 16,
+      "tpcn-chuyen-hoa-tong-quat": 16,
+      "thuoc-tri-giun-san": 16,
+      "thuc-pham-tra-thao-duoc": 15,
+      "tpcn-cham-soc-toc-mong": 15,
+      "thuoc-tri-gout": 15,
+      "thuoc-khang-nam": 15,
+      "y-te-nhiet-ke": 14,
+      "thuoc-an-than-ngu-ngon": 14,
+      "thuoc-bo-tri-mun": 14,
+      "ve-sinh-ca-nhan-detail": 13,
+      "my-pham-lan-khu-mui": 13,
+      "tpcn-giam-cholesterol": 13,
+      "tpcn-ho-tro-tri": 13,
+      "tpcn-ho-tro-mach-mau": 13,
+      "men-tieu-hoa-vi-sinh": 13,
+      "rang-mieng-chi-nha-khoa": 12,
+      "my-pham-tri-nam-tan-nhang": 12,
+      "tpcn-bo-than-tiet-nieu": 12,
+      "vien-ngam-xit-hong": 11,
+      "thuoc-tang-tuan-hoan-nao": 10,
+      "tpcn-chat-xo-tieu-hoa": 10,
+      "tpcn-vitamin-c": 10,
+      "tpcn-kem-magie": 10,
+      "sinh-ly-gel-boi-tron": 9,
+      "cham-soc-ca-nhan": 9,
+      "rang-mieng-xit": 8,
+      "my-pham-bong-tay-trang": 8,
+      "tpcn-ho-tro-tuyen-tien-liet": 8,
+      "tinh-dau-xong": 8,
+      "tpcn-vitamin-e": 8,
+      "y-te-que-thu-thai": 8,
+      "thuoc-dieu-tri-ung-thu": 8,
+      "y-te-may-xong": 7,
+      "my-pham-trang-diem": 7,
+      "my-pham-duong-da-mat": 7,
+      "tpcn-nhuan-trang-tao-bon": 7,
+      "tpcn-ho-tro-ung-thu": 7,
+      "tpcn-giam-can": 7,
+      "thuoc-tri-benh-tuyen-giap": 7,
+      "siro-bo-tre-em": 7,
+      "y-te-xe-lan": 6,
+      "dung-dich-ve-sinh-phu-nu": 6,
+      "tpcn-ho-tro-dieu-tri": 6,
+      "tpcn-ho-tro-huyet-ap": 6,
+      "thuoc-tang-cuong-de-khang": 6,
+      "tpcn-ho-tro-trao-doi-chat": 6,
+      "tpcn-ho-tro-hoat-huyet": 6,
+      "bo-xuong-khop": 6,
+      "ve-sinh-kem-phu-khoa": 5,
+      "ve-sinh-rua-tay": 5,
+      "my-pham-tay-te-bao-chet": 5,
+      "tpcn-ngua-xo-vua-tai-bien": 5,
+      "tpcn-ho-tro-than": 5,
+      "tpcn-vitamin-b": 5,
+      "dau-goi-tri-gau": 5,
+      "thuoc-tri-lao": 5,
+      "tpcn-ho-tro-mat": 5,
+      "y-te-chong-loet": 4,
+      "tpcn-tao": 4,
+      "y-te-keo-dao-mo": 4,
+      "thuoc-say-tau-xe": 4,
+      "thuoc-dieu-tri-parkinson": 4,
+      "thuoc-dieu-tri-benh-tu-mien": 4,
+      "thuoc-dieu-hoa-kinh-nguyet": 4,
+      "thuoc-nho-tai": 4,
+      "my-pham-dao-cao": 4,
+      "kem-chong-con-trung": 3,
+      "y-te-gay-chong": 3,
+      "y-te-van-dong-khac": 3,
+      "my-pham-trang-diem-mat": 3,
+      "y-te-kit-test": 3,
+      "tpcn-ho-tro-tuyen-giap": 3,
+      "tpcn-enzyme-tieu-hoa": 3,
+      "tpcn-giai-ruou-cai-ruou": 3,
+      "thuoc-giai-doc-cap-cuu": 3,
+      "tpcn-ho-hap-tong-hop": 3,
+      "thuc-pham-sua-nuoc": 3,
+      "y-te-mat-kinh": 2,
+      "my-pham-cham-soc-co-the": 2,
+      "tpcn-tang-cuong-suc-khoe": 2,
+      "thuoc-bu-dien-giai": 2,
+      "thuoc-bo-tri-seo": 2,
+      "y-te-phau-thuat-khac": 2,
+      "tpcn-cai-thien-tri-nho": 2,
+      "tpcn-sua-cho-be": 2,
+      "dung-cu-phau-thuat": 1,
+      "tpcn-ho-tro-than-kinh-khac": 1,
+      "thuoc-cai-thuoc-la-ma-tuy": 1,
+      "thuoc-tri-sot-ret": 1,
+      "my-pham-nhuom-toc": 1,
+      "thuoc-cam-ho-ho-hap": 1,
+      "tpcn-ho-tro-lam-dep": 1,
+      "my-pham-chong-nang-co-the": 1,
+      "dung-cu-y-te": 1
+    },
+    "by_root_category": {
+      "Thuốc": 2663,
+      "Thực phẩm chức năng": 1322,
+      "Dược mỹ phẩm": 713,
+      "Chăm sóc cá nhân": 557,
+      "Dụng cụ y tế": 530
+    },
+    "samples_needing_review": [
+      {
+        "name": "Băng vệ sinh Diana siêu thấm, siêu mỏng cánh (8 miếng)",
+        "source_url": "https://trungsoncare.com/cham-soc-ca-nhan/bang-ve-sinh-diana-sieu-tham-sieu-mong-canh-8-mieng/",
+        "category": "ve-sinh-bang-ve-sinh",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Băng vệ sinh Diana Sensi kháng khuẩn siêu mỏng cánh (20 miếng)",
+        "source_url": "https://trungsoncare.com/cham-soc-ca-nhan/bang-ve-sinh-diana-sensi-khang-khuan-sieu-mong-canh-20-mieng/",
+        "category": "ve-sinh-bang-ve-sinh",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Mật Ong Sữa Chúa Tín Phát hỗ trợ chăm sóc sức khỏe và làm đẹp (500ml)",
+        "source_url": "https://trungsoncare.com/cham-soc-ca-nhan/mat-ong-rung-sua-chua-tin-phat-ho-tro-cham-soc-suc-khoe-va-lam-dep-500ml/",
+        "category": "thuc-pham-do-uong",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Băng vệ sinh Kotex khô thoáng siêu mỏng, mặt lưới (8 miếng)",
+        "source_url": "https://trungsoncare.com/cham-soc-ca-nhan/bang-ve-sinh-kotex-kho-thoang-sieu-mong-mat-luoi-8-mieng/",
+        "category": "ve-sinh-bang-ve-sinh",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Băng vệ sinh ban đêm Diana mặt lưới siêu thấm, có cánh 35cm (3 miếng)",
+        "source_url": "https://trungsoncare.com/cham-soc-ca-nhan/bang-ve-sinh-ban-dem-diana-mat-luoi-sieu-tham-co-canh-35cm-3-mieng/",
+        "category": "ve-sinh-bang-ve-sinh",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Băng vệ sinh ban đêm Diana Super siêu thấm có cánh 29cm (4 miếng)",
+        "source_url": "https://trungsoncare.com/cham-soc-ca-nhan/bang-ve-sinh-ban-dem-diana-super-sieu-tham-co-canh-29cm-4-mieng/",
+        "category": "ve-sinh-bang-ve-sinh",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Băng vệ sinh hàng ngày Kotex Kháng Khuẩn (20 miếng)",
+        "source_url": "https://trungsoncare.com/cham-soc-ca-nhan/bang-ve-sinh-hang-ngay-kotex-khang-khuan-20-mieng/",
+        "category": "ve-sinh-bang-ve-sinh",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Viên sủi CalSource 500mg GSK – Bổ sung canxi, phòng và hỗ trợ điều trị thiếu hụt canxi (Tuýp 20 viên)",
+        "source_url": "https://trungsoncare.com/thuc-pham-chuc-nang/vien-nen-sui-bot-calsource-bo-sung-canxi-tuyp-20-vien/",
+        "category": "thuoc-bo-xuong-khop-canxi",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Băng vệ sinh siêu mỏng cánh Kotex Thảo Dược Cool (8 miếng)",
+        "source_url": "https://trungsoncare.com/cham-soc-ca-nhan/bang-ve-sinh-sieu-mong-canh-kotex-thao-duoc-cool-8-mieng/",
+        "category": "ve-sinh-bang-ve-sinh",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Băng vệ sinh Laurier Super Slimguard 25cm không hương (8 miếng)",
+        "source_url": "https://trungsoncare.com/cham-soc-ca-nhan/bang-ve-sinh-laurier-super-slimguard-25cm-khong-huong-8-mieng/",
+        "category": "ve-sinh-bang-ve-sinh",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Băng vệ sinh Laurier Super Slimguard 22,5cm không hương (8 miếng)",
+        "source_url": "https://trungsoncare.com/cham-soc-ca-nhan/bang-ve-sinh-laurier-super-slimguard-22-5cm-khong-huong-8-mieng/",
+        "category": "ve-sinh-bang-ve-sinh",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Băng vệ sinh ban ngày siêu mỏng cánh Kotex Gardenia Deo+ 23cm (8 miếng)",
+        "source_url": "https://trungsoncare.com/cham-soc-ca-nhan/bang-ve-sinh-ban-ngay-sieu-mong-canh-kotex-gardenia-deo-23cm-8-mieng/",
+        "category": "ve-sinh-bang-ve-sinh",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Băng vệ sinh ngày Laurier Fresh & Free Kao siêu thấm siêu mỏng cánh (20 miếng)",
+        "source_url": "https://trungsoncare.com/cham-soc-ca-nhan/bang-ve-sinh-ngay-laurier-fresh-and-free-kao-sieu-tham-sieu-mong-canh-8-mieng/",
+        "category": "ve-sinh-bang-ve-sinh",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Bao cao su Pretex Strawberry Flavor (10 cái)",
+        "source_url": "https://trungsoncare.com/cham-soc-ca-nhan/bao-cao-su-pretex-strawberry-flavor-10-cai/",
+        "category": "sinh-ly-bao-cao-su",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Bao cao su Pretex Plus có gân, gai (10 cái)",
+        "source_url": "https://trungsoncare.com/cham-soc-ca-nhan/bao-cao-su-pretex-plus-co-gan-gai-10-cai/",
+        "category": "sinh-ly-bao-cao-su",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Gel bôi trơn Durex Play Warming tạo cảm giác ấm nóng (100ml)",
+        "source_url": "https://trungsoncare.com/cham-soc-ca-nhan/gel-boi-tron-durex-play-warming-tao-cam-giac-am-nong-100ml/",
+        "category": "sinh-ly-gel-boi-tron",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Gạc y tế tiệt trùng Đông Pha 12cm x 12cm (10 miếng)",
+        "source_url": "https://trungsoncare.com/dung-cu-y-te/gac-y-te-tiet-trung-ong-pha-12cm-x-12cm-10-mieng/",
+        "category": "y-te-bang-gac",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Gạc đắp bỏng SILVERMED 10cm x 20cm (3 miếng)",
+        "source_url": "https://trungsoncare.com/dung-cu-y-te/gac-dap-bong-silvermed-10cm-x-20cm-3-mieng/",
+        "category": "y-te-bang-gac",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Băng keo lụa có độ dính cao Urgo Syval (5cm x 5m)",
+        "source_url": "https://trungsoncare.com/dung-cu-y-te/bang-keo-lua-co-do-dinh-cao-urgo-syval-5cm-x-5m/",
+        "category": "y-te-bang-gac",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Băng thun 3 móc Minh Quang băng nén ép cầm máu, cố định khớp (12 cuộn)",
+        "source_url": "https://trungsoncare.com/dung-cu-y-te/bang-thun-3-moc-minh-quang-bang-nen-ep-cam-mau-co-dinh-khop-12-cuon/",
+        "category": "y-te-bang-gac",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Bông gòn Liên Hiệp (1kg)",
+        "source_url": "https://trungsoncare.com/dung-cu-y-te/bong-gon-lien-hiep-1kg/",
+        "category": "y-te-bang-gac",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Bông gòn Thành Tín (25g)",
+        "source_url": "https://trungsoncare.com/dung-cu-y-te/bong-gon-thanh-tin-25g/",
+        "category": "y-te-bang-gac",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Băng thun 3 móc Urgo Band hỗ trợ cầm máu, cố định khớp (10cm x 4.5m)",
+        "source_url": "https://trungsoncare.com/dung-cu-y-te/bang-thun-3-moc-urgo-band-ho-tro-cam-mau-co-dinh-khop-10cm-x-4-5m/",
+        "category": "y-te-bang-gac",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Gel Hiruscar hỗ trợ cải thiện sẹo (20g)",
+        "source_url": "https://trungsoncare.com/duoc-my-pham/gel-hiruscar-ho-tro-cai-thien-seo-20g/",
+        "category": "my-pham-tri-mun",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Gel Stratamed hỗ trợ cải thiện sẹo (5g)",
+        "source_url": "https://trungsoncare.com/duoc-my-pham/gel-stratamed-ho-tro-cai-thien-seo-5g/",
+        "category": "my-pham-tri-mun",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Gel Hiruscar Silicone Pro giảm ngứa, làm mờ sẹo (4g)",
+        "source_url": "https://trungsoncare.com/duoc-my-pham/gel-hiruscar-silicone-pro-giam-ngua-lam-mo-seo-4g/",
+        "category": "my-pham-tri-mun",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Gel Hiruscar Silicone Pro giảm ngứa, làm mờ sẹo (10g)",
+        "source_url": "https://trungsoncare.com/duoc-my-pham/gel-hiruscar-silicone-pro-giam-ngua-lam-mo-seo-10g/",
+        "category": "my-pham-tri-mun",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Orlavi ScarGel hỗ trợ làm mờ sẹo (35g)",
+        "source_url": "https://trungsoncare.com/duoc-my-pham/orlavi-scargel-35g/",
+        "category": "my-pham-tri-mun",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Dầu massage và dưỡng ẩm Johnson's Baby (50ml)",
+        "source_url": "https://trungsoncare.com/cham-soc-ca-nhan/dau-massage-va-duong-am-johnsons-baby-50ml/",
+        "category": "my-pham-duong-the",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      },
+      {
+        "name": "Que thử đường huyết OGCare (50 que)",
+        "source_url": "https://trungsoncare.com/dung-cu-y-te/que-thu-duong-huyet-ogcare-50-que/",
+        "category": "y-te-may-do-duong-huyet",
+        "flags": [
+          "missing_brand_or_manufacturer"
+        ]
+      }
+    ],
+    "samples_rejected": [
+      {
+        "source_url": "https://trungsoncare.com/thuc-pham-chuc-nang/thuc-pham-bao-ve-suc-khoe-bot-sui-thanh-nhiet-livecool-khong-duong-7g-x-10-goi/",
+        "name": "Thực phẩm bảo vệ sức khỏe bột sủi thanh nhiệt Livecool không đường (7g x 10 gói)",
+        "issues": [
+          "description_too_short"
+        ]
+      },
+      {
+        "source_url": "https://trungsoncare.com/danh-muc-thuoc/thuoc-avodart-0-5mg-gsk-phong-va-dieu-tri-tang-san-lanh-tinh-tuyen-tien-liet-3-vi-x-10-vien/",
+        "name": "Thuốc Avodart 0.5mg GSK phòng và điều trị tăng sản lành tính tuyến tiền liệt (3 vỉ x 10 viên)",
+        "issues": [
+          "missing_product_image"
+        ]
+      }
+    ]
+  },
+  "articles": {
+    "raw": 25,
+    "clean": 20,
+    "needs_review": 0,
+    "rejected": 5,
+    "issue_counts": {
+      "promotion_or_non_medical_content": 5
+    },
+    "by_category": {
+      "suc-khoe-tong-quat": 10,
+      "nguoi-cao-tuoi": 6,
+      "tin-tuc-y-te": 2,
+      "kien-thuc-benh-ly": 1,
+      "tu-van-dung-thuoc": 1
+    },
+    "samples_needing_review": [],
+    "samples_rejected": [
+      {
+        "source_url": "https://trungsoncare.com/tin-tuc-va-su-kien/uu-dai-khach-hang-thanh-vien-thang-10-2025/",
+        "title": "THÁNG 10 BÙNG NỔ - GIÁ ƯU ĐÃI HẤP DẪN CHO KHÁCH HÀNG THÀNH VIÊN",
+        "issues": [
+          "promotion_or_non_medical_content"
+        ]
+      },
+      {
+        "source_url": "https://trungsoncare.com/tin-tuc-va-su-kien/chuong-trinh-online-thang-09/",
+        "title": "Đặt Hàng Online - Ngập Tràn Ưu Đãi",
+        "issues": [
+          "promotion_or_non_medical_content"
+        ]
+      },
+      {
+        "source_url": "https://trungsoncare.com/tin-tuc-va-su-kien/gap-goi-tich-luy-thang-09/",
+        "title": "THÁNG 9 BÙNG NỔ - GẤP ĐÔI TÍCH LUỸ DOANH SỐ CHO THÀNH VIÊN",
+        "issues": [
+          "promotion_or_non_medical_content"
+        ]
+      },
+      {
+        "source_url": "https://trungsoncare.com/tin-tuc-va-su-kien/cao-ma-trung-lon-trung-son-pharma-opella/",
+        "title": "\"Cào Mã Trúng Lớn\" - Quà Khủng Tới 3 Tỷ Đồng Cùng Opella Việt Nam Tại Nhà Thuốc Trung Sơn",
+        "issues": [
+          "promotion_or_non_medical_content"
+        ]
+      },
+      {
+        "source_url": "https://trungsoncare.com/tin-tuc-va-su-kien/uu-dai-khach-hang-thanh-vien-thang-09-2025/",
+        "title": "THÁNG 9 BÙNG NỔ - GIÁ ƯU ĐÃI HẤP DẪN CHO KHÁCH HÀNG THÀNH VIÊN",
+        "issues": [
+          "promotion_or_non_medical_content"
+        ]
+      }
+    ]
+  },
+  "diseases": {
+    "raw": 34,
+    "clean": 34,
+    "needs_review": 0,
+    "rejected": 0,
+    "issue_counts": {},
+    "by_category": {
+      "kien-thuc-benh-ly": 34
+    },
+    "samples_needing_review": [],
+    "samples_rejected": []
+  }
+}
