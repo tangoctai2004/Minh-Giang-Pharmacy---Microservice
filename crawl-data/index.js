@@ -33,6 +33,9 @@ const DATA_FILES = {
 };
 
 let stopRequested = false;
+let adaptiveMinDelay = null;
+let adaptiveMaxDelay = null;
+let consecutiveSuccesses = 0;
 
 process.on('SIGINT', () => {
   stopRequested = true;
@@ -49,11 +52,85 @@ function nowIso() {
 }
 
 function log(level, message, extra = null) {
-  const line = `[${nowIso()}] [${level.toUpperCase()}] ${message}${extra ? ` ${JSON.stringify(extra)}` : ''}`;
-  console.log(line);
+  let displayMsg = message;
+  const kindMap = { products: 'sản phẩm', articles: 'bài viết', diseases: 'bệnh lý', all: 'tất cả' };
+
+  if (level === 'info') {
+    if (message.startsWith('GET ')) {
+      if (message.startsWith('GET image ')) {
+        displayMsg = `[ẢNH] Đang tải: ${message.substring(10)}`;
+      } else {
+        const url = message.substring(4);
+        const attempt = extra?.attempt || 1;
+        displayMsg = `[TẢI] Lần ${attempt} | ${url}`;
+      }
+    } else if (message.startsWith('Saved ')) {
+      const parts = message.split(' ');
+      const kind = parts[1];
+      const kindName = kindMap[kind] || 'mục';
+      displayMsg = `[THÀNH CÔNG] Đã lưu ${kindName} #${extra?.count}: "${extra?.title}"`;
+    } else if (message === 'Polite delay before next request.') {
+      displayMsg = `[NGHỈ] Chờ ${(extra?.delayMs / 1000).toFixed(1)}s (Độ trễ cơ sở: ${(extra?.currentMin / 1000).toFixed(1)}s)`;
+    } else if (message === 'Optimizing delay speed (adaptive speedup)') {
+      displayMsg = `[TĂNG TỐC] Độ trễ tối ưu xuống: ${(extra?.min / 1000).toFixed(1)}s - ${(extra?.max / 1000).toFixed(1)}s`;
+    } else if (message === 'Discovery completed.') {
+      displayMsg = `[TÌM THẤY] Quét sitemap xong | Sản phẩm: ${extra?.products}, Bài viết: ${extra?.articles}, Bệnh lý: ${extra?.diseases}`;
+    } else if (message.startsWith('Crawl ')) {
+      const parts = message.split(' ');
+      const kind = parts[1];
+      const kindName = kindMap[kind] || kind;
+      displayMsg = `[HOÀN THÀNH] Đợt cào ${kindName} hoàn tất. Đã lưu thêm: ${extra?.completedThisRun}`;
+    } else if (message.startsWith('Reset state for ')) {
+      const parts = message.split(' ');
+      const kind = parts[3];
+      const kindName = kindMap[kind] || kind;
+      displayMsg = `[RESET] Đã làm mới trạng thái cho ${kindName}. Tổng số URL: ${extra?.urls}`;
+    } else if (message === 'Quality report written.') {
+      displayMsg = `[BÁO CÁO] Đã xuất báo cáo chất lượng: ${extra?.reportPath}`;
+    }
+  } else if (level === 'warn') {
+    if (message.startsWith('Stop requested by ')) {
+      displayMsg = `[DỪNG] Đã nhận tín hiệu tắt. Đang hoàn thành mục cuối và lưu trạng thái...`;
+    } else if (message === 'Server returned 429. Cooling down before retry.') {
+      displayMsg = `[BỊ CHẶN 429] Yêu cầu quá nhanh. Tạm nghỉ ${(extra?.cooldownMs / 60000).toFixed(1)} phút để hạ nhiệt...`;
+    } else if (message === 'Increased adaptive delay due to 429.') {
+      displayMsg = `[CẢNH BÁO] Tăng độ trễ cơ sở lên: ${(extra?.min / 1000).toFixed(1)}s - ${(extra?.max / 1000).toFixed(1)}s do bị chặn 429`;
+    } else if (message === 'Server returned 5xx. Cooling down before retry.') {
+      displayMsg = `[LỖI SERVER 5xx] Lỗi máy chủ đối tác. Tạm nghỉ ${(extra?.cooldownMs / 1000).toFixed(1)}s...`;
+    } else if (message === 'Request failed with non-retryable status.') {
+      displayMsg = `[BỎ QUA] Lỗi 404/410 (Không tồn tại) | ${extra?.url}`;
+    } else if (message === 'Request failed.') {
+      displayMsg = `[THỬ LẠI] Yêu cầu thất bại (Lần ${extra?.attempt}) | Lỗi: ${extra?.error} | ${extra?.url}`;
+    } else if (message === 'Slowing down crawler due to error (adaptive backoff)') {
+      displayMsg = `[GIẢM TỐC] Tăng độ trễ lên: ${(extra?.min / 1000).toFixed(1)}s - ${(extra?.max / 1000).toFixed(1)}s`;
+    } else if (message.startsWith('No ')) {
+      const parts = message.split(' ');
+      const kind = parts[1];
+      const kindName = kindMap[kind] || kind;
+      displayMsg = `[CẢNH BÁO] Chưa có URL ${kindName} nào. Hãy chạy lệnh discover trước.`;
+    } else if (message === 'Image download failed; keeping live URL.') {
+      displayMsg = `[LỖI TẢI ẢNH] Giữ lại link gốc. Lỗi: ${extra?.error} | ${extra?.imageUrl}`;
+    }
+  } else if (level === 'error') {
+    if (message.startsWith('Failed ')) {
+      displayMsg = `[THẤT BẠI] Lỗi cào: ${extra?.url} | ${extra?.error}`;
+    } else if (message === 'Stopping because too many consecutive errors occurred.') {
+      displayMsg = `[DỪNG KHẨN CẤP] Tự động dừng do lỗi liên tiếp quá giới hạn (${extra?.consecutiveErrors} lần)`;
+    }
+  }
+
+  // Format local time for console
+  const now = new Date();
+  const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+  
+  const consoleLine = `[${timeStr}] [${level.toUpperCase()}] ${displayMsg}`;
+  console.log(consoleLine);
+
+  // Write original raw message to file
+  const fileLine = `[${nowIso()}] [${level.toUpperCase()}] ${message}${extra ? ` ${JSON.stringify(extra)}` : ''}`;
   try {
     fs.mkdirSync(DIRS.logs, { recursive: true });
-    fs.appendFileSync(path.join(DIRS.logs, 'crawler.log'), `${line}\n`, 'utf8');
+    fs.appendFileSync(path.join(DIRS.logs, 'crawler.log'), `${fileLine}\n`, 'utf8');
   } catch {
     // Do not fail crawling because logging failed.
   }
@@ -274,6 +351,12 @@ async function requestText(url, config, context) {
           url,
           cooldownMs: requestConfig.cooldownOn429Ms,
         });
+        if (adaptiveMinDelay !== null) {
+          const maxAllowedMin = Number(requestConfig.maxBackoffMinDelayMs || 15000);
+          adaptiveMinDelay = Math.min(maxAllowedMin, Math.round(adaptiveMinDelay * 2.0));
+          adaptiveMaxDelay = Math.min(maxAllowedMin + 5000, Math.round(adaptiveMaxDelay * 2.0));
+          log('warn', 'Increased adaptive delay due to 429.', { min: adaptiveMinDelay, max: adaptiveMaxDelay });
+        }
         await sleep(Number(requestConfig.cooldownOn429Ms || 900000));
         continue;
       }
@@ -350,8 +433,12 @@ async function requestBinary(url, config, context) {
 }
 
 async function politeDelay(config) {
-  const delayMs = randomBetween(config.request?.minDelayMs, config.request?.maxDelayMs);
-  log('info', 'Polite delay before next request.', { delayMs });
+  if (adaptiveMinDelay === null) {
+    adaptiveMinDelay = Number(config.request?.minDelayMs || 2000);
+    adaptiveMaxDelay = Number(config.request?.maxDelayMs || 5000);
+  }
+  const delayMs = randomBetween(adaptiveMinDelay, adaptiveMaxDelay);
+  log('info', 'Polite delay before next request.', { delayMs, currentMin: adaptiveMinDelay });
   await sleep(delayMs);
 }
 
@@ -512,14 +599,36 @@ async function crawl(kind, config, flags) {
         count: completedThisRun,
         title: parsed.name || parsed.title,
       });
+
+      // Adaptive speedup on success
+      consecutiveSuccesses += 1;
+      if (consecutiveSuccesses >= 10) {
+        const minAllowed = Number(config.request?.absoluteMinDelayMs || 1000);
+        if (adaptiveMinDelay > minAllowed) {
+          adaptiveMinDelay = Math.max(minAllowed, Math.round(adaptiveMinDelay * 0.85));
+          adaptiveMaxDelay = Math.max(minAllowed + 1000, Math.round(adaptiveMaxDelay * 0.85));
+          log('info', 'Optimizing delay speed (adaptive speedup)', { min: adaptiveMinDelay, max: adaptiveMaxDelay });
+        }
+        consecutiveSuccesses = 0;
+      }
     } catch (error) {
       item.status = error.nonRetryable ? 'skipped' : 'failed';
       item.last_error = error.message || String(error);
       item.failed_at = nowIso();
       item.attempts = Number(item.attempts || 0) + 1;
       consecutiveErrors = error.nonRetryable ? 0 : consecutiveErrors + 1;
-      shouldDelayAfterItem = !error.nonRetryable;
+      shouldDelayAfterItem = true;
       log('error', `Failed ${kind} item.`, { url: item.url, error: item.last_error });
+
+      // Adaptive backoff on retryable errors
+      consecutiveSuccesses = 0;
+      if (!error.nonRetryable && adaptiveMinDelay !== null) {
+        const maxAllowedMin = Number(config.request?.maxBackoffMinDelayMs || 15000);
+        adaptiveMinDelay = Math.min(maxAllowedMin, Math.round(adaptiveMinDelay * 1.5));
+        adaptiveMaxDelay = Math.min(maxAllowedMin + 5000, Math.round(adaptiveMaxDelay * 1.5));
+        log('warn', 'Slowing down crawler due to error (adaptive backoff)', { min: adaptiveMinDelay, max: adaptiveMaxDelay });
+      }
+
       if (consecutiveErrors >= Number(config.request?.stopAfterConsecutiveErrors || 8)) {
         log('error', 'Stopping because too many consecutive errors occurred.', { consecutiveErrors });
         break;
