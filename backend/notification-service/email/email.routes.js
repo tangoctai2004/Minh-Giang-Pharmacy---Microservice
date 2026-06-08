@@ -33,14 +33,14 @@ router.post('/send', async (req, res) => {
     // Nếu có template_id, lấy nội dung từ DB và render
     if (template_id) {
       const [[tmpl]] = await pool.query(
-        'SELECT subject_template, body_template FROM notification_templates WHERE id = ? AND type = "email" AND is_active = 1',
+        'SELECT subject, body_template FROM notification_templates WHERE id = ? AND channel = "email" AND is_active = 1',
         [template_id]
       );
       if (!tmpl) return res.status(404).json({ success: false, message: 'Template không tồn tại hoặc đã bị vô hiệu hoá' });
 
       // Đơn giản: thay {{key}} bằng giá trị trong template_vars
       const vars = template_vars || {};
-      mailSubject = (tmpl.subject_template || subject || 'Thông báo từ Minh Giang Pharmacy')
+      mailSubject = (tmpl.subject || subject || 'Thông báo từ Minh Giang Pharmacy')
         .replace(/\{\{(\w+)\}\}/g, (_, k) => vars[k] ?? `{{${k}}}`);
       mailHtml = tmpl.body_template
         .replace(/\{\{(\w+)\}\}/g, (_, k) => vars[k] ?? `{{${k}}}`);
