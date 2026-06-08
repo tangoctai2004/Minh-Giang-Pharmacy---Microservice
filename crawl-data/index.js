@@ -122,7 +122,7 @@ function log(level, message, extra = null) {
   // Format local time for console
   const now = new Date();
   const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
-  
+
   const consoleLine = `[${timeStr}] [${level.toUpperCase()}] ${displayMsg}`;
   console.log(consoleLine);
 
