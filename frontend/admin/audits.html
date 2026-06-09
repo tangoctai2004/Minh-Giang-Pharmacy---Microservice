@@ -8,481 +8,320 @@
     <link rel="stylesheet" href="css/admin-style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .audit-empty {
-            padding: 44px 20px;
-            text-align: center;
-            color: #94a3b8;
-            font-weight: 600;
-        }
-
-        .audit-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 9px;
-            border-radius: 999px;
-            border: 1px solid #fde68a;
-            background: #fffbeb;
-            color: #b45309;
-            font-size: 12px;
-            font-weight: 800;
-        }
-
-        .audit-status.reconciled {
-            border-color: #bbf7d0;
-            background: #f0fdf4;
-            color: #15803d;
-        }
-
-        .audit-input {
-            width: 110px;
-            height: 38px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            padding: 0 10px;
-            text-align: right;
-            font-weight: 700;
-            color: #0f172a;
-        }
-
-        .audit-note {
-            width: 100%;
-            min-width: 180px;
-            height: 38px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            padding: 0 10px;
-            color: #334155;
-        }
-
-        .discrepancy-negative {
-            color: #ef4444;
-            font-weight: 800;
-        }
-
-        .discrepancy-positive {
-            color: #10b981;
-            font-weight: 800;
-        }
-
-        .fs-modal-body {
-            overflow: auto;
-        }
-
-        .audit-toolbar {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-top: 8px;
-        }
-    </style>
 </head>
 
 <body>
-    <aside class="admin-sidebar"></aside>
-    <header class="admin-header"></header>
 
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="admin-sidebar">
+        <!-- Inject via admin-components.js -->
+    </aside>
+
+    <!-- ============ HEADER ============ -->
+    <header class="admin-header">
+        <!-- Inject via admin-components.js -->
+    </header>
+
+    <!-- ============ MAIN CONTENT ============ -->
     <main class="admin-main">
+
+        <!-- Page Header -->
         <div class="page-header">
             <div>
                 <h1 class="page-title">Kiểm Kê Tồn Kho (Stocktake)</h1>
-                <p class="page-subtitle">Đối soát tồn kho thực tế theo lô/vị trí. Mọi điều chỉnh được ghi vào stock movements.</p>
+                <p class="page-subtitle">Quản lý và đối soát số lượng tồn kho thực tế so với hệ thống.</p>
             </div>
             <div class="page-actions">
-                <button class="btn-secondary" onclick="loadAudits()">
-                    <i class="fa-solid fa-rotate"></i> Làm mới
-                </button>
-                <button class="btn-primary" onclick="openNewAuditModal()">
-                    <i class="fa-solid fa-plus"></i> Tạo phiếu kiểm kê
+                <button class="btn-primary" onclick="openAuditModal()">
+                    <i class="fa-solid fa-plus"></i> Tạo Phiếu Kiểm Kê
                 </button>
             </div>
         </div>
 
+        <!-- Filter Section -->
         <div class="filter-section">
             <div class="filter-group">
-                <label class="filter-label">Vị trí kiểm kê</label>
-                <select id="auditLocationFilter" class="filter-control"></select>
+                <label class="filter-label">Khu vực kiểm kê</label>
+                <select class="filter-control">
+                    <option value="">Tất cả khu vực</option>
+                    <option value="">Khu Thuốc Kê Đơn (Rx)</option>
+                    <option value="">Khu Thuốc Không Kê Đơn (OTC)</option>
+                    <option value="">Khu Thực Phẩm Chức Năng</option>
+                </select>
             </div>
             <div class="filter-group">
                 <label class="filter-label">Trạng thái</label>
-                <select id="auditStatusFilter" class="filter-control">
+                <select class="filter-control">
                     <option value="">Tất cả</option>
-                    <option value="draft">Đang kiểm</option>
-                    <option value="reconciled">Đã đối soát</option>
+                    <option value="">Đang kiểm (Draft)</option>
+                    <option value="">Đã đối soát (Reconciled)</option>
                 </select>
+            </div>
+            <div class="filter-group" style="flex:1;">
+                <label class="filter-label">Tháng</label>
+                <input type="month" class="filter-control" value="2026-03">
             </div>
         </div>
 
+        <!-- Data Table (Audit History) -->
         <div class="inventory-table-container">
             <table class="inventory-table">
                 <thead>
                     <tr>
-                        <th width="15%">Mã phiếu</th>
-                        <th width="18%">Ngày tạo</th>
-                        <th width="24%">Phạm vi kiểm kê</th>
-                        <th width="12%">Dòng kiểm</th>
-                        <th width="14%">Chênh lệch</th>
-                        <th width="12%">Trạng thái</th>
-                        <th width="5%" style="text-align:right;">Mở</th>
+                        <th width="15%">Mã Phiếu</th>
+                        <th width="20%">Thời gian / Người tạo</th>
+                        <th width="20%">Phạm vi kiểm kê</th>
+                        <th width="15%">Số mã hàng lệch</th>
+                        <th width="15%">Giá trị chênh lệch</th>
+                        <th width="15%" style="text-align:right;">Trạng thái</th>
                     </tr>
                 </thead>
-                <tbody id="auditsTableBody">
-                    <tr><td colspan="7" class="audit-empty">Đang tải phiếu kiểm kê...</td></tr>
+                <tbody>
+                    <tr>
+                        <td><span class="table-sku"
+                                style="font-size:14px;font-weight:700;color:#1e293b;">AUD-260228</span></td>
+                        <td>
+                            <div class="inv-name" style="font-size:14px;">Trần Minh Giang</div>
+                            <div style="font-size:12px;color:#6b7280;">28/02/2026 - 22:30</div>
+                        </td>
+                        <td>
+                            <div style="font-size:13px;font-weight:600;color:#1e293b;">Khu Thuốc Kê Đơn (Rx)</div>
+                            <div style="font-size:12px;color:#6b7280;">Tủ A, Tủ B</div>
+                        </td>
+                        <td><span style="font-size:14px;font-weight:700;color:#ef4444;">12 mã</span></td>
+                        <td><span style="font-size:14px;font-weight:700;color:#ef4444;">-850,000₫</span></td>
+                        <td>
+                            <div class="action-btns" style="justify-content:flex-end;">
+                                <span class="status-badge active"
+                                    style="background:#f0fdf4;color:#15803d;border-color:#bbf7d0;">Đã đối soát</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="table-sku"
+                                style="font-size:14px;font-weight:700;color:#1e293b;">AUD-260215</span></td>
+                        <td>
+                            <div class="inv-name" style="font-size:14px;">Nguyễn Văn A</div>
+                            <div style="font-size:12px;color:#6b7280;">15/02/2026 - 21:00</div>
+                        </td>
+                        <td>
+                            <div style="font-size:13px;font-weight:600;color:#1e293b;">Khu TPCN</div>
+                            <div style="font-size:12px;color:#6b7280;">Toàn bộ tủ</div>
+                        </td>
+                        <td><span style="font-size:14px;font-weight:700;color:#10b981;">3 mã</span></td>
+                        <td><span style="font-size:14px;font-weight:700;color:#10b981;">+120,000₫</span></td>
+                        <td>
+                            <div class="action-btns" style="justify-content:flex-end;">
+                                <span class="status-badge active"
+                                    style="background:#f0fdf4;color:#15803d;border-color:#bbf7d0;">Đã đối soát</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="table-sku"
+                                style="font-size:14px;font-weight:700;color:#1e293b;">AUD-260131</span></td>
+                        <td>
+                            <div class="inv-name" style="font-size:14px;">Lê Thị B</div>
+                            <div style="font-size:12px;color:#6b7280;">31/01/2026 - 15:45</div>
+                        </td>
+                        <td>
+                            <div style="font-size:13px;font-weight:600;color:#1e293b;">Toàn bộ nhà thuốc</div>
+                            <div style="font-size:12px;color:#6b7280;">Kiểm kê tổng định kỳ</div>
+                        </td>
+                        <td><span style="font-size:14px;font-weight:700;color:#ef4444;">8 mã</span></td>
+                        <td><span style="font-size:14px;font-weight:700;color:#ef4444;">-450,000₫</span></td>
+                        <td>
+                            <div class="action-btns" style="justify-content:flex-end;">
+                                <span class="status-badge active"
+                                    style="background:#f0fdf4;color:#15803d;border-color:#bbf7d0;">Đã đối soát</span>
+                            </div>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
     </main>
 
+    <!-- ============ FULL SCREEN AUDIT MODAL ============ -->
     <div class="fullscreen-modal-overlay" id="auditModal">
+        <!-- Header -->
         <div class="fs-modal-header">
             <div>
-                <h2 style="font-size:20px;font-weight:800;color:#1e293b;letter-spacing:-0.5px;">
-                    <i class="fa-solid fa-clipboard-check" style="color:#10b981;margin-right:8px;"></i>
-                    <span id="auditModalTitle">Phiếu kiểm kê mới</span>
-                </h2>
-                <div class="audit-toolbar">
-                    <select id="auditLocationSelect" class="form-select" style="width:360px;font-size:13px;padding:6px 12px;height:36px;"></select>
-                    <button id="createAuditBtn" class="btn-secondary" style="height:36px;font-size:12px;padding:0 12px;" onclick="createAudit()">
-                        <i class="fa-solid fa-cloud-arrow-down"></i> Tạo snapshot hệ thống
-                    </button>
-                    <span id="auditScopeLabel" style="font-size:12px;color:#64748b;font-weight:700;"></span>
+                <h2 style="font-size:20px;font-weight:800;color:#1e293b;letter-spacing:-0.5px;"><i
+                        class="fa-solid fa-clipboard-check" style="color:#10b981;margin-right:8px;"></i>Phiếu Kiểm Kê
+                    Mới</h2>
+                <div style="display:flex;gap:12px;margin-top:8px;">
+                    <select class="form-select" style="width:250px;font-size:13px;padding:6px 12px;height:32px;">
+                        <option value="">Chọn khu vực kiểm kê...</option>
+                        <option value="rx">Khu Thuốc Kế Đơn (Rx)</option>
+                        <option value="otc" selected>Khu Thuốc OTC - Tủ B2</option>
+                    </select>
+                    <button class="btn-secondary" style="height:32px;font-size:12px;padding:0 12px;"><i
+                            class="fa-solid fa-cloud-arrow-down"></i> Tải dữ liệu hệ thống</button>
+                    <button class="btn-secondary" style="height:32px;font-size:12px;padding:0 12px;"><i
+                            class="fa-solid fa-barcode"></i> Quét mã vạch đếm</button>
                 </div>
             </div>
             <button class="slide-close" onclick="closeAuditModal()"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
+        <!-- Body (Data Table) -->
         <div class="fs-modal-body">
-            <div style="background:white;border-radius:10px;border:1px solid var(--admin-border);box-shadow:0 1px 2px rgba(0,0,0,0.05);overflow:auto;">
-                <table class="inventory-table" style="margin:0;min-width:1180px;">
+            <div
+                style="background:white;border-radius:10px;border:1px solid var(--admin-border);box-shadow:0 1px 2px rgba(0,0,0,0.05);overflow:hidden;">
+                <table class="inventory-table" style="margin:0;">
                     <thead style="background:#f8fafc;">
                         <tr>
-                            <th width="11%">SKU</th>
-                            <th width="24%">Thuốc</th>
-                            <th width="11%">Lô</th>
-                            <th width="10%">HSD</th>
-                            <th width="12%" style="text-align:right;">SL hệ thống</th>
-                            <th width="13%" style="text-align:right;">SL thực tế</th>
-                            <th width="10%" style="text-align:right;">Lệch</th>
-                            <th width="19%">Lý do nếu lệch</th>
+                            <th width="15%">Mã Hàng (SKU)</th>
+                            <th width="35%">Thuốc (Medicine Name)</th>
+                            <th width="10%" style="text-align:right;">Mã Lô</th>
+                            <th width="10%" style="text-align:right;">SL Hệ thống</th>
+                            <th width="15%" style="text-align:right;">SL Kiểm thực tế</th>
+                            <th width="15%" style="text-align:right;">Chênh lệch (+/-)</th>
                         </tr>
                     </thead>
                     <tbody id="auditTableBody">
-                        <tr><td colspan="8" class="audit-empty">Tạo hoặc mở phiếu kiểm kê để bắt đầu</td></tr>
+                        <!-- Row 1 (Negative Discrepancy) -->
+                        <tr>
+                            <td style="font-size:13px;font-weight:600;color:#6b7280;">SKU-A001</td>
+                            <td style="font-size:14px;font-weight:700;color:#1e293b;">Panadol Extra (Hộp 12 viên)</td>
+                            <td style="font-size:12px;color:#6b7280;text-align:right;">L2603-A</td>
+                            <td style="font-size:15px;font-weight:600;color:#1e293b;text-align:right;" class="sys-qty">
+                                150</td>
+                            <td style="text-align:right;">
+                                <input type="number" class="audit-input" value="145"
+                                    oninput="calculateRowDiscrepancy(this)">
+                            </td>
+                            <td style="text-align:right;" class="discrepancy-cell">
+                                <span class="discrepancy-negative">-5</span>
+                            </td>
+                        </tr>
+                        <!-- Row 2 (Match) -->
+                        <tr>
+                            <td style="font-size:13px;font-weight:600;color:#6b7280;">SKU-A025</td>
+                            <td style="font-size:14px;font-weight:700;color:#1e293b;">Amoxicillin 500mg</td>
+                            <td style="font-size:12px;color:#6b7280;text-align:right;">L2512-C</td>
+                            <td style="font-size:15px;font-weight:600;color:#1e293b;text-align:right;" class="sys-qty">
+                                80</td>
+                            <td style="text-align:right;">
+                                <input type="number" class="audit-input" value="80"
+                                    oninput="calculateRowDiscrepancy(this)">
+                            </td>
+                            <td style="text-align:right;" class="discrepancy-cell">
+                                <span style="color:#9ca3af;font-weight:600;">0</span>
+                            </td>
+                        </tr>
+                        <!-- Row 3 (Positive Discrepancy) -->
+                        <tr>
+                            <td style="font-size:13px;font-weight:600;color:#6b7280;">SKU-A099</td>
+                            <td style="font-size:14px;font-weight:700;color:#1e293b;">Vitamin C DHC 1000mg</td>
+                            <td style="font-size:12px;color:#6b7280;text-align:right;">L2601-B</td>
+                            <td style="font-size:15px;font-weight:600;color:#1e293b;text-align:right;" class="sys-qty">
+                                45</td>
+                            <td style="text-align:right;">
+                                <input type="number" class="audit-input" value="48"
+                                    oninput="calculateRowDiscrepancy(this)">
+                            </td>
+                            <td style="text-align:right;" class="discrepancy-cell">
+                                <span class="discrepancy-positive">+3</span>
+                            </td>
+                        </tr>
+                        <!-- Row 4 (Empty) -->
+                        <tr>
+                            <td style="font-size:13px;font-weight:600;color:#6b7280;">SKU-B102</td>
+                            <td style="font-size:14px;font-weight:700;color:#1e293b;">Dầu gió xanh Thiên Ân</td>
+                            <td style="font-size:12px;color:#6b7280;text-align:right;">L2508-A</td>
+                            <td style="font-size:15px;font-weight:600;color:#1e293b;text-align:right;" class="sys-qty">
+                                20</td>
+                            <td style="text-align:right;">
+                                <input type="number" class="audit-input" placeholder="0"
+                                    oninput="calculateRowDiscrepancy(this)">
+                            </td>
+                            <td style="text-align:right;" class="discrepancy-cell">
+                                <span style="color:#9ca3af;font-weight:600;">--</span>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
+        <!-- Footer -->
         <div class="fs-modal-footer">
             <div style="flex:1;display:flex;gap:32px;align-items:center;">
                 <div>
-                    <span style="font-size:12px;color:#6b7280;display:block;">Tổng thiếu:</span>
-                    <span style="font-size:16px;font-weight:800;color:#ef4444;" id="totalMissing">0</span>
+                    <span style="font-size:12px;color:#6b7280;display:block;">Tổng hàng lệch (âm):</span>
+                    <span style="font-size:16px;font-weight:800;color:#ef4444;" id="totalMissing">-5</span>
                 </div>
                 <div>
-                    <span style="font-size:12px;color:#6b7280;display:block;">Tổng thừa:</span>
-                    <span style="font-size:16px;font-weight:800;color:#10b981;" id="totalSurplus">0</span>
+                    <span style="font-size:12px;color:#6b7280;display:block;">Tổng hàng dôi (dương):</span>
+                    <span style="font-size:16px;font-weight:800;color:#10b981;" id="totalSurplus">+3</span>
                 </div>
                 <div>
-                    <span style="font-size:12px;color:#6b7280;display:block;">Giá trị lệch:</span>
-                    <span style="font-size:16px;font-weight:800;color:#1e293b;" id="totalValueDiff">0₫</span>
+                    <span style="font-size:12px;color:#6b7280;display:block;">Ước tính giá trị thiệt hại:</span>
+                    <span style="font-size:16px;font-weight:800;color:#1e293b;">-325,000₫</span>
                 </div>
             </div>
 
-            <button class="btn-secondary" onclick="closeAuditModal()">Đóng</button>
-            <button id="saveAuditBtn" class="btn-secondary" onclick="saveAuditDraft()"><i class="fa-solid fa-floppy-disk"></i> Lưu nháp</button>
-            <button id="reconcileAuditBtn" class="btn-primary" onclick="reconcileAudit()">
-                <i class="fa-solid fa-check-double"></i> Hoàn tất đối soát
+            <button class="btn-secondary" onclick="closeAuditModal()">Huỷ & Đóng</button>
+            <button class="btn-secondary" onclick="alert('Đã lưu nháp!');"><i class="fa-solid fa-floppy-disk"></i> Lưu
+                Nháp</button>
+            <button class="btn-primary" onclick="submitAudit()">
+                <i class="fa-solid fa-check-double"></i> Hoàn tất Đối Soát & Cập nhật Kho
             </button>
         </div>
     </div>
 
-    <script src="js/admin-catalog-api.js"></script>
-    <script src="js/admin-components.js"></script>
+    <!-- ============ SCRIPTS ============ -->
     <script>
-        const auditState = {
-            audits: [],
-            locations: [],
-            activeAudit: null
-        };
-
-        function escapeHtml(value) {
-            return String(value ?? '').replace(/[&<>"']/g, (char) => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            }[char]));
-        }
-
-        function formatDate(value) {
-            if (!value) return '-';
-            return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value));
-        }
-
-        function formatShortDate(value) {
-            if (!value) return '-';
-            return new Intl.DateTimeFormat('vi-VN').format(new Date(value));
-        }
-
-        function formatCurrency(value) {
-            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(Number(value || 0));
-        }
-
-        function toast(message, type = 'success') {
-            const el = document.createElement('div');
-            el.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:14px 18px;border-radius:10px;font-size:13px;font-weight:700;z-index:9999;box-shadow:0 8px 24px rgba(15,23,42,.24);display:flex;align-items:center;gap:10px;max-width:460px;';
-            el.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check'}" style="color:${type === 'error' ? '#ef4444' : '#10b981'}"></i><span>${escapeHtml(message)}</span>`;
-            document.body.appendChild(el);
-            setTimeout(() => { el.style.transition = 'opacity .25s, transform .25s'; el.style.opacity = '0'; el.style.transform = 'translateY(8px)'; setTimeout(() => el.remove(), 260); }, 3600);
-        }
-
-        function statusBadge(status) {
-            if (status === 'reconciled') return '<span class="audit-status reconciled"><i class="fa-solid fa-check"></i>Đã đối soát</span>';
-            return '<span class="audit-status"><i class="fa-solid fa-pen"></i>Đang kiểm</span>';
-        }
-
-        async function loadLocations() {
-            const result = await window.MGAdminCatalogApi.get('/locations', { limit: 100 });
-            auditState.locations = result.data || [];
-            const options = '<option value="">Toàn bộ kho</option>' + auditState.locations.map((location) => `
-                <option value="${Number(location.id)}">${escapeHtml(location.label)}</option>
-            `).join('');
-            document.getElementById('auditLocationFilter').innerHTML = options;
-            document.getElementById('auditLocationSelect').innerHTML = options;
-        }
-
-        async function loadAudits() {
-            const locationId = document.getElementById('auditLocationFilter')?.value || '';
-            const status = document.getElementById('auditStatusFilter')?.value || '';
-            try {
-                const result = await window.MGAdminCatalogApi.get('/inventory/audits', { location_id: locationId, status });
-                auditState.audits = result.data || [];
-                renderAudits();
-            } catch (error) {
-                toast(error.message || 'Không tải được phiếu kiểm kê', 'error');
-            }
-        }
-
-        function renderAudits() {
-            const body = document.getElementById('auditsTableBody');
-            if (!auditState.audits.length) {
-                body.innerHTML = '<tr><td colspan="7" class="audit-empty">Chưa có phiếu kiểm kê phù hợp</td></tr>';
-                return;
-            }
-            body.innerHTML = auditState.audits.map((audit) => {
-                const diffText = `${Number(audit.total_missing || 0) ? `-${Number(audit.total_missing || 0)} thiếu` : '0 thiếu'} / ${Number(audit.total_surplus || 0) ? `+${Number(audit.total_surplus || 0)} thừa` : '0 thừa'}`;
-                return `
-                    <tr style="cursor:pointer;" onclick="openExistingAudit(${Number(audit.id)})">
-                        <td><span class="table-sku" style="font-size:14px;font-weight:800;color:#1e293b;">${escapeHtml(audit.audit_code)}</span></td>
-                        <td>${formatDate(audit.created_at)}</td>
-                        <td>
-                            <div style="font-size:13px;font-weight:700;color:#1e293b;">${escapeHtml(audit.location_name || 'Toàn bộ kho')}</div>
-                            <div style="font-size:12px;color:#64748b;">${escapeHtml(audit.notes || 'Snapshot theo lô đang còn tồn')}</div>
-                        </td>
-                        <td>${Number(audit.total_items || 0)} dòng</td>
-                        <td>
-                            <div style="font-size:13px;font-weight:800;color:${Number(audit.total_value_diff || 0) < 0 ? '#ef4444' : '#10b981'};">${formatCurrency(audit.total_value_diff)}</div>
-                            <div style="font-size:12px;color:#64748b;">${diffText}</div>
-                        </td>
-                        <td>${statusBadge(audit.status)}</td>
-                        <td style="text-align:right;"><button class="btn-icon"><i class="fa-solid fa-arrow-up-right-from-square"></i></button></td>
-                    </tr>`;
-            }).join('');
-        }
-
-        function openNewAuditModal() {
-            auditState.activeAudit = null;
-            document.getElementById('auditModalTitle').textContent = 'Phiếu kiểm kê mới';
-            document.getElementById('auditScopeLabel').textContent = '';
-            document.getElementById('auditLocationSelect').disabled = false;
-            document.getElementById('createAuditBtn').style.display = '';
-            document.getElementById('saveAuditBtn').disabled = true;
-            document.getElementById('reconcileAuditBtn').disabled = true;
-            document.getElementById('auditTableBody').innerHTML = '<tr><td colspan="8" class="audit-empty">Chọn phạm vi rồi bấm tạo snapshot hệ thống</td></tr>';
-            updateTotals();
+        function openAuditModal() {
             document.getElementById('auditModal').classList.add('open');
             document.body.style.overflow = 'hidden';
         }
 
-        async function openExistingAudit(id) {
-            try {
-                const result = await window.MGAdminCatalogApi.get(`/inventory/audits/${encodeURIComponent(id)}`);
-                auditState.activeAudit = result.data;
-                document.getElementById('auditModalTitle').textContent = `Phiếu kiểm kê ${auditState.activeAudit.audit_code}`;
-                document.getElementById('auditScopeLabel').textContent = auditState.activeAudit.location_name || 'Toàn bộ kho';
-                document.getElementById('auditLocationSelect').value = auditState.activeAudit.location_id || '';
-                document.getElementById('auditLocationSelect').disabled = true;
-                document.getElementById('createAuditBtn').style.display = 'none';
-                const isDraft = auditState.activeAudit.status === 'draft';
-                document.getElementById('saveAuditBtn').disabled = !isDraft;
-                document.getElementById('reconcileAuditBtn').disabled = !isDraft;
-                renderAuditItems();
-                document.getElementById('auditModal').classList.add('open');
-                document.body.style.overflow = 'hidden';
-            } catch (error) {
-                toast(error.message || 'Không mở được phiếu kiểm kê', 'error');
-            }
-        }
-
         function closeAuditModal() {
-            document.getElementById('auditModal').classList.remove('open');
-            document.body.style.overflow = '';
-        }
-
-        async function createAudit() {
-            try {
-                const locationId = document.getElementById('auditLocationSelect').value || null;
-                const result = await window.MGAdminCatalogApi.post('/inventory/audits', {
-                    location_id: locationId ? Number(locationId) : null,
-                    notes: locationId ? 'Kiểm kê theo vị trí lưu trữ' : 'Kiểm kê toàn bộ kho'
-                });
-                toast('Đã tạo snapshot kiểm kê');
-                await loadAudits();
-                await openExistingAudit(result.data.id);
-            } catch (error) {
-                toast(error.message || 'Không tạo được phiếu kiểm kê', 'error');
+            if (confirm("Khép lại phiếu kiểm kê? Mọi dữ liệu chưa 'Lưu Nháp' sẽ bị mất.")) {
+                document.getElementById('auditModal').classList.remove('open');
+                document.body.style.overflow = '';
             }
         }
 
-        function renderAuditItems() {
-            const audit = auditState.activeAudit;
-            const readonly = audit.status !== 'draft';
-            document.getElementById('auditTableBody').innerHTML = (audit.items || []).map((item, index) => {
-                const actual = item.actual_quantity === null || item.actual_quantity === undefined ? '' : Number(item.actual_quantity);
-                const diff = actual === '' ? null : Number(actual) - Number(item.system_quantity || 0);
-                return `
-                    <tr data-index="${index}">
-                        <td style="font-size:13px;font-weight:700;color:#64748b;">${escapeHtml(item.sku)}</td>
-                        <td>
-                            <div style="font-size:14px;font-weight:800;color:#1e293b;">${escapeHtml(item.product_name)}</div>
-                            <div style="font-size:12px;color:#64748b;">${escapeHtml(item.location_name || 'Chưa gán vị trí')}</div>
-                        </td>
-                        <td style="font-size:12px;color:#475569;font-family:monospace;font-weight:700;">${escapeHtml(item.lot_number)}</td>
-                        <td style="font-size:13px;color:#1e293b;font-weight:700;">${formatShortDate(item.expiry_date)}</td>
-                        <td style="font-size:15px;font-weight:800;color:#1e293b;text-align:right;" class="sys-qty">${Number(item.system_quantity || 0)}</td>
-                        <td style="text-align:right;">
-                            <input type="number" min="0" class="audit-input" value="${actual}" ${readonly ? 'disabled' : ''} oninput="updateAuditItem(${index}, 'actual_quantity', this.value)">
-                        </td>
-                        <td style="text-align:right;" class="discrepancy-cell">${renderDiff(diff)}</td>
-                        <td>
-                            <input class="audit-note" value="${escapeHtml(item.notes || '')}" ${readonly ? 'disabled' : ''} placeholder="Bắt buộc nếu lệch" oninput="updateAuditItem(${index}, 'notes', this.value)">
-                        </td>
-                    </tr>`;
-            }).join('') || '<tr><td colspan="8" class="audit-empty">Phiếu chưa có dòng kiểm kê</td></tr>';
-            updateTotals();
+        function submitAudit() {
+            if (confirm("Xác nhận: Hệ thống sẽ tự động cập nhật số lượng tồn kho theo 'SL Kiểm thực tế'. Bạn có chắc chắn muốn hoàn tất?")) {
+                alert("Kiểm kê hoàn tất. Tồn kho đã được điều chỉnh!");
+                document.getElementById('auditModal').classList.remove('open');
+                document.body.style.overflow = '';
+            }
         }
 
-        function renderDiff(diff) {
-            if (diff === null || Number.isNaN(diff)) return '<span style="color:#94a3b8;font-weight:700;">--</span>';
-            if (diff === 0) return '<span style="color:#94a3b8;font-weight:700;">0</span>';
-            if (diff > 0) return `<span class="discrepancy-positive">+${diff}</span>`;
-            return `<span class="discrepancy-negative">${diff}</span>`;
-        }
+        // Live calculation logic for individual rows
+        function calculateRowDiscrepancy(inputElement) {
+            const row = inputElement.closest('tr');
+            const sysQtyText = row.querySelector('.sys-qty').innerText;
+            const sysQty = parseInt(sysQtyText, 10);
+            const actualQty = inputElement.value === '' ? sysQty : parseInt(inputElement.value, 10);
 
-        function updateAuditItem(index, key, value) {
-            const item = auditState.activeAudit.items[index];
-            if (!item) return;
-            if (key === 'actual_quantity') {
-                item.actual_quantity = value === '' ? null : Number(value);
-                item.difference_quantity = item.actual_quantity === null ? null : item.actual_quantity - Number(item.system_quantity || 0);
-                const row = document.querySelector(`#auditTableBody tr[data-index="${index}"]`);
-                if (row) row.querySelector('.discrepancy-cell').innerHTML = renderDiff(item.difference_quantity);
+            const diff = actualQty - sysQty;
+            const discCell = row.querySelector('.discrepancy-cell');
+
+            if (inputElement.value === '') {
+                discCell.innerHTML = `<span style="color:#9ca3af;font-weight:600;">--</span>`;
+            } else if (diff === 0) {
+                discCell.innerHTML = `<span style="color:#9ca3af;font-weight:600;">0</span>`;
+            } else if (diff > 0) {
+                discCell.innerHTML = `<span class="discrepancy-positive">+${diff}</span>`;
             } else {
-                item.notes = value;
+                discCell.innerHTML = `<span class="discrepancy-negative">${diff}</span>`;
             }
-            updateTotals();
+            // A real app would then loop all rows to update the total footers.
         }
+    </script>
 
-        function updateTotals() {
-            const items = auditState.activeAudit?.items || [];
-            let missing = 0;
-            let surplus = 0;
-            let valueDiff = 0;
-            items.forEach((item) => {
-                if (item.actual_quantity === null || item.actual_quantity === undefined || item.actual_quantity === '') return;
-                const diff = Number(item.actual_quantity) - Number(item.system_quantity || 0);
-                if (diff < 0) missing += Math.abs(diff);
-                if (diff > 0) surplus += diff;
-                valueDiff += diff * Number(item.cost_price || 0);
-            });
-            document.getElementById('totalMissing').textContent = missing;
-            document.getElementById('totalSurplus').textContent = surplus ? `+${surplus}` : '0';
-            document.getElementById('totalValueDiff').textContent = formatCurrency(valueDiff);
-        }
-
-        function collectAuditPayload(requireComplete = false) {
-            const items = auditState.activeAudit?.items || [];
-            for (const item of items) {
-                if (requireComplete && (item.actual_quantity === null || item.actual_quantity === undefined || item.actual_quantity === '')) {
-                    return { error: `Dòng ${item.product_name} - lô ${item.lot_number} chưa nhập số lượng thực tế` };
-                }
-                if (item.actual_quantity !== null && item.actual_quantity !== undefined && Number(item.actual_quantity) < 0) {
-                    return { error: 'Số lượng thực tế không được âm' };
-                }
-                const diff = item.actual_quantity === null || item.actual_quantity === undefined
-                    ? 0
-                    : Number(item.actual_quantity) - Number(item.system_quantity || 0);
-                if (requireComplete && diff !== 0 && !String(item.notes || '').trim()) {
-                    return { error: `Dòng ${item.product_name} - lô ${item.lot_number} có lệch, cần nhập lý do` };
-                }
-            }
-            return {
-                items: items.map((item) => ({
-                    id: item.id,
-                    actual_quantity: item.actual_quantity,
-                    notes: String(item.notes || '').trim() || null
-                }))
-            };
-        }
-
-        async function saveAuditDraft() {
-            if (!auditState.activeAudit) return;
-            const payload = collectAuditPayload(false);
-            if (payload.error) {
-                toast(payload.error, 'error');
-                return;
-            }
-            try {
-                await window.MGAdminCatalogApi.put(`/inventory/audits/${encodeURIComponent(auditState.activeAudit.id)}/items`, payload);
-                toast('Đã lưu nháp số lượng kiểm kê');
-                await openExistingAudit(auditState.activeAudit.id);
-            } catch (error) {
-                toast(error.message || 'Không lưu được phiếu kiểm kê', 'error');
-            }
-        }
-
-        async function reconcileAudit() {
-            if (!auditState.activeAudit) return;
-            const payload = collectAuditPayload(true);
-            if (payload.error) {
-                toast(payload.error, 'error');
-                return;
-            }
-            if (!confirm('Hoàn tất đối soát sẽ cập nhật tồn kho theo số lượng thực tế và khoá phiếu kiểm kê. Tiếp tục?')) return;
-            try {
-                await window.MGAdminCatalogApi.post(`/inventory/audits/${encodeURIComponent(auditState.activeAudit.id)}/reconcile`, payload);
-                toast('Đã hoàn tất đối soát và cập nhật tồn kho');
-                await loadAudits();
-                await openExistingAudit(auditState.activeAudit.id);
-            } catch (error) {
-                toast(error.message || 'Không hoàn tất được phiếu kiểm kê', 'error');
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', async () => {
+    <!-- Shared Layout Components -->
+    <script src="js/admin-components.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
             renderAdminLayout('audits');
-            document.getElementById('auditLocationFilter').addEventListener('change', loadAudits);
-            document.getElementById('auditStatusFilter').addEventListener('change', loadAudits);
-            try {
-                await loadLocations();
-            } catch (error) {
-                toast(error.message || 'Không tải được vị trí lưu trữ', 'error');
-            }
-            await loadAudits();
         });
     </script>
 </body>

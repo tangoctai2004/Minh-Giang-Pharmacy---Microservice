@@ -3,59 +3,23 @@
  * Tự động tải Danh mục con, Bộ lọc (Filters), và Danh sách sản phẩm.
  */
 
-function catalogApi() {
-    if (window.MGCatalogApi) return window.MGCatalogApi;
-    const baseUrl = window.MG_CATALOG_API_BASE || 'http://localhost:8000/api/catalog';
-    return {
-        async get(path, params) {
-            const url = new URL(`${baseUrl.replace(/\/+$/, '')}/${String(path).replace(/^\/+/, '')}`);
-            Object.entries(params || {}).forEach(([key, value]) => {
-                if (value === undefined || value === null || value === '') return;
-                if (Array.isArray(value)) {
-                    if (value.length > 0) url.searchParams.set(key, value.join(','));
-                    return;
-                }
-                url.searchParams.set(key, value);
-            });
-            const response = await fetch(url.toString());
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            return response.json();
-        }
-    };
-}
-
-function escapeHtml(value) {
-    if (window.MGClientApi && typeof window.MGClientApi.escapeHtml === 'function') {
-        return window.MGClientApi.escapeHtml(value);
-    }
-    return String(value ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
-
-function toList(value) {
-    return value ? String(value).split(',').filter(Boolean) : [];
-}
-
 class CategoryPage {
     constructor() {
+        this.apiBase = 'http://localhost:8000/api/catalog';
         this.params = new URLSearchParams(window.location.search);
         this.categoryId = this.params.get('id') || 1000; // Default to Thuốc (ID: 1000)
         
         // Filter States
         this.filters = {
             category_id: this.categoryId,
-            page: Math.max(1, Number(this.params.get('page')) || 1),
-            limit: Number(this.params.get('limit')) || 28,
-            sort: this.params.get('sort') || 'popular',
-            requires_prescription: this.params.has('rx') ? this.params.get('rx') : '',
-            price_min: this.params.get('price_min'),
-            price_max: this.params.get('price_max'),
-            brand_ids: toList(this.params.get('brand_ids')),
-            origins: toList(this.params.get('origins')),
+            page: 1,
+            limit: 28,
+            sort: 'popular',
+            requires_prescription: '0',
+            price_min: null,
+            price_max: null,
+            brand_ids: [],
+            origins: [],
             indications: []
         };
 
@@ -65,7 +29,6 @@ class CategoryPage {
             subCatGrid: document.getElementById('subCategoriesGrid'),
             subCatsWrapper: document.getElementById('subCatsWrapper'),
             btnViewMoreSub: document.getElementById('btnViewMoreSubcats'),
-            tabAll: document.getElementById('tabAllProducts'),
             tabNonRx: document.getElementById('tabNonRxProducts'),
             tabRx: document.getElementById('tabRxProducts'),
             
@@ -78,45 +41,11 @@ class CategoryPage {
             pagination: document.getElementById('paginationBox'),
             
             priceBlock: document.getElementById('catPriceBlock'),
-            searchBrand: document.getElementById('searchBrand'),
-            searchOrigin: document.getElementById('searchOrigin'),
             listBrand: document.getElementById('listBrand'),
             listOrigin: document.getElementById('listOrigin')
         };
 
-        this.syncControlsFromUrl();
         this.init();
-    }
-
-    syncControlsFromUrl() {
-        if (this.els.sortSelect) this.els.sortSelect.value = this.filters.sort;
-        if (this.els.limitSelect) this.els.limitSelect.value = String(this.filters.limit);
-        document.querySelectorAll('.cat-tab-btn').forEach(btn => {
-            btn.classList.toggle('active', (btn.getAttribute('data-rx') || '') === (this.filters.requires_prescription || ''));
-        });
-        if (this.els.priceBlock && this.filters.price_min !== null) {
-            this.els.priceBlock.querySelectorAll('.price-block-btn').forEach(btn => {
-                const matchMin = (btn.getAttribute('data-min') || '') === (this.filters.price_min || '');
-                const matchMax = (btn.getAttribute('data-max') || '') === (this.filters.price_max || '');
-                btn.classList.toggle('active', matchMin && matchMax);
-            });
-        }
-    }
-
-    updateUrl() {
-        const params = new URLSearchParams();
-        params.set('id', this.filters.category_id);
-        if (Number(this.filters.page) > 1) params.set('page', this.filters.page);
-        if (String(this.filters.sort) !== 'popular') params.set('sort', this.filters.sort);
-        if (Number(this.filters.limit) !== 28) params.set('limit', this.filters.limit);
-        if (this.filters.requires_prescription === '0' || this.filters.requires_prescription === '1') {
-            params.set('rx', this.filters.requires_prescription);
-        }
-        if (this.filters.price_min) params.set('price_min', this.filters.price_min);
-        if (this.filters.price_max) params.set('price_max', this.filters.price_max);
-        if (this.filters.brand_ids.length > 0) params.set('brand_ids', this.filters.brand_ids.join(','));
-        if (this.filters.origins.length > 0) params.set('origins', this.filters.origins.join(','));
-        window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
     }
 
     async init() {
@@ -157,14 +86,13 @@ class CategoryPage {
         }
 
         // Tabs
-        [this.els.tabAll, this.els.tabNonRx, this.els.tabRx].forEach(tab => {
+        [this.els.tabNonRx, this.els.tabRx].forEach(tab => {
             if (!tab) return;
             tab.addEventListener('click', (e) => {
                 document.querySelectorAll('.cat-tab-btn').forEach(btn => btn.classList.remove('active'));
-                e.currentTarget.classList.add('active');
-                this.filters.requires_prescription = e.currentTarget.getAttribute('data-rx') || '';
+                e.target.classList.add('active');
+                this.filters.requires_prescription = e.target.getAttribute('data-rx');
                 this.filters.page = 1;
-                this.updateUrl();
                 this.loadProducts();
             });
         });
@@ -174,7 +102,6 @@ class CategoryPage {
             this.els.sortSelect.addEventListener('change', (e) => {
                 this.filters.sort = e.target.value;
                 this.filters.page = 1;
-                this.updateUrl();
                 this.loadProducts();
             });
         }
@@ -182,7 +109,6 @@ class CategoryPage {
             this.els.limitSelect.addEventListener('change', (e) => {
                 this.filters.limit = e.target.value;
                 this.filters.page = 1;
-                this.updateUrl();
                 this.loadProducts();
             });
         }
@@ -203,7 +129,6 @@ class CategoryPage {
                         this.filters.price_max = e.target.getAttribute('data-max') || null;
                     }
                     this.filters.page = 1;
-                    this.updateUrl();
                     this.loadProducts();
                 }
             });
@@ -227,13 +152,14 @@ class CategoryPage {
 
     async loadCategoryTree() {
         try {
-            const json = await catalogApi().get('categories/tree');
+            const res = await fetch(`${this.apiBase}/categories/tree`);
+            const json = await res.json();
             if (json.success) {
                 // Find current category
                 const tree = json.data;
                 const current = this.findCategoryInTree(tree, Number(this.categoryId));
                 if (current) {
-                    if (this.els.title) this.els.title.textContent = current.name;
+                    this.els.title.textContent = current.name;
                     document.title = `${current.name} — Nhà Thuốc Minh Giang`;
                     
                     if (current.children && current.children.length > 0) {
@@ -273,7 +199,7 @@ class CategoryPage {
         const html = children.slice(0, displayLimit).map((c, i) => `
             <a href="category.html?id=${c.id}" class="subcat-card">
                 <div class="subcat-icon"><i class="fa-solid ${icons[i % icons.length]}"></i></div>
-                <span>${escapeHtml(c.name)}</span>
+                <span>${c.name}</span>
             </a>
         `).join('');
         
@@ -289,7 +215,8 @@ class CategoryPage {
 
     async loadFilters() {
         try {
-            const json = await catalogApi().get('products/filters', { category_id: this.categoryId });
+            const res = await fetch(`${this.apiBase}/products/filters?category_id=${this.categoryId}`);
+            const json = await res.json();
             
             if (json.success && json.data) {
                 const { brands, origins, rx_count, non_rx_count } = json.data;
@@ -303,9 +230,6 @@ class CategoryPage {
                 if (this.els.tabRx && rx_count !== undefined) {
                     this.els.tabRx.textContent = `Thuốc kê đơn (${rx_count})`;
                 }
-                if (this.els.tabAll) {
-                    this.els.tabAll.textContent = `Tất cả (${Number(non_rx_count || 0) + Number(rx_count || 0)})`;
-                }
             }
         } catch (e) {
             console.error(e);
@@ -318,11 +242,10 @@ class CategoryPage {
         container.innerHTML = items.map((item, i) => {
             const id = `flt_${filterKey}_${i}`;
             const val = item[valKey];
-            const checked = this.filters[filterKey].includes(String(val)) ? 'checked' : '';
             return `
                 <li>
-                    <input type="checkbox" id="${id}" value="${escapeHtml(val)}" ${checked}>
-                    <label for="${id}">${escapeHtml(item.name || item.val)} (${Number(item.count || 0)})</label>
+                    <input type="checkbox" id="${id}" value="${val}">
+                    <label for="${id}">${item.name || item.val} (${item.count})</label>
                 </li>
             `;
         }).join('');
@@ -333,87 +256,71 @@ class CategoryPage {
                 const checked = Array.from(container.querySelectorAll('input:checked')).map(cb => cb.value);
                 this.filters[filterKey] = checked;
                 this.filters.page = 1;
-                this.updateUrl();
                 this.loadProducts();
             });
         });
     }
 
     async loadProducts() {
-        if (this.els.loading) this.els.loading.style.display = 'block';
-        if (this.els.productList) this.els.productList.style.display = 'none';
-        if (this.els.empty) this.els.empty.style.display = 'none';
-        if (this.els.pagination) this.els.pagination.innerHTML = '';
+        this.els.loading.style.display = 'block';
+        this.els.productList.style.display = 'none';
+        this.els.empty.style.display = 'none';
+        this.els.pagination.innerHTML = '';
 
         try {
-            const json = await catalogApi().get('products', {
-                category_id: this.filters.category_id,
-                page: this.filters.page,
-                limit: this.filters.limit,
-                sort: this.filters.sort,
-                price_min: this.filters.price_min,
-                price_max: this.filters.price_max,
-                brand_ids: this.filters.brand_ids,
-                origins: this.filters.origins,
-                indications: this.filters.indications,
-                requires_prescription: this.filters.requires_prescription || undefined
-            });
+            let url = `${this.apiBase}/products?category_id=${this.filters.category_id}&page=${this.filters.page}&limit=${this.filters.limit}&sort=${this.filters.sort}`;
+            
+            if (this.filters.price_min) url += `&price_min=${this.filters.price_min}`;
+            if (this.filters.price_max) url += `&price_max=${this.filters.price_max}`;
+            if (this.filters.brand_ids.length > 0) url += `&brand_ids=${this.filters.brand_ids.join(',')}`;
+            if (this.filters.origins.length > 0) url += `&origins=${this.filters.origins.join(',')}`;
+            if (this.filters.indications.length > 0) url += `&indications=${this.filters.indications.join(',')}`;
+            if (this.filters.requires_prescription) url += `&requires_prescription=${this.filters.requires_prescription}`;
+
+            const res = await fetch(url);
+            const json = await res.json();
             
             if (json.success && json.data) {
                 let data = json.data;
 
                 if (data.length > 0) {
-                    if (this.els.productList) {
-                        this.els.productList.innerHTML = data.map(p => this.createProductCard(p)).join('');
-                        this.els.productList.style.display = 'grid';
-                    }
+                    this.els.productList.innerHTML = data.map(p => this.createProductCard(p)).join('');
+                    this.els.productList.style.display = 'grid';
                     this.renderPagination(json.pagination);
                 } else {
-                    if (this.els.empty) this.els.empty.style.display = 'block';
+                    this.els.empty.style.display = 'block';
                 }
             }
         } catch (e) {
             console.error(e);
-            if (this.els.empty) this.els.empty.style.display = 'block';
+            this.els.empty.style.display = 'block';
         } finally {
-            if (this.els.loading) this.els.loading.style.display = 'none';
+            this.els.loading.style.display = 'none';
         }
     }
 
     createProductCard(p) {
-        if (window.MGClientApi && typeof window.MGClientApi.renderProductCard === 'function') {
-            return window.MGClientApi.renderProductCard(p);
-        }
-
-        const id = Number(p.id);
-        const name = escapeHtml(p.name || 'Sản phẩm');
-        const image = escapeHtml(p.thumbnail || p.image_url || '../assets/images/placeholder.png');
-        const priceFmt = p.retail_price || p.price
-            ? new Intl.NumberFormat('vi-VN').format(Math.round(p.retail_price || p.price)) + 'đ'
-            : 'Liên hệ';
+        const priceFmt = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p.retail_price);
         
         let actionHtml = '';
         let infoHtml = '';
 
         if (p.requires_prescription) {
-            infoHtml = `<div class="product-contact-note" style="color:#6b7280; font-size:13px; font-weight:500; min-height:20px;">Cần tư vấn dược sĩ</div>`;
-            actionHtml = `<button class="btn-add-cart btn-consult" onclick="event.preventDefault(); event.stopPropagation(); window.location.href='product.html?id=${id}'">Tư vấn ngay</button>`;
-        } else if (p.in_stock === false) {
-            infoHtml = `<div class="product-price" style="min-height:20px;"><span class="price-new" style="color:#ea580c; font-weight:700;">${priceFmt}</span></div>`;
-            actionHtml = `<button class="btn-add-cart" disabled>Hết hàng</button>`;
+            infoHtml = `<div class="product-contact-note" style="color:#6b7280; font-size:13px; font-weight:500; height: 20px;">Cần tư vấn từ dược sỹ</div>`;
+            actionHtml = `<button class="btn-add-cart" style="background:#0b7a3e; color:#fff; border:none; width:100%; padding:10px 16px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#096532'" onmouseout="this.style.background='#0b7a3e'" onclick="event.stopPropagation(); event.preventDefault(); window.location.href='product.html?id=${p.id}'">Tư vấn ngay</button>`;
         } else {
-            infoHtml = `<div class="product-price" style="min-height:20px;"><span class="price-new" style="color:#ea580c; font-weight:700;">${priceFmt}</span></div>`;
-            actionHtml = `<button class="btn-add-cart" onclick="window.addToCart ? addToCart(${id}, event) : (window.location.href='product.html?id=${id}')">Thêm giỏ hàng</button>`;
+            infoHtml = `<div class="product-price" style="height: 20px;"><span class="price-new" style="color:#ea580c; font-weight:700;">${priceFmt}</span></div>`;
+            actionHtml = `<button class="btn-add-cart" style="background:#0b7a3e; color:#fff; border:none; width:100%; padding:10px 16px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#096532'" onmouseout="this.style.background='#0b7a3e'" onclick="event.stopPropagation(); event.preventDefault(); addToCart(${p.id}, event)">Thêm giỏ hàng</button>`;
         }
 
         // Tái sử dụng thẻ sản phẩm chuẩn của Minh Giang Pharmacy
         return `
-            <div class="product-card" data-product-id="${id}">
-                <div class="product-image" onclick="window.location.href='product.html?id=${id}'" style="cursor:pointer;">
-                    <img src="${image}" alt="${name}" onerror="this.src='../assets/images/placeholder.png'">
+            <div class="product-card">
+                <div class="product-image" onclick="window.location.href='product.html?id=${p.id}'" style="cursor:pointer;">
+                    <img src="${p.thumbnail || p.image_url || '../assets/images/placeholder.png'}" alt="${p.name}">
                 </div>
                 <div class="product-info">
-                    <h5><a href="product.html?id=${id}">${name}</a></h5>
+                    <h5><a href="product.html?id=${p.id}">${p.name}</a></h5>
                     ${infoHtml}
                 </div>
                 ${actionHtml}
@@ -424,27 +331,13 @@ class CategoryPage {
     renderPagination(pagination) {
         if (!pagination || pagination.pages <= 1) return;
         
-        const currentPage = Number(pagination.page || this.filters.page || 1);
-        const pages = Number(pagination.pages || pagination.total_pages || 1);
-        const start = Math.max(1, currentPage - 2);
-        const end = Math.min(pages, currentPage + 2);
-        let html = `<button class="page-btn" style="width:auto;" data-page="${Math.max(1, currentPage - 1)}">&larr; TRƯỚC</button>`;
-
-        if (start > 1) {
-            html += `<button class="page-btn" data-page="1">1</button>`;
-            if (start > 2) html += `<span class="page-ellipsis">...</span>`;
+        let html = `<button class="page-btn" style="width:auto;" data-page="${Math.max(1, pagination.page - 1)}">&larr; TRƯỚC</button>`;
+        
+        for (let i = 1; i <= pagination.pages; i++) {
+            html += `<button class="page-btn ${i === pagination.page ? 'active' : ''}" data-page="${i}">${i}</button>`;
         }
-
-        for (let i = start; i <= end; i++) {
-            html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
-        }
-
-        if (end < pages) {
-            if (end < pages - 1) html += `<span class="page-ellipsis">...</span>`;
-            html += `<button class="page-btn" data-page="${pages}">${pages}</button>`;
-        }
-
-        html += `<button class="page-btn" style="width:auto;" data-page="${Math.min(pages, currentPage + 1)}">TIẾP THEO &rarr;</button>`;
+        
+        html += `<button class="page-btn" style="width:auto;" data-page="${Math.min(pagination.pages, pagination.page + 1)}">TIẾP THEO &rarr;</button>`;
         
         this.els.pagination.innerHTML = html;
 
@@ -453,7 +346,6 @@ class CategoryPage {
                 const p = parseInt(e.currentTarget.getAttribute('data-page'));
                 if (p && p !== this.filters.page) {
                     this.filters.page = p;
-                    this.updateUrl();
                     this.loadProducts();
                     window.scrollTo({ top: 300, behavior: 'smooth' });
                 }

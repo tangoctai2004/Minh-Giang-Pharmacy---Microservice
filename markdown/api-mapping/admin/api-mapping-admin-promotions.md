@@ -1,9 +1,8 @@
 # API Mapping — admin/promotions.html
 
-> **Trang**: Marketing & Khuyến Mãi (Vouchers + Gifts + Loyalty tiers)
-> **Auth yêu cầu**: Có (Admin/Marketing)
+> **Trang**: Marketing & Khuyến Mãi (Vouchers + Gifts + Loyalty tiers)  
+> **Auth yêu cầu**: Có (Admin/Marketing)  
 > **Ngày phân tích**: 2026-04-10
-> **Cập nhật theo code hiện tại**: nhóm API này phần lớn đã có trong catalog-service. Cần lưu ý `validate voucher` cũng đã có ở backend nhưng chưa được mở public trong API Gateway.
 
 ---
 
@@ -40,28 +39,6 @@
 ```
 
 ---
-
-## Trạng thái hiện tại
-
-| Nhu cầu trên màn hình | API hiện có | Trạng thái |
-|---|---|---|
-| Thống kê khuyến mãi | `GET /api/catalog/promotions/stats` | Đã có |
-| Danh sách voucher | `GET /api/catalog/promotions/vouchers` | Đã có |
-| Tạo voucher | `POST /api/catalog/promotions/vouchers` | Đã có |
-| Sửa voucher | `PUT /api/catalog/promotions/vouchers/{id}` | Đã có |
-| Tạm dừng/kích hoạt voucher | `PUT /api/catalog/promotions/vouchers/{id}/toggle` | Đã có |
-| Reset lượt dùng voucher | `PUT /api/catalog/promotions/vouchers/{id}/reset-usage` | Đã có |
-| Kiểm tra voucher hợp lệ | `POST /api/catalog/promotions/vouchers/validate` | Đã có ở backend |
-| Ghi nhận voucher đã dùng | `POST /api/catalog/promotions/vouchers/{id}/consume` | Đã có |
-| Quà tặng | `/api/catalog/promotions/gifts` | Đã có CRUD cơ bản |
-| Cấu hình tích điểm | `/api/catalog/promotions/loyalty/config` | Đã có |
-| Export khuyến mãi | `GET /api/catalog/promotions/export` | Đã có, hiện trả JSON mock |
-
-Các điểm cần lưu ý:
-
-- `POST /api/catalog/promotions/vouchers/validate` chưa nằm trong public whitelist của API Gateway. Nếu client/POS gọi không token sẽ bị chặn.
-- `GET /api/catalog/promotions/active` đang được Gateway whitelist public nhưng backend chưa có route này.
-- Body cũ có `applicable_categories`, nhưng backend hiện chưa xử lý điều kiện áp dụng theo danh mục/sản phẩm.
 
 ## API chi tiết
 
@@ -274,33 +251,6 @@ GET /api/catalog/promotions/export?format=xlsx
 
 ---
 
-### 13. Kiểm tra voucher hợp lệ
-
-```
-POST /api/catalog/promotions/vouchers/validate
-```
-
-**Body hiện backend nhận:**
-```json
-{
-  "code": "MINGIANG50",
-  "order_amount": 270000,
-  "items": [{ "product_id": 42, "qty": 2 }]
-}
-```
-
----
-
-### 14. Ghi nhận voucher đã dùng
-
-```
-POST /api/catalog/promotions/vouchers/{id}/consume
-```
-
-API này có xử lý idempotency bằng header/request id để tránh trừ lượt dùng nhiều lần khi request bị gửi lại.
-
----
-
 ## 📊 TỔNG HỢP API
 
 | # | API Endpoint | Method | Service | Auth | Gọi khi |
@@ -319,7 +269,3 @@ API này có xử lý idempotency bằng header/request id để tránh trừ l�
 | 12 | `/api/catalog/promotions/loyalty/config` | GET | catalog | Yes | Tab Tích điểm |
 | 13 | `/api/catalog/promotions/loyalty/config` | PUT | catalog | Yes | Save loyalty config |
 | 14 | `/api/catalog/promotions/export` | GET | catalog | Yes | Click "Xuất Báo Cáo" |
-| 15 | `/api/catalog/promotions/vouchers/validate` | POST | catalog | Yes* | Client/POS áp voucher |
-| 16 | `/api/catalog/promotions/vouchers/{id}/consume` | POST | catalog | Yes | Order/POS ghi nhận đã dùng voucher |
-
-`Yes*`: backend route không yêu cầu role admin, nhưng khi đi qua Gateway vẫn cần token nếu route chưa được whitelist public.

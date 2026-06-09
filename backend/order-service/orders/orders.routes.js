@@ -160,6 +160,7 @@ router.get('/stats', async (req, res) => {
                 SUM(CASE WHEN order_channel = 'pos' AND DATE(created_at) = CURDATE() THEN 1 ELSE 0 END) as today_pos_count,
                 COALESCE(SUM(total_amount), 0) as total_revenue
             FROM orders
+            WHERE is_active = 1
         `);
         res.json({ success: true, data: stats[0] });
     } catch (error) {
@@ -174,12 +175,12 @@ router.get('/stats', async (req, res) => {
  */
 router.get('/', async (req, res) => {
     try {
-        const { status, channel, search, date, startDate, endDate, page = 1, limit = 10 } = req.query;
+        const { status, channel, search, page = 1, limit = 10 } = req.query;
         const offset = (page - 1) * limit;
         const userId = req.userId;
         const userRole = req.userRole;
 
-        let query = 'SELECT * FROM orders WHERE 1 = 1';
+        let query = 'SELECT * FROM orders WHERE is_active = 1';
         let params = [];
 
         // Nếu là khách hàng (không phải staff/admin), chỉ xem đơn của mình
@@ -202,21 +203,6 @@ router.get('/', async (req, res) => {
         if (search) {
             query += ' AND (order_code LIKE ? OR customer_name LIKE ? OR customer_phone LIKE ?)';
             params.push(`%${search}%`, `%${search}%`, `%${search}%`);
-        }
-
-        if (date) {
-            query += ' AND created_at >= ? AND created_at <= ?';
-            params.push(`${date} 00:00:00`, `${date} 23:59:59`);
-        }
-
-        if (startDate) {
-            query += ' AND created_at >= ?';
-            params.push(`${startDate} 00:00:00`);
-        }
-
-        if (endDate) {
-            query += ' AND created_at <= ?';
-            params.push(`${endDate} 23:59:59`);
         }
 
         // Đếm tổng số đơn để phân trang
@@ -250,16 +236,16 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        let [orders] = await pool.query('SELECT * FROM orders WHERE id = ?', [id]);
+        let [orders] = await pool.query('SELECT * FROM orders WHERE id = ? AND is_active = 1', [id]);
         if (orders.length === 0) {
-            const [ordersByCode] = await pool.query('SELECT * FROM orders WHERE order_code = ?', [id]);
+            const [ordersByCode] = await pool.query('SELECT * FROM orders WHERE order_code = ? AND is_active = 1', [id]);
             if (ordersByCode.length === 0) {
                 return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
             }
             orders[0] = ordersByCode[0];
         }
         const orderId = orders[0].id;
-        const [items] = await pool.query('SELECT * FROM order_items WHERE order_id = ?', [orderId]);
+        const [items] = await pool.query('SELECT * FROM order_items WHERE order_id = ? AND is_active = 1', [orderId]);
         res.json({ success: true, data: { ...orders[0], items } });
     } catch (error) {
         console.error('[Get Order Detail Error]', error);
@@ -281,9 +267,9 @@ router.put('/:id/status', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Trạng thái không hợp lệ' });
         }
 
-        let [orders] = await pool.query('SELECT * FROM orders WHERE id = ?', [id]);
+        let [orders] = await pool.query('SELECT * FROM orders WHERE id = ? AND is_active = 1', [id]);
         if (orders.length === 0) {
-            const [ordersByCode] = await pool.query('SELECT * FROM orders WHERE order_code = ?', [id]);
+            const [ordersByCode] = await pool.query('SELECT * FROM orders WHERE order_code = ? AND is_active = 1', [id]);
             if (ordersByCode.length === 0) {
                 return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
             }
@@ -316,9 +302,9 @@ router.put('/:id/status', async (req, res) => {
 router.put('/:id/approve', async (req, res) => {
     try {
         const { id } = req.params;
-        let [orders] = await pool.query('SELECT * FROM orders WHERE id = ?', [id]);
+        let [orders] = await pool.query('SELECT * FROM orders WHERE id = ? AND is_active = 1', [id]);
         if (orders.length === 0) {
-            const [ordersByCode] = await pool.query('SELECT * FROM orders WHERE order_code = ?', [id]);
+            const [ordersByCode] = await pool.query('SELECT * FROM orders WHERE order_code = ? AND is_active = 1', [id]);
             if (ordersByCode.length === 0) {
                 return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
             }

@@ -6,9 +6,9 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test:smoke": "./tests/smoke.sh",
-    "test:integration": "./tests/integration.sh",
-    "test:ci": "./tests/smoke.sh && ./tests/integration.sh"
+    "test:smoke": "./smoke_test_catalog.sh",
+    "test:integration": "./integration_test_catalog.sh",
+    "test:ci": "./smoke_test_catalog.sh && ./integration_test_catalog.sh"
   },
   "dependencies": {
     "cors": "^2.8.5",

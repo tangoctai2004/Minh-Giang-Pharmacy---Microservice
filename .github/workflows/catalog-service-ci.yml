@@ -52,7 +52,7 @@ jobs:
       - name: Init schema and seed minimal data
         run: |
           mysql -h 127.0.0.1 -uroot -proot < infrastructure/database/02_mg_catalog.sql
-          mysql -h 127.0.0.1 -uroot -proot < backend/catalog-service/tests/fixtures/ci_seed_minimal.sql
+          mysql -h 127.0.0.1 -uroot -proot < backend/catalog-service/scripts/ci_seed_minimal.sql
 
       - name: Start catalog service
         run: |
@@ -80,9 +80,9 @@ jobs:
           exit 1
 
       - name: Run smoke test
-        run: ./tests/smoke.sh
+        run: ./smoke_test_catalog.sh
         working-directory: backend/catalog-service
 
       - name: Run integration test
-        run: ./tests/integration.sh
+        run: ./integration_test_catalog.sh
         working-directory: backend/catalog-service

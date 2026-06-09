@@ -1,9 +1,8 @@
 # API Mapping — client/khai-truong.html
 
-> **Trang**: Sự kiện khai trương nhà thuốc (Landing page)
-> **Auth yêu cầu**: Không (public)
+> **Trang**: Sự kiện khai trương nhà thuốc (Landing page)  
+> **Auth yêu cầu**: Không (public)  
 > **Ngày phân tích**: 2026-04-10
-> **Cập nhật theo code hiện tại**: trang này chủ yếu có thể để static/CMS. Catalog hiện chưa có API public riêng cho khuyến mãi khai trương.
 
 ---
 
@@ -86,19 +85,15 @@ Lấy thông tin sự kiện khai trương đang hoạt động (nếu quản l�
 ### 2. Danh sách khuyến mãi khai trương
 
 ```
-GET /api/catalog/promotions/active
+GET /api/catalog/promotions?event_id=1&status=active
 ```
 
-Trạng thái theo code hiện tại: **chưa có trong catalog-service**. API này đang được API Gateway whitelist public, nhưng backend chưa implement route tương ứng.
-
-API có thể dùng tạm trong môi trường có token admin/manager:
+Hoặc lấy theo tag:
 ```
-GET /api/catalog/promotions/vouchers?status=active
+GET /api/catalog/promotions?tag=grand-opening&status=active
 ```
 
-Response của `/promotions/vouchers` là danh sách voucher, không phải promo card landing page. Nếu landing page cần card đẹp như thiết kế, nên lấy từ CMS hoặc hardcode cho demo.
-
-**Response mong muốn nếu sau này implement `/promotions/active`:**
+**Response mẫu:**
 ```json
 {
   "success": true,
@@ -145,7 +140,7 @@ Response của `/promotions/vouchers` là danh sách voucher, không phải prom
 ### 3. Top Searches (shared component)
 
 ```
-GET /api/catalog/products/top-searches?limit=30
+GET /api/catalog/search/top-keywords?limit=30
 ```
 
 (Dùng chung với trang chủ và các trang khác)
@@ -170,8 +165,8 @@ POST /api/notification/newsletter/subscribe
 | # | API Endpoint | Method | Service | Auth | Gọi khi |
 |---|-------------|--------|---------|------|---------|
 | 1 | `/api/cms/store-events?type=grand-opening` | GET | cms | No | Page load |
-| 2 | `/api/catalog/promotions/active` | GET | catalog | No | Page load, hiện chưa implement |
-| 3 | `/api/catalog/products/top-searches?limit=30` | GET | catalog | No | Page load |
+| 2 | `/api/catalog/promotions?tag=grand-opening` | GET | catalog | No | Page load |
+| 3 | `/api/catalog/search/top-keywords?limit=30` | GET | catalog | No | Page load |
 | 4 | `/api/notification/newsletter/subscribe` | POST | notification | No | Submit form |
 
-> **Ghi chú theo code hiện tại**: `GET /api/catalog/promotions/active` đang được API Gateway whitelist public nhưng backend catalog-service chưa có route này. Nếu chưa implement thêm route mới, trang khai trương nên lấy voucher từ `GET /api/catalog/promotions/vouchers` khi có token admin/POS, hoặc để nội dung khuyến mãi từ CMS/hardcode cho demo.
+> **Ghi chú**: Phần lớn nội dung trang này có thể hardcode hoặc quản lý từ CMS. Countdown chạy client-side JS dựa vào `event_date` từ API #1. Gallery images có thể nhúng trong response API #1 hoặc tách riêng.

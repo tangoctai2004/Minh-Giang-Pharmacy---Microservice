@@ -1,131 +1,170 @@
 # API Mapping — admin/locations.html
 
-> **Trang**: Pharmacy Layout & Storage
-> **Auth yêu cầu**: Có token admin/manager khi gọi qua API Gateway
-> **Cập nhật theo code hiện tại**: backend hiện quản lý vị trí kho dạng phẳng trong `/api/catalog/locations`, chưa có API tách riêng zone/cabinet/shelf.
+> **Trang**: Pharmacy Layout & Storage (Zone → Cabinet → Shelf)  
+> **Auth yêu cầu**: Có (Admin/Warehouse)  
+> **Ngày phân tích**: 2026-04-10
 
 ---
 
-## Trạng thái hiện tại
+## Sơ đồ bố cục
 
-| Nhu cầu trên màn hình | API hiện có | Trạng thái |
-|---|---|---|
-| Xem danh sách vị trí | `GET /api/catalog/locations` | Đã có |
-| Tìm vị trí | `GET /api/catalog/locations?q={search}` | Đã có |
-| Xem chi tiết vị trí | `GET /api/catalog/locations/{id}` | Đã có |
-| Thêm vị trí | `POST /api/catalog/locations` | Đã có |
-| Sửa vị trí | `PUT /api/catalog/locations/{id}` | Đã có |
-| Ẩn vị trí | `DELETE /api/catalog/locations/{id}` | Đã có |
-
-Các API trong bản thiết kế cũ nhưng **chưa có trong backend hiện tại**:
-
-| API | Trạng thái |
-|---|---|
-| `GET /api/catalog/locations/zones` | Chưa có |
-| `GET /api/catalog/locations/zones/{id}/cabinets` | Chưa có |
-| `GET /api/catalog/locations/cabinets/{id}/shelves` | Chưa có |
-| `POST /api/catalog/locations/zones` | Chưa có |
-| `POST /api/catalog/locations/zones/{id}/cabinets` | Chưa có |
-| `POST /api/catalog/locations/cabinets/{id}/shelves` | Chưa có |
-| `PUT /api/catalog/locations/shelves/{id}` | Chưa có |
-| `PUT /api/catalog/locations/cabinets/{id}` | Chưa có |
-| `PUT /api/catalog/locations/zones/{id}` | Chưa có |
-
----
-
-## API chi tiết đang dùng được
-
-### 1. Danh sách vị trí
-
-```http
-GET /api/catalog/locations?page=1&limit=20&q={search}
+```
+┌────────────────────────────────────────────────────────────┐
+│  [Sidebar] + [Header]                                      │
+├────────────────────────────────────────────────────────────┤
+│  Page Header: "Pharmacy Layout & Storage"                  │
+├──────────┬──────────────┬──────────────────────────────────┤
+│  Panel 1 │  Panel 2     │  Panel 3                         │
+│  ZONES   │  CABINETS    │  SHELVES                         │
+│          │              │                                  │
+│  Khu Rx  │  → Tủ A1     │  → Kệ A1-T1 (Kháng sinh)       │
+│  Khu OTC │    Tủ A2     │    Kệ A1-T2 (Giảm đau)         │
+│  TPCN    │    Tủ A3     │    Kệ A1-T3 (Vitamin)           │
+│          │              │                                  │
+│  [+Thêm] │  [+Thêm]     │  [+Thêm] [Edit ✏️]              │
+└──────────┴──────────────┴──────────────────────────────────┘
 ```
 
-Response hiện tại:
+---
 
+## API chi tiết
+
+### 1. Danh sách Zone
+
+```
+GET /api/catalog/locations/zones
+```
+
+**Response mẫu:**
 ```json
 {
   "success": true,
   "data": [
-    {
-      "id": 1,
-      "zone": "Khu OTC",
-      "cabinet": "Tủ A1",
-      "shelf": "Kệ A1-T1",
-      "label": "Giảm đau hạ sốt",
-      "is_active": 1
-    }
-  ],
-  "pagination": { "total": 10, "page": 1, "limit": 20, "pages": 1, "total_pages": 1 }
+    { "id": 1, "name": "Khu Thuốc Kê Đơn (Rx)", "code": "ZONE-RX", "cabinet_count": 5 },
+    { "id": 2, "name": "Khu Thuốc OTC", "code": "ZONE-OTC", "cabinet_count": 8 },
+    { "id": 3, "name": "Thực phẩm chức năng", "code": "ZONE-TPCN", "cabinet_count": 4 }
+  ]
 }
 ```
 
 ---
 
-### 2. Chi tiết vị trí
+### 2. Danh sách Cabinet theo Zone
 
-```http
-GET /api/catalog/locations/{id}
+```
+GET /api/catalog/locations/zones/{zone_id}/cabinets
 ```
 
----
-
-### 3. Thêm vị trí
-
-```http
-POST /api/catalog/locations
-```
-
-Body:
-
+**Response mẫu:**
 ```json
 {
-  "zone": "Khu OTC",
-  "cabinet": "Tủ A1",
-  "shelf": "Kệ A1-T1",
-  "label": "Giảm đau hạ sốt"
+  "success": true,
+  "data": [
+    { "id": 10, "name": "Tủ A1", "code": "CAB-A1", "shelf_count": 4 },
+    { "id": 11, "name": "Tủ A2", "code": "CAB-A2", "shelf_count": 3 }
+  ]
 }
 ```
 
-Bắt buộc: `zone`, `cabinet`, `shelf`, `label`.
-
 ---
 
-### 4. Cập nhật vị trí
+### 3. Danh sách Shelf theo Cabinet
 
-```http
-PUT /api/catalog/locations/{id}
+```
+GET /api/catalog/locations/cabinets/{cabinet_id}/shelves
 ```
 
-Cho phép cập nhật: `zone`, `cabinet`, `shelf`, `label`, `is_active`.
-
----
-
-### 5. Ẩn vị trí
-
-```http
-DELETE /api/catalog/locations/{id}
+**Response mẫu:**
+```json
+{
+  "success": true,
+  "data": [
+    { "id": 20, "name": "Kệ A1-T1", "product_group": "Kháng sinh", "product_count": 12 },
+    { "id": 21, "name": "Kệ A1-T2", "product_group": "Giảm đau hạ sốt", "product_count": 8 }
+  ]
+}
 ```
 
-Backend hiện đổi `is_active = 0`, không xóa dữ liệu thật.
+---
+
+### 4. Thêm Zone mới
+
+```
+POST /api/catalog/locations/zones
+```
+
+**Body:**
+```json
+{ "name": "Khu Dược mỹ phẩm", "code": "ZONE-DMP" }
+```
 
 ---
 
-## Tổng hợp API đúng với code hiện tại
+### 5. Thêm Cabinet
+
+```
+POST /api/catalog/locations/zones/{zone_id}/cabinets
+```
+
+**Body:**
+```json
+{ "name": "Tủ B1", "code": "CAB-B1" }
+```
+
+---
+
+### 6. Thêm Shelf
+
+```
+POST /api/catalog/locations/cabinets/{cabinet_id}/shelves
+```
+
+**Body:**
+```json
+{ "name": "Kệ B1-T1", "product_group": "Dưỡng da" }
+```
+
+---
+
+### 7. Cập nhật Shelf
+
+```
+PUT /api/catalog/locations/shelves/{id}
+```
+
+**Body:**
+```json
+{ "name": "Kệ B1-T1", "product_group": "Dưỡng da mặt" }
+```
+
+---
+
+### 8. Cập nhật Cabinet
+
+```
+PUT /api/catalog/locations/cabinets/{id}
+```
+
+---
+
+### 9. Cập nhật Zone
+
+```
+PUT /api/catalog/locations/zones/{id}
+```
+
+---
+
+## 📊 TỔNG HỢP API
 
 | # | API Endpoint | Method | Service | Auth | Gọi khi |
-|---|---|---|---|---|---|
-| 1 | `/api/catalog/locations` | GET | catalog | Yes | Page load + tìm kiếm |
-| 2 | `/api/catalog/locations/{id}` | GET | catalog | Yes | Xem chi tiết |
-| 3 | `/api/catalog/locations` | POST | catalog | Yes | Thêm vị trí |
-| 4 | `/api/catalog/locations/{id}` | PUT | catalog | Yes | Sửa vị trí |
-| 5 | `/api/catalog/locations/{id}` | DELETE | catalog | Yes | Ẩn vị trí |
-
----
-
-## Ghi chú cho frontend
-
-Màn hình hiện tại đang thiết kế 3 cột `Zone -> Cabinet -> Shelf`. Với backend hiện tại có 2 hướng:
-
-1. Làm nhanh: render danh sách phẳng từ `/locations`, nhóm dữ liệu theo `zone`, `cabinet`, `shelf` ở frontend.
-2. Làm đúng thiết kế: bổ sung backend route riêng cho zones/cabinets/shelves ở giai đoạn sau.
+|---|-------------|--------|---------|------|---------|
+| 1 | `/api/catalog/locations/zones` | GET | catalog | Yes | Page load |
+| 2 | `/api/catalog/locations/zones/{id}/cabinets` | GET | catalog | Yes | Click zone |
+| 3 | `/api/catalog/locations/cabinets/{id}/shelves` | GET | catalog | Yes | Click cabinet |
+| 4 | `/api/catalog/locations/zones` | POST | catalog | Yes | Click "+ Thêm" zone |
+| 5 | `/api/catalog/locations/zones/{id}/cabinets` | POST | catalog | Yes | Click "+ Thêm" cabinet |
+| 6 | `/api/catalog/locations/cabinets/{id}/shelves` | POST | catalog | Yes | Click "+ Thêm" shelf |
+| 7 | `/api/catalog/locations/shelves/{id}` | PUT | catalog | Yes | Click Edit shelf |
+| 8 | `/api/catalog/locations/cabinets/{id}` | PUT | catalog | Yes | Click Edit cabinet |
+| 9 | `/api/catalog/locations/zones/{id}` | PUT | catalog | Yes | Click Edit zone |
