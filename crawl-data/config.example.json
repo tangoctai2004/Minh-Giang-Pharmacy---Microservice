@@ -1,0 +1,54 @@
+{
+  "baseUrl": "https://trungsoncare.com",
+  "sitemapUrl": "https://trungsoncare.com/sitemap.xml",
+  "request": {
+    "userAgent": "Mozilla/5.0 (compatible; MinhGiangPharmacyDataResearch/1.0; respectful educational crawler)",
+    "timeoutMs": 30000,
+    "minDelayMs": 12000,
+    "maxDelayMs": 25000,
+    "maxRetries": 4,
+    "cooldownOn429Ms": 900000,
+    "cooldownOn5xxMs": 180000,
+    "stopAfterConsecutiveErrors": 8
+  },
+  "limits": {
+    "products": 4000,
+    "articles": 250,
+    "diseases": 250
+  },
+  "urlPatterns": {
+    "productPrefixes": [
+      "/thuoc/",
+      "/thuc-pham-chuc-nang/",
+      "/duoc-my-pham/",
+      "/cham-soc-ca-nhan/",
+      "/me-va-be/",
+      "/dung-cu-y-te/"
+    ],
+    "articlePrefixes": [
+      "/suc-khoe-tong-quat/",
+      "/nguoi-cao-tuoi/"
+    ],
+    "diseasePrefixes": [
+      "/benh-ly/"
+    ]
+  },
+  "storage": {
+    "saveRawHtml": false,
+    "rawHtmlMaxBytes": 800000,
+    "downloadImages": false,
+    "maxImagesPerProduct": 5,
+    "maxImagesPerArticle": 1,
+    "imageTimeoutMs": 30000,
+    "allowedImageTypes": [
+      "image/jpeg",
+      "image/png",
+      "image/webp"
+    ]
+  },
+  "quality": {
+    "minProductScoreForClean": 70,
+    "minArticleTextLength": 700,
+    "minDescriptionLength": 180
+  }
+}
