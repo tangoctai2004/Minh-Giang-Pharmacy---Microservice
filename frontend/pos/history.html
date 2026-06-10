@@ -806,11 +806,11 @@
         </div>
 
         <div class="hist-filter-group">
-            <input type="date" class="hist-date-input" value="2026-03-05">
-            <button class="hist-filter-btn active">
+            <input type="date" class="hist-date-input" id="filterDate">
+            <button class="hist-filter-btn active" id="btnToday">
                 <i class="fa-solid fa-filter"></i> Hôm nay
             </button>
-            <button class="hist-filter-btn">
+            <button class="hist-filter-btn" id="btnThisWeek">
                 <i class="fa-regular fa-calendar"></i> Tuần này
             </button>
         </div>
@@ -877,79 +877,14 @@
                 <h3><i class="fa-solid fa-file-invoice"></i> Chi tiết hoá đơn</h3>
                 <button class="detail-close" onclick="closeDetail()"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="detail-body">
-                <!-- Meta Info -->
-                <div class="detail-meta">
-                    <div class="detail-meta-item">
-                        <span class="detail-meta-label">Mã hoá đơn</span>
-                        <span class="detail-meta-value" id="detailId">HD-001</span>
-                    </div>
-                    <div class="detail-meta-item">
-                        <span class="detail-meta-label">Thời gian</span>
-                        <span class="detail-meta-value">20:45 — 05/03/2026</span>
-                    </div>
-                    <div class="detail-meta-item">
-                        <span class="detail-meta-label">Thu ngân</span>
-                        <span class="detail-meta-value">Nguyễn Văn A</span>
-                    </div>
-                    <div class="detail-meta-item">
-                        <span class="detail-meta-label">Thanh toán</span>
-                        <span class="detail-meta-value" style="color:#059669;">Tiền mặt</span>
-                    </div>
-                </div>
-
-                <div class="detail-divider"></div>
-
-                <!-- Items -->
-                <div class="detail-section-title">Sản phẩm đã mua</div>
-                <div class="detail-item-list">
-                    <div class="detail-item-row">
-                        <div class="detail-item-info">
-                            <div class="detail-item-name">Panadol Extra (Hộp 12 viên)</div>
-                            <div class="detail-item-qty">65,000₫ × 2</div>
-                        </div>
-                        <div class="detail-item-price">130,000₫</div>
-                    </div>
-                    <div class="detail-item-row">
-                        <div class="detail-item-info">
-                            <div class="detail-item-name">Amoxicillin 500mg</div>
-                            <div class="detail-item-qty">35,000₫ × 1</div>
-                        </div>
-                        <div class="detail-item-price">35,000₫</div>
-                    </div>
-                    <div class="detail-item-row">
-                        <div class="detail-item-info">
-                            <div class="detail-item-name">Vitamin C DHC 1000mg</div>
-                            <div class="detail-item-qty">120,000₫ × 1</div>
-                        </div>
-                        <div class="detail-item-price">120,000₫</div>
-                    </div>
-                </div>
-
-                <!-- Summary -->
-                <div class="detail-summary">
-                    <div class="detail-summary-row">
-                        <span class="label">Tạm tính</span>
-                        <span class="value">285,000₫</span>
-                    </div>
-                    <div class="detail-summary-row discount">
-                        <span class="label">Giảm giá</span>
-                        <span class="value">-15,000₫</span>
-                    </div>
-                    <div class="detail-summary-row">
-                        <span class="label">Tiền khách đưa</span>
-                        <span class="value">300,000₫</span>
-                    </div>
-                    <div class="detail-summary-row">
-                        <span class="label">Tiền thối</span>
-                        <span class="value">30,000₫</span>
-                    </div>
-                    <div class="detail-summary-total">
-                        <span class="label">TỔNG CỘNG</span>
-                        <span class="value">270,000₫</span>
-                    </div>
+            <div class="detail-body" id="detailBodyContent">
+                <!-- Nội dung được nạp động khi click vào đơn hàng -->
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#9ca3af;gap:12px;padding:40px;text-align:center;">
+                    <i class="fa-solid fa-file-invoice" style="font-size:40px;color:#d1d5db;"></i>
+                    <span style="font-size:14px;font-weight:500;">Chọn một đơn hàng để xem chi tiết</span>
                 </div>
             </div>
+
 
             <!-- Footer Actions -->
             <div class="detail-footer">
@@ -1101,6 +1036,54 @@
         let limitPerPage = 10;
         let currentRefundOrder = null;
 
+        // ===== Filter State =====
+        // activeFilter: 'day' | 'week' | 'custom'
+        let activeFilter = 'day';
+
+        // Lấy ngày hôm nay dạng YYYY-MM-DD
+        function todayStr() {
+            return new Date().toISOString().slice(0, 10);
+        }
+
+        // Lấy ngày đầu tuần (Thứ 2) dạng YYYY-MM-DD
+        function weekStartStr() {
+            const d = new Date();
+            const day = d.getDay(); // 0=CN, 1=T2...
+            const diff = (day === 0 ? -6 : 1 - day);
+            d.setDate(d.getDate() + diff);
+            return d.toISOString().slice(0, 10);
+        }
+
+        // Khởi tạo date input = hôm nay
+        const filterDate = document.getElementById('filterDate');
+        filterDate.value = todayStr();
+
+        // Nút Hôm nay
+        document.getElementById('btnToday').addEventListener('click', function () {
+            activeFilter = 'day';
+            filterDate.value = todayStr();
+            document.getElementById('btnToday').classList.add('active');
+            document.getElementById('btnThisWeek').classList.remove('active');
+            loadOrders(1);
+        });
+
+        // Nút Tuần này
+        document.getElementById('btnThisWeek').addEventListener('click', function () {
+            activeFilter = 'week';
+            filterDate.value = weekStartStr();
+            document.getElementById('btnThisWeek').classList.add('active');
+            document.getElementById('btnToday').classList.remove('active');
+            loadOrders(1);
+        });
+
+        // Khi người dùng chọn ngày thủ công
+        filterDate.addEventListener('change', function () {
+            activeFilter = 'custom';
+            document.getElementById('btnToday').classList.remove('active');
+            document.getElementById('btnThisWeek').classList.remove('active');
+            loadOrders(1);
+        });
+
         // Load Transaction Statistics
         async function loadStats() {
             try {
@@ -1147,11 +1130,25 @@
 
             const queryParams = new URLSearchParams({
                 page: page,
-                limit: limitPerPage
+                limit: limitPerPage,
+                channel: 'pos'
             });
 
             if (searchVal) {
                 queryParams.set('search', searchVal);
+            }
+
+            // Áp dụng bộ lọc ngày
+            const selectedDate = document.getElementById('filterDate').value;
+            if (activeFilter === 'day' && selectedDate) {
+                queryParams.set('date_from', selectedDate);
+                queryParams.set('date_to', selectedDate);
+            } else if (activeFilter === 'week' && selectedDate) {
+                queryParams.set('date_from', selectedDate);
+                queryParams.set('date_to', todayStr());
+            } else if (activeFilter === 'custom' && selectedDate) {
+                queryParams.set('date_from', selectedDate);
+                queryParams.set('date_to', selectedDate);
             }
 
             const tbody = document.querySelector('.hist-table tbody');
@@ -1332,7 +1329,7 @@
             const panel = document.getElementById('detailPanel');
             panel.classList.add('open');
 
-            const detailBody = document.querySelector('.detail-body');
+            const detailBody = document.getElementById('detailBodyContent');
             if (detailBody) {
                 detailBody.innerHTML = `
                     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; color: #6b7280; gap: 12px;">
@@ -1341,6 +1338,7 @@
                     </div>
                 `;
             }
+
 
             try {
                 const response = await fetch(`http://localhost:8000/api/order/orders/${orderId}`, {

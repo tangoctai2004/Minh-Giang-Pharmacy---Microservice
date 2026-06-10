@@ -175,7 +175,7 @@ router.get('/stats', async (req, res) => {
  */
 router.get('/', async (req, res) => {
     try {
-        const { status, channel, search, page = 1, limit = 10 } = req.query;
+        const { status, channel, search, date_from, date_to, page = 1, limit = 10 } = req.query;
         const offset = (page - 1) * limit;
         const userId = req.userId;
         const userRole = req.userRole;
@@ -203,6 +203,16 @@ router.get('/', async (req, res) => {
         if (search) {
             query += ' AND (order_code LIKE ? OR customer_name LIKE ? OR customer_phone LIKE ?)';
             params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+        }
+
+        // Lọc theo khoảng ngày
+        if (date_from) {
+            query += ' AND DATE(created_at) >= ?';
+            params.push(date_from);
+        }
+        if (date_to) {
+            query += ' AND DATE(created_at) <= ?';
+            params.push(date_to);
         }
 
         // Đếm tổng số đơn để phân trang
