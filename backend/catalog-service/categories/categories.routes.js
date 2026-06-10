@@ -72,6 +72,95 @@ router.get('/tree', async (req, res) => {
   }
 });
 
+// GET /categories/pos-tree — Cây danh mục gọn cho POS, kèm số thuốc và số còn hàng
+router.get('/pos-tree', async (_req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT id, name, slug, parent_id, image_url, sort_order
+       FROM categories
+       WHERE is_active = 1
+       ORDER BY sort_order ASC, id ASC`
+    );
+
+    const [counts] = await pool.query(
+      `SELECT p.category_id,
+              COUNT(DISTINCT p.id) AS product_count,
+              COUNT(DISTINCT CASE
+                WHEN stock.available_stock > 0 THEN p.id
+                ELSE NULL
+              END) AS in_stock_count
+       FROM products p
+       LEFT JOIN (
+         SELECT bi.product_id,
+                COALESCE(SUM(CASE
+                  WHEN bi.status IN ('available', 'near_expiry')
+                  THEN GREATEST(
+                    bi.quantity_remaining - COALESCE((
+                      SELECT SUM(sr.quantity)
+                      FROM stock_reservations sr
+                      WHERE sr.batch_item_id = bi.id
+                        AND sr.released_at IS NULL
+                        AND sr.expires_at > NOW()
+                    ), 0),
+                    0
+                  )
+                  ELSE 0
+                END), 0) AS available_stock
+         FROM batch_items bi
+         GROUP BY bi.product_id
+       ) stock ON stock.product_id = p.id
+       WHERE p.status = 'active'
+       GROUP BY p.category_id`
+    );
+
+    const countByCategoryId = counts.reduce((acc, row) => {
+      acc[row.category_id] = {
+        product_count: Number(row.product_count || 0),
+        in_stock_count: Number(row.in_stock_count || 0),
+      };
+      return acc;
+    }, {});
+
+    const map = {};
+    const tree = [];
+    rows.forEach((row) => {
+      const ownCounts = countByCategoryId[row.id] || { product_count: 0, in_stock_count: 0 };
+      map[row.id] = {
+        ...row,
+        product_count: ownCounts.product_count,
+        in_stock_count: ownCounts.in_stock_count,
+        children: []
+      };
+    });
+
+    rows.forEach((row) => {
+      if (row.parent_id && map[row.parent_id]) {
+        map[row.parent_id].children.push(map[row.id]);
+      } else if (row.parent_id === null || !map[row.parent_id]) {
+        tree.push(map[row.id]);
+      }
+    });
+
+    const rollupCounts = (node) => {
+      node.children.forEach(rollupCounts);
+      node.product_count += node.children.reduce((sum, child) => sum + child.product_count, 0);
+      node.in_stock_count += node.children.reduce((sum, child) => sum + child.in_stock_count, 0);
+    };
+    tree.forEach(rollupCounts);
+
+    res.json({
+      success: true,
+      data: tree.filter((node) => node.product_count > 0),
+      meta: {
+        total_roots: tree.length,
+        visible_roots: tree.filter((node) => node.product_count > 0).length
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // GET /categories/:parent_id/children — Danh sách danh mục con trực tiếp (public)
 router.get('/:parent_id/children', async (req, res) => {
   try {

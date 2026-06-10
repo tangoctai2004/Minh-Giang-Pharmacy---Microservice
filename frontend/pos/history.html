@@ -806,11 +806,11 @@
         </div>
 
         <div class="hist-filter-group">
-            <input type="date" class="hist-date-input">
-            <button class="hist-filter-btn active">
+            <input type="date" class="hist-date-input" id="filterDate">
+            <button class="hist-filter-btn active" id="btnToday">
                 <i class="fa-solid fa-filter"></i> Hôm nay
             </button>
-            <button class="hist-filter-btn">
+            <button class="hist-filter-btn" id="btnThisWeek">
                 <i class="fa-regular fa-calendar"></i> Tuần này
             </button>
         </div>
@@ -1067,10 +1067,29 @@
             }
         }
 
+        // ===== Filter State =====
+        let activeFilter = 'day';
+
+        function formatDateLocal(date) {
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function getMonday(d) {
+            d = new Date(d);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            return new Date(d.setDate(diff));
+        }
+
         // Load Orders List
         async function loadOrders(page = 1) {
             const searchInput = document.querySelector('.hist-search input');
             const searchVal = searchInput ? searchInput.value.trim() : '';
+            const dateInput = document.getElementById('filterDate');
+            const selectedDateVal = dateInput ? dateInput.value : '';
 
             const queryParams = new URLSearchParams({
                 page: page,
@@ -1079,6 +1098,17 @@
 
             if (searchVal) {
                 queryParams.set('search', searchVal);
+            }
+
+            if (selectedDateVal) {
+                if (activeFilter === 'day') {
+                    queryParams.set('date_from', selectedDateVal);
+                    queryParams.set('date_to', selectedDateVal);
+                } else if (activeFilter === 'week') {
+                    const monday = getMonday(new Date(selectedDateVal));
+                    queryParams.set('date_from', formatDateLocal(monday));
+                    queryParams.set('date_to', selectedDateVal);
+                }
             }
 
             const tbody = document.querySelector('.hist-table tbody');
@@ -1525,10 +1555,42 @@
 
         // Initialize Page & Event Listeners
         async function initPage() {
-            // Set date input to today
-            const dateInput = document.querySelector('.hist-date-input');
+            const dateInput = document.getElementById('filterDate');
+            const btnToday = document.getElementById('btnToday');
+            const btnThisWeek = document.getElementById('btnThisWeek');
+
+            if (btnToday) {
+                btnToday.addEventListener('click', () => {
+                    activeFilter = 'day';
+                    btnToday.classList.add('active');
+                    btnThisWeek.classList.remove('active');
+                    if (dateInput) {
+                        dateInput.value = formatDateLocal(new Date());
+                    }
+                    loadOrders(1);
+                });
+            }
+
+            if (btnThisWeek) {
+                btnThisWeek.addEventListener('click', () => {
+                    activeFilter = 'week';
+                    btnThisWeek.classList.add('active');
+                    btnToday.classList.remove('active');
+                    if (dateInput) {
+                        dateInput.value = formatDateLocal(new Date());
+                    }
+                    loadOrders(1);
+                });
+            }
+
             if (dateInput) {
-                dateInput.value = new Date().toLocaleDateString('en-CA');
+                dateInput.value = formatDateLocal(new Date());
+                dateInput.addEventListener('change', () => {
+                    activeFilter = 'day';
+                    btnToday.classList.add('active');
+                    btnThisWeek.classList.remove('active');
+                    loadOrders(1);
+                });
             }
 
             // Register search input listener (debounce)
