@@ -1,7 +1,7 @@
 {
   "name": "cms-service",
-  "version": "1.0.0",
-  "description": "Dịch vụ quản lý nội dung — articles, banners, disease-categories, promotions, store-config, media",
+  "version": "2.0.0",
+  "description": "Dịch vụ quản lý nội dung — articles, banners, categories, promotions, store-config, pages, media, trending-searches",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
