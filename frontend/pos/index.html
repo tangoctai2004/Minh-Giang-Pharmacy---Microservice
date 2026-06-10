@@ -503,8 +503,7 @@
                     <div class="cash-payment-section" id="cashPaySection">
                         <label class="checkout-field-label">Tiền khách đưa</label>
                         <div class="checkout-cash-input-wrapper">
-                            <input type="text" class="checkout-cash-input" id="cashReceived" value="0"
-                                oninput="calcChange()">
+                            <input type="text" class="checkout-cash-input" id="cashReceived" value="0">
                             <span class="checkout-cash-suffix">₫</span>
                         </div>
                         <div class="quick-cash-grid">
@@ -2194,6 +2193,21 @@
             setInterval(() => {
                 refreshOnlineOrders().catch((err) => console.error(err));
             }, 20000);
+
+            // Format and handle cash received input selection/typing
+            const cashInputEl = document.getElementById('cashReceived');
+            if (cashInputEl) {
+                cashInputEl.addEventListener('focus', function() {
+                    this.select();
+                });
+                cashInputEl.addEventListener('input', function() {
+                    let raw = this.value.replace(/[^0-9]/g, '');
+                    let num = parseInt(raw, 10);
+                    if (isNaN(num)) num = 0;
+                    this.value = num.toLocaleString('vi-VN');
+                    calcChange();
+                });
+            }
 
             // ========== PRESCRIPTION VALIDATION ==========
             async function attemptCheckout() {
