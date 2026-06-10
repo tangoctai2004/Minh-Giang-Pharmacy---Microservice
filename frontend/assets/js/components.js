@@ -7,7 +7,7 @@
 document.addEventListener("DOMContentLoaded", async function () {
     const includes = document.querySelectorAll("[mg-include]");
 
-    const promises = Array.from(includes).map(async (el) => {
+    await Promise.all(Array.from(includes).map(async (el) => {
         const file = el.getAttribute("mg-include");
         if (file) {
             try {
@@ -29,18 +29,25 @@ document.addEventListener("DOMContentLoaded", async function () {
                 el.innerHTML = "Error loading component.";
             }
         }
-    });
-
-    await Promise.all(promises);
+    }));
 
     // Sau khi tất cả component load xong, apply auth header và mega menu
+    _loadClientApi();
     _initClientAuthHeader();
     _initMegaMenu();
     _initProductCardNavigation();
     _loadSearchHandler();
     _loadCartHandler();
-    _loadFeaturedProducts();
+    _loadCatalogWidgets();
 });
+
+// ─── Tải helper API dùng chung ─────────────────
+function _loadClientApi() {
+    if (window.MGCatalogApi || document.querySelector('script[src*="client-api.js"]')) return;
+    const script = document.createElement('script');
+    script.src = window.location.pathname.includes('/client/') ? '../assets/js/client-api.js' : 'assets/js/client-api.js';
+    document.head.appendChild(script);
+}
 
 // ─── Tải động script tìm kiếm ─────────────────
 function _loadSearchHandler() {
@@ -71,6 +78,36 @@ function _loadCartHandler() {
         script.src = window.location.pathname.includes('/client/') ? '../assets/js/cart-handler.js' : 'assets/js/cart-handler.js';
         document.body.appendChild(script);
     }
+}
+
+// ─── Tải widgets catalog dùng chung ─────────────────
+function _loadCatalogWidgets() {
+    if (!document.querySelector('.top-search-links, .featured-products-section')) return;
+
+    const start = () => {
+        if (window.MGCatalogWidgets && typeof window.MGCatalogWidgets.init === 'function') {
+            window.MGCatalogWidgets.init();
+            return;
+        }
+        if (document.querySelector('script[src*="catalog-widgets.js"]')) return;
+        const script = document.createElement('script');
+        script.src = window.location.pathname.includes('/client/') ? '../assets/js/catalog-widgets.js' : 'assets/js/catalog-widgets.js';
+        document.body.appendChild(script);
+    };
+
+    if (window.MGCatalogApi) {
+        start();
+        return;
+    }
+
+    let attempts = 0;
+    const timer = setInterval(() => {
+        attempts += 1;
+        if (window.MGCatalogApi || attempts >= 20) {
+            clearInterval(timer);
+            start();
+        }
+    }, 50);
 }
 
 // ─── Điều hướng Product Card toàn cục ─────────────────
@@ -219,55 +256,4 @@ function _resolveClientPath(file) {
         return file; // đã trong thư mục client
     }
     return `../client/${file}`;
-}
-
-async function _loadFeaturedProducts() {
-    const grid = document.getElementById('featuredProductsGrid');
-    if (!grid) return;
-
-    try {
-        const response = await fetch('http://localhost:8000/api/catalog/products?limit=5&sort=best_seller');
-        const result = await response.json();
-
-        if (result.success && result.data.length > 0) {
-            grid.innerHTML = result.data.map(p => {
-                const isRx = p.requires_prescription;
-                const priceStr = p.retail_price ? new Intl.NumberFormat('vi-VN').format(Math.round(p.retail_price)) + 'đ' : 'Liên hệ';
-                
-                let infoHtml = `
-                    <div class="product-price">
-                        <span class="price-new" style="color:#ea580c; font-weight:700;">${priceStr}</span>
-                    </div>
-                `;
-
-                if (isRx) {
-                    infoHtml = `
-                        <div class="product-price">
-                            <span class="price-new" style="font-size:13px;color:#6b7280;font-style:italic;">Cần tư vấn từ dược sỹ</span>
-                        </div>
-                    `;
-                }
-
-                let actionHtml = `<button class="btn-add-cart" style="background:#0b7a3e; color:#fff; border:none; width:100%; padding:10px 16px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#096532'" onmouseout="this.style.background='#0b7a3e'" onclick="event.stopPropagation(); event.preventDefault(); addToCart(${p.id}, event)">Thêm giỏ hàng</button>`;
-                if (isRx) {
-                    actionHtml = `<button class="btn-add-cart" style="background:#0b7a3e; color:#fff; border:none; width:100%; padding:10px 16px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#096532'" onmouseout="this.style.background='#0b7a3e'" onclick="event.stopPropagation(); event.preventDefault(); window.location.href='product.html?id=${p.id}'">Tư vấn ngay</button>`;
-                }
-
-                return `
-                    <div class="product-card" data-product-id="${p.id}">
-                        <div class="product-image" onclick="window.location.href='product.html?id=${p.id}'" style="cursor:pointer;">
-                            <img src="${p.thumbnail || p.image_url || '../assets/images/placeholder.png'}" alt="${p.name}">
-                        </div>
-                        <div class="product-info">
-                            <h5><a href="product.html?id=${p.id}">${p.name}</a></h5>
-                            ${infoHtml}
-                        </div>
-                        ${actionHtml}
-                    </div>
-                `;
-            }).join('');
-        }
-    } catch (error) {
-        console.error('[FeaturedProducts] Error loading products:', error);
-    }
 }

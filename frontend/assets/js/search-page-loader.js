@@ -3,49 +3,120 @@
  * Xử lý tải dữ liệu sản phẩm cho trang kết quả tìm kiếm
  */
 
-const API_BASE = 'http://localhost:8000/api/catalog';
+function catalogApi() {
+    if (window.MGCatalogApi) return window.MGCatalogApi;
+    const baseUrl = window.MG_CATALOG_API_BASE || 'http://localhost:8000/api/catalog';
+    return {
+        async get(path, params) {
+            const url = new URL(`${baseUrl.replace(/\/+$/, '')}/${String(path).replace(/^\/+/, '')}`);
+            Object.entries(params || {}).forEach(([key, value]) => {
+                if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, value);
+            });
+            const response = await fetch(url.toString());
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.json();
+        }
+    };
+}
+
+function escapeHtml(value) {
+    if (window.MGClientApi && typeof window.MGClientApi.escapeHtml === 'function') {
+        return window.MGClientApi.escapeHtml(value);
+    }
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+const searchState = {
+    query: '',
+    page: 1,
+    limit: 28,
+    sort: 'popular'
+};
 
 document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const query = urlParams.get('q');
-    const page = urlParams.get('page') || 1;
+    const page = Math.max(1, Number(urlParams.get('page')) || 1);
+    const sort = urlParams.get('sort') || 'popular';
+    const limit = Number(urlParams.get('limit')) || 28;
 
     if (!query) {
         renderNoResults('Bạn chưa nhập từ khóa tìm kiếm.');
         return;
     }
 
+    searchState.query = query;
+    searchState.page = page;
+    searchState.sort = sort;
+    searchState.limit = limit;
+
     // Cập nhật UI ban đầu
     document.getElementById('searchTerm').textContent = query;
+    const breadcrumbQuery = document.getElementById('breadcrumbQuery');
+    if (breadcrumbQuery) breadcrumbQuery.textContent = `Tìm kiếm: ${query}`;
     document.title = `Kết quả tìm kiếm cho "${query}" — Nhà Thuốc Minh Giang`;
 
-    fetchSearchResults(query, page);
+    const sortSelect = document.getElementById('sortSelect');
+    if (sortSelect) sortSelect.value = sort;
+    const limitSelect = document.getElementById('pageLimitSelect');
+    if (limitSelect) limitSelect.value = String(limit);
+
+    fetchSearchResults();
 
     // Xử lý thay đổi sắp xếp
-    const sortSelect = document.getElementById('sortSelect');
     if (sortSelect) {
         sortSelect.addEventListener('change', () => {
-            fetchSearchResults(query, 1, sortSelect.value);
+            searchState.sort = sortSelect.value;
+            searchState.page = 1;
+            updateSearchUrl();
+            fetchSearchResults();
+        });
+    }
+
+    if (limitSelect) {
+        limitSelect.addEventListener('change', () => {
+            searchState.limit = Number(limitSelect.value) || 28;
+            searchState.page = 1;
+            updateSearchUrl();
+            fetchSearchResults();
         });
     }
 });
 
-async function fetchSearchResults(query, page = 1, sort = 'popular') {
+function updateSearchUrl() {
+    const params = new URLSearchParams();
+    params.set('q', searchState.query);
+    if (searchState.page > 1) params.set('page', searchState.page);
+    if (searchState.sort !== 'popular') params.set('sort', searchState.sort);
+    if (searchState.limit !== 28) params.set('limit', searchState.limit);
+    window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
+}
+
+async function fetchSearchResults() {
     const grid = document.getElementById('searchResultGrid');
     if (!grid) return;
 
     grid.innerHTML = '<div class="loading">Đang tìm kiếm sản phẩm...</div>';
 
     try {
-        const response = await fetch(`${API_BASE}/products?q=${encodeURIComponent(query)}&page=${page}&limit=28&sort=${sort}`);
-        const result = await response.json();
+        const result = await catalogApi().get('products', {
+            q: searchState.query,
+            page: searchState.page,
+            limit: searchState.limit,
+            sort: searchState.sort
+        });
 
         if (result.success && result.data.length > 0) {
             document.getElementById('totalCount').textContent = result.pagination.total;
             renderProducts(result.data);
-            renderPagination(result.pagination, query);
+            renderPagination(result.pagination);
         } else {
-            renderNoResults(`Không tìm thấy sản phẩm nào khớp với từ khóa "${query}".`);
+            renderNoResults(`Không tìm thấy sản phẩm nào khớp với từ khóa "${escapeHtml(searchState.query)}".`);
         }
     } catch (error) {
         console.error('[SearchPage] Error:', error);
@@ -55,43 +126,51 @@ async function fetchSearchResults(query, page = 1, sort = 'popular') {
 
 function renderProducts(products) {
     const grid = document.getElementById('searchResultGrid');
-    grid.innerHTML = products.map(p => {
-        // Logic hiển thị nút: Nếu cần tư vấn (thuốc kê đơn) thì hiện "Tư vấn ngay", ngược lại hiện "Thêm giỏ hàng"
-        const btnText = p.requires_prescription ? 'Tư vấn ngay' : 'Thêm giỏ hàng';
-        const btnClass = p.requires_prescription ? 'btn-add-cart btn-consult' : 'btn-add-cart';
-        
-        // Giá hiển thị
-        const priceHtml = p.requires_prescription 
-            ? '<span class="price-new" style="font-size:15px; color:#666;">Cần tư vấn từ dược sỹ</span>'
-            : `<span class="price-new">${new Intl.NumberFormat('vi-VN').format(Math.round(p.price))}đ</span>`;
+    if (window.MGClientApi && typeof window.MGClientApi.renderProductCard === 'function') {
+        grid.innerHTML = products.map((product) => window.MGClientApi.renderProductCard(product)).join('');
+        return;
+    }
 
-        const clickAction = p.requires_prescription 
-            ? `event.stopPropagation(); event.preventDefault(); window.location.href='product.html?id=${p.id}'`
-            : `event.stopPropagation(); event.preventDefault(); addToCart(${p.id}, event)`;
+    grid.innerHTML = products.map(p => {
+        const id = Number(p.id);
+        const name = escapeHtml(p.name || 'Sản phẩm');
+        const image = escapeHtml(p.image_url || p.thumbnail || '../assets/images/product1.png');
+        const price = p.price || p.retail_price;
+        const priceHtml = p.requires_prescription
+            ? '<span class="price-new catalog-rx-note">Cần tư vấn dược sĩ</span>'
+            : `<span class="price-new">${price ? new Intl.NumberFormat('vi-VN').format(Math.round(price)) + 'đ' : 'Liên hệ'}</span>`;
+
+        let actionHtml = `<button class="btn-add-cart" onclick="window.addToCart ? addToCart(${id}, event) : (window.location.href='product.html?id=${id}')">Thêm giỏ hàng</button>`;
+        if (p.requires_prescription) {
+            actionHtml = `<button class="btn-add-cart btn-consult" onclick="event.preventDefault(); event.stopPropagation(); window.location.href='product.html?id=${id}'">Tư vấn ngay</button>`;
+        } else if (p.in_stock === false) {
+            actionHtml = '<button class="btn-add-cart" disabled>Hết hàng</button>';
+        }
 
         return `
-            <div class="product-card" data-product-id="${p.id}">
+            <div class="product-card" data-product-id="${id}">
                 <div class="product-image">
                     ${p.discount_percent > 0 ? `<span class="discount-badge">-${p.discount_percent}%</span>` : ''}
-                    <img src="${p.image_url || '../assets/images/product1.png'}" alt="${p.name}">
+                    <img src="${image}" alt="${name}" onerror="this.src='../assets/images/placeholder.png'">
                 </div>
                 <div class="product-info">
-                    <h5><a href="product.html?id=${p.id}">${p.name}</a></h5>
+                    <h5><a href="product.html?id=${id}">${name}</a></h5>
                     <div class="product-price">
                         ${priceHtml}
                     </div>
-                    <button class="${btnClass}" onclick="${clickAction}">${btnText}</button>
+                    ${actionHtml}
                 </div>
             </div>
         `;
     }).join('');
 }
 
-function renderPagination(pagination, query) {
+function renderPagination(pagination) {
     const container = document.getElementById('searchPagination');
     if (!container) return;
 
-    const { page, pages } = pagination;
+    const page = Number(pagination.page || searchState.page || 1);
+    const pages = Number(pagination.pages || pagination.total_pages || 1);
     if (pages <= 1) {
         container.innerHTML = '';
         return;
@@ -101,27 +180,42 @@ function renderPagination(pagination, query) {
     
     // Nút Previous
     if (page > 1) {
-        html += `<button class="page-btn" onclick="changePage('${query}', ${page - 1})"><i class="fa-solid fa-chevron-left"></i></button>`;
+        html += `<button class="page-btn" data-page="${page - 1}"><i class="fa-solid fa-chevron-left"></i></button>`;
     }
 
-    // Các trang (hiện đơn giản)
-    for (let i = 1; i <= pages; i++) {
-        if (i > 10) break; // Giới hạn hiển thị 10 trang
-        html += `<button class="page-btn ${i == page ? 'active' : ''}" onclick="changePage('${query}', ${i})">${i}</button>`;
+    const start = Math.max(1, page - 2);
+    const end = Math.min(pages, page + 2);
+    if (start > 1) {
+        html += `<button class="page-btn" data-page="1">1</button>`;
+        if (start > 2) html += `<span class="page-ellipsis">...</span>`;
+    }
+
+    for (let i = start; i <= end; i++) {
+        html += `<button class="page-btn ${i === page ? 'active' : ''}" data-page="${i}">${i}</button>`;
+    }
+
+    if (end < pages) {
+        if (end < pages - 1) html += `<span class="page-ellipsis">...</span>`;
+        html += `<button class="page-btn" data-page="${pages}">${pages}</button>`;
     }
 
     // Nút Next
     if (page < pages) {
-        html += `<button class="page-btn" onclick="changePage('${query}', ${page + 1})"><i class="fa-solid fa-chevron-right"></i></button>`;
+        html += `<button class="page-btn" data-page="${page + 1}"><i class="fa-solid fa-chevron-right"></i></button>`;
     }
 
     container.innerHTML = html;
+    container.querySelectorAll('[data-page]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const nextPage = Number(btn.getAttribute('data-page'));
+            if (!nextPage || nextPage === searchState.page) return;
+            searchState.page = nextPage;
+            updateSearchUrl();
+            fetchSearchResults();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
 }
-
-window.changePage = (query, page) => {
-    fetchSearchResults(query, page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-};
 
 function renderNoResults(message) {
     const grid = document.getElementById('searchResultGrid');

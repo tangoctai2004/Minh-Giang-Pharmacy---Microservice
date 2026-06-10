@@ -793,7 +793,7 @@
             </div>
             <div class="pos-topbar-user">
                 <span class="avatar"><i class="fa-solid fa-user"></i></span>
-                <span>Nguyễn Văn A</span>
+                <span>...</span>
             </div>
         </div>
     </header>
@@ -806,11 +806,11 @@
         </div>
 
         <div class="hist-filter-group">
-            <input type="date" class="hist-date-input" id="filterDate">
-            <button class="hist-filter-btn active" id="btnToday">
+            <input type="date" class="hist-date-input">
+            <button class="hist-filter-btn active">
                 <i class="fa-solid fa-filter"></i> Hôm nay
             </button>
-            <button class="hist-filter-btn" id="btnThisWeek">
+            <button class="hist-filter-btn">
                 <i class="fa-regular fa-calendar"></i> Tuần này
             </button>
         </div>
@@ -825,11 +825,15 @@
 
         <div class="hist-stats">
             <div class="hist-stat">
-                <div class="hist-stat-value">24</div>
-                <div class="hist-stat-label">Đơn hàng</div>
+                <div class="hist-stat-value">--</div>
+                <div class="hist-stat-label">Tổng đơn</div>
             </div>
             <div class="hist-stat">
-                <div class="hist-stat-value">5.2M</div>
+                <div class="hist-stat-value" style="color: #059669;">--</div>
+                <div class="hist-stat-label">Đơn POS hôm nay</div>
+            </div>
+            <div class="hist-stat" style="min-width: 100px;">
+                <div class="hist-stat-value" style="color: #005824;">--</div>
                 <div class="hist-stat-label">Doanh thu</div>
             </div>
         </div>
@@ -878,13 +882,13 @@
                 <button class="detail-close" onclick="closeDetail()"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="detail-body" id="detailBodyContent">
-                <!-- Nội dung được nạp động khi click vào đơn hàng -->
-                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#9ca3af;gap:12px;padding:40px;text-align:center;">
-                    <i class="fa-solid fa-file-invoice" style="font-size:40px;color:#d1d5db;"></i>
-                    <span style="font-size:14px;font-weight:500;">Chọn một đơn hàng để xem chi tiết</span>
+                <!-- Placeholder: hiển thị khi chưa chọn đơn hàng nào -->
+                <div id="detailPlaceholder" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 300px; color: #9ca3af; text-align: center; gap: 12px;">
+                    <i class="fa-regular fa-file-lines" style="font-size: 48px; color: #d1d5db;"></i>
+                    <div style="font-size: 14px; font-weight: 600; color: #6b7280;">Chọn một giao dịch</div>
+                    <div style="font-size: 12px; color: #9ca3af;">Nhấp vào một dòng trong bảng<br>để xem chi tiết hoá đơn</div>
                 </div>
             </div>
-
 
             <!-- Footer Actions -->
             <div class="detail-footer">
@@ -936,28 +940,16 @@
                         class="fa-solid fa-xmark"></i></button>
             </div>
             <p style="font-size: 14px; color: #475569; margin-bottom: 16px;">Mã đơn: <strong
-                    id="refundOrderId">HD-001</strong></p>
+                    id="refundOrderId">--</strong></p>
 
             <div style="margin-bottom: 16px;">
                 <label
                     style="font-size: 13px; font-weight: 600; color: #334155; display: block; margin-bottom: 6px;">Chọn
                     sản phẩm cần hoàn trả:</label>
-                <div
+                <div id="refundItemsList"
                     style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; max-height: 120px; overflow-y: auto; background: #f8fafc;">
-                    <label
-                        style="display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 8px; cursor: pointer;">
-                        <input type="checkbox" checked style="accent-color: #ef4444; width: 16px; height: 16px;">
-                        Panadol Extra (Hộp 12 viên)
-                        <input type="number" value="1" min="1" max="2"
-                            style="width: 50px; height: 24px; margin-left: auto; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; outline: none;">
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
-                        <input type="checkbox" style="accent-color: #ef4444; width: 16px; height: 16px;"> Amoxicillin
-                        500mg
-                        <input type="number" value="1" min="1" max="1"
-                            style="width: 50px; height: 24px; margin-left: auto; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; outline: none;"
-                            disabled>
-                    </label>
+                    <!-- Được render động bởi openRefundModal() -->
+                    <div style="font-size: 13px; color: #9ca3af; font-style: italic; text-align: center; padding: 8px;">Chưa có sản phẩm</div>
                 </div>
             </div>
 
@@ -976,7 +968,7 @@
             <div
                 style="border-top: 1px solid #e2e8f0; padding-top: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                 <span style="font-weight: 600; color: #334155; font-size: 14px;">Số tiền hoàn trả (Tạm tính):</span>
-                <span style="font-weight: 700; font-size: 18px; color: #ef4444;">65,000₫</span>
+                <span id="refundAmountDisplay" style="font-weight: 700; font-size: 18px; color: #ef4444;">0₫</span>
             </div>
 
             <div style="display: flex; gap: 12px; justify-content: flex-end;">
@@ -1036,54 +1028,6 @@
         let limitPerPage = 10;
         let currentRefundOrder = null;
 
-        // ===== Filter State =====
-        // activeFilter: 'day' | 'week' | 'custom'
-        let activeFilter = 'day';
-
-        // Lấy ngày hôm nay dạng YYYY-MM-DD
-        function todayStr() {
-            return new Date().toISOString().slice(0, 10);
-        }
-
-        // Lấy ngày đầu tuần (Thứ 2) dạng YYYY-MM-DD
-        function weekStartStr() {
-            const d = new Date();
-            const day = d.getDay(); // 0=CN, 1=T2...
-            const diff = (day === 0 ? -6 : 1 - day);
-            d.setDate(d.getDate() + diff);
-            return d.toISOString().slice(0, 10);
-        }
-
-        // Khởi tạo date input = hôm nay
-        const filterDate = document.getElementById('filterDate');
-        filterDate.value = todayStr();
-
-        // Nút Hôm nay
-        document.getElementById('btnToday').addEventListener('click', function () {
-            activeFilter = 'day';
-            filterDate.value = todayStr();
-            document.getElementById('btnToday').classList.add('active');
-            document.getElementById('btnThisWeek').classList.remove('active');
-            loadOrders(1);
-        });
-
-        // Nút Tuần này
-        document.getElementById('btnThisWeek').addEventListener('click', function () {
-            activeFilter = 'week';
-            filterDate.value = weekStartStr();
-            document.getElementById('btnThisWeek').classList.add('active');
-            document.getElementById('btnToday').classList.remove('active');
-            loadOrders(1);
-        });
-
-        // Khi người dùng chọn ngày thủ công
-        filterDate.addEventListener('change', function () {
-            activeFilter = 'custom';
-            document.getElementById('btnToday').classList.remove('active');
-            document.getElementById('btnThisWeek').classList.remove('active');
-            loadOrders(1);
-        });
-
         // Load Transaction Statistics
         async function loadStats() {
             try {
@@ -1130,25 +1074,11 @@
 
             const queryParams = new URLSearchParams({
                 page: page,
-                limit: limitPerPage,
-                channel: 'pos'
+                limit: limitPerPage
             });
 
             if (searchVal) {
                 queryParams.set('search', searchVal);
-            }
-
-            // Áp dụng bộ lọc ngày
-            const selectedDate = document.getElementById('filterDate').value;
-            if (activeFilter === 'day' && selectedDate) {
-                queryParams.set('date_from', selectedDate);
-                queryParams.set('date_to', selectedDate);
-            } else if (activeFilter === 'week' && selectedDate) {
-                queryParams.set('date_from', selectedDate);
-                queryParams.set('date_to', todayStr());
-            } else if (activeFilter === 'custom' && selectedDate) {
-                queryParams.set('date_from', selectedDate);
-                queryParams.set('date_to', selectedDate);
             }
 
             const tbody = document.querySelector('.hist-table tbody');
@@ -1329,7 +1259,7 @@
             const panel = document.getElementById('detailPanel');
             panel.classList.add('open');
 
-            const detailBody = document.getElementById('detailBodyContent');
+            const detailBody = document.querySelector('.detail-body');
             if (detailBody) {
                 detailBody.innerHTML = `
                     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; color: #6b7280; gap: 12px;">
@@ -1338,7 +1268,6 @@
                     </div>
                 `;
             }
-
 
             try {
                 const response = await fetch(`http://localhost:8000/api/order/orders/${orderId}`, {
@@ -1462,7 +1391,7 @@
         function openRefundModal(order) {
             document.getElementById('refundOrderId').textContent = order.order_code;
             
-            const listDiv = document.querySelector('#refundModal div[style*="max-height: 120px"]');
+            const listDiv = document.getElementById('refundItemsList');
             if (listDiv && Array.isArray(order.items)) {
                 listDiv.innerHTML = order.items.map(item => `
                     <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 8px; cursor: pointer;">
@@ -1474,7 +1403,7 @@
                 `).join('');
             }
 
-            const refundVal = document.querySelector('#refundModal span[style*="color: #ef4444"]');
+            const refundVal = document.getElementById('refundAmountDisplay');
             if (refundVal) {
                 refundVal.textContent = parseFloat(order.total_amount).toLocaleString('vi-VN') + '₫';
             }

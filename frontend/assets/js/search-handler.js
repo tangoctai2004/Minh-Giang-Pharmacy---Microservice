@@ -3,7 +3,21 @@
  * Xử lý gợi ý tìm kiếm thông minh (Autocomplete)
  */
 
-const SEARCH_API_BASE = 'http://localhost:8000/api/catalog';
+function catalogApi() {
+    if (window.MGCatalogApi) return window.MGCatalogApi;
+    const baseUrl = window.MG_CATALOG_API_BASE || 'http://localhost:8000/api/catalog';
+    return {
+        async get(path, params) {
+            const url = new URL(`${baseUrl.replace(/\/+$/, '')}/${String(path).replace(/^\/+/, '')}`);
+            Object.entries(params || {}).forEach(([key, value]) => {
+                if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, value);
+            });
+            const response = await fetch(url.toString());
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.json();
+        }
+    };
+}
 
 (function initSearchHandler() {
     const searchInput = document.getElementById('searchInput');
@@ -39,12 +53,14 @@ const SEARCH_API_BASE = 'http://localhost:8000/api/catalog';
         }
     });
 
-    searchBtn.addEventListener('click', () => {
-        const keyword = searchInput.value.trim();
-        if (keyword) {
-            window.location.href = `search.html?q=${encodeURIComponent(keyword)}`;
-        }
-    });
+    if (searchBtn) {
+        searchBtn.addEventListener('click', () => {
+            const keyword = searchInput.value.trim();
+            if (keyword) {
+                window.location.href = `search.html?q=${encodeURIComponent(keyword)}`;
+            }
+        });
+    }
 
     // Đóng dropdown khi click ra ngoài
     document.addEventListener('click', (e) => {
@@ -62,8 +78,7 @@ const SEARCH_API_BASE = 'http://localhost:8000/api/catalog';
 
     async function fetchSearchSuggestions(keyword) {
         try {
-            const response = await fetch(`${SEARCH_API_BASE}/products/search-suggest?q=${encodeURIComponent(keyword)}`);
-            const result = await response.json();
+            const result = await catalogApi().get('products/search-suggest', { q: keyword });
 
             if (result.success) {
                 renderSuggestions(result.data, keyword);
@@ -74,7 +89,8 @@ const SEARCH_API_BASE = 'http://localhost:8000/api/catalog';
     }
 
     function renderSuggestions(data, keyword) {
-        const { products, categories } = data;
+        const products = Array.isArray(data?.products) ? data.products : [];
+        const categories = Array.isArray(data?.categories) ? data.categories : [];
 
         if (products.length === 0 && categories.length === 0) {
             searchSuggest.style.display = 'none';
@@ -90,7 +106,7 @@ const SEARCH_API_BASE = 'http://localhost:8000/api/catalog';
                 html += `
                     <a href="category.html?id=${cat.id}" class="suggest-category">
                         <i class="fa-solid fa-layer-group"></i>
-                        <span>${cat.name}</span>
+                        <span>${escapeSearchHtml(cat.name)}</span>
                     </a>
                 `;
             });
@@ -106,9 +122,9 @@ const SEARCH_API_BASE = 'http://localhost:8000/api/catalog';
 
                 html += `
                     <a href="product.html?id=${p.id}" class="suggest-item">
-                        <img src="${p.image_url || '../assets/images/product1.png'}" alt="${p.name}" class="suggest-img">
+                        <img src="${escapeSearchHtml(p.image_url || '../assets/images/product1.png')}" alt="${escapeSearchHtml(p.name)}" class="suggest-img">
                         <div class="suggest-info">
-                            <div class="suggest-name">${p.name}</div>
+                            <div class="suggest-name">${escapeSearchHtml(p.name)}</div>
                             ${priceHtml}
                         </div>
                     </a>
@@ -126,5 +142,17 @@ const SEARCH_API_BASE = 'http://localhost:8000/api/catalog';
 
         searchSuggest.innerHTML = html;
         searchSuggest.style.display = 'block';
+    }
+
+    function escapeSearchHtml(value) {
+        if (window.MGClientApi && typeof window.MGClientApi.escapeHtml === 'function') {
+            return window.MGClientApi.escapeHtml(value);
+        }
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 })();

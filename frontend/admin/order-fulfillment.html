@@ -370,207 +370,73 @@
             <div style="font-size:13px;color:#92400e;font-weight:500;"><i class="fa-solid fa-inbox"
                     style="margin-right:6px;"></i>Chỉ hiển thị đơn đã được <strong>duyệt</strong> tại Inbox. Đơn chờ
                 duyệt xem tại <a href="orders.html" style="color:#d97706;font-weight:700;">Quản Lý Đơn Hàng →</a></div>
-            <span style="font-size:12px;color:#f59e0b;font-weight:700;">⚡ 2 đơn inbox mới chưa duyệt</span>
+            <span id="inboxBadge" style="font-size:12px;color:#f59e0b;font-weight:700;">Đang kiểm tra...</span>
         </div>
 
         <!-- Stats: 4 stages only -->
         <div class="order-stats" style="grid-template-columns:repeat(4,1fr);">
             <div class="order-stat" style="border-top: 3px solid #f59e0b;">
                 <p>🟡 Đang lấy hàng</p>
-                <h3>3</h3>
+                <h3>--</h3>
             </div>
             <div class="order-stat" style="border-top: 3px solid #3b82f6;">
                 <p>🔵 Đang đóng gói</p>
-                <h3>1</h3>
+                <h3>--</h3>
             </div>
             <div class="order-stat" style="border-top: 3px solid #8b5cf6;">
                 <p>🟣 Đang giao hàng</p>
-                <h3>4</h3>
+                <h3>--</h3>
             </div>
             <div class="order-stat" style="border-top: 3px solid #10b981;">
                 <p>🟢 Hoàn tất hôm nay</p>
-                <h3>12</h3>
+                <h3>--</h3>
             </div>
         </div>
 
-        <!-- KANBAN PIPELINE BOARD (4 cột — đơn đã duyệt) -->
+        <!-- KANBAN PIPELINE BOARD (4 cột — đơn đã duyệt, render động bởi loadBoard()) -->
         <div class="pipeline-board">
 
-            <!-- COL 1: Đang lấy hàng -->
+            <!-- COL 1: Đang xác nhận -->
+            <div class="pipeline-col">
+                <div class="pipeline-col-header" style="background:#f0f9ff;">
+                    <span class="col-title" style="color:#0369a1;"><i class="fa-solid fa-circle-check fa-xs"></i> Đã Duyệt</span>
+                    <span class="col-count" style="background:#0284c7;">--</span>
+                </div>
+                <div class="pipeline-cards">
+                    <div style="text-align:center;padding:30px;color:#cbd5e1;"><i class="fa-solid fa-spinner fa-spin"></i></div>
+                </div>
+            </div>
+
+            <!-- COL 2: Đang lấy hàng -->
             <div class="pipeline-col">
                 <div class="pipeline-col-header" style="background:#fffbeb;">
-                    <span class="col-title" style="color:#d97706;"><i class="fa-solid fa-boxes-stacked fa-xs"></i> Đang
-                        Lấy Hàng</span>
-                    <span class="col-count" style="background:#f59e0b;">3</span>
+                    <span class="col-title" style="color:#d97706;"><i class="fa-solid fa-boxes-stacked fa-xs"></i> Đang Lấy Hàng</span>
+                    <span class="col-count" style="background:#f59e0b;">--</span>
                 </div>
                 <div class="pipeline-cards">
-                    <div class="order-card" onclick="openOrderDetail('WEB-9023','picking')">
-                        <div class="order-id">#WEB-9023</div>
-                        <div class="order-customer"><i class="fa-regular fa-user fa-xs" style="color:#9ca3af;"></i> Phạm
-                            Tố Ny</div>
-                        <div class="order-amount">95,000₫</div>
-                        <div class="order-tags"><span class="order-tag cod">COD</span></div>
-                        <div class="order-time"><i class="fa-regular fa-clock fa-xs"></i> 9:30 AM</div>
-                        <div class="card-actions">
-                            <button class="card-btn next"
-                                onclick="event.stopPropagation(); advanceOrder(this,'Đóng gói','#3b82f6')">Đóng Gói
-                                →</button>
-                        </div>
-                    </div>
-                    <div class="order-card" onclick="openOrderDetail('WEB-9022','picking')">
-                        <div class="order-id">#WEB-9022</div>
-                        <div class="order-customer"><i class="fa-regular fa-user fa-xs" style="color:#9ca3af;"></i> Lê
-                            Hoàng Minh</div>
-                        <div class="order-amount">620,000₫</div>
-                        <div class="order-tags"><span class="order-tag paid">Đã TT Online</span></div>
-                        <div class="order-time"><i class="fa-regular fa-clock fa-xs"></i> 9:15 AM</div>
-                        <div class="card-actions">
-                            <button class="card-btn next"
-                                onclick="event.stopPropagation(); advanceOrder(this,'Đóng gói','#3b82f6')">Đóng Gói
-                                →</button>
-                        </div>
-                    </div>
-                    <div class="order-card" onclick="openOrderDetail('WEB-9021','picking')">
-                        <div class="order-id">#WEB-9021</div>
-                        <div class="order-customer"><i class="fa-regular fa-user fa-xs" style="color:#9ca3af;"></i> Võ
-                            Thị Thu</div>
-                        <div class="order-amount">340,000₫</div>
-                        <div class="order-tags">
-                            <span class="order-tag cod">COD</span>
-                            <span class="order-tag vat">Cần HĐ VAT</span>
-                        </div>
-                        <div class="order-time"><i class="fa-regular fa-clock fa-xs"></i> 8:50 AM</div>
-                        <div class="card-actions">
-                            <button class="card-btn next"
-                                onclick="event.stopPropagation(); advanceOrder(this,'Đóng gói','#3b82f6')">Đóng Gói
-                                →</button>
-                        </div>
-                    </div>
+                    <div style="text-align:center;padding:30px;color:#cbd5e1;"><i class="fa-solid fa-spinner fa-spin"></i></div>
                 </div>
             </div>
 
-            <!-- COL 3: Đóng gói -->
-            <div class="pipeline-col">
-                <div class="pipeline-col-header" style="background:#eff6ff;">
-                    <span class="col-title" style="color:#1d4ed8;"><i class="fa-solid fa-box fa-xs"></i> Đóng Gói</span>
-                    <span class="col-count" style="background:#3b82f6;">1</span>
-                </div>
-                <div class="pipeline-cards">
-                    <div class="order-card" onclick="openOrderDetail('WEB-9020','packing')">
-                        <div class="order-id">#WEB-9020</div>
-                        <div class="order-customer"><i class="fa-regular fa-user fa-xs" style="color:#9ca3af;"></i> Bùi
-                            Thị Hồng</div>
-                        <div class="order-amount">175,000₫</div>
-                        <div class="order-tags"><span class="order-tag paid">Đã TT Online</span></div>
-                        <div class="order-time"><i class="fa-regular fa-clock fa-xs"></i> 8:20 AM</div>
-                        <div class="card-actions">
-                            <button class="card-btn next"
-                                onclick="event.stopPropagation(); advanceOrder(this,'Đang giao','#8b5cf6')">Giao Hàng
-                                →</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- COL 4: Đang giao -->
+            <!-- COL 3: Đang giao -->
             <div class="pipeline-col">
                 <div class="pipeline-col-header" style="background:#fdf4ff;">
-                    <span class="col-title" style="color:#7c3aed;"><i class="fa-solid fa-person-biking fa-xs"></i> Đang
-                        Giao</span>
-                    <span class="col-count" style="background:#8b5cf6;">4</span>
+                    <span class="col-title" style="color:#7c3aed;"><i class="fa-solid fa-person-biking fa-xs"></i> Đang Giao</span>
+                    <span class="col-count" style="background:#8b5cf6;">--</span>
                 </div>
                 <div class="pipeline-cards">
-                    <div class="order-card" onclick="openOrderDetail('WEB-9019','delivering')">
-                        <div class="order-id">#WEB-9019</div>
-                        <div class="order-customer"><i class="fa-regular fa-user fa-xs" style="color:#9ca3af;"></i>
-                            Nguyễn Văn Ba</div>
-                        <div class="order-amount">540,000₫</div>
-                        <div class="order-tags"><span class="order-tag cod">COD</span></div>
-                        <div style="font-size:10px;color:#8b5cf6;font-weight:600;margin-top:5px;"><i
-                                class="fa-solid fa-person-biking fa-xs"></i> Người giao: Anh Nguyên</div>
-                        <div class="card-actions">
-                            <button class="card-btn approve"
-                                onclick="event.stopPropagation(); advanceOrder(this,'Hoàn tất','#10b981')"
-                                style="background:#10b981;">✓ Hoàn tất</button>
-                        </div>
-                    </div>
-                    <div class="order-card" onclick="openOrderDetail('WEB-9018','delivering')">
-                        <div class="order-id">#WEB-9018</div>
-                        <div class="order-customer"><i class="fa-regular fa-user fa-xs" style="color:#9ca3af;"></i>
-                            Hoàng Thu Trang</div>
-                        <div class="order-amount">820,000₫</div>
-                        <div class="order-tags"><span class="order-tag paid">Đã TT Online</span></div>
-                        <div style="font-size:10px;color:#8b5cf6;font-weight:600;margin-top:5px;"><i
-                                class="fa-solid fa-person-biking fa-xs"></i> Người giao: Chị Hoa</div>
-                        <div class="card-actions">
-                            <button class="card-btn approve"
-                                onclick="event.stopPropagation(); advanceOrder(this,'Hoàn tất','#10b981')"
-                                style="background:#10b981;">✓ Hoàn tất</button>
-                        </div>
-                    </div>
-                    <div class="order-card" onclick="openOrderDetail('WEB-9017','delivering')">
-                        <div class="order-id">#WEB-9017</div>
-                        <div class="order-customer"><i class="fa-regular fa-user fa-xs" style="color:#9ca3af;"></i> Đặng
-                            Minh Tuấn</div>
-                        <div class="order-amount">320,000₫</div>
-                        <div class="order-tags"><span class="order-tag cod">COD</span></div>
-                        <div style="font-size:10px;color:#8b5cf6;font-weight:600;margin-top:5px;"><i
-                                class="fa-solid fa-person-biking fa-xs"></i> Người giao: Anh Giang</div>
-                        <div class="card-actions">
-                            <button class="card-btn approve"
-                                onclick="event.stopPropagation(); advanceOrder(this,'Hoàn tất','#10b981')"
-                                style="background:#10b981;">✓ Hoàn tất</button>
-                        </div>
-                    </div>
-                    <div class="order-card" onclick="openOrderDetail('WEB-9016','delivering')">
-                        <div class="order-id">#WEB-9016</div>
-                        <div class="order-customer"><i class="fa-regular fa-user fa-xs" style="color:#9ca3af;"></i> Phan
-                            Thị Mai</div>
-                        <div class="order-amount">135,000₫</div>
-                        <div class="order-tags"><span class="order-tag paid">Đã TT Online</span></div>
-                        <div style="font-size:10px;color:#8b5cf6;font-weight:600;margin-top:5px;"><i
-                                class="fa-solid fa-person-biking fa-xs"></i> Người giao: Chị Hoa</div>
-                        <div class="card-actions">
-                            <button class="card-btn approve"
-                                onclick="event.stopPropagation(); advanceOrder(this,'Hoàn tất','#10b981')"
-                                style="background:#10b981;">✓ Hoàn tất</button>
-                        </div>
-                    </div>
+                    <div style="text-align:center;padding:30px;color:#cbd5e1;"><i class="fa-solid fa-spinner fa-spin"></i></div>
                 </div>
             </div>
 
-            <!-- COL 5: Hoàn tất hôm nay -->
+            <!-- COL 4: Hoàn tất hôm nay -->
             <div class="pipeline-col">
                 <div class="pipeline-col-header" style="background:#f0fdf4;">
-                    <span class="col-title" style="color:#16a34a;"><i class="fa-solid fa-circle-check fa-xs"></i> Hoàn
-                        Tất</span>
-                    <span class="col-count" style="background:#10b981;">12</span>
+                    <span class="col-title" style="color:#16a34a;"><i class="fa-solid fa-circle-check fa-xs"></i> Hoàn Tất</span>
+                    <span class="col-count" style="background:#10b981;">--</span>
                 </div>
                 <div class="pipeline-cards">
-                    <div class="order-card" style="opacity:.8;" onclick="openOrderDetail('WEB-9015','done')">
-                        <div class="order-id">#WEB-9015</div>
-                        <div class="order-customer"><i class="fa-regular fa-user fa-xs" style="color:#9ca3af;"></i>
-                            Nguyễn Thị Linh</div>
-                        <div class="order-amount">465,000₫</div>
-                        <div class="order-tags"><span class="order-tag paid">Đã TT Online</span></div>
-                        <div class="order-time"><i class="fa-solid fa-check fa-xs" style="color:#10b981;"></i> Hoàn tất
-                            lúc 10:12 AM</div>
-                    </div>
-                    <div class="order-card" style="opacity:.8;" onclick="openOrderDetail('WEB-9014','done')">
-                        <div class="order-id">#WEB-9014</div>
-                        <div class="order-customer"><i class="fa-regular fa-user fa-xs" style="color:#9ca3af;"></i> Trần
-                            Đức Hùng</div>
-                        <div class="order-amount">890,000₫</div>
-                        <div class="order-tags">
-                            <span class="order-tag cod">COD</span>
-                            <span class="order-tag vat">HĐ VAT</span>
-                        </div>
-                        <div class="order-time"><i class="fa-solid fa-check fa-xs" style="color:#10b981;"></i> Hoàn tất
-                            lúc 09:55 AM</div>
-                    </div>
-                    <div style="text-align:center;padding:10px;font-size:11px;color:#9ca3af;">
-                        + 10 đơn khác hôm nay
-                    </div>
+                    <div style="text-align:center;padding:30px;color:#cbd5e1;"><i class="fa-solid fa-spinner fa-spin"></i></div>
                 </div>
             </div>
         </div>
@@ -685,45 +551,11 @@
                         </div>
                     </div>
 
-                    <!-- Right: Customer info & assign -->
+                    <!-- Right: Customer info — render động bởi openOrderDetail() -->
                     <div class="detail-right">
-                        <h3 style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:14px;"><i
-                                class="fa-regular fa-user" style="color:#6b7280;margin-right:6px;"></i>Thông tin khách
-                            hàng</h3>
-                        <div class="info-row"><label>Tên khách</label><span>Nguyễn Thị Lan</span></div>
-                        <div class="info-row"><label>Điện thoại</label><span>0912 000 111</span></div>
-                        <div class="info-row"><label>Địa chỉ giao</label><span
-                                style="font-size:12px;line-height:1.5;">45 Lê Lợi, P.Bến Thành, Q.1, TP.HCM<br><span
-                                    style="color:#3b82f6;font-size:11px;">≈ 2.1 km từ nhà thuốc</span></span></div>
-                        <div class="info-row"><label>Phương thức TT</label><span
-                                style="color:#92400e;background:#fef3c7;padding:2px 8px;border-radius:6px;font-size:12px;">💵
-                                COD – Thu khi giao</span></div>
-                        <div class="info-row"><label>Thời gian đặt</label><span>10/03/2026 – 10:48 AM</span></div>
-                        <div class="info-row"><label>Ghi chú của khách</label><span
-                                style="font-style:italic;font-size:12px;color:#6b7280;">"Giao giờ hành chính, gọi trước
-                                15 phút"</span></div>
-
-                        <div style="border-top:1px solid var(--admin-border);padding-top:14px;margin-top:4px;">
-                            <label
-                                style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:8px;"><i
-                                    class="fa-solid fa-person-biking" style="color:#8b5cf6;margin-right:5px;"></i>Phân
-                                công giao hàng</label>
-                            <select
-                                style="width:100%;padding:8px 12px;border:1px solid var(--admin-border);border-radius:8px;font-size:13px;font-family:'Inter';color:#1e293b;outline:none;margin-bottom:8px;">
-                                <option>Anh Giang (Sẵn sàng)</option>
-                                <option>Chị Hoa (Sẵn sàng)</option>
-                                <option>Anh Nguyên (Đang giao - 1 đơn)</option>
-                            </select>
-                            <select
-                                style="width:100%;padding:8px 12px;border:1px solid var(--admin-border);border-radius:8px;font-size:13px;font-family:'Inter';color:#1e293b;outline:none;margin-bottom:8px;">
-                                <option>🕙 09:00 – 12:00 (Sáng)</option>
-                                <option>🕒 14:00 – 17:00 (Chiều)</option>
-                                <option>⚡ Giao ngay (30–60 phút)</option>
-                            </select>
-                            <button class="btn-primary" style="width:100%;justify-content:center;height:36px;"
-                                onclick="alert('Đã phân công giao hàng cho Anh Giang!')">
-                                <i class="fa-solid fa-paper-plane"></i> Xác nhận phân công
-                            </button>
+                        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;color:#9ca3af;gap:10px;">
+                            <i class="fa-regular fa-user" style="font-size:32px;color:#d1d5db;"></i>
+                            <span style="font-size:13px;">Đang tải thông tin khách hàng...</span>
                         </div>
                     </div>
                 </div>

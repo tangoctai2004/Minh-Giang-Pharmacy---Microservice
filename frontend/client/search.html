@@ -119,6 +119,12 @@
             border-color: #0b7a3e;
         }
 
+        .page-ellipsis {
+            color: #9ca3af;
+            font-weight: 700;
+            padding: 0 4px;
+        }
+
         /* Custom empty state */
         .no-results {
             text-align: center;
@@ -173,7 +179,7 @@
                     <option value="price_asc">Giá từ thấp đến cao</option>
                     <option value="price_desc">Giá từ cao đến thấp</option>
                 </select>
-                <select class="sort-select">
+                <select class="sort-select" id="pageLimitSelect">
                     <option value="28">28 Mỗi trang</option>
                     <option value="48">48 Mỗi trang</option>
                 </select>
@@ -197,6 +203,7 @@
 
     <script src="../assets/js/dropdown-handler.js"></script>
     <script src="../assets/js/mega-menu-loader.js"></script>
+    <script src="../assets/js/client-api.js"></script>
     <script src="../assets/js/components.js"></script>
     <script src="../assets/js/search-page-loader.js"></script>
 </body>
