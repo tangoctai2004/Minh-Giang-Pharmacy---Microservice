@@ -1155,13 +1155,19 @@
             }
 
             function getOrderTotals() {
+                let pointsDiscount = 0;
+                const pointsCheckbox = document.getElementById('usePointsCheckbox');
+                if (pointsCheckbox && pointsCheckbox.checked) {
+                    pointsDiscount = 25000;
+                }
+
                 const totals = posState.cart.reduce((acc, item) => {
                     acc.subtotal += item.quantity * getCartItemPrice(item);
                     acc.count += item.quantity;
                     return acc;
                 }, {
                     subtotal: 0,
-                    discount: posState.voucherDiscount || 0,
+                    discount: (posState.voucherDiscount || 0) + pointsDiscount,
                     count: 0
                 });
                 totals.total = Math.max(0, totals.subtotal - totals.discount);
@@ -2278,6 +2284,10 @@
                 posState.calculatorValue = '0';
                 renderCalculator();
 
+                // Reset loyalty points checkbox
+                const pointsCheckbox = document.getElementById('usePointsCheckbox');
+                if (pointsCheckbox) pointsCheckbox.checked = false;
+
                 renderCheckoutSummary();
                 renderHoldStatus();
                 document.getElementById('checkoutModal').classList.add('open');
@@ -2904,10 +2914,11 @@
             function togglePoints() {
                 const isChecked = document.getElementById('usePointsCheckbox').checked;
                 if (isChecked) {
-                    alert('Đã trừ 25,000 điểm tương ứng -25,000₫ vào hóa đơn.');
+                    showToast('Đã quy đổi và giảm 25,000₫ từ điểm tích lũy');
                 } else {
-                    alert('Đã hoàn lại điểm. Tính lại tỷ giá hoá đơn gốc.');
+                    showToast('Đã hủy quy đổi điểm tích lũy');
                 }
+                updateCartTotal();
             }
 
             // ========== KEYBOARD SHORTCUTS ==========
