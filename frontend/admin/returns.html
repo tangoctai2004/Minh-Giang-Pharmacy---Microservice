@@ -534,7 +534,8 @@
         }
 
         function formatVND(value) {
-            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+            const num = parseFloat(value);
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(isNaN(num) ? 0 : num);
         }
 
         function formatDate(dateStr) {
@@ -881,7 +882,10 @@
             const codeInput = document.getElementById('orderLookupCode');
             const errorDiv = document.getElementById('lookupError');
             const detailsSection = document.getElementById('orderReturnDetailsSection');
-            const code = codeInput.value.trim();
+            let code = codeInput.value.trim();
+
+            // Loại bỏ ký tự # ở đầu nếu có
+            code = code.replace(/^#+/, '').trim();
 
             if (!code) {
                 errorDiv.textContent = 'Vui lòng nhập mã đơn hàng.';
@@ -893,12 +897,12 @@
             detailsSection.style.display = 'none';
 
             try {
-                const res = await fetch(`${ORDERS_API_BASE}/${code}`, {
+                const res = await fetch(`${ORDERS_API_BASE}/${encodeURIComponent(code)}`, {
                     headers: getAuthHeader()
                 });
                 const response = await res.json();
 
-                if (response.success && response.data) {
+                if (response.success && response.data && !Array.isArray(response.data)) {
                     activeLookupOrder = response.data;
                     
                     document.getElementById('retCustName').textContent = activeLookupOrder.customer_name || 'Khách vãng lai';
