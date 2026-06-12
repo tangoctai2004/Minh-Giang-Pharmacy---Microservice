@@ -389,7 +389,7 @@
 
             <div class="lookup-box">
                 <h3><i class="fa-solid fa-fire" style="color:#dc2626"></i> Tra cứu phổ biến</h3>
-                <ul class="popular-article-list">
+                <ul class="popular-article-list" id="popular-disease-list">
                     <li onclick="window.location.href='#'">
                         <span class="article-title">Bướu cổ: Nguyên nhân, Triệu Chứng Và Cách Điều Trị Hiệu Quả</span>
                         <span class="article-icon"><i class="fa-solid fa-chevron-right"></i></span>
@@ -436,26 +436,64 @@
     <div mg-include="../components/main_footer.html"></div>
 
     <script>
-        // Disease data for alphabet lookup
-        const diseaseData = {
-            'A': ['Alzheimer', 'Amidan viêm', 'Áp xe phổi', 'Áp xe gan'],
-            'B': ['Bạch hầu', 'Bại liệt', 'Béo phì', 'Bệnh gout', 'Bướu cổ', 'Bệnh Parkinson'],
-            'C': ['Cảm cúm', 'Cận thị', 'Chàm (Eczema)', 'Cholesterol cao', 'Cúm A'],
-            'D': ['Dạ dày viêm', 'Dị ứng', 'Đái tháo đường', 'Đau đầu migraine', 'Đau lưng'],
-            'H': ['Huyết áp cao', 'Huyết áp thấp', 'Ho mãn tính', 'Hen suyễn'],
-            'K': ['Khô mắt', 'Ký sinh trùng', 'Kiết lỵ'],
-            'N': ['Nhức đầu', 'Nhiệt miệng', 'Ngộ độc thực phẩm', 'Nấm da'],
-            'S': ['Sốt xuất huyết', 'Sởi', 'Suy thận', 'Sỏi thận', 'Sốt rét'],
-            'T': ['Tay chân miệng', 'Tiểu đường', 'Tim mạch', 'Trĩ', 'Thoái hóa khớp', 'Thủy đậu'],
-            'V': ['Viêm gan B', 'Viêm phổi', 'Viêm xoang', 'Viêm họng', 'Viêm da cơ địa'],
-            'X': ['Xơ gan', 'Xương khớp'],
-        };
+        const API_BASE = 'http://localhost:8000/api';
+        let diseaseData = {};
+        let allArticles = [];
+
+        async function initDiseasePage() {
+            try {
+                // 1. Fetch disease categories
+                const catRes = await fetch(`${API_BASE}/cms/categories?type=disease`);
+                const catResult = await catRes.json();
+                const diseaseCatIds = (catResult.success && catResult.data) ? catResult.data.map(c => c.id) : [];
+
+                // 2. Fetch all articles
+                const artRes = await fetch(`${API_BASE}/cms/articles?limit=200`);
+                const artResult = await artRes.json();
+                if (artResult.success && artResult.data) {
+                    // Filter articles that belong to disease categories
+                    allArticles = artResult.data.filter(a => diseaseCatIds.includes(a.category_id));
+                    
+                    // Group articles by first letter
+                    allArticles.forEach(art => {
+                        const title = art.title.trim();
+                        if (title) {
+                            const baseLetter = title.normalize("NFD").replace(/[\u0300-\u036f]/g, "")[0].toUpperCase();
+                            if (/^[A-Z]$/.test(baseLetter)) {
+                                if (!diseaseData[baseLetter]) diseaseData[baseLetter] = [];
+                                diseaseData[baseLetter].push({ id: art.id, title: art.title, slug: art.slug });
+                            }
+                        }
+                    });
+
+                    // 3. Populate popular articles
+                    const popularEl = document.getElementById('popular-disease-list');
+                    if (popularEl) {
+                        const populars = allArticles.slice(0, 4);
+                        popularEl.innerHTML = populars.map(art => `
+                            <li onclick="window.location.href='benh-chuyen-khoa.html#article-${art.id}'" style="cursor: pointer;">
+                                <span class="article-title">${art.title}</span>
+                                <span class="article-icon"><i class="fa-solid fa-chevron-right"></i></span>
+                            </li>
+                        `).join('');
+                    }
+                }
+            } catch (e) {
+                console.warn('[Disease Page] Error loading dynamic data:', e);
+                diseaseData = {
+                    'A': [{ id: 1, title: 'Alzheimer' }, { id: 2, title: 'Amidan viêm' }, { id: 3, title: 'Áp xe phổi' }],
+                    'B': [{ id: 4, title: 'Bạch hầu' }, { id: 5, title: 'Bại liệt' }, { id: 6, title: 'Béo phì' }]
+                };
+            }
+            
+            // Initial render
+            filterByLetter('A');
+        }
 
         let activeLetter = 'A';
 
         function filterByLetter(letter) {
             activeLetter = letter;
-            // Update all buttons
             document.querySelectorAll('.alpha-btn').forEach(b => {
                 if (b.textContent === letter) {
                     b.className = 'alpha-btn red';
@@ -464,7 +502,6 @@
                 }
             });
 
-            // Update results
             document.getElementById('alphaLetter').textContent = letter;
             const diseases = diseaseData[letter];
             const listEl = document.getElementById('alphaList');
@@ -474,10 +511,11 @@
                 emptyEl.style.display = 'none';
                 listEl.style.display = 'block';
                 listEl.innerHTML = diseases.map(d =>
-                    `<li><a href="#"><i class="fa-solid fa-angle-right"></i> ${d}</a></li>`
+                    `<li><a href="benh-chuyen-khoa.html#article-${d.id}"><i class="fa-solid fa-angle-right"></i> ${d.title}</a></li>`
                 ).join('');
             } else {
                 emptyEl.style.display = 'block';
+                emptyEl.textContent = 'Chưa có dữ liệu cho mục này.';
                 listEl.style.display = 'none';
                 listEl.innerHTML = '';
             }
@@ -487,11 +525,10 @@
             const q = document.getElementById('diseaseSearch').value.trim().toLowerCase();
             if (!q) return;
 
-            // Search through all diseases
             const results = [];
             for (const [letter, diseases] of Object.entries(diseaseData)) {
                 for (const d of diseases) {
-                    if (d.toLowerCase().includes(q)) {
+                    if (d.title.toLowerCase().includes(q)) {
                         results.push(d);
                     }
                 }
@@ -505,7 +542,7 @@
                 emptyEl.style.display = 'none';
                 listEl.style.display = 'block';
                 listEl.innerHTML = results.map(d =>
-                    `<li><a href="#"><i class="fa-solid fa-angle-right"></i> ${d}</a></li>`
+                    `<li><a href="benh-chuyen-khoa.html#article-${d.id}"><i class="fa-solid fa-angle-right"></i> ${d.title}</a></li>`
                 ).join('');
             } else {
                 emptyEl.style.display = 'block';
@@ -513,22 +550,18 @@
                 listEl.style.display = 'none';
             }
 
-            // Scroll to results
             document.getElementById('alphaResults').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Allow search on Enter key
         document.getElementById('diseaseSearch').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') searchDisease();
         });
 
-        // Initialize with A
-        filterByLetter('A');
+        initDiseasePage();
     </script>
     <script src="../assets/js/dropdown-handler.js"></script>
     <script src="../assets/js/mega-menu-loader.js"></script>
     <script src="../assets/js/components.js"></script>
-    <script src="../assets/js/cms-loader.js"></script>
 </body>
 
 </html>
