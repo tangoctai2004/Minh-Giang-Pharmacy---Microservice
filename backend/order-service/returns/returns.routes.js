@@ -158,23 +158,109 @@ router.get('/:id', async (req, res) => {
  * Cập nhật trạng thái phiếu trả hàng
  */
 router.put('/:id/status', async (req, res) => {
+    const connection = await pool.getConnection();
     try {
         const { id } = req.params;
         const { status } = req.body;
 
-        const [updateResult] = await pool.query(
-            'UPDATE returns SET status = ? WHERE return_code = ? AND is_active = 1',
-            [status, id]
+        await connection.beginTransaction();
+
+        // 1. Lấy thông tin phiếu trả hàng để kiểm tra
+        const [returns] = await connection.query(
+            'SELECT id, status FROM returns WHERE return_code = ? AND is_active = 1 FOR UPDATE',
+            [id]
         );
 
-        if (updateResult.affectedRows === 0) {
+        if (returns.length === 0) {
+            await connection.rollback();
             return res.status(404).json({ success: false, message: 'Không tìm thấy phiếu trả hàng' });
         }
 
+        const returnRecord = returns[0];
+        const oldStatus = returnRecord.status;
+
+        // 2. Cập nhật trạng thái phiếu trả hàng
+        const [updateResult] = await connection.query(
+            'UPDATE returns SET status = ? WHERE id = ?',
+            [status, returnRecord.id]
+        );
+
+        // 3. Nếu được duyệt thành công (completed) và trước đó chưa ở trạng thái completed
+        if (status === 'completed' && oldStatus !== 'completed') {
+            // Lấy danh sách sản phẩm bị trả
+            const [returnItems] = await connection.query(`
+                SELECT ri.id, ri.quantity_returned, oi.product_id 
+                FROM return_items ri
+                JOIN order_items oi ON ri.order_item_id = oi.id
+                WHERE ri.return_id = ? AND ri.is_active = 1
+            `, [returnRecord.id]);
+
+            for (const item of returnItems) {
+                // Tìm lô hàng (batch_item) gần nhất để hoàn lại số lượng
+                const [batches] = await connection.query(`
+                    SELECT id, quantity_remaining, expiry_date 
+                    FROM mg_catalog.batch_items 
+                    WHERE product_id = ? 
+                    ORDER BY status = 'available' DESC, status = 'near_expiry' DESC, expiry_date DESC 
+                    LIMIT 1
+                `, [item.product_id]);
+
+                if (batches.length > 0) {
+                    const batch = batches[0];
+                    const newQty = Number(batch.quantity_remaining) + Number(item.quantity_returned);
+
+                    // Xác định trạng thái mới của lô hàng sau khi cộng tồn
+                    let newBatchStatus = 'available';
+                    if (newQty <= 0) {
+                        newBatchStatus = 'depleted';
+                    } else {
+                        const expiry = new Date(batch.expiry_date);
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        if (expiry < today) {
+                            newBatchStatus = 'expired';
+                        } else {
+                            const days = Math.ceil((expiry.getTime() - today.getTime()) / 86400000);
+                            if (days <= 90) {
+                                newBatchStatus = 'near_expiry';
+                            }
+                        }
+                    }
+
+                    // Cập nhật tồn kho
+                    await connection.query(`
+                        UPDATE mg_catalog.batch_items 
+                        SET quantity_remaining = ?, status = ? 
+                        WHERE id = ?
+                    `, [newQty, newBatchStatus, batch.id]);
+
+                    // Ghi nhận biến động kho
+                    const movementCode = `RET-${returnRecord.id}-${item.id}`;
+                    await connection.query(`
+                        INSERT INTO mg_catalog.stock_movements (
+                            movement_code, batch_item_id, product_id, movement_type, quantity,
+                            reference_type, reference_id, reason, created_by
+                        ) VALUES (?, ?, ?, 'inbound', ?, 'return', ?, ?, NULL)
+                    `, [
+                        movementCode,
+                        batch.id,
+                        item.product_id,
+                        item.quantity_returned,
+                        returnRecord.id,
+                        `Khách trả hàng (Phiếu ${id}) - Nhập lại kho`
+                    ]);
+                }
+            }
+        }
+
+        await connection.commit();
         res.json({ success: true, message: 'Cập nhật trạng thái thành công' });
     } catch (error) {
+        await connection.rollback();
         console.error('[Update Return Status Error]:', error);
-        res.status(500).json({ success: false, message: 'Lỗi cập nhật trạng thái phiếu' });
+        res.status(500).json({ success: false, message: 'Lỗi cập nhật trạng thái phiếu và tồn kho' });
+    } finally {
+        connection.release();
     }
 });
 
