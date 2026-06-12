@@ -1,6 +1,6 @@
 /**
  * admin-loader.js
- * Loads live inventory stats, alerts, and expiring batches on the admin dashboard.
+ * Loads live order stats, inventory alerts, and revenue chart on the admin dashboard.
  */
 
 const API_BASE = 'http://localhost:8000/api';
@@ -10,229 +10,264 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initAdminDashboard() {
-    // 1. Fetch overall inventory stats
-    await loadInventoryStats();
-
-    // 2. Fetch inventory details for low-stock and expiring alerts
-    await loadInventoryAlerts();
-
-    // 3. Fetch order stats
-    await loadOrderStats();
+    await Promise.all([
+        loadOrderStats(),
+        loadInventoryAlerts()
+    ]);
+    loadAdminRevenueChart(7);
 }
 
-async function loadInventoryStats() {
+// ========== ORDER STATS ==========
+async function loadOrderStats() {
     try {
-        const res = await fetch(`${API_BASE}/catalog/inventory/stats`, {
-            headers: {
-                'Authorization': `Bearer ${getAdminToken()}`
-            }
-        });
-        const result = await res.json();
-        
-        if (result.success && result.data) {
-            console.log('[Admin Dashboard] Inventory Stats:', result.data);
-            // We can optionally display or log stats.
-        }
+        const today = new Date().toISOString().slice(0, 10);
+        const [posRes, webRes] = await Promise.all([
+            fetch(`${API_BASE}/order/orders?channel=pos&date_from=${today}&date_to=${today}&limit=1`, {
+                headers: { 'Authorization': `Bearer ${getAdminToken()}` }
+            }),
+            fetch(`${API_BASE}/order/orders?channel=web&date_from=${today}&date_to=${today}&limit=1`, {
+                headers: { 'Authorization': `Bearer ${getAdminToken()}` }
+            })
+        ]);
+
+        const posData = await posRes.json();
+        const webData = await webRes.json();
+
+        const posCount = posData.success ? (posData.pagination?.total ?? 0) : 0;
+        const webCount = webData.success ? (webData.pagination?.total ?? 0) : 0;
+
+        setText('statPosOrders', posCount);
+        setText('statWebOrders', webCount);
+
+        // Revenue = tổng từ POS (tính tạm từ count * avg, hoặc để '—' nếu không có endpoint riêng)
+        // Hiển thị POS orders trend
+        setTrend('statPosOrdersTrend', posCount, null, 'đơn hôm nay');
+        setTrend('statWebOrdersTrend', webCount, null, 'đơn hôm nay');
+
+        // Revenue placeholder (cần API /reports/revenue nếu có)
+        setText('statRevenue', '—');
+        document.getElementById('statRevenueTrend')?.setAttribute('class', 'summary-card-trend');
+        setText('statRevenueTrend', 'Chưa có dữ liệu doanh thu');
     } catch (e) {
-        console.error('[Admin Dashboard] Failed to load inventory stats:', e);
+        console.error('[Admin] loadOrderStats failed:', e);
+        ['statRevenue', 'statPosOrders', 'statWebOrders'].forEach(id => setText(id, '—'));
     }
 }
 
+// ========== INVENTORY ALERTS ==========
 async function loadInventoryAlerts() {
     try {
         const res = await fetch(`${API_BASE}/catalog/inventory`, {
-            headers: {
-                'Authorization': `Bearer ${getAdminToken()}`
-            }
+            headers: { 'Authorization': `Bearer ${getAdminToken()}` }
         });
         const result = await res.json();
+
         if (result.success && result.data) {
             const inventory = result.data;
 
-            // 1. Render Low Stock (Threshold <= 10)
-            const lowStockItems = inventory.filter(item => Number(item.stock_total) <= 10);
-            renderLowStockTable(lowStockItems);
+            // Low stock (≤ 10)
+            const lowStock = inventory
+                .filter(item => Number(item.stock_total) <= 10)
+                .sort((a, b) => Number(a.stock_total) - Number(b.stock_total))
+                .slice(0, 5);
+            renderLowStockTable(lowStock, inventory.filter(i => Number(i.stock_total) <= 10).length);
 
-            // 2. Render Expiring Soon
-            const expiringItems = inventory
+            // Expiring soon
+            const expiring = inventory
                 .filter(item => item.nearest_expiry !== null)
-                .map(item => ({
-                    ...item,
-                    expiryDate: new Date(item.nearest_expiry)
-                }))
-                .sort((a, b) => a.expiryDate - b.expiryDate);
-            renderExpiringTable(expiringItems);
+                .map(item => ({ ...item, expiryDate: new Date(item.nearest_expiry) }))
+                .sort((a, b) => a.expiryDate - b.expiryDate)
+                .slice(0, 5);
+            renderExpiringTable(expiring);
+
+            // Update card 4
+            const lowCount = inventory.filter(i => Number(i.stock_total) <= 10).length;
+            setText('statLowStock', lowCount);
+            setText('statLowStockLabel', `sản phẩm cần nhập thêm`);
         }
     } catch (e) {
-        console.error('[Admin Dashboard] Failed to load inventory alerts:', e);
+        console.error('[Admin] loadInventoryAlerts failed:', e);
+        renderTableError('lowStockTableBody', 3, 'Không thể tải dữ liệu tồn kho');
+        renderTableError('expiringTableBody', 4, 'Không thể tải dữ liệu tồn kho');
+        setText('statLowStock', '—');
     }
 }
 
-function renderLowStockTable(items) {
-    const tableBody = document.querySelector('.alert-card:first-child tbody');
-    const badgeCount = document.querySelector('.alert-card:first-child .alert-count');
-    if (!tableBody) return;
+function renderLowStockTable(items, totalCount) {
+    const tbody = document.getElementById('lowStockTableBody');
+    const badge = document.getElementById('lowStockCount');
+    if (!tbody) return;
 
-    if (badgeCount) {
-        badgeCount.textContent = `${items.length} sản phẩm`;
-    }
+    if (badge) badge.textContent = `${totalCount} sản phẩm`;
 
     if (items.length === 0) {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="3" style="text-align: center; color: #9ca3af; padding: 24px;">
-                    <i class="fa-solid fa-circle-check" style="color: #10b981; font-size: 20px; margin-bottom: 8px;"></i><br>
-                    Không có sản phẩm nào sắp hết hàng
-                </td>
-            </tr>
-        `;
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:24px;color:#10b981;">
+            <i class="fa-solid fa-circle-check" style="font-size:20px;"></i><br>Không có sản phẩm sắp hết hàng
+        </td></tr>`;
         return;
     }
 
-    // Limit to top 5 low stock items
-    const displayItems = items.slice(0, 5);
-
-    tableBody.innerHTML = displayItems.map(item => {
+    tbody.innerHTML = items.map(item => {
         const isCritical = Number(item.stock_total) <= 5;
-        const badgeClass = isCritical ? 'stock-critical' : 'stock-low';
-
-        return `
-            <tr>
-                <td class="table-medicine-name">${item.name}</td>
-                <td class="table-sku">${item.sku}</td>
-                <td><span class="${badgeClass}">${item.stock_total}</span></td>
-            </tr>
-        `;
+        return `<tr>
+            <td class="table-medicine-name">${item.name}</td>
+            <td class="table-sku">${item.sku}</td>
+            <td><span class="${isCritical ? 'stock-critical' : 'stock-low'}">${item.stock_total}</span></td>
+        </tr>`;
     }).join('');
 }
 
 function renderExpiringTable(items) {
-    const tableBody = document.querySelector('.alerts-grid .alert-card:last-child tbody');
-    const badgeCount = document.querySelector('.alerts-grid .alert-card:last-child .alert-count');
-    if (!tableBody) return;
+    const tbody = document.getElementById('expiringTableBody');
+    const badge = document.getElementById('expiringCount');
+    if (!tbody) return;
 
-    if (badgeCount) {
-        badgeCount.textContent = `${items.length} lô hàng`;
-    }
+    if (badge) badge.textContent = `${items.length} lô hàng`;
 
     if (items.length === 0) {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="4" style="text-align: center; color: #9ca3af; padding: 24px;">
-                    <i class="fa-solid fa-calendar-check" style="color: #10b981; font-size: 20px; margin-bottom: 8px;"></i><br>
-                    Không có lô hàng nào sắp hết hạn
-                </td>
-            </tr>
-        `;
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:24px;color:#10b981;">
+            <i class="fa-solid fa-calendar-check" style="font-size:20px;"></i><br>Không có lô hàng sắp hết hạn
+        </td></tr>`;
         return;
     }
 
-    // Limit to top 5 expiring items
-    const displayItems = items.slice(0, 5);
     const now = new Date();
-
-    tableBody.innerHTML = displayItems.map(item => {
-        const diffTime = item.expiryDate - now;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        let badgeClass = 'soon';
-        let iconClass = 'fa-regular fa-clock';
-        if (diffDays <= 30) {
-            badgeClass = 'urgent';
-            iconClass = 'fa-solid fa-triangle-exclamation';
-        }
-
-        const dateStr = item.expiryDate.toLocaleDateString('vi-VN', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
-
-        return `
-            <tr>
-                <td class="table-medicine-name">${item.name}</td>
-                <td class="table-sku">${item.sku}</td>
-                <td>
-                    <span class="expiry-badge ${badgeClass}">
-                        <i class="${iconClass}"></i> ${dateStr}
-                    </span>
-                </td>
-                <td>
-                    <button class="btn-restock" onclick="handleRestock('${item.name}')">
-                        <i class="fa-solid fa-rotate"></i> Nhập thêm
-                    </button>
-                </td>
-            </tr>
-        `;
+    tbody.innerHTML = items.map(item => {
+        const diffDays = Math.ceil((item.expiryDate - now) / 86400000);
+        const isUrgent = diffDays <= 30;
+        const dateStr = item.expiryDate.toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit', year:'numeric' });
+        return `<tr>
+            <td class="table-medicine-name">${item.name}</td>
+            <td class="table-sku">${item.sku || item.batch_code || '—'}</td>
+            <td><span class="expiry-badge ${isUrgent ? 'urgent' : 'soon'}">
+                <i class="${isUrgent ? 'fa-solid fa-triangle-exclamation' : 'fa-regular fa-clock'}"></i> ${dateStr}
+            </span></td>
+            <td><button class="btn-restock" onclick="handleRestock('${item.name}')">
+                <i class="fa-solid fa-rotate"></i> Nhập thêm
+            </button></td>
+        </tr>`;
     }).join('');
 }
 
-function handleRestock(medName) {
-    alert(`Đã gửi yêu cầu nhập thêm hàng cho thuốc: ${medName}`);
-}
+// ========== REVENUE CHART ==========
+window.loadAdminRevenueChart = async function(days = 7) {
+    const chartBars = document.getElementById('revenueChartBars');
+    if (!chartBars) return;
 
-async function loadOrderStats() {
+    // Tạo mảng ngày gần nhất
+    const dayLabels = ['CN','T2','T3','T4','T5','T6','T7'];
+    const dates = [];
+    for (let i = days - 1; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        dates.push(d);
+    }
+
     try {
-        const res = await fetch(`${API_BASE}/order/orders`, {
-            headers: {
-                'Authorization': `Bearer ${getAdminToken()}`
+        // Lấy đơn POS + web trong khoảng ngày
+        const from = dates[0].toISOString().slice(0, 10);
+        const to = dates[dates.length - 1].toISOString().slice(0, 10);
+
+        const [posRes, webRes] = await Promise.all([
+            fetch(`${API_BASE}/order/orders?channel=pos&date_from=${from}&date_to=${to}&limit=1000`, {
+                headers: { 'Authorization': `Bearer ${getAdminToken()}` }
+            }),
+            fetch(`${API_BASE}/order/orders?channel=web&date_from=${from}&date_to=${to}&limit=1000`, {
+                headers: { 'Authorization': `Bearer ${getAdminToken()}` }
+            })
+        ]);
+
+        const posData = await posRes.json();
+        const webData = await webRes.json();
+        const allOrders = [
+            ...(posData.success ? posData.data : []),
+            ...(webData.success ? webData.data : [])
+        ];
+
+        // Group by date
+        const revenueByDate = {};
+        dates.forEach(d => { revenueByDate[d.toISOString().slice(0, 10)] = 0; });
+        allOrders.forEach(o => {
+            const dateKey = new Date(o.created_at).toISOString().slice(0, 10);
+            if (revenueByDate[dateKey] !== undefined) {
+                revenueByDate[dateKey] += Number(o.total_amount || 0);
             }
         });
-        const result = await res.json();
-        if (result.success && result.data) {
-            const orders = result.data;
-            const nowStr = new Date().toDateString();
 
-            // Calculate metrics
-            let todayRevenue = 0;
-            let todayPOSOrders = 0;
-            let todayWebOrders = 0;
+        const values = Object.values(revenueByDate);
+        const maxVal = Math.max(...values, 1);
+        const maxBarPx = 180;
 
-            orders.forEach(order => {
-                const orderDate = new Date(order.created_at).toDateString();
-                if (orderDate === nowStr) {
-                    todayRevenue += Number(order.total_amount);
-                    if (order.code && order.code.startsWith('POS')) {
-                        todayPOSOrders++;
-                    } else {
-                        todayWebOrders++;
-                    }
-                }
-            });
+        chartBars.innerHTML = dates.map((d, i) => {
+            const val = values[i];
+            const height = Math.max(8, Math.round((val / maxVal) * maxBarPx));
+            const label = dayLabels[d.getDay()];
+            const isToday = d.toDateString() === new Date().toDateString();
+            const valLabel = val >= 1000000 ? (val / 1000000).toFixed(1) + 'M' : (val / 1000).toFixed(0) + 'K';
+            return `<div class="chart-bar" style="height:${height}px;background:${isToday ? 'linear-gradient(180deg,#34d399,#10b981)' : 'linear-gradient(180deg,#10b981,#059669)'};">
+                <span class="chart-bar-value">${val > 0 ? valLabel : '0'}</span>
+                <span class="chart-bar-label" ${isToday ? 'style="font-weight:700;"' : ''}>${label}</span>
+            </div>`;
+        }).join('');
 
-            // Update stats cards in DOM if we have today's metrics
-            if (orders.length > 0) {
-                const cards = document.querySelectorAll('.summary-card');
-                if (cards.length >= 3) {
-                    // Card 1: Revenue
-                    cards[0].querySelector('.summary-card-value').textContent = formatM(todayRevenue || 12500000);
-                    // Card 2: POS Orders
-                    cards[1].querySelector('.summary-card-value').textContent = todayPOSOrders || 47;
-                    // Card 3: Web Orders
-                    cards[2].querySelector('.summary-card-value').textContent = todayWebOrders || 18;
-                }
-            }
-        }
+        // Animate
+        chartBars.querySelectorAll('.chart-bar').forEach((bar, i) => {
+            const h = bar.style.height;
+            bar.style.height = '0';
+            bar.style.transition = `height 0.5s cubic-bezier(0.4,0,0.2,1) ${i * 0.07}s`;
+            setTimeout(() => bar.style.height = h, 50);
+        });
+
+        // Update revenue card
+        const todayKey = new Date().toISOString().slice(0, 10);
+        const todayRevenue = revenueByDate[todayKey] || 0;
+        setText('statRevenue', formatM(todayRevenue));
+        setTrend('statRevenueTrend', todayRevenue, null, 'doanh thu hôm nay');
+
     } catch (e) {
-        console.warn('[Admin Dashboard] Failed to load orders, using mock fallback stats:', e);
+        console.error('[Admin] loadAdminRevenueChart failed:', e);
     }
+};
+
+// ========== HELPERS ==========
+function setText(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+}
+
+function setTrend(id, val, prev, suffix) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = val + ' ' + suffix;
+    el.className = 'summary-card-trend';
+}
+
+function renderTableError(tbodyId, colspan, msg) {
+    const el = document.getElementById(tbodyId);
+    if (el) el.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center;padding:20px;color:#ef4444;">
+        <i class="fa-solid fa-circle-exclamation"></i> ${msg}
+    </td></tr>`;
 }
 
 function formatM(amount) {
-    if (amount >= 1000000) {
-        return (amount / 1000000).toFixed(1) + 'M';
-    }
+    if (amount >= 1000000) return (amount / 1000000).toFixed(1) + 'M';
+    if (amount >= 1000) return (amount / 1000).toFixed(0) + 'K';
     return new Intl.NumberFormat('vi-VN').format(amount) + '₫';
+}
+
+function handleRestock(medName) {
+    if (confirm(`Xác nhận tạo yêu cầu nhập thêm hàng cho: ${medName}?`)) {
+        alert(`Đã gửi yêu cầu nhập hàng cho: ${medName}`);
+    }
 }
 
 function getAdminToken() {
     try {
-        const auth = JSON.parse(localStorage.getItem('MG_ADMIN_AUTH'));
-        return auth ? auth.accessToken : '';
-    } catch (e) {
-        return '';
-    }
+        const auth = JSON.parse(localStorage.getItem('MG_ADMIN_AUTH') || '{}');
+        return auth.accessToken || '';
+    } catch (e) { return ''; }
 }
 
-// Global exposure
+// Global
 window.handleRestock = handleRestock;
+window.loadAdminRevenueChart = window.loadAdminRevenueChart;
