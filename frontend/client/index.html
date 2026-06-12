@@ -100,15 +100,12 @@
             </div>
         </section>
 
-        <!-- CMS Promotions Banner (tải động từ API) -->
-        <div id="cms-promo-banner" style="display:none;" class="container"></div>
-
         <!-- Flash Sale Section -->
         <section class="product-section container bg-green-container">
             <div class="product-section-header">
                 <img src="../assets/images/banner_flash_sale.png" alt="Flash Sale">
             </div>
-            <div class="product-grid">
+            <div class="product-grid" data-home-products="flash-sale">
                 <!-- Product 1 -->
                 <div class="product-card">
                     <div class="product-image">
@@ -183,7 +180,7 @@
             <div class="product-section-header">
                 <img src="../assets/images/banner_deal_sieu_khung.png" alt="Deal Siêu Khủng">
             </div>
-            <div class="product-grid">
+            <div class="product-grid" data-home-products="deal">
                 <!-- Product 1 -->
                 <div class="product-card" data-product-id="1">
                     <div class="product-image">
@@ -259,7 +256,7 @@
             <div class="product-section-header">
                 <img src="../assets/images/banner_san_pham_ban_chay.png" alt="Sản Phẩm Bán Chạy">
             </div>
-            <div class="product-grid">
+            <div class="product-grid" data-home-products="best-seller">
                 <!-- Product 1 -->
                 <div class="product-card">
                     <div class="product-image">
@@ -334,7 +331,7 @@
             <div class="product-section-header">
                 <img src="../assets/images/banner_giam_gia.png" alt="Giảm Giá 38%">
             </div>
-            <div class="product-grid">
+            <div class="product-grid" data-home-products="discount">
                 <div class="product-card">
                     <div class="product-image">
                         <img src="../assets/images/product_frame.png" alt="Product">
@@ -392,7 +389,7 @@
             <div class="product-section-header">
                 <img src="../assets/images/banner_san_pham_doc_quyen.png" alt="Sản Phẩm Độc Quyền">
             </div>
-            <div class="product-grid">
+            <div class="product-grid" data-home-products="exclusive">
                 <!-- Product 1 -->
                 <div class="product-card">
                     <div class="product-image">
@@ -467,7 +464,7 @@
             <div class="product-section-header">
                 <img src="../assets/images/banner_nhap_khau_100.png" alt="Nhập Khẩu 100%">
             </div>
-            <div class="product-grid">
+            <div class="product-grid" data-home-products="imported">
                 <!-- Product 1 -->
                 <div class="product-card">
                     <div class="product-image">
@@ -569,7 +566,7 @@
                 <img src="../assets/images/icon_danh_muc_san_pham.png" alt="Danh mục">
                 <h2>Danh mục sản phẩm</h2>
             </div>
-            <div class="categories-grid">
+            <div class="categories-grid" data-home-categories>
                 <a href="#" class="category-item">
                     <img src="../assets/images/icon_category_than_kinh_nao.png" alt="Thần kinh não">
                     <span>Thần kinh não</span>
@@ -624,59 +621,29 @@
         <!-- Tìm Kiếm Hàng Đầu Section -->
         <section class="top-searches-section container">
             <h2 class="top-searches-title">Tìm kiếm hàng đầu</h2>
-            <!-- Dữ liệu được CMS loader thay thế động, fallback là hardcode bên dưới -->
-            <div class="tags-container" id="cmsTagsContainer">
-                <a href="search.html?q=N%C6%B0%E1%BB%9Bc+h%E1%BB%93ng+s%C3%A2m" class="tag-item">Nước hồng sâm</a>
-                <a href="search.html?q=N%C6%B0%E1%BB%9Bc+th%E1%BA%A3o+m%E1%BB%99c" class="tag-item">Nước thảo mộc</a>
-                <a href="search.html?q=K%E1%BA%B9o+s%C3%A2m" class="tag-item">Kẹo sâm</a>
-                <a href="search.html?q=Vitamin+nh%C3%B3m+B" class="tag-item">Vitamin nhóm B</a>
-                <a href="search.html?q=Vitamin+t%E1%BB%95ng+h%E1%BB%A3p" class="tag-item">Vitamin tổng hợp</a>
-                <a href="search.html?q=B%E1%BB%95+sung+canxi" class="tag-item">Bổ sung canxi</a>
-                <a href="search.html?q=Ti%C3%AAu+h%C3%B3a" class="tag-item">Tiêu hóa</a>
-                <a href="search.html?q=Ch%E1%BB%A9c+n%C4%83ng+gan" class="tag-item">Chức năng gan</a>
-                <a href="search.html?q=Ng%E1%BB%A7+ngon" class="tag-item">Ngủ ngon</a>
-                <a href="search.html?q=B%E1%BA%A3o+v%E1%BB%87+tim+m%E1%BA%A1ch" class="tag-item">Bảo vệ tim mạch</a>
-                <a href="search.html?q=Gi%E1%BA%A3m+c%C3%A2n" class="tag-item">Giảm cân</a>
-                <a href="search.html?q=X%C6%B0%C6%A1ng+kh%E1%BB%9Bp" class="tag-item">Xương khớp</a>
-                <a href="search.html?q=Gi%E1%BA%A3m+ho" class="tag-item">Giảm ho</a>
-                <a href="search.html?q=Ti%E1%BB%83u+%C4%91%C6%B0%E1%BB%9Dng" class="tag-item">Tiểu đường</a>
-                <a href="search.html?q=Th%E1%BA%ADn+s%E1%BB%8Fi" class="tag-item">Thận sỏi</a>
-                <a href="search.html?q=Ch%C4%83m+s%C3%B3c+s%E1%BA%AFc+%C4%91%E1%BA%B9p" class="tag-item">Chăm sóc sắc đẹp</a>
-                <a href="search.html?q=Kem+d%C6%B0%E1%BB%A1ng+%E1%BA%A9m" class="tag-item">Kem dưỡng ẩm</a>
-                <a href="search.html?q=Kem+ch%E1%BB%91ng+n%E1%BA%AFng" class="tag-item">Kem chống nắng</a>
-                <a href="search.html?q=Tr%E1%BB%8B+g%C3%A0u" class="tag-item">Trị gàu</a>
-                <a href="search.html?q=D%C6%B0%E1%BB%A1ng+t%C3%B3c" class="tag-item">Dưỡng tóc</a>
+            <div class="tags-container" data-home-top-searches>
+                <a href="#" class="tag-item">Nước hồng sâm</a>
+                <a href="#" class="tag-item">Nước thảo mộc</a>
+                <a href="#" class="tag-item">Kẹo sâm</a>
+                <a href="#" class="tag-item">Vitamin nhóm B</a>
+                <a href="#" class="tag-item">Vitamin tổng hợp</a>
+                <a href="#" class="tag-item">Bổ sung canxi</a>
+                <a href="#" class="tag-item">Tiêu hóa</a>
+                <a href="#" class="tag-item">Chức năng gan</a>
+                <a href="#" class="tag-item">Ngủ ngon</a>
+                <a href="#" class="tag-item">Bảo vệ tim mạch</a>
+                <a href="#" class="tag-item">Giảm cân</a>
+                <a href="#" class="tag-item">Xương khớp</a>
+                <a href="#" class="tag-item">Giảm ho</a>
+                <a href="#" class="tag-item">Tiểu đường</a>
+                <a href="#" class="tag-item">Thận sỏi</a>
+                <a href="#" class="tag-item">Chăm sóc sắc đẹp</a>
+                <a href="#" class="tag-item">Kem dưỡng ẩm</a>
+                <a href="#" class="tag-item">Kem chống nắng</a>
+                <a href="#" class="tag-item">Trị gàu</a>
+                <a href="#" class="tag-item">Dưỡng tóc</a>
             </div>
         </section>
-
-        <!-- Bài Viết Sức Khoẻ Mới Nhất (CMS) -->
-        <section class="product-section container bg-white-container" id="cms-articles-section" style="padding:24px 20px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
-                <h2 style="font-size:18px;font-weight:700;color:#1f2937;display:flex;align-items:center;gap:8px;">
-                    <i class="fa-solid fa-newspaper" style="color:#0b7a3e;"></i> Bài viết sức khoẻ
-                </h2>
-                <a href="disease.html" style="font-size:13px;color:#0b7a3e;font-weight:600;text-decoration:none;">
-                    Xem tất cả <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i>
-                </a>
-            </div>
-            <!-- Grid bài viết — sẽ được CMS loader fill -->
-            <div id="cms-articles-grid" style="
-                display:grid;
-                grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-                gap:16px;
-            ">
-                <!-- Skeleton placeholders -->
-                <div style="background:#f1f5f9;border-radius:10px;height:240px;animation:cms-pulse 1.5s infinite;"></div>
-                <div style="background:#f1f5f9;border-radius:10px;height:240px;animation:cms-pulse 1.5s infinite 0.2s;"></div>
-                <div style="background:#f1f5f9;border-radius:10px;height:240px;animation:cms-pulse 1.5s infinite 0.4s;"></div>
-                <div style="background:#f1f5f9;border-radius:10px;height:240px;animation:cms-pulse 1.5s infinite 0.6s;"></div>
-            </div>
-        </section>
-        <style>
-            @keyframes cms-pulse {
-                0%,100% { opacity:1; } 50% { opacity:.5; }
-            }
-        </style>
 
         <!-- San Pham Đang Thu Hut Section -->
         <section class="product-section container bg-white-container" style="padding: 20px;">
@@ -689,7 +656,7 @@
                             src="../assets/images/icon_banner_arrow_right.png" alt="Next" style="filter: brightness(0);"></button>
                 </div>
             </div>
-            <div class="product-grid" style="padding: 0; background: none;">
+            <div class="product-grid" data-home-products="trending" style="padding: 0; background: none;">
                 <div class="product-card">
                     <div class="product-image">
                         <img src="../assets/images/product_frame.png" alt="Product">
@@ -765,43 +732,46 @@
     <div mg-include="../components/main_footer.html"></div>
 
     <script>
-        // ── Hero Slider — hỗ trợ cả nội dung tĩnh & động từ CMS ──
-        window._currentSlideIndex = 0;
-        window._totalSlides = document.querySelectorAll('.slider-dots .dot').length || 6;
-        let _sliderInterval = null;
+        const sliderImages = document.getElementById('heroSliderImages');
+        const dots = document.querySelectorAll('.slider-dots .dot');
+        let currentSlideIndex = 0;
+        const totalSlides = dots.length;
 
-        function _updateSlider() {
-            const sliderImages = document.getElementById('heroSliderImages');
-            if (!sliderImages) return;
-            sliderImages.style.transform = `translateX(-${window._currentSlideIndex * 100}%)`;
-            document.querySelectorAll('.slider-dots .dot').forEach((dot, i) => {
-                dot.classList.toggle('active', i === window._currentSlideIndex);
+        function updateSlider() {
+            sliderImages.style.transform = `translateX(-${currentSlideIndex * 100}%)`;
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlideIndex);
             });
         }
 
         function moveSlide(direction) {
-            window._currentSlideIndex += direction;
-            if (window._currentSlideIndex >= window._totalSlides) window._currentSlideIndex = 0;
-            else if (window._currentSlideIndex < 0) window._currentSlideIndex = window._totalSlides - 1;
-            _updateSlider();
+            currentSlideIndex += direction;
+            if (currentSlideIndex >= totalSlides) {
+                currentSlideIndex = 0;
+            } else if (currentSlideIndex < 0) {
+                currentSlideIndex = totalSlides - 1;
+            }
+            updateSlider();
         }
 
         function currentSlide(index) {
-            window._currentSlideIndex = index;
-            _updateSlider();
+            currentSlideIndex = index;
+            updateSlider();
         }
 
-        function _startSliderInterval() {
-            _sliderInterval = setInterval(() => moveSlide(1), 5000);
-        }
+        // Auto slider initialization
+        let sliderInterval = setInterval(() => {
+            moveSlide(1);
+        }, 5000);
 
-        _startSliderInterval();
-
-        const _sliderContainer = document.querySelector('.hero-slider');
-        if (_sliderContainer) {
-            _sliderContainer.addEventListener('mouseenter', () => clearInterval(_sliderInterval));
-            _sliderContainer.addEventListener('mouseleave', _startSliderInterval);
-        }
+        // Pause on hover
+        const sliderContainer = document.querySelector('.hero-slider');
+        sliderContainer.addEventListener('mouseenter', () => clearInterval(sliderInterval));
+        sliderContainer.addEventListener('mouseleave', () => {
+            sliderInterval = setInterval(() => {
+                moveSlide(1);
+            }, 5000);
+        });
     </script>
     <script>
         const API_BASE = 'http://localhost:8000/api/identity';
@@ -846,8 +816,9 @@
     </script>
     <script src="../assets/js/dropdown-handler.js"></script>
     <script src="../assets/js/mega-menu-loader.js"></script>
+    <script src="../assets/js/client-api.js"></script>
     <script src="../assets/js/components.js"></script>
-    <script src="../assets/js/cms-loader.js"></script>
+    <script src="../assets/js/index-loader.js"></script>
 </body>
 
 </html>

@@ -370,207 +370,73 @@
             <div style="font-size:13px;color:#92400e;font-weight:500;"><i class="fa-solid fa-inbox"
                     style="margin-right:6px;"></i>Chỉ hiển thị đơn đã được <strong>duyệt</strong> tại Inbox. Đơn chờ
                 duyệt xem tại <a href="orders.html" style="color:#d97706;font-weight:700;">Quản Lý Đơn Hàng →</a></div>
-            <span style="font-size:12px;color:#f59e0b;font-weight:700;">⚡ 2 đơn inbox mới chưa duyệt</span>
+            <span id="inboxBadge" style="font-size:12px;color:#f59e0b;font-weight:700;">Đang kiểm tra...</span>
         </div>
 
         <!-- Stats: 4 stages only -->
         <div class="order-stats" style="grid-template-columns:repeat(4,1fr);">
             <div class="order-stat" style="border-top: 3px solid #f59e0b;">
                 <p>🟡 Đang lấy hàng</p>
-                <h3>3</h3>
+                <h3>--</h3>
             </div>
             <div class="order-stat" style="border-top: 3px solid #3b82f6;">
                 <p>🔵 Đang đóng gói</p>
-                <h3>1</h3>
+                <h3>--</h3>
             </div>
             <div class="order-stat" style="border-top: 3px solid #8b5cf6;">
                 <p>🟣 Đang giao hàng</p>
-                <h3>4</h3>
+                <h3>--</h3>
             </div>
             <div class="order-stat" style="border-top: 3px solid #10b981;">
                 <p>🟢 Hoàn tất hôm nay</p>
-                <h3>12</h3>
+                <h3>--</h3>
             </div>
         </div>
 
-        <!-- KANBAN PIPELINE BOARD (4 cột — đơn đã duyệt) -->
+        <!-- KANBAN PIPELINE BOARD (4 cột — đơn đã duyệt, render động bởi loadBoard()) -->
         <div class="pipeline-board">
 
-            <!-- COL 1: Đang lấy hàng -->
+            <!-- COL 1: Đang xác nhận -->
+            <div class="pipeline-col">
+                <div class="pipeline-col-header" style="background:#f0f9ff;">
+                    <span class="col-title" style="color:#0369a1;"><i class="fa-solid fa-circle-check fa-xs"></i> Đã Duyệt</span>
+                    <span class="col-count" style="background:#0284c7;">--</span>
+                </div>
+                <div class="pipeline-cards">
+                    <div style="text-align:center;padding:30px;color:#cbd5e1;"><i class="fa-solid fa-spinner fa-spin"></i></div>
+                </div>
+            </div>
+
+            <!-- COL 2: Đang lấy hàng -->
             <div class="pipeline-col">
                 <div class="pipeline-col-header" style="background:#fffbeb;">
-                    <span class="col-title" style="color:#d97706;"><i class="fa-solid fa-boxes-stacked fa-xs"></i> Đang
-                        Lấy Hàng</span>
-                    <span class="col-count" style="background:#f59e0b;">3</span>
+                    <span class="col-title" style="color:#d97706;"><i class="fa-solid fa-boxes-stacked fa-xs"></i> Đang Lấy Hàng</span>
+                    <span class="col-count" style="background:#f59e0b;">--</span>
                 </div>
                 <div class="pipeline-cards">
-                    <div class="order-card" onclick="openOrderDetail('WEB-9023','picking')">
-                        <div class="order-id">#WEB-9023</div>
-                        <div class="order-customer"><i class="fa-regular fa-user fa-xs" style="color:#9ca3af;"></i> Phạm
-                            Tố Ny</div>
-                        <div class="order-amount">95,000₫</div>
-                        <div class="order-tags"><span class="order-tag cod">COD</span></div>
-                        <div class="order-time"><i class="fa-regular fa-clock fa-xs"></i> 9:30 AM</div>
-                        <div class="card-actions">
-                            <button class="card-btn next"
-                                onclick="event.stopPropagation(); advanceOrder(this,'Đóng gói','#3b82f6')">Đóng Gói
-                                →</button>
-                        </div>
-                    </div>
-                    <div class="order-card" onclick="openOrderDetail('WEB-9022','picking')">
-                        <div class="order-id">#WEB-9022</div>
-                        <div class="order-customer"><i class="fa-regular fa-user fa-xs" style="color:#9ca3af;"></i> Lê
-                            Hoàng Minh</div>
-                        <div class="order-amount">620,000₫</div>
-                        <div class="order-tags"><span class="order-tag paid">Đã TT Online</span></div>
-                        <div class="order-time"><i class="fa-regular fa-clock fa-xs"></i> 9:15 AM</div>
-                        <div class="card-actions">
-                            <button class="card-btn next"
-                                onclick="event.stopPropagation(); advanceOrder(this,'Đóng gói','#3b82f6')">Đóng Gói
-                                →</button>
-                        </div>
-                    </div>
-                    <div class="order-card" onclick="openOrderDetail('WEB-9021','picking')">
-                        <div class="order-id">#WEB-9021</div>
-                        <div class="order-customer"><i class="fa-regular fa-user fa-xs" style="color:#9ca3af;"></i> Võ
-                            Thị Thu</div>
-                        <div class="order-amount">340,000₫</div>
-                        <div class="order-tags">
-                            <span class="order-tag cod">COD</span>
-                            <span class="order-tag vat">Cần HĐ VAT</span>
-                        </div>
-                        <div class="order-time"><i class="fa-regular fa-clock fa-xs"></i> 8:50 AM</div>
-                        <div class="card-actions">
-                            <button class="card-btn next"
-                                onclick="event.stopPropagation(); advanceOrder(this,'Đóng gói','#3b82f6')">Đóng Gói
-                                →</button>
-                        </div>
-                    </div>
+                    <div style="text-align:center;padding:30px;color:#cbd5e1;"><i class="fa-solid fa-spinner fa-spin"></i></div>
                 </div>
             </div>
 
-            <!-- COL 3: Đóng gói -->
-            <div class="pipeline-col">
-                <div class="pipeline-col-header" style="background:#eff6ff;">
-                    <span class="col-title" style="color:#1d4ed8;"><i class="fa-solid fa-box fa-xs"></i> Đóng Gói</span>
-                    <span class="col-count" style="background:#3b82f6;">1</span>
-                </div>
-                <div class="pipeline-cards">
-                    <div class="order-card" onclick="openOrderDetail('WEB-9020','packing')">
-                        <div class="order-id">#WEB-9020</div>
-                        <div class="order-customer"><i class="fa-regular fa-user fa-xs" style="color:#9ca3af;"></i> Bùi
-                            Thị Hồng</div>
-                        <div class="order-amount">175,000₫</div>
-                        <div class="order-tags"><span class="order-tag paid">Đã TT Online</span></div>
-                        <div class="order-time"><i class="fa-regular fa-clock fa-xs"></i> 8:20 AM</div>
-                        <div class="card-actions">
-                            <button class="card-btn next"
-                                onclick="event.stopPropagation(); advanceOrder(this,'Đang giao','#8b5cf6')">Giao Hàng
-                                →</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- COL 4: Đang giao -->
+            <!-- COL 3: Đang giao -->
             <div class="pipeline-col">
                 <div class="pipeline-col-header" style="background:#fdf4ff;">
-                    <span class="col-title" style="color:#7c3aed;"><i class="fa-solid fa-person-biking fa-xs"></i> Đang
-                        Giao</span>
-                    <span class="col-count" style="background:#8b5cf6;">4</span>
+                    <span class="col-title" style="color:#7c3aed;"><i class="fa-solid fa-person-biking fa-xs"></i> Đang Giao</span>
+                    <span class="col-count" style="background:#8b5cf6;">--</span>
                 </div>
                 <div class="pipeline-cards">
-                    <div class="order-card" onclick="openOrderDetail('WEB-9019','delivering')">
-                        <div class="order-id">#WEB-9019</div>
-                        <div class="order-customer"><i class="fa-regular fa-user fa-xs" style="color:#9ca3af;"></i>
-                            Nguyễn Văn Ba</div>
-                        <div class="order-amount">540,000₫</div>
-                        <div class="order-tags"><span class="order-tag cod">COD</span></div>
-                        <div style="font-size:10px;color:#8b5cf6;font-weight:600;margin-top:5px;"><i
-                                class="fa-solid fa-person-biking fa-xs"></i> Người giao: Anh Nguyên</div>
-                        <div class="card-actions">
-                            <button class="card-btn approve"
-                                onclick="event.stopPropagation(); advanceOrder(this,'Hoàn tất','#10b981')"
-                                style="background:#10b981;">✓ Hoàn tất</button>
-                        </div>
-                    </div>
-                    <div class="order-card" onclick="openOrderDetail('WEB-9018','delivering')">
-                        <div class="order-id">#WEB-9018</div>
-                        <div class="order-customer"><i class="fa-regular fa-user fa-xs" style="color:#9ca3af;"></i>
-                            Hoàng Thu Trang</div>
-                        <div class="order-amount">820,000₫</div>
-                        <div class="order-tags"><span class="order-tag paid">Đã TT Online</span></div>
-                        <div style="font-size:10px;color:#8b5cf6;font-weight:600;margin-top:5px;"><i
-                                class="fa-solid fa-person-biking fa-xs"></i> Người giao: Chị Hoa</div>
-                        <div class="card-actions">
-                            <button class="card-btn approve"
-                                onclick="event.stopPropagation(); advanceOrder(this,'Hoàn tất','#10b981')"
-                                style="background:#10b981;">✓ Hoàn tất</button>
-                        </div>
-                    </div>
-                    <div class="order-card" onclick="openOrderDetail('WEB-9017','delivering')">
-                        <div class="order-id">#WEB-9017</div>
-                        <div class="order-customer"><i class="fa-regular fa-user fa-xs" style="color:#9ca3af;"></i> Đặng
-                            Minh Tuấn</div>
-                        <div class="order-amount">320,000₫</div>
-                        <div class="order-tags"><span class="order-tag cod">COD</span></div>
-                        <div style="font-size:10px;color:#8b5cf6;font-weight:600;margin-top:5px;"><i
-                                class="fa-solid fa-person-biking fa-xs"></i> Người giao: Anh Giang</div>
-                        <div class="card-actions">
-                            <button class="card-btn approve"
-                                onclick="event.stopPropagation(); advanceOrder(this,'Hoàn tất','#10b981')"
-                                style="background:#10b981;">✓ Hoàn tất</button>
-                        </div>
-                    </div>
-                    <div class="order-card" onclick="openOrderDetail('WEB-9016','delivering')">
-                        <div class="order-id">#WEB-9016</div>
-                        <div class="order-customer"><i class="fa-regular fa-user fa-xs" style="color:#9ca3af;"></i> Phan
-                            Thị Mai</div>
-                        <div class="order-amount">135,000₫</div>
-                        <div class="order-tags"><span class="order-tag paid">Đã TT Online</span></div>
-                        <div style="font-size:10px;color:#8b5cf6;font-weight:600;margin-top:5px;"><i
-                                class="fa-solid fa-person-biking fa-xs"></i> Người giao: Chị Hoa</div>
-                        <div class="card-actions">
-                            <button class="card-btn approve"
-                                onclick="event.stopPropagation(); advanceOrder(this,'Hoàn tất','#10b981')"
-                                style="background:#10b981;">✓ Hoàn tất</button>
-                        </div>
-                    </div>
+                    <div style="text-align:center;padding:30px;color:#cbd5e1;"><i class="fa-solid fa-spinner fa-spin"></i></div>
                 </div>
             </div>
 
-            <!-- COL 5: Hoàn tất hôm nay -->
+            <!-- COL 4: Hoàn tất hôm nay -->
             <div class="pipeline-col">
                 <div class="pipeline-col-header" style="background:#f0fdf4;">
-                    <span class="col-title" style="color:#16a34a;"><i class="fa-solid fa-circle-check fa-xs"></i> Hoàn
-                        Tất</span>
-                    <span class="col-count" style="background:#10b981;">12</span>
+                    <span class="col-title" style="color:#16a34a;"><i class="fa-solid fa-circle-check fa-xs"></i> Hoàn Tất</span>
+                    <span class="col-count" style="background:#10b981;">--</span>
                 </div>
                 <div class="pipeline-cards">
-                    <div class="order-card" style="opacity:.8;" onclick="openOrderDetail('WEB-9015','done')">
-                        <div class="order-id">#WEB-9015</div>
-                        <div class="order-customer"><i class="fa-regular fa-user fa-xs" style="color:#9ca3af;"></i>
-                            Nguyễn Thị Linh</div>
-                        <div class="order-amount">465,000₫</div>
-                        <div class="order-tags"><span class="order-tag paid">Đã TT Online</span></div>
-                        <div class="order-time"><i class="fa-solid fa-check fa-xs" style="color:#10b981;"></i> Hoàn tất
-                            lúc 10:12 AM</div>
-                    </div>
-                    <div class="order-card" style="opacity:.8;" onclick="openOrderDetail('WEB-9014','done')">
-                        <div class="order-id">#WEB-9014</div>
-                        <div class="order-customer"><i class="fa-regular fa-user fa-xs" style="color:#9ca3af;"></i> Trần
-                            Đức Hùng</div>
-                        <div class="order-amount">890,000₫</div>
-                        <div class="order-tags">
-                            <span class="order-tag cod">COD</span>
-                            <span class="order-tag vat">HĐ VAT</span>
-                        </div>
-                        <div class="order-time"><i class="fa-solid fa-check fa-xs" style="color:#10b981;"></i> Hoàn tất
-                            lúc 09:55 AM</div>
-                    </div>
-                    <div style="text-align:center;padding:10px;font-size:11px;color:#9ca3af;">
-                        + 10 đơn khác hôm nay
-                    </div>
+                    <div style="text-align:center;padding:30px;color:#cbd5e1;"><i class="fa-solid fa-spinner fa-spin"></i></div>
                 </div>
             </div>
         </div>
@@ -685,45 +551,11 @@
                         </div>
                     </div>
 
-                    <!-- Right: Customer info & assign -->
+                    <!-- Right: Customer info — render động bởi openOrderDetail() -->
                     <div class="detail-right">
-                        <h3 style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:14px;"><i
-                                class="fa-regular fa-user" style="color:#6b7280;margin-right:6px;"></i>Thông tin khách
-                            hàng</h3>
-                        <div class="info-row"><label>Tên khách</label><span>Nguyễn Thị Lan</span></div>
-                        <div class="info-row"><label>Điện thoại</label><span>0912 000 111</span></div>
-                        <div class="info-row"><label>Địa chỉ giao</label><span
-                                style="font-size:12px;line-height:1.5;">45 Lê Lợi, P.Bến Thành, Q.1, TP.HCM<br><span
-                                    style="color:#3b82f6;font-size:11px;">≈ 2.1 km từ nhà thuốc</span></span></div>
-                        <div class="info-row"><label>Phương thức TT</label><span
-                                style="color:#92400e;background:#fef3c7;padding:2px 8px;border-radius:6px;font-size:12px;">💵
-                                COD – Thu khi giao</span></div>
-                        <div class="info-row"><label>Thời gian đặt</label><span>10/03/2026 – 10:48 AM</span></div>
-                        <div class="info-row"><label>Ghi chú của khách</label><span
-                                style="font-style:italic;font-size:12px;color:#6b7280;">"Giao giờ hành chính, gọi trước
-                                15 phút"</span></div>
-
-                        <div style="border-top:1px solid var(--admin-border);padding-top:14px;margin-top:4px;">
-                            <label
-                                style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:8px;"><i
-                                    class="fa-solid fa-person-biking" style="color:#8b5cf6;margin-right:5px;"></i>Phân
-                                công giao hàng</label>
-                            <select
-                                style="width:100%;padding:8px 12px;border:1px solid var(--admin-border);border-radius:8px;font-size:13px;font-family:'Inter';color:#1e293b;outline:none;margin-bottom:8px;">
-                                <option>Anh Giang (Sẵn sàng)</option>
-                                <option>Chị Hoa (Sẵn sàng)</option>
-                                <option>Anh Nguyên (Đang giao - 1 đơn)</option>
-                            </select>
-                            <select
-                                style="width:100%;padding:8px 12px;border:1px solid var(--admin-border);border-radius:8px;font-size:13px;font-family:'Inter';color:#1e293b;outline:none;margin-bottom:8px;">
-                                <option>🕙 09:00 – 12:00 (Sáng)</option>
-                                <option>🕒 14:00 – 17:00 (Chiều)</option>
-                                <option>⚡ Giao ngay (30–60 phút)</option>
-                            </select>
-                            <button class="btn-primary" style="width:100%;justify-content:center;height:36px;"
-                                onclick="alert('Đã phân công giao hàng cho Anh Giang!')">
-                                <i class="fa-solid fa-paper-plane"></i> Xác nhận phân công
-                            </button>
+                        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;color:#9ca3af;gap:10px;">
+                            <i class="fa-regular fa-user" style="font-size:32px;color:#d1d5db;"></i>
+                            <span style="font-size:13px;">Đang tải thông tin khách hàng...</span>
                         </div>
                     </div>
                 </div>
@@ -736,47 +568,171 @@
     </div>
 
     <script>
-        function advanceOrder(btn, newStatus, color) {
-            const card = btn.closest('.order-card');
-            const col = card.closest('.pipeline-col');
-            const board = document.querySelector('.pipeline-board');
-            const cols = board.querySelectorAll('.pipeline-col');
+        const API_BASE = 'http://localhost:8000/api/order/orders';
 
-            let nextCol = null;
-            for (let i = 0; i < cols.length - 1; i++) {
-                if (cols[i] === col) { nextCol = cols[i + 1]; break; }
+        function getAuthHeader() {
+            const authRaw = localStorage.getItem('MG_ADMIN_AUTH');
+            if (!authRaw) return {};
+            try {
+                const parsed = JSON.parse(authRaw);
+                return {
+                    'Authorization': `Bearer ${parsed.accessToken}`,
+                    'Content-Type': 'application/json'
+                };
+            } catch (e) {
+                return {};
             }
-            if (!nextCol) return;
+        }
 
-            card.style.transition = 'opacity .3s, transform .3s';
-            card.style.opacity = '0';
-            card.style.transform = 'scale(.9)';
+        // Format Currency
+        function formatVND(value) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+        }
 
-            setTimeout(() => {
-                const actionsDiv = card.querySelector('.card-actions');
-                if (actionsDiv) {
-                    if (newStatus === 'Hoàn tất') {
-                        actionsDiv.remove();
-                    } else if (newStatus === 'Đang giao') {
-                        actionsDiv.innerHTML = `<button class="card-btn approve" onclick="event.stopPropagation(); advanceOrder(this,'Hoàn tất','#10b981')" style="background:#10b981;">✓ Hoàn tất</button>`;
-                    } else {
-                        const labels = { 'Đóng gói': 'Giao Hàng →' };
-                        const nextIs = { 'Lấy hàng': 'Đóng gói', 'Đóng gói': 'Đang giao' };
-                        const nextStatus = nextIs[newStatus] || 'Hoàn tất';
-                        actionsDiv.innerHTML = `<button class="card-btn next" onclick="event.stopPropagation(); advanceOrder(this,'${nextStatus}','#10b981')">${labels[newStatus] || '→'}</button>`;
-                    }
+        // Format Date Time
+        function formatDateTime(dateStr) {
+            const d = new Date(dateStr);
+            const date = d.toLocaleDateString('vi-VN');
+            const time = d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            return { date, time };
+        }
+
+        // Load whole Kanban board
+        async function loadBoard() {
+            try {
+                // Set Loading state
+                const colContainers = document.querySelectorAll('.pipeline-cards');
+                colContainers.forEach(c => c.innerHTML = `<div style="text-align:center;padding:20px;color:#9ca3af;"><i class="fa-solid fa-spinner fa-spin"></i></div>`);
+
+                const res = await fetch(`${API_BASE}?channel=web&limit=200`, { headers: getAuthHeader() });
+                const json = await res.json();
+
+                if (!json.success) {
+                    colContainers.forEach(c => c.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;">Lỗi tải dữ liệu</div>`);
+                    return;
                 }
-                // Update count badges
-                const fromCount = col.querySelector('.col-count');
-                const toCount = nextCol.querySelector('.col-count');
-                if (fromCount) fromCount.textContent = Math.max(0, parseInt(fromCount.textContent) - 1);
-                if (toCount) toCount.textContent = parseInt(toCount.textContent) + 1;
 
-                // Move card
-                nextCol.querySelector('.pipeline-cards').appendChild(card);
-                card.style.opacity = '1';
-                card.style.transform = 'scale(1)';
-            }, 300);
+                // Filter & Sort orders
+                const orders = json.data.filter(o => o.order_status !== 'pending_approval' && o.order_status !== 'cancelled');
+
+                const confirmedOrders = orders.filter(o => o.order_status === 'confirmed');
+                const pickingOrders = orders.filter(o => o.order_status === 'picking');
+                const shippingOrders = orders.filter(o => o.order_status === 'shipping');
+                
+                // Completed today only
+                const completedOrders = orders.filter(o => {
+                    if (o.order_status !== 'completed') return false;
+                    const updatedDate = new Date(o.updated_at).toDateString();
+                    const todayDate = new Date().toDateString();
+                    return updatedDate === todayDate;
+                });
+
+                // Update Stats
+                const statsH3s = document.querySelectorAll('.order-stat h3');
+                if (statsH3s.length >= 4) {
+                    statsH3s[0].innerText = confirmedOrders.length;
+                    statsH3s[1].innerText = pickingOrders.length;
+                    statsH3s[2].innerText = shippingOrders.length;
+                    statsH3s[3].innerText = completedOrders.length;
+                }
+
+                // Update Column counts
+                const colCounts = document.querySelectorAll('.col-count');
+                if (colCounts.length >= 4) {
+                    colCounts[0].innerText = confirmedOrders.length;
+                    colCounts[1].innerText = pickingOrders.length;
+                    colCounts[2].innerText = shippingOrders.length;
+                    colCounts[3].innerText = completedOrders.length;
+                }
+
+                // Render lists
+                renderColumnCards(colContainers[0], confirmedOrders, 'confirmed');
+                renderColumnCards(colContainers[1], pickingOrders, 'picking');
+                renderColumnCards(colContainers[2], shippingOrders, 'shipping');
+                renderColumnCards(colContainers[3], completedOrders, 'completed');
+
+            } catch (err) {
+                console.error('Error loading Kanban board:', err);
+            }
+        }
+
+        // Render Cards in single Kanban column
+        function renderColumnCards(container, list, status) {
+            container.innerHTML = '';
+            if (list.length === 0) {
+                container.innerHTML = `<div style="text-align:center;padding:30px;color:#cbd5e1;font-size:12px;font-style:italic;">Trống</div>`;
+                return;
+            }
+
+            list.forEach(order => {
+                const { date, time } = formatDateTime(order.created_at);
+                const card = document.createElement('div');
+                card.className = 'order-card';
+                card.onclick = () => openOrderDetail(order.order_code || order.id, order.order_status);
+
+                let tagsHtml = '';
+                if (order.payment_method === 'cod' || order.payment_method === 'cash') {
+                    tagsHtml += `<span class="order-tag cod">COD</span>`;
+                } else {
+                    tagsHtml += `<span class="order-tag paid">Đã TT Online</span>`;
+                }
+
+                if (order.requires_vat_invoice) {
+                    tagsHtml += `<span class="order-tag vat">Cần HĐ VAT</span>`;
+                }
+
+                let actionsHtml = '';
+                if (status === 'confirmed') {
+                    actionsHtml = `
+                        <div class="card-actions">
+                            <button class="card-btn next" onclick="event.stopPropagation(); advanceOrder(this,'${order.order_code || order.id}','picking')">Lấy Hàng →</button>
+                        </div>`;
+                } else if (status === 'picking') {
+                    actionsHtml = `
+                        <div class="card-actions">
+                            <button class="card-btn next" style="background:#3b82f6;" onclick="event.stopPropagation(); advanceOrder(this,'${order.order_code || order.id}','shipping')">Đóng Gói →</button>
+                        </div>`;
+                } else if (status === 'shipping') {
+                    actionsHtml = `
+                        <div class="card-actions">
+                            <button class="card-btn approve" onclick="event.stopPropagation(); advanceOrder(this,'${order.order_code || order.id}','completed')">✓ Hoàn tất</button>
+                        </div>`;
+                } else if (status === 'completed') {
+                    actionsHtml = `<div class="order-time"><i class="fa-solid fa-check fa-xs" style="color:#10b981;"></i> Hoàn tất lúc ${time}</div>`;
+                }
+
+                card.innerHTML = `
+                    <div class="order-id">#${order.order_code}</div>
+                    <div class="order-customer"><i class="fa-regular fa-user fa-xs" style="color:#9ca3af;"></i> ${order.customer_name || 'Khách vãng lai'}</div>
+                    <div class="order-amount">${formatVND(order.total_amount)}</div>
+                    <div class="order-tags">${tagsHtml}</div>
+                    <div class="order-time"><i class="fa-regular fa-clock fa-xs"></i> ${time}</div>
+                    ${actionsHtml}
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Action handlers: transition order status
+        async function advanceOrder(btn, orderId, nextStatus) {
+            if (btn) btn.disabled = true;
+            try {
+                const res = await fetch(`${API_BASE}/${orderId}/status`, {
+                    method: 'PUT',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify({ status: nextStatus })
+                });
+                const json = await res.json();
+                if (json.success) {
+                    loadBoard();
+                } else {
+                    alert('Lỗi cập nhật: ' + json.message);
+                    if (btn) btn.disabled = false;
+                }
+            } catch (err) {
+                console.error(err);
+                if (btn) btn.disabled = false;
+            }
         }
 
         function checkPickDone() {
@@ -785,45 +741,198 @@
             document.getElementById('pick-done-notice').style.display = allChecked ? 'block' : 'none';
         }
 
-        function openOrderDetail(orderId, status) {
-            document.getElementById('modalOrderId').innerText = `Chi tiết — #${orderId}`;
-            const statusLabels = { pending: 'Chờ Xác Nhận', picking: 'Đang Lấy Hàng', packing: 'Đóng Gói', delivering: 'Đang Giao Hàng', done: 'Hoàn Tất' };
-            document.getElementById('modalOrderStatus').innerText = `Trạng thái: ${statusLabels[status] || status}`;
-
-            // VAT section: only show if not WEB-9022/9014 as a demo
-            const vatSection = document.getElementById('vat-section');
-            vatSection.style.display = (orderId === 'WEB-9024' || orderId === 'WEB-9014') ? 'block' : 'none';
-
-            // Update timeline
-            const steps = ['tl-confirm', 'tl-pick', 'tl-pack', 'tl-deliver', 'tl-done'];
-            const statusIdx = { pending: 0, picking: 1, packing: 2, delivering: 3, done: 4 };
-            const idx = statusIdx[status] ?? 0;
-            steps.forEach((s, i) => {
-                const el = document.getElementById(s);
-                if (!el) return;
-                const dot = el.querySelector('.tl-dot');
-                el.className = 'tl-step ' + (i < idx ? 'done' : i === idx ? 'current' : 'pending');
-                dot.className = 'tl-dot ' + (i < idx ? 'done' : i === idx ? 'current' : 'pending');
-            });
-
-            // Footer buttons
-            const footer = document.getElementById('modalFooter');
-            if (status === 'done') {
-                footer.innerHTML = `<button class="btn-secondary" onclick="closeOrderDetail()">Đóng</button><button class="btn-primary" style="height:40px;width:180px;justify-content:center;" onclick="closeOrderDetail()"><i class="fa-solid fa-print"></i> In Biên Lai</button>`;
-            } else if (status === 'pending') {
-                footer.innerHTML = `<button class="btn-secondary" onclick="closeOrderDetail()">Đóng</button><button class="btn-cancel" style="width:180px;justify-content:center;height:40px;" onclick="alert('Đã huỷ đơn!'); closeOrderDetail();">✕ Huỷ Đơn</button><button class="btn-approve" style="width:220px;justify-content:center;height:40px;font-size:13px;" onclick="alert('Đã duyệt đơn!'); closeOrderDetail();">✓ Duyệt & Lấy Hàng</button>`;
-            } else {
-                footer.innerHTML = `<button class="btn-secondary" onclick="closeOrderDetail()">Đóng</button>`;
-            }
-
+        // Detailed View Modal
+        async function openOrderDetail(orderId, status) {
+            document.getElementById('modalOrderId').innerText = `Đang tải... — #${orderId}`;
             document.getElementById('orderDetailModal').classList.add('open');
             document.body.style.overflow = 'hidden';
+
+            try {
+                const res = await fetch(`${API_BASE}/${orderId}`, { headers: getAuthHeader() });
+                const json = await res.json();
+
+                if (!json.success || !json.data) {
+                    document.getElementById('modalOrderId').innerText = `Lỗi tải chi tiết`;
+                    return;
+                }
+
+                const order = json.data;
+                const { date, time } = formatDateTime(order.created_at);
+
+                document.getElementById('modalOrderId').innerText = `Chi tiết — #${order.order_code}`;
+                
+                const statusLabels = {
+                    confirmed: 'Đã Duyệt - Chờ Lấy Hàng',
+                    picking: 'Đang Lấy Hàng',
+                    shipping: 'Đang Giao Hàng',
+                    completed: 'Hoàn Tất'
+                };
+                document.getElementById('modalOrderStatus').innerText = `Trạng thái: ${statusLabels[order.order_status] || order.order_status}`;
+
+                // VAT section
+                const vatSection = document.getElementById('vat-section');
+                if (order.requires_vat_invoice) {
+                    vatSection.style.display = 'block';
+                    vatSection.innerHTML = `
+                        <div style="font-size:12px;font-weight:700;color:#5b21b6;margin-bottom:8px;"><i class="fa-solid fa-file-invoice"></i> Yêu cầu Hóa Đơn VAT (10%)</div>
+                        <div style="font-size:12px;color:#374151;">Tên công ty: <strong>${order.vat_company_name || 'N/A'}</strong></div>
+                        <div style="font-size:12px;color:#374151;">MST: <strong>${order.vat_tax_code || 'N/A'}</strong></div>
+                        <div style="font-size:12px;color:#374151;margin-bottom:8px;">Email nhận HĐ: <strong>${order.vat_email || 'N/A'}</strong></div>
+                        <button class="btn-secondary" style="height:30px;font-size:12px;padding:0 12px;width:100%;justify-content:center;" onclick="alert('Mở giao diện xuất hóa đơn điện tử...')">
+                            <i class="fa-solid fa-file-export"></i> Xuất Hóa Đơn Điện Tử
+                        </button>
+                    `;
+                } else {
+                    vatSection.style.display = 'none';
+                }
+
+                // Render Timeline Steps indices
+                const steps = document.querySelectorAll('#orderTimeline .tl-step');
+                const statusIdx = {
+                    confirmed: 1, // Confirm done, Pick current
+                    picking: 2,   // Pick done, Pack current
+                    shipping: 3,  // Pack done, Deliver current
+                    completed: 4  // All done
+                };
+                const idx = statusIdx[order.order_status] ?? 1;
+
+                steps.forEach((step, i) => {
+                    const dot = step.querySelector('.tl-dot');
+                    if (i < idx) {
+                        step.className = 'tl-step done';
+                        dot.className = 'tl-dot done';
+                        dot.innerHTML = `<i class="fa-solid fa-check fa-xs"></i>`;
+                    } else if (i === idx) {
+                        step.className = 'tl-step current';
+                        dot.className = 'tl-dot current';
+                    } else {
+                        step.className = 'tl-step pending';
+                        dot.className = 'tl-dot pending';
+                    }
+                });
+
+                // Pick List Checklist
+                const pickListContainer = document.querySelector('.detail-left > div:first-of-type');
+                pickListContainer.innerHTML = '';
+                let itemsSubtotal = 0;
+
+                // Simple shelves layout map generator for realistic shelves display
+                const shelves = ['Kệ A1-T2', 'Kệ B2-T1', 'Kệ C3-T3', 'Kệ A2-T1', 'Kệ B1-T2'];
+
+                if (order.items && order.items.length > 0) {
+                    order.items.forEach((item, index) => {
+                        const rowTotal = item.quantity * item.unit_price;
+                        itemsSubtotal += rowTotal;
+
+                        const shelf = shelves[index % shelves.length];
+
+                        const div = document.createElement('div');
+                        div.className = 'pick-item';
+                        div.innerHTML = `
+                            <input type="checkbox" onchange="checkPickDone()">
+                            <div class="pick-name">${item.product_name} <span style="font-size:11px;color:#9ca3af;">x ${item.quantity} ${item.unit_name}</span></div>
+                            <span class="pick-loc">${shelf}</span>
+                        `;
+                        pickListContainer.appendChild(div);
+                    });
+                } else {
+                    pickListContainer.innerHTML = `<div style="text-align:center;padding:15px;color:#9ca3af;">Không có sản phẩm</div>`;
+                }
+
+                document.getElementById('pick-done-notice').style.display = 'none';
+
+                // Pricing Sums
+                const pricingDiv = pickListContainer.nextElementSibling;
+                pricingDiv.innerHTML = `
+                    <div style="display:flex;justify-content:space-between;font-size:12px;color:#6b7280;margin-bottom:4px;">
+                        <span>Tiểu tổng:</span><span style="font-weight:600;color:#0f172a;">${formatVND(order.subtotal || itemsSubtotal)}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:12px;color:#6b7280;margin-bottom:4px;">
+                        <span>Phí giao hàng:</span><span style="font-weight:600;color:#0f172a;">${formatVND(order.shipping_fee || 0)}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:12px;color:#6b7280;margin-bottom:4px;">
+                        <span>Khuyến mãi:</span><span style="font-weight:600;color:#ef4444;">-${formatVND(order.discount_amount || 0)}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;color:#047857;font-weight:700;">
+                        <span>Tổng thu:</span><span>${formatVND(order.total_amount)}</span>
+                    </div>
+                `;
+
+                // Customer info details panel
+                const customerDiv = document.querySelector('.detail-right');
+                let payBadgeStyle = 'background:#fef3c7;color:#92400e;';
+                if (order.payment_method !== 'cod' && order.payment_method !== 'cash') {
+                    payBadgeStyle = 'background:#d1fae5;color:#065f46;';
+                }
+
+                customerDiv.innerHTML = `
+                    <h3 style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:14px;"><i class="fa-regular fa-user" style="color:#6b7280;margin-right:6px;"></i>Thông tin khách hàng</h3>
+                    <div class="info-row"><label>Tên khách</label><span>${order.customer_name || 'Khách vãng lai'}</span></div>
+                    <div class="info-row"><label>Điện thoại</label><span>${order.customer_phone || 'Không có'}</span></div>
+                    <div class="info-row"><label>Địa chỉ giao</label><span style="font-size:12px;line-height:1.5;">${order.shipping_address || 'Nhận tại quầy'}</span></div>
+                    <div class="info-row"><label>Phương thức TT</label><span style="padding:2px 8px;border-radius:6px;font-size:12px;${payBadgeStyle}">💵 ${order.payment_method.toUpperCase()} – ${order.payment_status === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}</span></div>
+                    <div class="info-row"><label>Thời gian đặt</label><span>${date} – ${time}</span></div>
+                    <div class="info-row"><label>Ghi chú của khách</label><span style="font-style:italic;font-size:12px;color:#6b7280;">"${order.customer_notes || 'Không có ghi chú'}"</span></div>
+
+                    <div style="border-top:1px solid var(--admin-border);padding-top:14px;margin-top:16px;">
+                        <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:8px;"><i class="fa-solid fa-person-biking" style="color:#8b5cf6;margin-right:5px;"></i>Phân công giao hàng</label>
+                        <select id="deliverer-select" style="width:100%;padding:8px 12px;border:1px solid var(--admin-border);border-radius:8px;font-size:13px;font-family:'Inter';color:#1e293b;outline:none;margin-bottom:8px;">
+                            <option>Anh Giang (Sẵn sàng)</option>
+                            <option>Chị Hoa (Sẵn sàng)</option>
+                            <option>Anh Nguyên (Đang giao - 1 đơn)</option>
+                        </select>
+                        <select id="time-select" style="width:100%;padding:8px 12px;border:1px solid var(--admin-border);border-radius:8px;font-size:13px;font-family:'Inter';color:#1e293b;outline:none;margin-bottom:8px;">
+                            <option>🕙 09:00 – 12:00 (Sáng)</option>
+                            <option>🕒 14:00 – 17:00 (Chiều)</option>
+                            <option>⚡ Giao ngay (30–60 phút)</option>
+                        </select>
+                        <button class="btn-primary" style="width:100%;justify-content:center;height:36px;" onclick="const d = document.getElementById('deliverer-select').value; alert('Đã phân công giao hàng cho ' + d + '!');">
+                            <i class="fa-solid fa-paper-plane"></i> Xác nhận phân công
+                        </button>
+                    </div>
+                `;
+
+                // Footer Actions inside modal
+                const footer = document.getElementById('modalFooter');
+                if (order.order_status === 'completed') {
+                    footer.innerHTML = `<button class="btn-secondary" onclick="closeOrderDetail()">Đóng</button><button class="btn-primary" style="height:40px;width:180px;justify-content:center;" onclick="closeOrderDetail(); alert('Đang in...');"><i class="fa-solid fa-print"></i> In Biên Lai</button>`;
+                } else if (order.order_status === 'confirmed') {
+                    footer.innerHTML = `
+                        <button class="btn-secondary" onclick="closeOrderDetail()">Đóng</button>
+                        <button class="btn-approve" style="width:220px;justify-content:center;height:40px;font-size:13px;" onclick="closeOrderDetail(); advanceOrder(null, '${order.order_code}', 'picking');">
+                            <i class="fa-solid fa-check"></i> Xác nhận đã lấy hàng
+                        </button>`;
+                } else if (order.order_status === 'picking') {
+                    footer.innerHTML = `
+                        <button class="btn-secondary" onclick="closeOrderDetail()">Đóng</button>
+                        <button class="btn-primary" style="width:220px;justify-content:center;height:40px;font-size:13px;" onclick="closeOrderDetail(); advanceOrder(null, '${order.order_code}', 'shipping');">
+                            <i class="fa-solid fa-box"></i> Xác nhận đóng gói xong
+                        </button>`;
+                } else if (order.order_status === 'shipping') {
+                    footer.innerHTML = `
+                        <button class="btn-secondary" onclick="closeOrderDetail()">Đóng</button>
+                        <button class="btn-approve" style="width:220px;justify-content:center;height:40px;font-size:13px;" onclick="closeOrderDetail(); advanceOrder(null, '${order.order_code}', 'completed');">
+                            <i class="fa-solid fa-check"></i> ✓ Hoàn tất giao hàng
+                        </button>`;
+                } else {
+                    footer.innerHTML = `<button class="btn-secondary" onclick="closeOrderDetail()">Đóng</button>`;
+                }
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('modalOrderId').innerText = `Lỗi tải chi tiết`;
+            }
         }
 
         function closeOrderDetail() {
             document.getElementById('orderDetailModal').classList.remove('open');
             document.body.style.overflow = '';
         }
+
+        // Initial Load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadBoard();
+        });
     </script>
 
     <script src="js/admin-components.js"></script>

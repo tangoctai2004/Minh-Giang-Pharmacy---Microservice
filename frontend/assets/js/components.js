@@ -4,10 +4,10 @@
  * This allows previewing in VS Code Live Server without a backend.
  */
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
     const includes = document.querySelectorAll("[mg-include]");
 
-    includes.forEach(async (el) => {
+    await Promise.all(Array.from(includes).map(async (el) => {
         const file = el.getAttribute("mg-include");
         if (file) {
             try {
@@ -29,15 +29,25 @@ document.addEventListener("DOMContentLoaded", function () {
                 el.innerHTML = "Error loading component.";
             }
         }
-    });
+    }));
 
     // Sau khi tất cả component load xong, apply auth header và mega menu
+    _loadClientApi();
     _initClientAuthHeader();
     _initMegaMenu();
     _initProductCardNavigation();
     _loadSearchHandler();
     _loadCartHandler();
+    _loadCatalogWidgets();
 });
+
+// ─── Tải helper API dùng chung ─────────────────
+function _loadClientApi() {
+    if (window.MGCatalogApi || document.querySelector('script[src*="client-api.js"]')) return;
+    const script = document.createElement('script');
+    script.src = window.location.pathname.includes('/client/') ? '../assets/js/client-api.js' : 'assets/js/client-api.js';
+    document.head.appendChild(script);
+}
 
 // ─── Tải động script tìm kiếm ─────────────────
 function _loadSearchHandler() {
@@ -68,6 +78,36 @@ function _loadCartHandler() {
         script.src = window.location.pathname.includes('/client/') ? '../assets/js/cart-handler.js' : 'assets/js/cart-handler.js';
         document.body.appendChild(script);
     }
+}
+
+// ─── Tải widgets catalog dùng chung ─────────────────
+function _loadCatalogWidgets() {
+    if (!document.querySelector('.top-search-links, .featured-products-section')) return;
+
+    const start = () => {
+        if (window.MGCatalogWidgets && typeof window.MGCatalogWidgets.init === 'function') {
+            window.MGCatalogWidgets.init();
+            return;
+        }
+        if (document.querySelector('script[src*="catalog-widgets.js"]')) return;
+        const script = document.createElement('script');
+        script.src = window.location.pathname.includes('/client/') ? '../assets/js/catalog-widgets.js' : 'assets/js/catalog-widgets.js';
+        document.body.appendChild(script);
+    };
+
+    if (window.MGCatalogApi) {
+        start();
+        return;
+    }
+
+    let attempts = 0;
+    const timer = setInterval(() => {
+        attempts += 1;
+        if (window.MGCatalogApi || attempts >= 20) {
+            clearInterval(timer);
+            start();
+        }
+    }, 50);
 }
 
 // ─── Điều hướng Product Card toàn cục ─────────────────

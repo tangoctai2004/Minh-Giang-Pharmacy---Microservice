@@ -1,0 +1,77 @@
+{
+  "notes": "Copy file này thành category-map.local.json nếu muốn map sang ID/category thật của Minh Giang. matchAny dùng slug/text không dấu của category_path + name + url.",
+  "productCategoryRules": [
+    {
+      "mapped_category_slug": "thuoc-giam-dau-ha-sot",
+      "mapped_category_name": "Thuốc giảm đau - hạ sốt",
+      "matchAny": ["giam-dau", "ha-sot", "paracetamol", "panadol", "efferalgan"]
+    },
+    {
+      "mapped_category_slug": "thuoc-ho-long-dom",
+      "mapped_category_name": "Thuốc ho - long đờm",
+      "matchAny": ["thuoc-ho", "long-dom", "siro-ho", "ho-long-dom"]
+    },
+    {
+      "mapped_category_slug": "ve-sinh-ca-nhan",
+      "mapped_category_name": "Vệ sinh cá nhân",
+      "matchAny": ["ve-sinh-ca-nhan", "bang-ve-sinh", "dung-dich-ve-sinh", "tam-bong"]
+    },
+    {
+      "mapped_category_slug": "sinh-ly-suc-khoe-tinh-duc",
+      "mapped_category_name": "Sinh lý - sức khỏe tình dục",
+      "matchAny": ["bao-cao-su", "gel-boi-tron", "sinh-ly", "tinh-duc"]
+    },
+    {
+      "mapped_category_slug": "thuoc-da-day",
+      "mapped_category_name": "Thuốc dạ dày",
+      "matchAny": ["da-day", "trao-nguoc", "omeprazol", "esomeprazol", "gast"]
+    },
+    {
+      "mapped_category_slug": "thuoc-khang-sinh",
+      "mapped_category_name": "Thuốc kháng sinh",
+      "matchAny": ["khang-sinh", "amoxicillin", "azithromycin", "cefixim", "cephalexin"]
+    },
+    {
+      "mapped_category_slug": "vitamin-va-khoang-chat",
+      "mapped_category_name": "Vitamin và khoáng chất",
+      "matchAny": ["vitamin", "khoang-chat", "canxi", "magie", "kem", "sat"]
+    },
+    {
+      "mapped_category_slug": "thuc-pham-do-uong",
+      "mapped_category_name": "Thực phẩm, đồ uống",
+      "matchAny": ["thuc-pham-do-uong", "mat-ong", "tra-", "nuoc-uong"]
+    },
+    {
+      "mapped_category_slug": "duoc-my-pham",
+      "mapped_category_name": "Dược mỹ phẩm",
+      "matchAny": ["duoc-my-pham", "kem-duong", "sua-rua-mat", "cham-soc-da"]
+    },
+    {
+      "mapped_category_slug": "dung-cu-y-te",
+      "mapped_category_name": "Dụng cụ y tế",
+      "matchAny": ["dung-cu-y-te", "may-do", "nhiet-ke", "bang-gac", "khau-trang"]
+    },
+    {
+      "mapped_category_slug": "bang-gac-y-te",
+      "mapped_category_name": "Băng gạc y tế",
+      "matchAny": ["bang-gac", "gac-y-te", "bong-gon", "bang-thun", "bang-keo-lua", "gac-dap-bong"]
+    }
+  ],
+  "articleCategoryRules": [
+    {
+      "mapped_category_slug": "kien-thuc-benh-ly",
+      "mapped_category_name": "Kiến thức bệnh lý",
+      "matchAny": ["benh-ly", "trieu-chung", "nguyen-nhan", "dieu-tri"]
+    },
+    {
+      "mapped_category_slug": "suc-khoe-tong-quat",
+      "mapped_category_name": "Sức khoẻ tổng quát",
+      "matchAny": ["suc-khoe-tong-quat", "suc-khoe", "dinh-duong"]
+    },
+    {
+      "mapped_category_slug": "nguoi-cao-tuoi",
+      "mapped_category_name": "Người cao tuổi",
+      "matchAny": ["nguoi-cao-tuoi", "loang-xuong", "huyet-ap"]
+    }
+  ]
+}

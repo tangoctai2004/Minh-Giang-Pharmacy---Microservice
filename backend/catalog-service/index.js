@@ -1,6 +1,7 @@
 const express = require('express');
 const cors    = require('cors');
 const morgan  = require('morgan');
+const path    = require('path');
 require('dotenv').config();
 
 const routes = require('./routes');
@@ -13,8 +14,9 @@ const PORT = process.env.PORT || 8002;
 
 app.use(cors());
 app.use(morgan('dev'));
-app.use(express.json());
+app.use(express.json({ limit: process.env.JSON_BODY_LIMIT || '12mb' }));
 app.use(requestContext);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/', routes);
 

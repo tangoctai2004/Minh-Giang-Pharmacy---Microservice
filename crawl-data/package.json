@@ -1,0 +1,25 @@
+{
+  "name": "minh-giang-trungson-crawler",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "Careful resumable crawler workspace for Trung Son Care source data.",
+  "scripts": {
+    "check": "node --check index.js",
+    "status": "node index.js status",
+    "discover": "node index.js discover",
+    "crawl:products": "node index.js crawl products",
+    "crawl:articles": "node index.js crawl articles",
+    "crawl:diseases": "node index.js crawl diseases",
+    "crawl:all": "node index.js crawl all",
+    "clean": "node clean.js",
+    "export:sql": "node export-sql.js",
+    "validate": "node index.js validate all",
+    "validate:products": "node index.js validate products",
+    "validate:articles": "node index.js validate articles",
+    "validate:diseases": "node index.js validate diseases"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
