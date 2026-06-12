@@ -118,3 +118,4 @@ Postman/backup/
 !docker-compose.yml
 !Dockerfile
 !.gitignore
+backend/cms-service/node_modules/
