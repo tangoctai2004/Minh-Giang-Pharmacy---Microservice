@@ -80,6 +80,23 @@
             padding: 3px 9px;
             border-radius: 8px;
         }
+
+        /* Detail panel for modal */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 0;
+        }
+
+        .detail-left {
+            padding: 20px;
+            border-right: 1px solid var(--admin-border);
+        }
+
+        .detail-right {
+            padding: 20px;
+            background: #f8fafc;
+        }
     </style>
 </head>
 
@@ -786,17 +803,55 @@
             document.getElementById('orderModal').classList.add('open');
             document.body.style.overflow = 'hidden';
 
+            // Set loading spinner first
+            document.querySelector('#orderModal .standard-modal-body').innerHTML = `
+                <div style="padding:40px; text-align:center; color:#9ca3af;">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size:24px; margin-bottom:10px;"></i>
+                    <p>Đang tải chi tiết đơn hàng...</p>
+                </div>
+            `;
+            document.getElementById('orderModalActions').innerHTML = '';
+
             try {
                 const res = await fetch(`${API_BASE}/${orderId}`, { headers: getAuthHeader() });
                 const json = await res.json();
 
                 if (!json.success || !json.data) {
                     document.getElementById('orderModalTitle').innerText = `Lỗi tải chi tiết`;
+                    document.querySelector('#orderModal .standard-modal-body').innerHTML = `
+                        <div style="padding:40px; text-align:center; color:#ef4444;">
+                            <i class="fa-solid fa-circle-exclamation" style="font-size:24px; margin-bottom:10px;"></i>
+                            <p>Không tìm thấy thông tin chi tiết đơn hàng.</p>
+                        </div>
+                    `;
                     return;
                 }
 
                 const order = json.data;
                 const { date, time } = formatDateTime(order.created_at);
+
+                // Set up the layout template in standard-modal-body before rendering contents
+                document.querySelector('#orderModal .standard-modal-body').innerHTML = `
+                    <div class="detail-grid">
+                        <div class="detail-left">
+                            <h3 style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:12px;">
+                                <i class="fa-solid fa-list-check" style="color:#3b82f6;margin-right:6px;"></i>Danh sách sản phẩm
+                            </h3>
+                            <table style="width:100%; border-collapse:collapse; margin-bottom:16px;">
+                                <thead>
+                                    <tr style="border-bottom:1px solid var(--admin-border); text-align:left; font-size:11px; color:#6b7280;">
+                                        <th style="padding:8px 0;">Sản phẩm</th>
+                                        <th style="padding:8px; text-align:right;">SL</th>
+                                        <th style="padding:8px 0; text-align:right;">Thành tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                            <div class="price-summary" style="margin-top:16px; padding-top:16px; border-top:1px solid var(--admin-border); text-align:right;"></div>
+                        </div>
+                        <div class="detail-right"></div>
+                    </div>
+                `;
 
                 document.getElementById('orderModalTitle').innerText = `Chi tiết đơn — #${order.order_code}`;
 
