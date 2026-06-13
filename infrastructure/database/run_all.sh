@@ -25,6 +25,8 @@ FILES=(
   "10_seed_full_catalog.sql"
   "11_seed_clean_catalog_products.sql"
   "03_mg_order.sql"
+  "migrations/20260516_add_cart_item_snapshot_columns.sql"
+  "migrations/20260516_add_is_active_order.sql"
   "04_mg_cms.sql"
   "12_seed_clean_cms_content.sql"
   "05_mg_notification.sql"
