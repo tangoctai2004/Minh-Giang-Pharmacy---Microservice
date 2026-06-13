@@ -5,11 +5,17 @@ on:
     paths:
       - "backend/catalog-service/**"
       - "infrastructure/database/02_mg_catalog.sql"
+      - "infrastructure/database/06_mg_catalog_product_media_gpp.sql"
+      - "infrastructure/database/07_mg_catalog_quality_workflow.sql"
+      - "infrastructure/database/08_mg_catalog_stocktake_adjustments.sql"
       - ".github/workflows/catalog-service-ci.yml"
   pull_request:
     paths:
       - "backend/catalog-service/**"
       - "infrastructure/database/02_mg_catalog.sql"
+      - "infrastructure/database/06_mg_catalog_product_media_gpp.sql"
+      - "infrastructure/database/07_mg_catalog_quality_workflow.sql"
+      - "infrastructure/database/08_mg_catalog_stocktake_adjustments.sql"
       - ".github/workflows/catalog-service-ci.yml"
 
 jobs:
@@ -52,6 +58,9 @@ jobs:
       - name: Init schema and seed minimal data
         run: |
           mysql -h 127.0.0.1 -uroot -proot < infrastructure/database/02_mg_catalog.sql
+          mysql -h 127.0.0.1 -uroot -proot < infrastructure/database/06_mg_catalog_product_media_gpp.sql
+          mysql -h 127.0.0.1 -uroot -proot < infrastructure/database/07_mg_catalog_quality_workflow.sql
+          mysql -h 127.0.0.1 -uroot -proot < infrastructure/database/08_mg_catalog_stocktake_adjustments.sql
           mysql -h 127.0.0.1 -uroot -proot < backend/catalog-service/scripts/ci_seed_minimal.sql
 
       - name: Start catalog service
