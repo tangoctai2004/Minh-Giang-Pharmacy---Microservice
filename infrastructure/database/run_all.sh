@@ -11,13 +11,26 @@ DB_USER="root"
 DB_PASS="root"
 DB_DIR="$(dirname "$0")"
 
-# Danh sách file theo thứ tự thực thi
+# Danh sách file theo thứ tự thực thi.
+# Các phase seed chi tiết đã được gộp để luồng init dễ đọc hơn:
+# - 90_seed_demo_baseline.sql: dữ liệu demo nghiệp vụ cố định
+# - 91_seed_daily_activity.sql: dữ liệu phát sinh trong ngày
+# - 99_verify_seed_quality.sql: kiểm tra chất lượng seed
 FILES=(
-  "mg_identity.sql"
-  "mg_catalog.sql"
-  "mg_order.sql"
-  "mg_cms.sql"
-  "mg_notification.sql"
+  "01_mg_identity.sql"
+  "02_mg_catalog.sql"
+  "06_mg_catalog_product_media_gpp.sql"
+  "07_mg_catalog_quality_workflow.sql"
+  "08_mg_catalog_stocktake_adjustments.sql"
+  "10_seed_full_catalog.sql"
+  "11_seed_clean_catalog_products.sql"
+  "03_mg_order.sql"
+  "04_mg_cms.sql"
+  "12_seed_clean_cms_content.sql"
+  "05_mg_notification.sql"
+  "90_seed_demo_baseline.sql"
+  "91_seed_daily_activity.sql"
+  "99_verify_seed_quality.sql"
 )
 
 echo "================================================"

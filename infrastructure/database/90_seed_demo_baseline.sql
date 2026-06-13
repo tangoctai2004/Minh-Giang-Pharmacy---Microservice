@@ -8,7 +8,7 @@
 
 -- Phase 1 catalog quality cleanup.
 -- Purpose: keep the 4000-product catalog, but make it presentation-ready for Minh Giang.
--- Idempotent: safe to run after 99_seed_clean_catalog_products.sql and 99_seed_clean_cms_content.sql.
+-- Idempotent: safe to run after 11_seed_clean_catalog_products.sql and 12_seed_clean_cms_content.sql.
 
 SET NAMES utf8mb4;
 
