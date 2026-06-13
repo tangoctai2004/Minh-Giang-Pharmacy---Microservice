@@ -563,8 +563,10 @@ CREATE TABLE `product_units` (
   `of_unit` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'ÄÆ¡n vá»‹ bÃªn dÆ°á»›i trong chuá»—i quy Ä‘á»•i, VD: "ViÃªn" hoáº·c "Vá»‰"',
   `retail_price` decimal(15,2) NOT NULL DEFAULT '0.00' COMMENT 'GiÃ¡ bÃ¡n láº» khi bÃ¡n theo Ä‘Æ¡n vá»‹ nÃ y (thÆ°á»ng = conversion_qty Ã— retail_price)',
   `sort_order` int NOT NULL DEFAULT '0' COMMENT 'Thá»© tá»± sáº¯p xáº¿p (0=nhá» nháº¥t, tÄƒng dáº§n)',
+  `barcode` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'MÃ£ váº¡ch riÃªng cho Ä‘Æ¡n vá»‹ bÃ¡n nÃ y náº¿u cÃ³',
   PRIMARY KEY (`id`),
   KEY `idx_product_units_product_id` (`product_id`),
+  KEY `idx_product_units_barcode` (`barcode`),
   CONSTRAINT `fk_product_units_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ÄÆ¡n vá»‹ Ä‘Ã³ng gÃ³i vÃ  quy Ä‘á»•i cá»§a sáº£n pháº©m';
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -580,18 +582,22 @@ CREATE TABLE `products` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `sku` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'MÃ£ hÃ ng ná»™i bá»™, auto-generated: MED-0001, SUP-0023',
   `name` varchar(300) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'TÃªn Ä‘áº§y Ä‘á»§: VD "Panadol Extra Há»™p 12 viÃªn"',
+  `strength` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Hàm lượng/nồng độ thuốc, VD: 500mg, 10ml, 20mg/ml',
+  `route_of_administration` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Đường dùng theo hồ sơ thuốc',
   `category_id` bigint NOT NULL COMMENT 'FK â†’ categories.id',
   `active_ingredient` text COLLATE utf8mb4_unicode_ci,
   `registration_number` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Sá»‘ Ä‘Äƒng kÃ½ dÆ°á»£c â€” SÄK do Bá»™ Y táº¿ cáº¥p',
   `manufacturer` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'NhÃ  sáº£n xuáº¥t, VD: GlaxoSmithKline, DHG Pharma',
   `requires_prescription` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1=thuá»‘c kÃª Ä‘Æ¡n (Rx), 0=thuá»‘c OTC',
+  `special_control_group` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Nhóm thuốc quản lý đặc biệt theo nghiệp vụ nhà thuốc GPP',
+  `storage_condition` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Điều kiện thường' COMMENT 'Điều kiện bảo quản chuẩn áp dụng cho thuốc',
   `base_unit` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'ÄÆ¡n vá»‹ cÆ¡ báº£n nhá» nháº¥t: ViÃªn, GÃ³i, TuÃ½p, Chai...',
   `cost_price` decimal(15,2) NOT NULL DEFAULT '0.00' COMMENT 'GiÃ¡ nháº­p trÃªn 1 base_unit (tham kháº£o, giÃ¡ thá»±c trong batch_items)',
   `retail_price` decimal(15,2) NOT NULL DEFAULT '0.00' COMMENT 'GiÃ¡ bÃ¡n láº» máº·c Ä‘á»‹nh trÃªn 1 base_unit',
   `min_stock_alert` int NOT NULL DEFAULT '10' COMMENT 'Tá»“n kho tá»‘i thiá»ƒu â€” khi dÆ°á»›i ngÆ°á»¡ng sáº½ gá»­i cáº£nh bÃ¡o',
   `image_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'URL áº£nh sáº£n pháº©m',
   `description` text COLLATE utf8mb4_unicode_ci COMMENT 'MÃ´ táº£ chi tiáº¿t, cÃ´ng dá»¥ng, cÃ¡ch dÃ¹ng, tÃ¡c dá»¥ng phá»¥',
-  `status` enum('active','inactive') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active' COMMENT 'Tráº¡ng thÃ¡i kinh doanh sáº£n pháº©m',
+  `status` enum('draft','pending_review','active','inactive','rejected') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft' COMMENT 'draft=đang nhập, pending_review=chờ duyệt, active=đang kinh doanh, inactive=ngừng kinh doanh, rejected=từ chối',
   `barcode` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'MÃ£ váº¡ch EAN-13 hoáº·c mÃ£ ná»™i bá»™, dÃ¹ng quÃ©t POS',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -607,11 +613,45 @@ CREATE TABLE `products` (
   KEY `idx_products_category_id` (`category_id`),
   KEY `idx_products_status` (`status`),
   KEY `idx_products_requires_prescription` (`requires_prescription`),
+  KEY `idx_products_route` (`route_of_administration`),
+  KEY `idx_products_special_control_group` (`special_control_group`),
+  KEY `idx_products_storage_condition` (`storage_condition`),
   KEY `idx_products_name` (`name`),
   KEY `idx_products_brand_id` (`brand_id`),
   KEY `idx_products_is_exclusive` (`is_exclusive`),
   CONSTRAINT `fk_products_category` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1537 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Há»“ sÆ¡ thuá»‘c master data â€” danh má»¥c sáº£n pháº©m kinh doanh';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `product_images`
+--
+
+DROP TABLE IF EXISTS `product_images`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `product_images` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `product_id` bigint NOT NULL COMMENT 'FK → products.id',
+  `file_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Tên file lưu trong storage nội bộ',
+  `original_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Tên file gốc từ máy người dùng',
+  `mime_type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'image/jpeg, image/png, image/webp...',
+  `file_size` bigint NOT NULL COMMENT 'Dung lượng byte',
+  `storage_path` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Đường dẫn vật lý/tương đối trong storage',
+  `public_url` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'URL public để frontend hiển thị ảnh',
+  `image_role` enum('main','gallery','packaging','label','certificate') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'gallery' COMMENT 'Vai trò ảnh: chính, phụ, bao bì, nhãn, giấy tờ',
+  `alt_text` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Alt text hỗ trợ accessibility/SEO',
+  `is_primary` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1=ảnh đại diện chính của sản phẩm',
+  `sort_order` int NOT NULL DEFAULT '0',
+  `uploaded_by` bigint DEFAULT NULL COMMENT 'identity.users.id nếu đi qua gateway',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_product_images_product_id` (`product_id`),
+  KEY `idx_product_images_primary` (`product_id`,`is_primary`),
+  KEY `idx_product_images_role` (`product_id`,`image_role`),
+  CONSTRAINT `fk_product_images_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Ảnh sản phẩm catalog: 1 ảnh chính và nhiều ảnh phụ/bao bì/nhãn';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -626,7 +666,7 @@ CREATE TABLE `stock_movements` (
   `movement_code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'MÃ£ phiáº¿u: PO-xxx (nháº­p), OUT-xxx (xuáº¥t)',
   `batch_item_id` bigint NOT NULL COMMENT 'FK â†’ batch_items.id â€” lÃ´ hÃ ng bá»‹ áº£nh hÆ°á»Ÿng',
   `product_id` bigint NOT NULL COMMENT 'FK â†’ products.id â€” denormalize Ä‘á»ƒ query nhanh',
-  `movement_type` enum('inbound','outbound_sale','outbound_return_supplier','outbound_damage','outbound_expiry') COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Loáº¡i giao dá»‹ch kho',
+  `movement_type` enum('inbound','outbound_sale','outbound_return_supplier','outbound_damage','outbound_expiry','adjustment') COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Loáº¡i giao dá»‹ch kho',
   `quantity` int NOT NULL COMMENT 'Sá»‘ lÆ°á»£ng thay Ä‘á»•i: dÆ°Æ¡ng (+) lÃ  nháº­p, Ã¢m (-) lÃ  xuáº¥t',
   `reference_type` enum('purchase_order','pos_order','web_order','return','adjustment') COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Loáº¡i chá»©ng tá»« tham chiáº¿u',
   `reference_id` bigint DEFAULT NULL COMMENT 'ID cá»§a chá»©ng tá»« tham chiáº¿u (Ä‘Æ¡n hÃ ng, phiáº¿u nháº­p...)',

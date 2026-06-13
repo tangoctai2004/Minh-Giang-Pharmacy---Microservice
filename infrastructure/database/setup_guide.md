@@ -24,18 +24,18 @@ docker exec -i minhgiang_mysql mysql -uroot -proot < 00_init_all.sql
 ## 3. Nạp dữ liệu (Seeding)
 Sau khi đã có các database trống, bạn nạp dữ liệu theo thứ tự sau để tránh lỗi khóa ngoại:
 
-1. **Catalog Base**: `99_seed_full_catalog.sql` (Danh mục, NCC, Thương hiệu).
-2. **Products**: `99_seed_trungson_real.sql` (Dữ liệu 1500+ sản phẩm thực tế).
-3. **CMS Content**: `99_seed_cms_blogs.sql` (Bài viết blog).
+1. **Catalog Base**: `10_seed_full_catalog.sql` (Danh mục, NCC, Thương hiệu).
+2. **Products**: `11_seed_clean_catalog_products.sql` (Dữ liệu 3000+ sản phẩm sạch).
+3. **CMS Content**: `12_seed_clean_cms_content.sql` (Dữ liệu bài viết/bệnh lý sạch).
 
 **Lệnh chạy nhanh qua Docker:**
 ```bash
 # Nạp Catalog
-docker exec -i minhgiang_mysql mysql -uroot -proot mg_catalog < 99_seed_full_catalog.sql
-docker exec -i minhgiang_mysql mysql -uroot -proot mg_catalog < 99_seed_trungson_real.sql
+docker exec -i minhgiang_mysql mysql -uroot -proot mg_catalog < 10_seed_full_catalog.sql
+docker exec -i minhgiang_mysql mysql -uroot -proot mg_catalog < 11_seed_clean_catalog_products.sql
 
 # Nạp CMS
-docker exec -i minhgiang_mysql mysql -uroot -proot mg_cms < 99_seed_cms_blogs.sql
+docker exec -i minhgiang_mysql mysql -uroot -proot mg_cms < 12_seed_clean_cms_content.sql
 ```
 
 ---
