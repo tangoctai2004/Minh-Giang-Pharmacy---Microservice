@@ -31,7 +31,6 @@ FILES=(
   "12_seed_clean_cms_content.sql"
   "05_mg_notification.sql"
   "90_seed_demo_baseline.sql"
-  "91_seed_daily_activity.sql"
   "99_verify_seed_quality.sql"
 )
 
