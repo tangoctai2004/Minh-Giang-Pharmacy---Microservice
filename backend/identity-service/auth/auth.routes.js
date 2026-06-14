@@ -38,6 +38,11 @@ function getZaloRedirectUri() {
   return process.env.ZALO_REDIRECT_URI || `${getGatewayUrl()}/api/identity/auth/zalo/callback`;
 }
 
+function isConfiguredSecret(value) {
+  const normalized = String(value || '').trim();
+  return Boolean(normalized && !normalized.startsWith('your_') && !normalized.startsWith('change_me'));
+}
+
 function base64Url(buffer) {
   return Buffer.from(buffer)
     .toString('base64')
@@ -145,7 +150,7 @@ async function verifyGoogleIdToken(idToken) {
 }
 
 async function exchangeGoogleCode(code) {
-  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+  if (!isConfiguredSecret(process.env.GOOGLE_CLIENT_ID) || !isConfiguredSecret(process.env.GOOGLE_CLIENT_SECRET)) {
     throw new Error('Thiếu GOOGLE_CLIENT_ID hoặc GOOGLE_CLIENT_SECRET');
   }
 
@@ -186,7 +191,7 @@ async function getZaloProfile(accessToken) {
 async function exchangeZaloCode(code, codeVerifier) {
   const appId = process.env.ZALO_APP_ID;
   const appSecret = process.env.ZALO_APP_SECRET;
-  if (!appId || !appSecret) {
+  if (!isConfiguredSecret(appId) || !isConfiguredSecret(appSecret)) {
     throw new Error('Thiếu ZALO_APP_ID hoặc ZALO_APP_SECRET');
   }
 
@@ -280,7 +285,8 @@ function sendOAuthCallbackPage(res, data) {
     <html>
     <head><title>OAuth Authentication</title></head>
     <body>
-      <p>Đăng nhập thành công! Đang chuyển hướng...</p>
+      <p>Đăng nhập thành công!</p>
+      <p id="oauth-status">Đang hoàn tất đăng nhập...</p>
       <script>
         const data = ${JSON.stringify(data)};
         if (window.opener) {
@@ -290,7 +296,13 @@ function sendOAuthCallbackPage(res, data) {
           localStorage.setItem('accessToken', data.data.accessToken);
           localStorage.setItem('refreshToken', data.data.refreshToken);
           localStorage.setItem('customer', JSON.stringify(data.data.customer));
-          window.location.href = '/';
+          localStorage.setItem('MG_CLIENT_AUTH', JSON.stringify({
+            accessToken: data.data.accessToken,
+            refreshToken: data.data.refreshToken,
+            customer: data.data.customer,
+            loggedInAt: Date.now()
+          }));
+          document.getElementById('oauth-status').textContent = 'Token đã được lưu vào localStorage.';
         }
       </script>
     </body>
@@ -1032,10 +1044,10 @@ router.post('/google', async (req, res) => {
 
 // GET /auth/google/redirect - Create Google OAuth redirect URL
 router.get('/google/redirect', (req, res) => {
-  if (!process.env.GOOGLE_CLIENT_ID) {
+  if (!isConfiguredSecret(process.env.GOOGLE_CLIENT_ID)) {
     return res.status(500).json({
       success: false,
-      message: 'Missing GOOGLE_CLIENT_ID',
+      message: 'Missing or invalid GOOGLE_CLIENT_ID',
     });
   }
 
@@ -1226,10 +1238,10 @@ router.post('/zalo', async (req, res) => {
 
 // GET /auth/zalo/redirect — Tạo link redirect OAuth2 Zalo
 router.get('/zalo/redirect', (req, res) => {
-  if (!process.env.ZALO_APP_ID) {
+  if (!isConfiguredSecret(process.env.ZALO_APP_ID)) {
     return res.status(500).json({
       success: false,
-      message: 'Missing ZALO_APP_ID',
+      message: 'Missing or invalid ZALO_APP_ID',
     });
   }
 
