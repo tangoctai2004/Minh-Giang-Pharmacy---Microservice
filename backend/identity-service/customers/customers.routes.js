@@ -239,6 +239,37 @@ router.put('/me', async (req, res) => {
   }
 });
 
+// GET /customers/phone/:phone — Tra cứu khách hàng theo SĐT (dùng cho POS)
+router.get('/phone/:phone', async (req, res) => {
+  if (!req.userId) {
+    return res.status(401).json({ success: false, message: 'Chưa đăng nhập' });
+  }
+  if (!canViewCustomers(req)) {
+    return res.status(403).json({ success: false, message: 'Không có quyền tra cứu thông tin khách hàng' });
+  }
+
+  try {
+    const { phone } = req.params;
+    const fields = await customerSelect([
+      'id', 'code', 'full_name', 'phone', 'email', 'loyalty_points',
+      'loyalty_tier', 'is_active', 'created_at',
+    ]);
+    const [rows] = await pool.query(
+      `SELECT ${fields}
+       FROM customers
+       WHERE phone = ? AND deleted_at IS NULL
+       LIMIT 1`,
+      [phone]
+    );
+    if (!rows.length) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy khách hàng' });
+    }
+    res.json({ success: true, data: rows[0] });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // GET /customers/:id — Chi tiết 1 khách hàng
 router.get('/:id', async (req, res) => {
   if (!requireCanViewCustomer(req, res, req.params.id)) return;
