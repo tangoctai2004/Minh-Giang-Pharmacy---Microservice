@@ -3,7 +3,8 @@
  * Xử lý hiển thị và tương tác trên trang giỏ hàng (cart.html)
  */
 
-const API_BASE = 'http://localhost:8000/api/order';
+const GATEWAY = ((window.MGClientApi && window.MGClientApi.gatewayOrigin) || window.MG_API_GATEWAY_ORIGIN || 'http://localhost:8000').replace(/\/+$/, '');
+const API_BASE = GATEWAY + '/api/order';
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('[CartPage] DOMContentLoaded fired');

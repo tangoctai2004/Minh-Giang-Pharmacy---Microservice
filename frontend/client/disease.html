@@ -435,8 +435,10 @@
     <!-- Main Footer -->
     <div mg-include="../components/main_footer.html"></div>
 
+    <script src="../assets/js/client-api.js"></script>
     <script>
-        const API_BASE = 'http://localhost:8000/api';
+        const GATEWAY = ((window.MGClientApi && window.MGClientApi.gatewayOrigin) || window.MG_API_GATEWAY_ORIGIN || 'http://localhost:8000').replace(/\/+$/, '');
+        const API_BASE = GATEWAY + '/api';
         let diseaseData = {};
         let allArticles = [];
 

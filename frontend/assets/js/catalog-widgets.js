@@ -3,7 +3,7 @@
  * Handles top searches and featured products wherever the components are included.
  */
 (function initCatalogWidgets(global) {
-    const DEFAULT_CATALOG_BASE = 'http://localhost:8000/api/catalog';
+    const DEFAULT_CATALOG_BASE = ((window.MGClientApi && window.MGClientApi.gatewayOrigin) || window.MG_API_GATEWAY_ORIGIN || 'http://localhost:8000').replace(/\/+$/, '') + '/api/catalog';
     const initializedFeaturedSections = new WeakSet();
     const initializedTopSearchContainers = new WeakSet();
     let cachedTopSearches = null;

@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bệnh truyền nhiễm — Nhà Thuốc Minh Giang</title>
+    <meta name="description" content="Tổng hợp bài viết và thông tin về các bệnh truyền nhiễm phổ biến tại Nhà Thuốc Minh Giang.">
     <link rel="stylesheet" href="../assets/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -29,7 +30,6 @@
             font-weight: bold;
             border-radius: 8px;
             margin-bottom: 30px;
-            background-image: url('assets/banner_truyen_nhiem_bg.png');
             background-size: cover;
             background-position: center;
         }
@@ -49,6 +49,8 @@
             display: flex;
             flex-direction: column;
             transition: transform 0.2s;
+            text-decoration: none;
+            color: inherit;
         }
 
         .article-card-main:hover {
@@ -109,6 +111,7 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 20px;
+            min-height: 200px;
         }
 
         .section-header-custom {
@@ -131,12 +134,15 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
+            min-height: 100px;
         }
 
         .tin-noi-bat-card {
             display: flex;
             flex-direction: column;
             gap: 8px;
+            text-decoration: none;
+            color: inherit;
         }
 
         .tin-noi-bat-card img {
@@ -179,6 +185,15 @@
             margin: 0 6px;
             color: #9ca3af;
         }
+
+        /* Skeleton animation */
+        .skeleton-card {
+            animation: skeleton-pulse 1.5s infinite;
+        }
+        @keyframes skeleton-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
     </style>
 </head>
 
@@ -194,81 +209,34 @@
     <div mg-include="../components/main_header.html"></div>
 
     <!-- Content -->
-    <main class="container">
+    <main class="container" data-category-slug="benh-truyen-nhiem">
         <!-- Breadcrumb -->
         <div class="breadcrumb">
             <a href="index.html">Trang chủ</a><span>›</span>
             <a href="disease.html">Bệnh lý</a><span>›</span>
-            <strong style="color:#0b7a3e">Bệnh truyền nhiễm</strong>
+            <strong id="pageGroupTitle" style="color:#0b7a3e">Bệnh truyền nhiễm</strong>
         </div>
 
         <!-- Hero Banner -->
-        <div class="hero-banner-category">
+        <div class="hero-banner-category" id="heroBanner">
             Bệnh truyền nhiễm
         </div>
 
         <div class="page-layout-custom">
 
-            <!-- Main Content Area: Article Grid -->
+            <!-- Main Content Area: Article Grid (động) -->
             <div>
-                <h2 class="section-header-custom">Bệnh truyền nhiễm</h2>
-                <div class="main-articles-grid">
-
-                    <a href="article-benh-gut.html" class="article-card-main">
-                        <img src="../assets/images/benh-ly/tt_giang-mai.png" alt="Bệnh thủy đậu: Hiểu đúng, phòng tránh và điều trị kịp thời" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><rect width=\'100\' height=\'100\' fill=\'#f3f4f6\'/><text x=\'50\' y=\'50\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'sans-serif\' font-size=\'14\' fill=\'#9ca3af\'>Image</text></svg>'">
-                        <div class="article-card-content">
-                            <span class="article-category">Bệnh truyền nhiễm</span>
-                            <h3>Bệnh thủy đậu: Hiểu đúng, phòng tránh và điều trị kịp thời</h3>
-                            <p>Thủy đậu là bệnh truyền nhiễm cấp tính do virus gây ra, rất dễ lây lan thành dịch vào mùa đông xuân...</p>
-                        </div>
-                    </a>
-
-                    <a href="article-benh-gut.html" class="article-card-main">
-                        <img src="../assets/images/benh-ly/tt_uon-van.png" alt="Bệnh sởi ở trẻ em: 4 giai đoạn cần biết và cách chăm sóc nhanh khỏi" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><rect width=\'100\' height=\'100\' fill=\'#f3f4f6\'/><text x=\'50\' y=\'50\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'sans-serif\' font-size=\'14\' fill=\'#9ca3af\'>Image</text></svg>'">
-                        <div class="article-card-content">
-                            <span class="article-category">Bệnh truyền nhiễm</span>
-                            <h3>Bệnh sởi ở trẻ em: 4 giai đoạn cần biết và cách chăm sóc nhanh khỏi</h3>
-                            <p>Sởi ở trẻ em diễn tiến qua các giai đoạn rõ rệt, cần nhận biết sớm để chăm sóc kịp thời và tránh các biến chứng...</p>
-                        </div>
-                    </a>
-
-                    <a href="article-benh-gut.html" class="article-card-main">
-                        <img src="../assets/images/benh-ly/tt_botulinum.png" alt="Bộ Y Tế Việt Nam cập nhật khuyến cáo phòng Dịch COVID-19" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><rect width=\'100\' height=\'100\' fill=\'#f3f4f6\'/><text x=\'50\' y=\'50\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'sans-serif\' font-size=\'14\' fill=\'#9ca3af\'>Image</text></svg>'">
-                        <div class="article-card-content">
-                            <span class="article-category">Bệnh truyền nhiễm</span>
-                            <h3>Bộ Y Tế Việt Nam cập nhật khuyến cáo phòng Dịch COVID-19</h3>
-                            <p>Khuyến cáo mới nhất từ Bộ Y tế về các biện pháp 5K và vắc-xin bảo vệ cộng đồng chống lại virus Corona...</p>
-                        </div>
-                    </a>
+                <h2 class="section-header-custom" id="pageGroupTitle">Bệnh truyền nhiễm</h2>
+                <div class="main-articles-grid" id="articlesGrid">
+                    <!-- Được render bởi disease-group-loader.js -->
                 </div>
             </div>
 
-            <!-- Right Sidebar: Tin Nổi Bật -->
+            <!-- Right Sidebar: Tin Nổi Bật (động) -->
             <aside class="featured-news-sidebar">
                 <h2 class="section-header-custom" style="font-size: 16px;">TIN NỔI BẬT</h2>
-                <div class="tin-noi-bat-list">
-
-                    <a href="article-benh-gut.html" class="tin-noi-bat-card">
-                        <img src="../assets/images/benh-ly/tt_uon-van.png" alt="Uốn ván"
-                            onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><rect width=\'100\' height=\'100\' fill=\'#f3f4f6\'/><text x=\'50\' y=\'50\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'sans-serif\' font-size=\'14\' fill=\'#9ca3af\'>Image</text></svg>'">
-                        <span class="article-category" style="margin-bottom: 4px;">Bệnh ung thư</span>
-                        <h4>Triệu chứng ung thư vòm họng: Nhận biết sớm để tăng cơ hội chữa khỏi</h4>
-                    </a>
-
-                    <a href="article-benh-gut.html" class="tin-noi-bat-card">
-                        <img src="../assets/images/benh-ly/tt_botulinum.png" alt="Botulinum"
-                            onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><rect width=\'100\' height=\'100\' fill=\'#f3f4f6\'/><text x=\'50\' y=\'50\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'sans-serif\' font-size=\'14\' fill=\'#9ca3af\'>Image</text></svg>'">
-                        <span class="article-category" style="margin-bottom: 4px;">Bệnh lý</span>
-                        <h4>[Cảnh Báo] Nguy cơ ngộ độc Botulinum: Dấu hiệu nhận biết theo từng giai đoạn</h4>
-                    </a>
-
-                    <a href="article-benh-gut.html" class="tin-noi-bat-card">
-                        <img src="../assets/images/benh-ly/tt_giang-mai.png" alt="Giang mai"
-                            onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><rect width=\'100\' height=\'100\' fill=\'#f3f4f6\'/><text x=\'50\' y=\'50\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'sans-serif\' font-size=\'14\' fill=\'#9ca3af\'>Image</text></svg>'">
-                        <span class="article-category" style="margin-bottom: 4px;">Bệnh truyền nhiễm</span>
-                        <h4>Bị thuỷ đậu kiêng gì? Top 05 các thực phẩm tốt cho người bị trái rạ</h4>
-                    </a>
-
+                <div class="tin-noi-bat-list" id="featuredList">
+                    <!-- Được render bởi disease-group-loader.js -->
                 </div>
             </aside>
 
@@ -297,10 +265,10 @@
     <!-- Main Footer -->
     <div mg-include="../components/main_footer.html"></div>
 
-
     <script src="../assets/js/dropdown-handler.js"></script>
     <script src="../assets/js/mega-menu-loader.js"></script>
     <script src="../assets/js/components.js"></script>
+    <script src="../assets/js/disease-group-loader.js"></script>
 </body>
 
 </html>

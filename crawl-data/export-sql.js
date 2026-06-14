@@ -38,6 +38,7 @@ function exportText(value, maxLength = null) {
 }
 
 function sqlJson(value) {
+
   if (value === null || value === undefined) return 'NULL';
   return sqlString(JSON.stringify(value));
 }

@@ -3,7 +3,14 @@
  * Loads live order stats, inventory alerts, and revenue chart on the admin dashboard.
  */
 
-const API_BASE = 'http://localhost:8000/api';
+const API_BASE = localStorage.getItem('MG_API_BASE') || (
+    (window.location.origin.includes('localhost:5500') ||
+     window.location.origin.includes('localhost:5501') ||
+     window.location.origin.includes('127.0.0.1:5500') ||
+     window.location.origin.includes('127.0.0.1:5501'))
+    ? 'http://localhost:8000/api'
+    : window.location.origin.replace(/\/+$/, '') + '/api'
+);
 
 document.addEventListener('DOMContentLoaded', () => {
     initAdminDashboard();

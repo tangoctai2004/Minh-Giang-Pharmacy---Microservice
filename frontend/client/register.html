@@ -393,8 +393,12 @@
                 el.querySelector('i').classList.replace('fa-check-circle', 'fa-circle');
             }
         }
+    </script>
 
-        const API_BASE = 'http://localhost:8000/api/identity';
+    <script src="../assets/js/client-api.js"></script>
+    <script>
+        const GATEWAY = ((window.MGClientApi && window.MGClientApi.gatewayOrigin) || window.MG_API_GATEWAY_ORIGIN || 'http://localhost:8000').replace(/\/+$/, '');
+        const API_BASE = GATEWAY + '/api/identity';
 
         function showRegisterError(msg) {
             const box = document.getElementById('registerError');
@@ -450,7 +454,7 @@
                     const localCart = JSON.parse(localStorage.getItem('MG_CLIENT_CART') || '[]');
                     if (localCart.length > 0) {
                         for (const item of localCart) {
-                            await fetch('http://localhost:8000/api/order/cart/items', {
+                            await fetch(GATEWAY + '/api/order/cart/items', {
                                 method: 'POST',
                                 headers: { 
                                     'Content-Type': 'application/json',

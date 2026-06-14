@@ -996,6 +996,15 @@
 
     <!-- ============ SCRIPTS ============ -->
     <script>
+        const POS_API_BASE = localStorage.getItem('MG_API_BASE') || (
+            (window.location.origin.includes('localhost:5500') ||
+             window.location.origin.includes('localhost:5501') ||
+             window.location.origin.includes('127.0.0.1:5500') ||
+             window.location.origin.includes('127.0.0.1:5501'))
+            ? 'http://localhost:8000/api'
+            : window.location.origin.replace(/\/+$/, '') + '/api'
+        );
+
         // Check Authentication on POS load
         const authStr = localStorage.getItem('MG_POS_AUTH');
         if (!authStr) {
@@ -1031,7 +1040,7 @@
         // Load Transaction Statistics
         async function loadStats() {
             try {
-                const response = await fetch('http://localhost:8000/api/order/orders/stats', {
+                const response = await fetch(`${POS_API_BASE}/order/orders/stats`, {
                     headers: {
                         'Authorization': `Bearer ${auth.accessToken}`
                     }
@@ -1124,7 +1133,7 @@
             }
 
             try {
-                const response = await fetch(`http://localhost:8000/api/order/orders?${queryParams.toString()}`, {
+                const response = await fetch(`${POS_API_BASE}/order/orders?${queryParams.toString()}`, {
                     headers: {
                         'Authorization': `Bearer ${auth.accessToken}`
                     }
@@ -1300,7 +1309,7 @@
             }
 
             try {
-                const response = await fetch(`http://localhost:8000/api/order/orders/${orderId}`, {
+                const response = await fetch(`${POS_API_BASE}/order/orders/${orderId}`, {
                     headers: {
                         'Authorization': `Bearer ${auth.accessToken}`
                     }
@@ -1454,7 +1463,7 @@
             btn.textContent = 'ĐANG XỬ LÝ...';
 
             try {
-                const response = await fetch(`http://localhost:8000/api/order/orders/${currentRefundOrder.id}/status`, {
+                const response = await fetch(`${POS_API_BASE}/order/orders/${currentRefundOrder.id}/status`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1521,7 +1530,7 @@
             }
 
             try {
-                const response = await fetch(`http://localhost:8000/api/order/orders/${code}`, {
+                const response = await fetch(`${POS_API_BASE}/order/orders/${code}`, {
                     headers: {
                         'Authorization': `Bearer ${auth.accessToken}`
                     }

@@ -3,7 +3,14 @@
  * Manages POS kiosk product lookup, search, cart, loyalty points, and checkout.
  */
 
-const API_BASE = 'http://localhost:8000/api';
+const API_BASE = localStorage.getItem('MG_API_BASE') || (
+    (window.location.origin.includes('localhost:5500') ||
+     window.location.origin.includes('localhost:5501') ||
+     window.location.origin.includes('127.0.0.1:5500') ||
+     window.location.origin.includes('127.0.0.1:5501'))
+    ? 'http://localhost:8000/api'
+    : window.location.origin.replace(/\/+$/, '') + '/api'
+);
 
 let posCart = [];
 let categories = [];

@@ -3,7 +3,8 @@
  * Loads homepage content dynamically from API Gateway
  */
 
-const API_BASE = 'http://localhost:8000/api';
+const GATEWAY = ((window.MGClientApi && window.MGClientApi.gatewayOrigin) || window.MG_API_GATEWAY_ORIGIN || 'http://localhost:8000').replace(/\/+$/, '');
+const API_BASE = GATEWAY + '/api';
 
 document.addEventListener('DOMContentLoaded', () => {
     loadBanners();

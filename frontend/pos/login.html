@@ -777,7 +777,16 @@
             status.className = 'login-pin-status waiting';
             status.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Đang xác thực...</span>';
 
-            fetch('http://localhost:8000/api/identity/auth/login-pos', {
+            const POS_API_BASE = localStorage.getItem('MG_API_BASE') || (
+                (window.location.origin.includes('localhost:5500') ||
+                 window.location.origin.includes('localhost:5501') ||
+                 window.location.origin.includes('127.0.0.1:5500') ||
+                 window.location.origin.includes('127.0.0.1:5501'))
+                ? 'http://localhost:8000/api'
+                : window.location.origin.replace(/\/+$/, '') + '/api'
+            );
+
+            fetch(POS_API_BASE + '/identity/auth/login-pos', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

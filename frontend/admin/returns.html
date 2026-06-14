@@ -484,8 +484,22 @@
     <!-- Scripts -->
     <script src="js/admin-components.js"></script>
     <script>
-        const API_BASE = 'http://localhost:8000/api/order/returns';
-        const ORDERS_API_BASE = 'http://localhost:8000/api/order/orders';
+        const API_BASE = (localStorage.getItem('MG_API_BASE') || (
+            (window.location.origin.includes('localhost:5500') ||
+             window.location.origin.includes('localhost:5501') ||
+             window.location.origin.includes('127.0.0.1:5500') ||
+             window.location.origin.includes('127.0.0.1:5501'))
+            ? 'http://localhost:8000/api'
+            : window.location.origin.replace(/\/+$/, '') + '/api'
+        )) + '/order/returns';
+        const ORDERS_API_BASE = (localStorage.getItem('MG_API_BASE') || (
+            (window.location.origin.includes('localhost:5500') ||
+             window.location.origin.includes('localhost:5501') ||
+             window.location.origin.includes('127.0.0.1:5500') ||
+             window.location.origin.includes('127.0.0.1:5501'))
+            ? 'http://localhost:8000/api'
+            : window.location.origin.replace(/\/+$/, '') + '/api'
+        )) + '/order/orders';
         let currentPage = { pos: 1, web: 1, supplier: 1 };
         const itemsPerPage = 10;
         let activeLookupOrder = null;

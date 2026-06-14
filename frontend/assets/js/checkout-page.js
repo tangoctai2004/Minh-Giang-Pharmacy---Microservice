@@ -13,7 +13,8 @@
 
     function catalogApi() {
         if (window.MGCatalogApi) return window.MGCatalogApi;
-        const baseUrl = window.MG_CATALOG_API_BASE || 'http://localhost:8000/api/catalog';
+        const gateway = ((window.MGClientApi && window.MGClientApi.gatewayOrigin) || window.MG_API_GATEWAY_ORIGIN || 'http://localhost:8000').replace(/\/+$/, '');
+        const baseUrl = window.MG_CATALOG_API_BASE || (gateway + '/api/catalog');
         return {
             async get(path, params) {
                 const url = new URL(`${baseUrl.replace(/\/+$/, '')}/${String(path).replace(/^\/+/, '')}`);

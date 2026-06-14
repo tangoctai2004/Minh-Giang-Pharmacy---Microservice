@@ -7,7 +7,17 @@
 // Intercept global fetch to automatically inject token and handle 401 Unauthorized
 const originalFetch = window.fetch;
 window.fetch = async function (resource, options = {}) {
-    if (typeof resource === 'string' && resource.includes('localhost:8000/api/')) {
+    const resolvedApiBase = localStorage.getItem('MG_API_BASE') || (
+        (window.location.origin.includes('localhost:5500') ||
+         window.location.origin.includes('localhost:5501') ||
+         window.location.origin.includes('127.0.0.1:5500') ||
+         window.location.origin.includes('127.0.0.1:5501'))
+        ? 'http://localhost:8000/api'
+        : window.location.origin.replace(/\/+$/, '') + '/api'
+    );
+    const isApiRequest = typeof resource === 'string' && (resource.includes('/api/') || resource.includes(resolvedApiBase));
+
+    if (isApiRequest) {
         options.headers = options.headers || {};
         let headers = options.headers;
         let hasAuth = false;
@@ -37,7 +47,7 @@ window.fetch = async function (resource, options = {}) {
 
     try {
         const response = await originalFetch(resource, options);
-        if (response.status === 401 && typeof resource === 'string' && resource.includes('localhost:8000/api/')) {
+        if (response.status === 401 && isApiRequest) {
             console.warn('Unauthorized request detected (401), redirecting to admin login...');
             localStorage.removeItem('MG_ADMIN_AUTH');
             if (!window.location.pathname.endsWith('login.html')) {
