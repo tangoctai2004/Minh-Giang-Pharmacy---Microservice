@@ -24,6 +24,8 @@ router.get('/', (req, res) => {
       'POST   /auth/login-pos',
       'POST   /auth/register',
       'POST   /auth/google',
+      'GET    /auth/google/redirect',
+      'GET    /auth/google/callback',
       'POST   /auth/zalo',
       'GET    /auth/zalo/redirect',
       'GET    /auth/zalo/callback',

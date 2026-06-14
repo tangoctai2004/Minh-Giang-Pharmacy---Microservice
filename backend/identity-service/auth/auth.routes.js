@@ -23,7 +23,279 @@ function parsePermissions(value) {
 }
 
 function allowSocialAuthFallback() {
-  return process.env.NODE_ENV !== 'production' && process.env.SOCIAL_AUTH_MOCK !== 'false';
+  return process.env.NODE_ENV !== 'production' && process.env.SOCIAL_AUTH_MOCK === 'true';
+}
+
+function getGatewayUrl() {
+  return process.env.GATEWAY_URL || 'http://localhost:8000';
+}
+
+function getGoogleRedirectUri() {
+  return process.env.GOOGLE_REDIRECT_URI || `${getGatewayUrl()}/api/identity/auth/google/callback`;
+}
+
+function getZaloRedirectUri() {
+  return process.env.ZALO_REDIRECT_URI || `${getGatewayUrl()}/api/identity/auth/zalo/callback`;
+}
+
+function base64Url(buffer) {
+  return Buffer.from(buffer)
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '');
+}
+
+function getOAuthSecret() {
+  return process.env.JWT_SECRET || 'change_me_to_a_random_32_char_string';
+}
+
+function createOAuthState(provider) {
+  const nonce = crypto.randomBytes(16).toString('hex');
+  const timestamp = Date.now().toString();
+  const payload = `${provider}.${timestamp}.${nonce}`;
+  const signature = base64Url(crypto.createHmac('sha256', getOAuthSecret()).update(payload).digest());
+  return `${payload}.${signature}`;
+}
+
+function verifyOAuthState(provider, state) {
+  if (!state || typeof state !== 'string') return false;
+
+  const parts = state.split('.');
+  if (parts.length !== 4 || parts[0] !== provider) return false;
+
+  const timestamp = Number(parts[1]);
+  if (!Number.isFinite(timestamp) || Date.now() - timestamp > 10 * 60 * 1000) return false;
+
+  const payload = parts.slice(0, 3).join('.');
+  const expected = base64Url(crypto.createHmac('sha256', getOAuthSecret()).update(payload).digest());
+  const actual = parts[3];
+  if (expected.length !== actual.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(actual));
+}
+
+function readCookie(req, name) {
+  const cookieHeader = req.headers.cookie || '';
+  const cookies = cookieHeader.split(';').map((part) => part.trim()).filter(Boolean);
+  const prefix = `${name}=`;
+  const cookie = cookies.find((part) => part.startsWith(prefix));
+  if (!cookie) return null;
+  try {
+    return decodeURIComponent(cookie.slice(prefix.length));
+  } catch (_err) {
+    return null;
+  }
+}
+
+function setOAuthCookie(res, name, value) {
+  res.cookie(name, value, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 10 * 60 * 1000,
+    path: '/',
+  });
+}
+
+function clearOAuthCookie(res, name) {
+  res.clearCookie(name, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+  });
+}
+
+function validateOAuthState(req, res, provider) {
+  const state = req.query.state;
+  const cookieName = `oauth_${provider}_state`;
+  const expectedState = readCookie(req, cookieName);
+  clearOAuthCookie(res, cookieName);
+  return expectedState && state === expectedState && verifyOAuthState(provider, state);
+}
+
+function createPkcePair() {
+  const verifier = base64Url(crypto.randomBytes(32));
+  const challenge = base64Url(crypto.createHash('sha256').update(verifier).digest());
+  return { verifier, challenge };
+}
+
+async function verifyGoogleIdToken(idToken) {
+  const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`);
+  if (!response.ok) {
+    return { ok: false, reason: `tokeninfo_${response.status}` };
+  }
+
+  const payload = await response.json();
+  const audienceOk = !process.env.GOOGLE_CLIENT_ID || payload.aud === process.env.GOOGLE_CLIENT_ID;
+  const emailVerified = payload.email_verified === true || payload.email_verified === 'true';
+  if (!audienceOk || !emailVerified || !payload.sub || !payload.email) {
+    return { ok: false, reason: 'audience_or_email_unverified', payload };
+  }
+
+  return {
+    ok: true,
+    profile: {
+      googleId: payload.sub,
+      email: payload.email,
+      name: payload.name || payload.email,
+      picture: payload.picture || null,
+    },
+  };
+}
+
+async function exchangeGoogleCode(code) {
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    throw new Error('Thiếu GOOGLE_CLIENT_ID hoặc GOOGLE_CLIENT_SECRET');
+  }
+
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      code,
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      client_secret: process.env.GOOGLE_CLIENT_SECRET,
+      redirect_uri: getGoogleRedirectUri(),
+      grant_type: 'authorization_code',
+    }),
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || !payload.id_token) {
+    throw new Error(payload.error_description || payload.error || 'Không đổi được Google authorization code');
+  }
+  return payload;
+}
+
+async function getZaloProfile(accessToken) {
+  const response = await fetch('https://graph.zalo.me/v2.0/me?fields=id,name,picture', {
+    headers: { access_token: accessToken },
+  });
+  if (!response.ok) {
+    throw new Error(`Không lấy được Zalo profile (${response.status})`);
+  }
+  const payload = await response.json();
+  return {
+    zaloId: payload.id,
+    name: payload.name,
+    picture: payload.picture && payload.picture.data && payload.picture.data.url ? payload.picture.data.url : null,
+  };
+}
+
+async function exchangeZaloCode(code, codeVerifier) {
+  const appId = process.env.ZALO_APP_ID;
+  const appSecret = process.env.ZALO_APP_SECRET;
+  if (!appId || !appSecret) {
+    throw new Error('Thiếu ZALO_APP_ID hoặc ZALO_APP_SECRET');
+  }
+
+  const body = new URLSearchParams({
+    code,
+    app_id: appId,
+    grant_type: 'authorization_code',
+  });
+  if (codeVerifier) {
+    body.set('code_verifier', codeVerifier);
+  }
+
+  const response = await fetch('https://oauth.zaloapp.com/v4/access_token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      secret_key: appSecret,
+    },
+    body,
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || !payload.access_token) {
+    throw new Error(payload.error_name || payload.error_description || payload.error || 'Không đổi được Zalo authorization code');
+  }
+  return payload;
+}
+
+async function findOrCreateGoogleCustomer({ googleId, email, name, picture }) {
+  const supportsGoogleId = await hasCustomerColumn('google_id');
+  const supportsAvatar = await hasCustomerColumn('avatar_url');
+  let customer = null;
+
+  if (supportsGoogleId) {
+    [[customer]] = await pool.query(
+      'SELECT * FROM customers WHERE google_id = ? AND deleted_at IS NULL LIMIT 1',
+      [googleId]
+    );
+  }
+
+  if (!customer && email) {
+    [[customer]] = await pool.query(
+      'SELECT * FROM customers WHERE email = ? AND deleted_at IS NULL LIMIT 1',
+      [email]
+    );
+    if (customer) {
+      const updateFields = [];
+      const updateValues = [];
+      if (supportsGoogleId) {
+        updateFields.push('google_id = ?');
+        updateValues.push(googleId);
+        customer.google_id = googleId;
+      }
+      if (supportsAvatar && picture) {
+        updateFields.push('avatar_url = COALESCE(avatar_url, ?)');
+        updateValues.push(picture);
+        if (!customer.avatar_url) customer.avatar_url = picture;
+      }
+      if (updateFields.length) {
+        updateValues.push(customer.id);
+        await pool.query(`UPDATE customers SET ${updateFields.join(', ')} WHERE id = ?`, updateValues);
+      }
+    }
+  }
+
+  if (!customer) {
+    const code = await generateCustomerCode();
+    const safeEmail = email || socialFallbackEmail('google', googleId);
+    const passwordHash = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 10);
+    const [result] = await insertCustomer({
+      full_name: name || safeEmail.split('@')[0] || 'Google User',
+      email: safeEmail,
+      phone: socialFallbackPhone('google', googleId),
+      password_hash: passwordHash,
+      google_id: googleId,
+      avatar_url: picture || null,
+      code,
+      is_active: 1,
+    });
+    const [[newCustomer]] = await pool.query('SELECT * FROM customers WHERE id = ?', [result.insertId]);
+    customer = newCustomer;
+  }
+
+  return { customer, supportsAvatar };
+}
+
+function sendOAuthCallbackPage(res, data) {
+  const frontendOrigin = process.env.FRONTEND_ORIGIN || process.env.GATEWAY_URL || 'http://localhost:3000';
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head><title>OAuth Authentication</title></head>
+    <body>
+      <p>Đăng nhập thành công! Đang chuyển hướng...</p>
+      <script>
+        const data = ${JSON.stringify(data)};
+        if (window.opener) {
+          window.opener.postMessage(data, ${JSON.stringify(frontendOrigin)});
+          window.close();
+        } else {
+          localStorage.setItem('accessToken', data.data.accessToken);
+          localStorage.setItem('refreshToken', data.data.refreshToken);
+          localStorage.setItem('customer', JSON.stringify(data.data.customer));
+          window.location.href = '/';
+        }
+      </script>
+    </body>
+    </html>
+  `);
 }
 
 /**
@@ -627,7 +899,7 @@ router.post('/google', async (req, res) => {
     // 1. Xác thực Google ID Token
     if (idToken) {
       try {
-        const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`);
+        const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`);
         if (response.ok) {
           const payload = await response.json();
           const audienceOk = !process.env.GOOGLE_CLIENT_ID || payload.aud === process.env.GOOGLE_CLIENT_ID;
@@ -758,6 +1030,90 @@ router.post('/google', async (req, res) => {
   }
 });
 
+// GET /auth/google/redirect - Create Google OAuth redirect URL
+router.get('/google/redirect', (req, res) => {
+  if (!process.env.GOOGLE_CLIENT_ID) {
+    return res.status(500).json({
+      success: false,
+      message: 'Missing GOOGLE_CLIENT_ID',
+    });
+  }
+
+  const state = createOAuthState('google');
+  setOAuthCookie(res, 'oauth_google_state', state);
+  const params = new URLSearchParams({
+    client_id: process.env.GOOGLE_CLIENT_ID,
+    redirect_uri: getGoogleRedirectUri(),
+    response_type: 'code',
+    scope: 'openid email profile',
+    access_type: 'offline',
+    prompt: 'select_account',
+    state,
+  });
+  const redirectUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+
+  if (req.headers.accept && req.headers.accept.includes('application/json')) {
+    return res.json({
+      success: true,
+      data: { redirect_url: redirectUrl, state },
+    });
+  }
+
+  res.redirect(redirectUrl);
+});
+
+// GET /auth/google/callback - Handle Google OAuth authorization code
+router.get('/google/callback', async (req, res) => {
+  try {
+    const { code } = req.query;
+    if (!code) {
+      return res.status(400).send('Missing authorization code');
+    }
+    if (!validateOAuthState(req, res, 'google')) {
+      return res.status(400).send('Invalid OAuth state');
+    }
+
+    const googleToken = await exchangeGoogleCode(code);
+    const verification = await verifyGoogleIdToken(googleToken.id_token);
+    if (!verification.ok) {
+      return res.status(401).send('Invalid Google authorization code or unverified email');
+    }
+
+    const { customer, supportsAvatar } = await findOrCreateGoogleCustomer(verification.profile);
+    if (!customer.is_active) {
+      return res.status(401).send('Account is disabled');
+    }
+
+    const { accessToken, refreshToken } = await generateTokens({
+      id: customer.id,
+      role: 'customer',
+      type: 'customer',
+    });
+
+    sendOAuthCallbackPage(res, {
+      success: true,
+      data: {
+        accessToken,
+        refreshToken,
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        customer: {
+          id: customer.id,
+          full_name: customer.full_name,
+          email: customer.email || null,
+          phone: customer.phone || null,
+          role: 'customer',
+          avatar_url: supportsAvatar ? customer.avatar_url : null,
+          loyalty_tier: customer.loyalty_tier || 'member',
+          loyalty_points: customer.loyalty_points || 0,
+        },
+      },
+    });
+  } catch (err) {
+    res.status(500).send('Server error: ' + err.message);
+  }
+});
+
 // POST /auth/zalo — Đăng nhập bằng Zalo
 router.post('/zalo', async (req, res) => {
   try {
@@ -870,15 +1226,30 @@ router.post('/zalo', async (req, res) => {
 
 // GET /auth/zalo/redirect — Tạo link redirect OAuth2 Zalo
 router.get('/zalo/redirect', (req, res) => {
-  const appId = process.env.ZALO_APP_ID || '1234567890';
-  const redirectUri = process.env.ZALO_REDIRECT_URI || `${process.env.GATEWAY_URL || 'http://localhost:8000'}/api/identity/auth/zalo/callback`;
-  const state = crypto.randomBytes(8).toString('hex');
-  const redirectUrl = `https://oauth.zaloapp.com/v4/permission?app_id=${appId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
+  if (!process.env.ZALO_APP_ID) {
+    return res.status(500).json({
+      success: false,
+      message: 'Missing ZALO_APP_ID',
+    });
+  }
+
+  const state = createOAuthState('zalo');
+  const pkce = createPkcePair();
+  setOAuthCookie(res, 'oauth_zalo_state', state);
+  setOAuthCookie(res, 'oauth_zalo_code_verifier', pkce.verifier);
+  const params = new URLSearchParams({
+    app_id: process.env.ZALO_APP_ID,
+    redirect_uri: getZaloRedirectUri(),
+    state,
+    code_challenge: pkce.challenge,
+    code_challenge_method: 'S256',
+  });
+  const redirectUrl = `https://oauth.zaloapp.com/v4/permission?${params.toString()}`;
 
   if (req.headers.accept && req.headers.accept.includes('application/json')) {
     return res.json({
       success: true,
-      data: { redirect_url: redirectUrl }
+      data: { redirect_url: redirectUrl, state }
     });
   }
 
@@ -892,68 +1263,34 @@ router.get('/zalo/callback', async (req, res) => {
     if (!code) {
       return res.status(400).send('Thiếu authorization code');
     }
+    if (!validateOAuthState(req, res, 'zalo')) {
+      return res.status(400).send('Invalid OAuth state');
+    }
     const supportsAvatar = await hasCustomerColumn('avatar_url');
 
-    let zaloId = allowSocialAuthFallback() ? 'mock_zalo_id_' + code.substring(0, 8) : null;
-    let name = allowSocialAuthFallback() ? 'Zalo User ' + code.substring(0, 4) : null;
-    let picture = null;
-    let socialVerified = false;
+    const codeVerifier = readCookie(req, 'oauth_zalo_code_verifier') || process.env.ZALO_CODE_VERIFIER;
+    clearOAuthCookie(res, 'oauth_zalo_code_verifier');
+    const tokenData = await exchangeZaloCode(code, codeVerifier);
+    const profile = await getZaloProfile(tokenData.access_token);
+    const realZaloId = profile.zaloId;
+    const realName = profile.name || 'Zalo User';
+    const realPicture = profile.picture;
 
-    const appId = process.env.ZALO_APP_ID || '1234567890';
-    const appSecret = process.env.ZALO_APP_SECRET || 'mock_secret';
-
-    try {
-      const tokenRes = await fetch('https://oauth.zaloapp.com/v3/access_token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'secret_key': appSecret
-        },
-        body: new URLSearchParams({
-          code,
-          app_id: appId,
-          grant_type: 'authorization_code'
-        })
-      });
-
-      if (tokenRes.ok) {
-        const tokenData = await tokenRes.json();
-        const accessToken = tokenData.access_token;
-
-        const profileRes = await fetch('https://graph.zalo.me/v2.0/me?fields=id,name,picture', {
-          headers: { access_token: accessToken }
-        });
-        if (profileRes.ok) {
-          const profileData = await profileRes.json();
-          zaloId = profileData.id;
-          name = profileData.name;
-          picture = profileData.picture && profileData.picture.data && profileData.picture.data.url ? profileData.picture.data.url : null;
-          socialVerified = true;
-        }
-      }
-    } catch (e) {
-      console.warn('[Zalo Callback] Không thể kết nối Zalo OAuth, chạy chế độ mock/fallback:', e.message);
-    }
-
-    if (!socialVerified && !allowSocialAuthFallback()) {
-      return res.status(401).send('Zalo authorization code không hợp lệ hoặc không xác thực được');
-    }
-
-    let [[customer]] = await pool.query(
+    let [[realCustomer]] = await pool.query(
       'SELECT * FROM customers WHERE zalo_id = ? AND deleted_at IS NULL LIMIT 1',
-      [zaloId]
+      [realZaloId]
     );
 
-    if (!customer) {
+    if (!realCustomer) {
       const codeStr = await generateCustomerCode();
       const passwordHash = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 10);
       const [result] = await insertCustomer({
-        full_name: name,
-        email: socialFallbackEmail('zalo', zaloId),
-        phone: socialFallbackPhone('zalo', zaloId),
+        full_name: realName,
+        email: socialFallbackEmail('zalo', realZaloId),
+        phone: socialFallbackPhone('zalo', realZaloId),
         password_hash: passwordHash,
-        zalo_id: zaloId,
-        avatar_url: picture || null,
+        zalo_id: realZaloId,
+        avatar_url: realPicture || null,
         code: codeStr,
         is_active: 1,
       });
@@ -962,48 +1299,35 @@ router.get('/zalo/callback', async (req, res) => {
         'SELECT * FROM customers WHERE id = ?',
         [result.insertId]
       );
-      customer = newCustomer;
+      realCustomer = newCustomer;
     }
 
-    const tokenPayload = { id: customer.id, role: 'customer', type: 'customer' };
-    const { accessToken, refreshToken } = await generateTokens(tokenPayload);
-    const frontendOrigin = process.env.FRONTEND_ORIGIN || process.env.GATEWAY_URL || 'http://localhost:3000';
-    const callbackData = {
+    if (!realCustomer.is_active) {
+      return res.status(401).send('Account is disabled');
+    }
+
+    const realTokenPayload = { id: realCustomer.id, role: 'customer', type: 'customer' };
+    const realTokens = await generateTokens(realTokenPayload);
+    return sendOAuthCallbackPage(res, {
       success: true,
       data: {
-        accessToken,
-        refreshToken,
+        accessToken: realTokens.accessToken,
+        refreshToken: realTokens.refreshToken,
+        access_token: realTokens.accessToken,
+        refresh_token: realTokens.refreshToken,
         customer: {
-          id: customer.id,
-          full_name: customer.full_name,
-          email: customer.email || null,
-          phone: customer.phone || null,
+          id: realCustomer.id,
+          full_name: realCustomer.full_name,
+          email: realCustomer.email || null,
+          phone: realCustomer.phone || null,
           role: 'customer',
+          avatar_url: supportsAvatar ? realCustomer.avatar_url : null,
+          loyalty_tier: realCustomer.loyalty_tier || 'member',
+          loyalty_points: realCustomer.loyalty_points || 0,
         },
       },
-    };
+    });
 
-    res.send(`
-      <!DOCTYPE html>
-      <html>
-      <head><title>Zalo Authentication</title></head>
-      <body>
-        <p>Đăng nhập thành công! Đang chuyển hướng...</p>
-        <script>
-          const data = ${JSON.stringify(callbackData)};
-          if (window.opener) {
-            window.opener.postMessage(data, ${JSON.stringify(frontendOrigin)});
-            window.close();
-          } else {
-            localStorage.setItem('accessToken', data.data.accessToken);
-            localStorage.setItem('refreshToken', data.data.refreshToken);
-            localStorage.setItem('customer', JSON.stringify(data.data.customer));
-            window.location.href = '/';
-          }
-        </script>
-      </body>
-      </html>
-    `);
   } catch (err) {
     res.status(500).send('Lỗi máy chủ: ' + err.message);
   }
