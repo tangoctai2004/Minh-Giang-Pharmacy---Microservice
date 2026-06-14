@@ -4,22 +4,29 @@
 # ════════════════════════════════════════════════════════════════
 
 # ─── CRITICAL: Environment & Secrets ───────────────────────────────
-.env                          # Local environment variables (NEVER commit)
-.env.local                     # Local overrides
-.env.*.local                   # Environment-specific locals
-.env.production                # Production secrets (NEVER commit)
+# Local environment variables (NEVER commit)
+.env
+# Local overrides
+.env.local
+# Environment-specific locals
+.env.*.local
+# Production secrets (NEVER commit)
+.env.production
 .env.development.local
 .env.test.local
 .env.production.local
 
 # ─── Node.js Dependencies & Lock ───────────────────────────────────
-node_modules/                 # npm install creates this (huge folder)
-npm-debug.log*                # npm debug logs
+# npm install creates this (huge folder)
+node_modules/
+# npm debug logs
+npm-debug.log*
 npm-error.log*
 yarn-error.log*
 yarn-debug.log*
-package-lock.json             # Optional: uncomment if team tracks it
-yarn.lock                      # Optional: uncomment if team tracks it
+# Optional: uncomment if team tracks it
+package-lock.json
+yarn.lock
 
 # ─── Build Outputs ─────────────────────────────────────────────────
 dist/
@@ -27,26 +34,36 @@ build/
 out/
 bin/
 obj/
-target/                        # Maven build output
-*.jar                         # Compiled Java archives
-*.war                         # Java web archives
-*.ear                         # Java enterprise archives
+# Maven build output
+target/
+# Compiled Java archives
+*.jar
+*.war
+*.ear
 
 # ─── IDE & Editor Files ────────────────────────────────────────────
-.vscode/                       # VS Code workspace settings
-.idea/                         # JetBrains IDEs (IntelliJ, WebStorm, etc.)
-*.suo                         # Visual Studio solution
+# VS Code workspace settings
+.vscode/
+# JetBrains IDEs (IntelliJ, WebStorm, etc.)
+.idea/
+# Visual Studio solution
+*.suo
 *.ntvs*
 *.njsproj
 *.sln
-.DS_Store                      # macOS folder metadata
-Thumbs.db                      # Windows folder thumbnails
+# macOS folder metadata
+.DS_Store
+# Windows folder thumbnails
+Thumbs.db
 
 # ─── Editor Temporary Files ────────────────────────────────────────
-*.swp                         # Vim swap files
+# Vim swap files
+*.swp
 *.swo
-*~                            # Emacs temporary
-*.bak                         # Backup files
+# Emacs temporary
+*~
+# Backup files
+*.bak
 *.tmp
 
 # ─── OS Files ──────────────────────────────────────────────────────
@@ -102,7 +119,7 @@ pom.xml.next
 release.properties
 .flattened-pom.xml
 .gradle/
-!gradle-wrapper.jar
+!.gradle-wrapper.jar
 gradle-app.setting
 .gradletasknamecache
 
@@ -118,4 +135,3 @@ Postman/backup/
 !docker-compose.yml
 !Dockerfile
 !.gitignore
-backend/cms-service/node_modules/
