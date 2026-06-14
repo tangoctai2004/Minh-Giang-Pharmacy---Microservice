@@ -572,7 +572,7 @@
             document.getElementById('payDebtModal').classList.remove('open');
         }
 
-        document.getElementById('payDebtForm').addEventListener('submit', (e) => {
+        document.getElementById('payDebtForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const payAmount = parseFloat(document.getElementById('payAmount').value) || 0;
             if (payAmount <= 0) {
@@ -580,15 +580,25 @@
                 return;
             }
 
-            const sup = suppliersData.find(s => s.id === currentPayDebtState.supplierId);
-            if (sup) {
-                const oldDebt = parseFloat(sup.current_debt) || 0;
-                sup.current_debt = Math.max(0, oldDebt - payAmount).toString();
-            }
+            try {
+                const response = await fetch(`${API_BASE}/suppliers/${currentPayDebtState.supplierId}/pay-debt`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: payAmount })
+                });
 
-            showToast(`Ghi nhận thanh toán ${formatVND(payAmount)} cho ${currentPayDebtState.supplierName} thành công!`, 'success');
-            closePayDebtModal();
-            applyFiltersAndRender();
+                const result = await response.json();
+                if (result.success) {
+                    showToast(`Ghi nhận thanh toán ${formatVND(payAmount)} cho ${currentPayDebtState.supplierName} thành công!`, 'success');
+                    closePayDebtModal();
+                    loadSuppliers();
+                } else {
+                    showToast('Lỗi: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('Lỗi kết nối máy chủ.', 'error');
+            }
         });
 
         // Link search input from Header
