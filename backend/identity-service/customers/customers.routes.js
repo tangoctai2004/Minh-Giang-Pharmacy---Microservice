@@ -136,17 +136,23 @@ router.get('/', async (req, res) => {
   }
 
   try {
+    const { q } = req.query;
     const fields = await customerSelect([
       'id', 'code', 'full_name', 'phone', 'email', 'loyalty_points',
       'loyalty_tier', 'avatar_url', 'is_active', 'created_at',
     ]);
-    const [rows] = await pool.query(
-      `SELECT ${fields}
-       FROM customers
-       WHERE deleted_at IS NULL
-       ORDER BY id DESC
-       LIMIT 100`
-    );
+    
+    let query = `SELECT ${fields} FROM customers WHERE deleted_at IS NULL`;
+    const params = [];
+    
+    if (q) {
+      query += ` AND (full_name LIKE ? OR phone LIKE ? OR code LIKE ?)`;
+      params.push(`%${q}%`, `%${q}%`, `%${q}%`);
+    }
+    
+    query += ` ORDER BY id DESC LIMIT 100`;
+
+    const [rows] = await pool.query(query, params);
     res.json({ success: true, data: rows });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -265,6 +271,38 @@ router.get('/phone/:phone', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Không tìm thấy khách hàng' });
     }
     res.json({ success: true, data: rows[0] });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// GET /customers/loyalty/transactions — Danh sách giao dịch điểm của tất cả khách hàng (dùng cho CRM admin)
+router.get('/loyalty/transactions', async (req, res) => {
+  if (!req.userId) {
+    return res.status(401).json({ success: false, message: 'Chưa đăng nhập' });
+  }
+  if (!canViewCustomers(req)) {
+    return res.status(403).json({ success: false, message: 'Không có quyền xem giao dịch điểm' });
+  }
+
+  try {
+    const { q } = req.query;
+    let query = `SELECT t.id, t.customer_id, c.full_name AS customer_name, c.phone AS customer_phone,
+                        c.loyalty_points AS current_points,
+                        t.transaction_type, t.points_change, t.description, t.created_at
+                 FROM loyalty_points_transactions t
+                 LEFT JOIN customers c ON c.id = t.customer_id`;
+    const params = [];
+    
+    if (q) {
+      query += ` WHERE c.full_name LIKE ? OR c.phone LIKE ? OR t.description LIKE ?`;
+      params.push(`%${q}%`, `%${q}%`, `%${q}%`);
+    }
+    
+    query += ` ORDER BY t.created_at DESC LIMIT 100`;
+
+    const [rows] = await pool.query(query, params);
+    res.json({ success: true, data: rows });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
