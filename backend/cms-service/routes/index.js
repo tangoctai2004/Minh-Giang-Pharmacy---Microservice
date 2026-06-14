@@ -24,6 +24,8 @@ router.use(gatewayAuth);
 router.use('/articles',          require('../articles/articles.routes'));
 router.use('/banners',           require('../banners/banners.routes'));
 router.use('/categories',        require('../categories/categories.routes'));
+router.use('/diseases',           require('../diseases/diseases.routes'));
+router.use('/disease-categories', require('../disease_categories/disease-categories.routes'));
 router.use('/promotions',        require('../promotions/promotions.routes'));
 router.use('/store-config',      require('../store_config/store-config.routes'));
 router.use('/pages',             require('../pages/pages.routes'));
