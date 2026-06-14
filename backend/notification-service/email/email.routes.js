@@ -1,65 +1,100 @@
-const router       = require('express').Router();
-const nodemailer   = require('nodemailer');
-const pool         = require('../db/pool');
+const router = require('express').Router();
+const pool = require('../db/pool');
+const renderTemplate = require('../templates/renderTemplate');
+const sendEmail = require('./emailProvider');
+const {
+  createNotificationLog,
+  markNotificationSent,
+  markNotificationFailed,
+} = require('../notifications/logNotification');
 
-function createTransport() {
-  return nodemailer.createTransport({
-    host:   process.env.SMTP_HOST || 'smtp.gmail.com',
-    port:   Number(process.env.SMTP_PORT) || 587,
-    secure: process.env.SMTP_SECURE === 'true',
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-}
-
-/**
- * POST /email/send
- * Body: { to, subject, html?, text?, template_id? }
- *   - Nếu truyền template_id: lấy template từ DB, render rồi gửi
- *   - Nếu không: gửi trực tiếp với html/text
- */
 router.post('/send', async (req, res) => {
-  const { to, subject, html, text, template_id, template_vars } = req.body;
+  const {
+    to,
+    subject,
+    html,
+    text,
+    template_id,
+    template_vars,
+    recipient_type,
+    recipient_id,
+    reference_type,
+    reference_id,
+  } = req.body;
 
-  if (!to) return res.status(400).json({ success: false, message: 'Thiếu trường "to"' });
+  if (!to) {
+    return res.status(400).json({ success: false, message: 'Thieu truong "to"' });
+  }
+
+  let notificationId = null;
 
   try {
     let mailHtml = html;
     let mailText = text;
     let mailSubject = subject;
+    const vars = template_vars || {};
 
-    // Nếu có template_id, lấy nội dung từ DB và render
     if (template_id) {
       const [[tmpl]] = await pool.query(
-        'SELECT subject_template, body_template FROM notification_templates WHERE id = ? AND type = "email" AND is_active = 1',
+        `SELECT id, subject, body_template
+           FROM notification_templates
+          WHERE id = ? AND channel = 'email' AND is_active = 1`,
         [template_id]
       );
-      if (!tmpl) return res.status(404).json({ success: false, message: 'Template không tồn tại hoặc đã bị vô hiệu hoá' });
 
-      // Đơn giản: thay {{key}} bằng giá trị trong template_vars
-      const vars = template_vars || {};
-      mailSubject = (tmpl.subject_template || subject || 'Thông báo từ Minh Giang Pharmacy')
-        .replace(/\{\{(\w+)\}\}/g, (_, k) => vars[k] ?? `{{${k}}}`);
-      mailHtml = tmpl.body_template
-        .replace(/\{\{(\w+)\}\}/g, (_, k) => vars[k] ?? `{{${k}}}`);
+      if (!tmpl) {
+        return res.status(404).json({
+          success: false,
+          message: 'Template khong ton tai hoac da bi vo hieu hoa',
+        });
+      }
+
+      mailSubject = renderTemplate(tmpl.subject || subject || 'Thong bao tu Minh Giang Pharmacy', vars);
+      mailHtml = renderTemplate(tmpl.body_template, vars);
+
+      notificationId = await createNotificationLog({
+        templateId: template_id,
+        recipientType: recipient_type,
+        recipientId: recipient_id,
+        channel: 'email',
+        referenceType: reference_type,
+        referenceId: reference_id,
+        payload: {
+          target: to,
+          template_vars: vars,
+          provider: process.env.EMAIL_PROVIDER || 'mock',
+        },
+      });
     }
 
-    if (!mailSubject) return res.status(400).json({ success: false, message: 'Thiếu trường "subject"' });
-    if (!mailHtml && !mailText) return res.status(400).json({ success: false, message: 'Thiếu nội dung html hoặc text' });
+    if (!mailSubject) {
+      return res.status(400).json({ success: false, message: 'Thieu truong "subject"' });
+    }
 
-    const transporter = createTransport();
-    const info = await transporter.sendMail({
-      from: `"${process.env.SMTP_FROM_NAME || 'Minh Giang Pharmacy'}" <${process.env.SMTP_USER}>`,
+    if (!mailHtml && !mailText) {
+      return res.status(400).json({ success: false, message: 'Thieu noi dung html hoac text' });
+    }
+
+    const providerResult = await sendEmail({
       to,
       subject: mailSubject,
-      html:    mailHtml,
-      text:    mailText,
+      html: mailHtml,
+      text: mailText,
     });
 
-    res.json({ success: true, message: 'Email đã gửi thành công', messageId: info.messageId });
+    await markNotificationSent(notificationId, providerResult);
+
+    res.json({
+      success: true,
+      message: providerResult.provider === 'mock' ? 'Email mock da gui thanh cong' : 'Email da gui thanh cong',
+      data: {
+        provider: providerResult.provider,
+        messageId: providerResult.provider_message_id,
+        notificationId,
+      },
+    });
   } catch (err) {
+    await markNotificationFailed(notificationId, err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
