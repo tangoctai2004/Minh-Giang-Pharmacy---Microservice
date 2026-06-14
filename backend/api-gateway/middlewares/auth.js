@@ -14,6 +14,7 @@ const PUBLIC_ROUTES = [
   { method: 'GET', path: '/api/cms/articles' },
   { method: 'GET', path: '/api/cms/banners' },
   { method: 'GET', path: '/api/cms/categories' },
+  { method: 'GET', path: '/api/cms/diseases' },
   { method: 'GET', path: '/api/cms/disease-categories' },
   { method: 'GET', path: '/api/cms/store-config/public' },
   { method: 'GET', path: '/api/cms/pages' },
