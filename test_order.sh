@@ -41,10 +41,7 @@ chk "GET /cart (with items)" "True" "$R"
 R=$(curl -s -X POST $BASE/checkout -H "Authorization: Bearer $CUST_TOKEN" -H 'Content-Type: application/json' -d '{
     "customer_name": "Test Customer",
     "customer_phone": "0987654321",
-    "province_id": 19,
-    "district_id": 1,
-    "ward_id": 1,
-    "address_detail": "123 Test St",
+    "shipping_address": "123 Test St, Phường Phương Lâm, Thành phố Hòa Bình, Tỉnh Hòa Bình",
     "payment_method": "cod",
     "shipping_fee": 0
 }')
