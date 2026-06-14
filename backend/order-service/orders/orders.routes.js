@@ -2,6 +2,48 @@ const router = require('express').Router();
 const pool = require('../db/pool');
 
 /**
+ * Helper to find or automatically create a customer by phone number.
+ */
+async function findOrCreateCustomerByPhone(connection, phone, name) {
+    if (!phone) return null;
+    
+    const normalizedPhone = String(phone).trim();
+    if (!normalizedPhone) return null;
+
+    // 1. Check if customer exists
+    const [customers] = await connection.query(
+        'SELECT id FROM mg_identity.customers WHERE phone = ? AND deleted_at IS NULL LIMIT 1',
+        [normalizedPhone]
+    );
+
+    if (customers.length > 0) {
+        return customers[0].id;
+    }
+
+    // 2. Not found -> Auto create
+    // Generate unique code KH-XXXX
+    const [[maxResult]] = await connection.query('SELECT MAX(id) AS maxId FROM mg_identity.customers');
+    const nextId = (maxResult && maxResult.maxId ? maxResult.maxId : 0) + 1;
+    const customerCode = `KH-${String(nextId).padStart(4, '0')}`;
+    
+    // Generate email placeholder
+    const placeholderEmail = `${normalizedPhone}@minhgiang.vn`;
+    
+    // Default hashed password (bcrypt of '123456')
+    const defaultPasswordHash = '$2a$12$BkyYpCpf7jQjc3.Bt/PLr.XKWCF0SJ6PDPN4keoR0qAoQ973tiWgy';
+    
+    const customerName = name || `Khách hàng ${normalizedPhone}`;
+
+    const [insertResult] = await connection.query(`
+        INSERT INTO mg_identity.customers (
+            full_name, email, phone, password_hash, code, is_active
+        ) VALUES (?, ?, ?, ?, ?, 1)
+    `, [customerName, placeholderEmail, normalizedPhone, defaultPasswordHash, customerCode]);
+
+    return insertResult.insertId;
+}
+
+/**
  * [MAPPING: POST /api/order/orders]
  * Tạo đơn hàng POS mới & trừ tồn kho thực tế trong mg_catalog.batch_items (FEFO)
  */
@@ -31,6 +73,11 @@ router.post('/', async (req, res) => {
         const randomStr = Math.floor(1000 + Math.random() * 9000);
         const orderCode = `POS-${todayStr}-${randomStr}`;
 
+        let activeCustomerId = customer_id || null;
+        if (!activeCustomerId && customer_phone) {
+            activeCustomerId = await findOrCreateCustomerByPhone(connection, customer_phone, customer_name);
+        }
+
         // 2. Thêm đơn hàng vào bảng orders
         const [orderResult] = await connection.query(`
             INSERT INTO orders (
@@ -39,7 +86,7 @@ router.post('/', async (req, res) => {
                 payment_method, payment_status, order_status, requires_vat_invoice
             ) VALUES (?, 'pos', ?, ?, ?, NULL, ?, 0, ?, ?, ?, 'paid', 'completed', 0)
         `, [
-            orderCode, customer_id || null, customer_name || 'Khách vãng lai', customer_phone || null,
+            orderCode, activeCustomerId, customer_name || 'Khách vãng lai', customer_phone || null,
             subtotal, discount_amount || 0, total_amount, payment_method || 'cash'
         ]);
         const orderId = orderResult.insertId;
@@ -89,8 +136,8 @@ router.post('/', async (req, res) => {
         }
 
         // 4. Tích lũy điểm & Khấu trừ điểm trong mg_identity.customers & ghi nhận lịch sử vào mg_identity.loyalty_points_transactions
-        if (customer_id) {
-            const pointsEarned = Math.floor(total_amount / 10000);
+        if (activeCustomerId) {
+            const pointsEarned = Math.floor(total_amount / 10);
             const pointsRedeemed = discount_amount || 0;
             const netPointsChange = pointsEarned - pointsRedeemed;
 
@@ -99,7 +146,7 @@ router.post('/', async (req, res) => {
                     UPDATE mg_identity.customers 
                     SET loyalty_points = loyalty_points + ? 
                     WHERE id = ?
-                `, [netPointsChange, customer_id]);
+                `, [netPointsChange, activeCustomerId]);
             }
 
             if (pointsEarned > 0) {
@@ -108,7 +155,7 @@ router.post('/', async (req, res) => {
                         customer_id, transaction_type, points_change, description, reference_order_id
                     ) VALUES (?, 'earn_purchase', ?, ?, ?)
                 `, [
-                    customer_id,
+                    activeCustomerId,
                     pointsEarned,
                     `Tích điểm mua hàng tại POS - Đơn ${orderCode}`,
                     orderId
@@ -121,7 +168,7 @@ router.post('/', async (req, res) => {
                         customer_id, transaction_type, points_change, description, reference_order_id
                     ) VALUES (?, 'redeem', ?, ?, ?)
                 `, [
-                    customer_id,
+                    activeCustomerId,
                     -pointsRedeemed,
                     `Quy đổi điểm giảm giá tại POS - Đơn ${orderCode}`,
                     orderId
@@ -268,6 +315,7 @@ router.get('/:id', async (req, res) => {
  * Cập nhật trạng thái đơn hàng (Admin/Staff)
  */
 router.put('/:id/status', async (req, res) => {
+    let connection;
     try {
         const { id } = req.params;
         const { status } = req.body;
@@ -277,15 +325,21 @@ router.put('/:id/status', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Trạng thái không hợp lệ' });
         }
 
-        let [orders] = await pool.query('SELECT * FROM orders WHERE id = ? AND is_active = 1', [id]);
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
+        let [orders] = await connection.query('SELECT * FROM orders WHERE id = ? AND is_active = 1 FOR UPDATE', [id]);
         if (orders.length === 0) {
-            const [ordersByCode] = await pool.query('SELECT * FROM orders WHERE order_code = ? AND is_active = 1', [id]);
+            const [ordersByCode] = await connection.query('SELECT * FROM orders WHERE order_code = ? AND is_active = 1 FOR UPDATE', [id]);
             if (ordersByCode.length === 0) {
+                await connection.rollback();
                 return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
             }
             orders[0] = ordersByCode[0];
         }
         const realId = orders[0].id;
+        const order = orders[0];
+        const oldStatus = order.order_status;
 
         let updateQuery = 'UPDATE orders SET order_status = ?';
         let updateParams = [status];
@@ -297,11 +351,102 @@ router.put('/:id/status', async (req, res) => {
         updateQuery += ' WHERE id = ?';
         updateParams.push(realId);
 
-        await pool.query(updateQuery, updateParams);
+        await connection.query(updateQuery, updateParams);
+
+        // Tích lũy điểm khi chuyển sang completed và hoàn điểm khi chuyển sang cancelled
+        let activeCustomerId = order.customer_id;
+        if (!activeCustomerId && order.customer_phone) {
+            activeCustomerId = await findOrCreateCustomerByPhone(connection, order.customer_phone, order.customer_name);
+            await connection.query('UPDATE orders SET customer_id = ? WHERE id = ?', [activeCustomerId, realId]);
+        }
+
+        if (activeCustomerId) {
+            const pointsEarned = Math.floor(order.total_amount / 10);
+            const pointsRedeemed = order.discount_amount || 0;
+            const netPointsChange = pointsEarned - pointsRedeemed;
+
+            // 1. Chuyển từ trạng thái khác sang completed -> Cộng điểm tích lũy
+            if (oldStatus !== 'completed' && status === 'completed') {
+                if (netPointsChange !== 0) {
+                    await connection.query(`
+                        UPDATE mg_identity.customers 
+                        SET loyalty_points = loyalty_points + ? 
+                        WHERE id = ?
+                    `, [netPointsChange, activeCustomerId]);
+                }
+
+                if (pointsEarned > 0) {
+                    await connection.query(`
+                        INSERT INTO mg_identity.loyalty_points_transactions (
+                            customer_id, transaction_type, points_change, description, reference_order_id
+                        ) VALUES (?, 'earn_purchase', ?, ?, ?)
+                    `, [
+                        activeCustomerId,
+                        pointsEarned,
+                        `Tích điểm mua hàng - Đơn ${order.order_code}`,
+                        order.id
+                    ]);
+                }
+
+                if (pointsRedeemed > 0) {
+                    await connection.query(`
+                        INSERT INTO mg_identity.loyalty_points_transactions (
+                            customer_id, transaction_type, points_change, description, reference_order_id
+                        ) VALUES (?, 'redeem', ?, ?, ?)
+                    `, [
+                        activeCustomerId,
+                        -pointsRedeemed,
+                        `Quy đổi điểm giảm giá - Đơn ${order.order_code}`,
+                        order.id
+                    ]);
+                }
+            }
+            // 2. Chuyển từ completed sang cancelled -> Thu hồi/Hoàn trả điểm
+            else if (oldStatus === 'completed' && status === 'cancelled') {
+                if (netPointsChange !== 0) {
+                    await connection.query(`
+                        UPDATE mg_identity.customers 
+                        SET loyalty_points = loyalty_points - ? 
+                        WHERE id = ?
+                    `, [netPointsChange, activeCustomerId]);
+                }
+
+                if (pointsEarned > 0) {
+                    await connection.query(`
+                        INSERT INTO mg_identity.loyalty_points_transactions (
+                            customer_id, transaction_type, points_change, description, reference_order_id
+                        ) VALUES (?, 'adjust_deduct', ?, ?, ?)
+                    `, [
+                        activeCustomerId,
+                        -pointsEarned,
+                        `Thu hồi điểm thưởng (Hủy đơn) - Đơn ${order.order_code}`,
+                        order.id
+                    ]);
+                }
+
+                if (pointsRedeemed > 0) {
+                    await connection.query(`
+                        INSERT INTO mg_identity.loyalty_points_transactions (
+                            customer_id, transaction_type, points_change, description, reference_order_id
+                        ) VALUES (?, 'adjust_add', ?, ?, ?)
+                    `, [
+                        activeCustomerId,
+                        pointsRedeemed,
+                        `Hoàn lại điểm đã tiêu (Hủy đơn) - Đơn ${order.order_code}`,
+                        order.id
+                    ]);
+                }
+            }
+        }
+
+        await connection.commit();
         res.json({ success: true, message: `Đã cập nhật trạng thái đơn hàng thành ${status}` });
     } catch (error) {
+        if (connection) await connection.rollback();
         console.error('[Update Order Status Error]', error);
         res.status(500).json({ success: false, message: 'Lỗi cập nhật trạng thái đơn hàng' });
+    } finally {
+        if (connection) connection.release();
     }
 });
 
