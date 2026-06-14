@@ -3,6 +3,27 @@
  * Centralized auth logic for POS kiosk pages
  */
 
+// Intercept fetch globally to automatically redirect to login when 401 Unauthorized occurs
+(function() {
+    const originalFetch = window.fetch;
+    window.fetch = async function(...args) {
+        try {
+            const response = await originalFetch.apply(this, args);
+            if (response.status === 401) {
+                console.warn('Authentication token expired or unauthorized. Logging out...');
+                localStorage.removeItem('MG_POS_AUTH');
+                // Ensure we don't end up in an infinite redirect loop if already on login.html
+                if (!window.location.pathname.endsWith('login.html')) {
+                    window.location.href = 'login.html';
+                }
+            }
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    };
+})();
+
 function _applyPosUserHeader() {
     // Auth guard
     const authRaw = localStorage.getItem('MG_POS_AUTH');
