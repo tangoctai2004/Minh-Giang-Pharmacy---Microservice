@@ -12,8 +12,13 @@ module.exports = function gatewayAuth(req, res, next) {
   const userId   = req.headers['x-user-id'];
   const userRole = req.headers['x-user-role'];
   const userType = req.headers['x-user-type'];
+  const serviceName = req.headers['x-service-name'];
+  const internalToken = req.headers['x-internal-token'];
+  const gatewayToken = req.headers['x-gateway-token'];
+  const isGatewayRequest = Boolean(process.env.GATEWAY_INTERNAL_TOKEN && gatewayToken === process.env.GATEWAY_INTERNAL_TOKEN);
+  const isInternalService = Boolean(serviceName && process.env.INTERNAL_SERVICE_TOKEN && internalToken === process.env.INTERNAL_SERVICE_TOKEN);
 
-  if (!userId && process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' && !isGatewayRequest && !isInternalService) {
     return res.status(403).json({
       success: false,
       message: 'Request phải đến từ API Gateway.',

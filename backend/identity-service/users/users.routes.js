@@ -1,6 +1,9 @@
 const router = require('express').Router();
 const pool   = require('../db/pool');
 const bcrypt = require('bcryptjs');
+const { requirePermission } = require('../middlewares/rbac');
+
+const canManageUsers = requirePermission('users.manage', 'Chỉ admin có quyền quản lý người dùng');
 
 /**
  * Users Routes — mg_identity.users (tài khoản nhân viên / admin)
@@ -15,11 +18,12 @@ const bcrypt = require('bcryptjs');
 
 // ── Helper: kiểm tra quyền admin ─────────────────────────────────────────────
 function requireAdmin(req, res) {
+  return canManageUsers(req, res);
   if (!req.userId) {
     res.status(401).json({ success: false, message: 'Chưa đăng nhập' });
     return false;
   }
-  if (!req.userPermissions.includes('users.manage')) {
+  if (req.userRole !== 'admin' && !req.userPermissions.includes('users.manage')) {
     res.status(403).json({ success: false, message: 'Chỉ admin có quyền quản lý người dùng' });
     return false;
   }
@@ -28,6 +32,8 @@ function requireAdmin(req, res) {
 
 // GET /users — Lấy danh sách nhân viên
 router.get('/', async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+
   try {
     const [rows] = await pool.query(
       `SELECT u.id, u.username, u.full_name, u.email, u.phone,
@@ -44,6 +50,8 @@ router.get('/', async (req, res) => {
 
 // GET /users/:id
 router.get('/:id', async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+
   try {
     const [rows] = await pool.query(
       `SELECT u.id, u.username, u.full_name, u.email, u.phone,
