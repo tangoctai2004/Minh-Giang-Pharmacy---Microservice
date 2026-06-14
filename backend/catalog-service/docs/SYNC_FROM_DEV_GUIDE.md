@@ -93,7 +93,7 @@ docker exec -i minhgiang_mysql mysql -uroot -proot < infrastructure/database/02_
 ### Bước 4: áp seed danh mục/sản phẩm demo nếu cần
 
 ```bash
-docker exec -i minhgiang_mysql mysql -uroot -proot < infrastructure/database/10_seed_full_catalog.sql
+docker exec -i minhgiang_mysql mysql -uroot -proot < infrastructure/database/99_seed_full_catalog.sql
 ```
 
 ### Bước 5: seed tối thiểu cho test CI/local

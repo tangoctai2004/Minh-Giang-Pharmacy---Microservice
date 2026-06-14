@@ -908,6 +908,163 @@
         .address-edit-btn:hover {
             background: #095c2e;
         }
+
+        /* ===== ORDERS STYLES ===== */
+        .orders-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .order-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 16px 20px;
+            transition: all 0.15s;
+        }
+
+        .order-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-color: #d1d5db;
+        }
+
+        .order-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f3f4f6;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+
+        .order-card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #111827;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .order-card-date {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .order-card-body {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .order-card-info {
+            font-size: 13px;
+            color: #4b5563;
+        }
+
+        .order-card-total {
+            margin-top: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .order-card-total span {
+            color: #0b7a3e;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .btn-order-detail {
+            padding: 6px 14px;
+            border: 1px solid #0b7a3e;
+            border-radius: 6px;
+            color: #0b7a3e;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            background: #fff;
+            font-family: 'Roboto', sans-serif;
+            transition: all 0.15s;
+        }
+
+        .btn-order-detail:hover {
+            background: #f0faf4;
+        }
+
+        /* ===== STATUS BADGES ===== */
+        .status-badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+
+        .status-pending_approval { background: #fef3c7; color: #d97706; }
+        .status-confirmed { background: #dbeafe; color: #2563eb; }
+        .status-picking { background: #e0f2fe; color: #0284c7; }
+        .status-shipping { background: #fae8ff; color: #c084fc; }
+        .status-completed { background: #d1fae5; color: #059669; }
+        .status-cancelled { background: #fee2e2; color: #dc2626; }
+
+        /* ===== DETAIL TABLE ===== */
+        .order-detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 13px;
+        }
+
+        .order-detail-table th {
+            text-align: left;
+            padding: 8px 10px;
+            background: #f9fafb;
+            color: #4b5563;
+            font-weight: 600;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .order-detail-table td {
+            padding: 10px;
+            border-bottom: 1px solid #f3f4f6;
+            color: #374151;
+        }
+
+        .order-detail-summary {
+            border-top: 2px solid #e5e7eb;
+            padding-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: flex-end;
+            font-size: 13px;
+        }
+
+        .summary-row {
+            display: flex;
+            width: 250px;
+            justify-content: space-between;
+            color: #4b5563;
+        }
+
+        .summary-row.grand-total {
+            font-size: 15px;
+            font-weight: 700;
+            color: #111827;
+            margin-top: 4px;
+            border-top: 1px dashed #e5e7eb;
+            padding-top: 6px;
+        }
+
+        .summary-row.grand-total span {
+            color: #0b7a3e;
+        }
     </style>
 </head>
 
@@ -1182,20 +1339,22 @@
                                 <p>Quản lý theo dõi đơn hàng online</p>
                             </div>
                             <div class="orders-search">
-                                <input type="text" placeholder="Nhập mã đơn hàng...">
-                                <button><i class="fa-solid fa-magnifying-glass"></i></button>
+                                <input type="text" id="searchOnlineInput" placeholder="Nhập mã đơn hàng..." onkeyup="handleOnlineSearch(event)">
+                                <button onclick="searchOnlineOrders()"><i class="fa-solid fa-magnifying-glass"></i></button>
                             </div>
                         </div>
 
                         <div class="orders-tabs">
-                            <button class="tab-btn active">Tất cả</button>
-                            <button class="tab-btn">Đang xử lý</button>
-                            <button class="tab-btn">Xác nhận đơn</button>
-                            <button class="tab-btn">Hoàn thành</button>
-                            <button class="tab-btn">Hủy đơn</button>
+                            <button class="tab-btn active" onclick="filterOnlineOrders('Tất cả', this)">Tất cả</button>
+                            <button class="tab-btn" onclick="filterOnlineOrders('Đang xử lý', this)">Đang xử lý</button>
+                            <button class="tab-btn" onclick="filterOnlineOrders('Xác nhận đơn', this)">Xác nhận đơn</button>
+                            <button class="tab-btn" onclick="filterOnlineOrders('Hoàn thành', this)">Hoàn thành</button>
+                            <button class="tab-btn" onclick="filterOnlineOrders('Hủy đơn', this)">Hủy đơn</button>
                         </div>
 
-                        <div class="empty-state">
+                        <div id="onlineOrdersList" class="orders-list"></div>
+
+                        <div class="empty-state" id="onlineEmptyState">
                             <i class="fa-regular fa-file-lines"></i>
                             <p>Không tìm thấy đơn hàng</p>
                         </div>
@@ -1211,18 +1370,20 @@
                                 <p>Quản lý theo dõi đơn hàng tại nhà thuốc Minh Giang</p>
                             </div>
                             <div class="orders-search">
-                                <input type="text" placeholder="Nhập mã đơn, ngày tháng mua hàng...">
-                                <button><i class="fa-solid fa-magnifying-glass"></i></button>
+                                <input type="text" id="searchOfflineInput" placeholder="Nhập mã đơn hàng..." onkeyup="handleOfflineSearch(event)">
+                                <button onclick="searchOfflineOrders()"><i class="fa-solid fa-magnifying-glass"></i></button>
                             </div>
                         </div>
 
                         <div class="orders-tabs">
-                            <button class="tab-btn active">Tất cả</button>
-                            <button class="tab-btn">Hoàn thành</button>
-                            <button class="tab-btn">Trả hàng/hoàn tiền</button>
+                            <button class="tab-btn active" onclick="filterOfflineOrders('Tất cả', this)">Tất cả</button>
+                            <button class="tab-btn" onclick="filterOfflineOrders('Hoàn thành', this)">Hoàn thành</button>
+                            <button class="tab-btn" onclick="filterOfflineOrders('Trả hàng/hoàn tiền', this)">Trả hàng/hoàn tiền</button>
                         </div>
 
-                        <div class="empty-state">
+                        <div id="offlineOrdersList" class="orders-list"></div>
+
+                        <div class="empty-state" id="offlineEmptyState">
                             <i class="fa-solid fa-store"></i>
                             <p>Không tìm thấy đơn hàng</p>
                         </div>
@@ -1340,6 +1501,9 @@
 
             // Load and render vouchers
             renderProfileVouchers();
+
+            // Load customer orders
+            await loadCustomerOrders();
         })();
 
         // === DYNAMIC VOUCHER RENDERER ===
@@ -1770,6 +1934,279 @@
                 alert('❌ Lỗi: ' + err.message);
             }
         }
+
+        // ==========================================
+        // === CUSTOMER ORDERS LOGIC & HANDLERS ===
+        // ==========================================
+        let allOrders = [];
+        let onlineTabFilter = 'Tất cả';
+        let offlineTabFilter = 'Tất cả';
+        let onlineSearchQuery = '';
+        let offlineSearchQuery = '';
+
+        async function loadCustomerOrders() {
+            const authRaw = localStorage.getItem('MG_CLIENT_AUTH');
+            if (!authRaw) return;
+            const auth = JSON.parse(authRaw);
+            const token = auth.accessToken;
+
+            try {
+                // Fetch customer's orders from gateway order-service
+                const resp = await fetch(`${GATEWAY}/api/order/orders?limit=100`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    allOrders = data.data || [];
+                    renderOrders();
+                }
+            } catch (err) {
+                console.error('Lỗi khi tải đơn hàng:', err);
+            }
+        }
+
+        function getStatusLabel(status) {
+            const map = {
+                'pending_approval': 'Chờ duyệt',
+                'confirmed': 'Đã xác nhận',
+                'picking': 'Đang chuẩn bị',
+                'shipping': 'Đang giao hàng',
+                'completed': 'Hoàn thành',
+                'cancelled': 'Đã hủy'
+            };
+            return map[status] || status;
+        }
+
+        function getPaymentMethodLabel(method) {
+            const map = {
+                'cash': 'Tiền mặt',
+                'cod': 'COD (Thanh toán khi nhận hàng)',
+                'vnpay': 'VNPAY',
+                'momo': 'Ví MoMo',
+                'card_visa': 'Thẻ Visa/Mastercard',
+                'qr_transfer': 'Chuyển khoản QR'
+            };
+            return map[method] || method;
+        }
+
+        function getPaymentStatusLabel(status) {
+            const map = {
+                'pending': 'Chưa thanh toán',
+                'paid': 'Đã thanh toán',
+                'failed': 'Thanh toán thất bại',
+                'refunded': 'Đã hoàn tiền'
+            };
+            return map[status] || status;
+        }
+
+        function renderOrders() {
+            // Separate web (online) and pos (offline) orders
+            const onlineOrders = allOrders.filter(o => o.order_channel === 'web');
+            const offlineOrders = allOrders.filter(o => o.order_channel === 'pos');
+
+            // --- Render Online Orders ---
+            let filteredOnline = onlineOrders;
+            if (onlineTabFilter !== 'Tất cả') {
+                if (onlineTabFilter === 'Đang xử lý') {
+                    filteredOnline = filteredOnline.filter(o => o.order_status === 'pending_approval');
+                } else if (onlineTabFilter === 'Xác nhận đơn') {
+                    filteredOnline = filteredOnline.filter(o => ['confirmed', 'picking', 'shipping'].includes(o.order_status));
+                } else if (onlineTabFilter === 'Hoàn thành') {
+                    filteredOnline = filteredOnline.filter(o => o.order_status === 'completed');
+                } else if (onlineTabFilter === 'Hủy đơn') {
+                    filteredOnline = filteredOnline.filter(o => o.order_status === 'cancelled');
+                }
+            }
+            if (onlineSearchQuery) {
+                filteredOnline = filteredOnline.filter(o => o.order_code.toLowerCase().includes(onlineSearchQuery.toLowerCase()));
+            }
+
+            const onlineList = document.getElementById('onlineOrdersList');
+            const onlineEmpty = document.getElementById('onlineEmptyState');
+            if (filteredOnline.length === 0) {
+                if (onlineList) onlineList.style.display = 'none';
+                if (onlineEmpty) onlineEmpty.style.display = 'block';
+            } else {
+                if (onlineEmpty) onlineEmpty.style.display = 'none';
+                if (onlineList) {
+                    onlineList.style.display = 'flex';
+                    onlineList.innerHTML = filteredOnline.map(o => {
+                        const formattedTotal = window.MGClientApi ? window.MGClientApi.formatPrice(o.total_amount) : (Number(o.total_amount).toLocaleString('vi-VN') + 'đ');
+                        const orderDate = new Date(o.created_at).toLocaleString('vi-VN');
+                        const statusLabel = getStatusLabel(o.order_status);
+                        return `
+                            <div class="order-card">
+                                <div class="order-card-header">
+                                    <div class="order-card-title">
+                                        <span>📦 ${o.order_code}</span>
+                                        <span class="status-badge status-${o.order_status}">${statusLabel}</span>
+                                    </div>
+                                    <div class="order-card-date">${orderDate}</div>
+                                </div>
+                                <div class="order-card-body">
+                                    <div class="order-card-info">
+                                        <div>Phương thức thanh toán: <strong>${getPaymentMethodLabel(o.payment_method)}</strong></div>
+                                        <div class="order-card-total">Tổng tiền: <span>${formattedTotal}</span></div>
+                                    </div>
+                                    <button class="btn-order-detail" onclick="openOrderDetailModal('${o.order_code}')">Xem chi tiết</button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+
+            // --- Render Offline Orders ---
+            let filteredOffline = offlineOrders;
+            if (offlineTabFilter !== 'Tất cả') {
+                if (offlineTabFilter === 'Hoàn thành') {
+                    filteredOffline = filteredOffline.filter(o => o.order_status === 'completed');
+                } else if (offlineTabFilter === 'Trả hàng/hoàn tiền') {
+                    filteredOffline = filteredOffline.filter(o => o.payment_status === 'refunded' || o.order_status === 'cancelled');
+                }
+            }
+            if (offlineSearchQuery) {
+                filteredOffline = filteredOffline.filter(o => o.order_code.toLowerCase().includes(offlineSearchQuery.toLowerCase()));
+            }
+
+            const offlineList = document.getElementById('offlineOrdersList');
+            const offlineEmpty = document.getElementById('offlineEmptyState');
+            if (filteredOffline.length === 0) {
+                if (offlineList) offlineList.style.display = 'none';
+                if (offlineEmpty) offlineEmpty.style.display = 'block';
+            } else {
+                if (offlineEmpty) offlineEmpty.style.display = 'none';
+                if (offlineList) {
+                    offlineList.style.display = 'flex';
+                    offlineList.innerHTML = filteredOffline.map(o => {
+                        const formattedTotal = window.MGClientApi ? window.MGClientApi.formatPrice(o.total_amount) : (Number(o.total_amount).toLocaleString('vi-VN') + 'đ');
+                        const orderDate = new Date(o.created_at).toLocaleString('vi-VN');
+                        const statusLabel = getStatusLabel(o.order_status);
+                        return `
+                            <div class="order-card">
+                                <div class="order-card-header">
+                                    <div class="order-card-title">
+                                        <span>🏪 ${o.order_code}</span>
+                                        <span class="status-badge status-${o.order_status}">${statusLabel}</span>
+                                    </div>
+                                    <div class="order-card-date">${orderDate}</div>
+                                </div>
+                                <div class="order-card-body">
+                                    <div class="order-card-info">
+                                        <div>Mua tại nhà thuốc Minh Giang</div>
+                                        <div class="order-card-total">Tổng tiền: <span>${formattedTotal}</span></div>
+                                    </div>
+                                    <button class="btn-order-detail" onclick="openOrderDetailModal('${o.order_code}')">Xem chi tiết</button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+        }
+
+        function filterOnlineOrders(status, btn) {
+            onlineTabFilter = status;
+            btn.closest('.orders-tabs').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderOrders();
+        }
+
+        function filterOfflineOrders(status, btn) {
+            offlineTabFilter = status;
+            btn.closest('.orders-tabs').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderOrders();
+        }
+
+        function handleOnlineSearch(event) {
+            if (event.key === 'Enter') {
+                searchOnlineOrders();
+            }
+        }
+
+        function searchOnlineOrders() {
+            onlineSearchQuery = document.getElementById('searchOnlineInput').value.trim();
+            renderOrders();
+        }
+
+        function handleOfflineSearch(event) {
+            if (event.key === 'Enter') {
+                searchOfflineOrders();
+            }
+        }
+
+        function searchOfflineOrders() {
+            offlineSearchQuery = document.getElementById('searchOfflineInput').value.trim();
+            renderOrders();
+        }
+
+        async function openOrderDetailModal(orderCode) {
+            const authRaw = localStorage.getItem('MG_CLIENT_AUTH');
+            if (!authRaw) return;
+            const auth = JSON.parse(authRaw);
+            const token = auth.accessToken;
+
+            try {
+                const resp = await fetch(`${GATEWAY}/api/order/orders/${orderCode}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await resp.json();
+                if (!data.success) {
+                    alert('Không lấy được chi tiết đơn hàng: ' + data.message);
+                    return;
+                }
+
+                const order = data.data;
+                document.getElementById('detailOrderCode').textContent = order.order_code;
+                document.getElementById('detailOrderChannel').textContent = order.order_channel === 'web' ? 'Đặt hàng Online (Website)' : 'Mua trực tiếp tại Nhà thuốc';
+                document.getElementById('detailOrderDate').textContent = new Date(order.created_at).toLocaleString('vi-VN');
+                document.getElementById('detailPaymentMethod').textContent = getPaymentMethodLabel(order.payment_method);
+                
+                const statusBadge = document.getElementById('detailOrderStatus');
+                statusBadge.textContent = getStatusLabel(order.order_status);
+                statusBadge.className = `status-badge status-${order.order_status}`;
+
+                document.getElementById('detailPaymentStatus').textContent = getPaymentStatusLabel(order.payment_status);
+                document.getElementById('detailReceiverName').textContent = order.customer_name || '-';
+                document.getElementById('detailReceiverPhone').textContent = order.customer_phone || '-';
+                document.getElementById('detailShippingAddress').textContent = order.shipping_address || 'Mua tại quầy';
+                document.getElementById('detailOrderNotes').textContent = order.customer_notes || '-';
+
+                const formatFn = window.MGClientApi ? window.MGClientApi.formatPrice : (v => Number(v).toLocaleString('vi-VN') + 'đ');
+                document.getElementById('detailSubtotal').textContent = formatFn(order.subtotal);
+                document.getElementById('detailShippingFee').textContent = formatFn(order.shipping_fee);
+                document.getElementById('detailDiscount').textContent = formatFn(order.discount_amount);
+                document.getElementById('detailTotalAmount').textContent = formatFn(order.total_amount);
+
+                const tbody = document.getElementById('orderDetailItems');
+                if (order.items && order.items.length > 0) {
+                    tbody.innerHTML = order.items.map(item => {
+                        const total = item.quantity * item.unit_price;
+                        return `
+                            <tr>
+                                <td><strong>${item.product_name}</strong></td>
+                                <td>${item.unit_name || 'Hộp'}</td>
+                                <td style="text-align: right;">${item.quantity}</td>
+                                <td style="text-align: right;">${formatFn(item.unit_price)}</td>
+                                <td style="text-align: right;">${formatFn(total)}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#9ca3af;">Không có thông tin sản phẩm</td></tr>';
+                }
+
+                document.getElementById('orderDetailModal').classList.add('active');
+            } catch (err) {
+                console.error('Lỗi chi tiết đơn hàng:', err);
+                alert('Không thể kết nối máy chủ');
+            }
+        }
+
+        function closeOrderDetailModal() {
+            document.getElementById('orderDetailModal').classList.remove('active');
+        }
     </script>
     
     <!-- MODAL: Edit Address -->
@@ -1821,6 +2258,77 @@
                 <button class="btn-danger" onclick="deleteAddress()" style="margin-right:auto;"><i class="fa-solid fa-trash"></i> Xoá</button>
                 <button class="btn-secondary" onclick="closeEditModal()">Hủy</button>
                 <button class="btn-primary" onclick="saveEditAddress()">Lưu</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL: Order Detail -->
+    <div id="orderDetailModal" class="modal">
+        <div class="modal-content" style="max-width: 650px;">
+            <div class="modal-header">
+                <h2 class="modal-title" id="orderModalTitle">Chi tiết đơn hàng</h2>
+                <button class="modal-close" onclick="closeOrderDetailModal()">×</button>
+            </div>
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 13px; margin-bottom: 16px;">
+                    <div>
+                        <p><strong>Mã đơn hàng:</strong> <span id="detailOrderCode"></span></p>
+                        <p><strong>Kênh mua hàng:</strong> <span id="detailOrderChannel"></span></p>
+                        <p><strong>Ngày đặt hàng:</strong> <span id="detailOrderDate"></span></p>
+                        <p><strong>Phương thức thanh toán:</strong> <span id="detailPaymentMethod"></span></p>
+                    </div>
+                    <div>
+                        <p><strong>Trạng thái đơn hàng:</strong> <span id="detailOrderStatus"></span></p>
+                        <p><strong>Trạng thái thanh toán:</strong> <span id="detailPaymentStatus"></span></p>
+                        <p><strong>Người nhận:</strong> <span id="detailReceiverName"></span></p>
+                        <p><strong>Số điện thoại:</strong> <span id="detailReceiverPhone"></span></p>
+                    </div>
+                </div>
+                
+                <div style="font-size: 13px; margin-bottom: 16px;">
+                    <p><strong>Địa chỉ giao hàng:</strong> <span id="detailShippingAddress"></span></p>
+                    <p><strong>Ghi chú:</strong> <span id="detailOrderNotes">-</span></p>
+                </div>
+
+                <h3 style="font-size: 14px; font-weight: 600; margin: 16px 0 8px; color: #111827; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px;">Danh sách sản phẩm</h3>
+                <div style="overflow-x: auto;">
+                    <table class="order-detail-table">
+                        <thead>
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th>Đơn vị</th>
+                                <th style="text-align: right;">Số lượng</th>
+                                <th style="text-align: right;">Đơn giá</th>
+                                <th style="text-align: right;">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderDetailItems">
+                            <!-- Items loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="order-detail-summary">
+                    <div class="summary-row">
+                        <span>Tạm tính:</span>
+                        <span id="detailSubtotal">0đ</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Phí vận chuyển:</span>
+                        <span id="detailShippingFee">0đ</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Giảm giá:</span>
+                        <span id="detailDiscount">0đ</span>
+                    </div>
+                    <div class="summary-row grand-total">
+                        <span>Tổng tiền thanh toán:</span>
+                        <strong id="detailTotalAmount">0đ</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeOrderDetailModal()">Đóng</button>
             </div>
         </div>
     </div>

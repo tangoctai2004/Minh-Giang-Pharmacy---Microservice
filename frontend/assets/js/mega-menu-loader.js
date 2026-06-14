@@ -111,19 +111,46 @@ function renderNavList(container, categories) {
         });
     });
 
-    // Hover Level 2 sidebar items
+    let hoverTimeout = null;
+    let pendingCatItem = null;
+
+    // Hover Level 2 sidebar items with hover-intent delay (150ms)
     container.addEventListener('mouseover', (e) => {
         const catItem = e.target.closest('.dropdown-cat-item');
         if (catItem) {
+            if (catItem.classList.contains('active') || catItem === pendingCatItem) {
+                return;
+            }
+
             const dropdownContent = catItem.closest('.dropdown-content');
             if (!dropdownContent) return;
             const parentId = dropdownContent.getAttribute('data-parent-id');
             const subId = catItem.getAttribute('data-id');
 
-            catItem.parentElement.querySelectorAll('.dropdown-cat-item').forEach(li => li.classList.remove('active'));
-            catItem.classList.add('active');
+            if (hoverTimeout) {
+                clearTimeout(hoverTimeout);
+            }
+            pendingCatItem = catItem;
 
-            handleSubCategoryHover(parentId, subId);
+            hoverTimeout = setTimeout(() => {
+                catItem.parentElement.querySelectorAll('.dropdown-cat-item').forEach(li => li.classList.remove('active'));
+                catItem.classList.add('active');
+                handleSubCategoryHover(parentId, subId);
+                pendingCatItem = null;
+            }, 150);
+        }
+    });
+
+    container.addEventListener('mouseout', (e) => {
+        const catItem = e.target.closest('.dropdown-cat-item');
+        if (catItem && !catItem.contains(e.relatedTarget)) {
+            if (catItem === pendingCatItem) {
+                if (hoverTimeout) {
+                    clearTimeout(hoverTimeout);
+                    hoverTimeout = null;
+                }
+                pendingCatItem = null;
+            }
         }
     });
 }

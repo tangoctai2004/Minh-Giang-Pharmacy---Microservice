@@ -131,4 +131,32 @@ router.delete('/:id', canWriteCatalog, async (req, res) => {
   }
 });
 
+router.post('/:id/pay-debt', canWriteCatalog, requireFields(['amount']), async (req, res) => {
+  try {
+    const { amount } = req.body;
+    const supplierId = req.params.id;
+
+    if (typeof amount !== 'number' || amount <= 0) {
+      return res.status(400).json({ success: false, message: 'Số tiền thanh toán phải lớn hơn 0' });
+    }
+
+    const [[supplier]] = await pool.query('SELECT id, current_debt FROM suppliers WHERE id = ?', [supplierId]);
+    if (!supplier) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy nhà cung cấp' });
+    }
+
+    await pool.query(
+      `UPDATE suppliers
+       SET current_debt = current_debt - ?,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?`,
+      [amount, supplierId]
+    );
+
+    res.json({ success: true, message: 'Thanh toán công nợ thành công' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 module.exports = router;

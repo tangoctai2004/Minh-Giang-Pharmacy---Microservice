@@ -35,6 +35,7 @@ router.get('/', async (req, res) => {
       `SELECT s.id, s.kiosk_id, s.status,
               u.full_name AS opened_by_name,
               s.opening_cash, s.closing_cash,
+              s.expected_closing_cash, s.cash_difference, s.reconciliation_status,
               s.shift_start, s.shift_end
        FROM shifts s
        LEFT JOIN users u ON u.id = s.user_id
@@ -241,6 +242,37 @@ router.put('/:id/close', async (req, res) => {
         cash_difference: cashDifference.toFixed(2),
       },
     });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// PUT /shifts/:id/reconcile/approve — Admin duyệt chênh lệch ca làm việc
+router.put('/:id/reconcile/approve', async (req, res) => {
+  if (req.userRole !== 'admin') {
+    return res.status(403).json({ success: false, message: 'Chỉ quản trị viên mới có quyền duyệt chênh lệch' });
+  }
+
+  try {
+    const { id } = req.params;
+    const { approval_note } = req.body;
+
+    const [result] = await pool.query(
+      `UPDATE shifts
+       SET reconciliation_status = 'approved',
+           approved_by = ?,
+           approved_at = NOW(),
+           approval_note = ?,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?`,
+      [req.userId, approval_note || null, id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy ca làm việc' });
+    }
+
+    res.json({ success: true, message: 'Duyệt chênh lệch ca thành công' });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

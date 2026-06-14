@@ -62,6 +62,7 @@ class CategoryPage {
 
         // DOM Elements
         this.els = {
+            breadcrumb: document.getElementById('catBreadcrumb'),
             title: document.getElementById('mainCategoryTitle'),
             subCatGrid: document.getElementById('subCategoriesGrid'),
             subCatsWrapper: document.getElementById('subCatsWrapper'),
@@ -230,13 +231,27 @@ class CategoryPage {
         try {
             const json = await catalogApi().get('categories/tree');
             if (json.success) {
-                // Find current category
                 const tree = json.data;
-                const current = this.findCategoryInTree(tree, Number(this.categoryId));
-                if (current) {
+                const path = this.findCategoryPathInTree(tree, Number(this.categoryId));
+                if (path && path.length > 0) {
+                    const current = path[path.length - 1];
                     if (this.els.title) this.els.title.textContent = current.name;
                     document.title = `${current.name} — Nhà Thuốc Minh Giang`;
                     
+                    // Nạp Breadcrumb động
+                    if (this.els.breadcrumb) {
+                        let html = `<a href="index.html">Trang chủ</a>`;
+                        path.forEach((cat, index) => {
+                            html += ` <span>›</span> `;
+                            if (index === path.length - 1) {
+                                html += `<strong style="color:#1f2937;">${escapeHtml(cat.name)}</strong>`;
+                            } else {
+                                html += `<a href="category.html?id=${cat.id}">${escapeHtml(cat.name)}</a>`;
+                            }
+                        });
+                        this.els.breadcrumb.innerHTML = html;
+                    }
+
                     if (current.children && current.children.length > 0) {
                         this.currentCategoryChildren = current.children;
                         if (this.els.subCatsWrapper) this.els.subCatsWrapper.style.display = 'block';
@@ -256,6 +271,18 @@ class CategoryPage {
             if (node.id === id) return node;
             if (node.children) {
                 const found = this.findCategoryInTree(node.children, id);
+                if (found) return found;
+            }
+        }
+        return null;
+    }
+
+    findCategoryPathInTree(tree, id, path = []) {
+        for (let node of tree) {
+            const currentPath = [...path, node];
+            if (node.id === id) return currentPath;
+            if (node.children) {
+                const found = this.findCategoryPathInTree(node.children, id, currentPath);
                 if (found) return found;
             }
         }
