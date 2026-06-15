@@ -4,7 +4,7 @@ function normalizePhone(phone) {
 
 async function sendSms({ phone, message }) {
   const normalizedPhone = normalizePhone(phone);
-  const provider = process.env.SMS_PROVIDER || 'mock';
+  const provider = process.env.SMS_PROVIDER || '';
 
   if (!normalizedPhone) {
     const err = new Error('Thieu truong "phone"');
@@ -18,30 +18,92 @@ async function sendSms({ phone, message }) {
     throw err;
   }
 
-  if (provider === 'mock') {
-    const success = process.env.SMS_MOCK_SUCCESS !== 'false';
-    console.log(`[SMS mock] ${success ? 'sent' : 'failed'} to ${normalizedPhone}: ${message}`);
-
-    if (!success) {
-      const err = new Error('SMS mock gui that bai theo cau hinh SMS_MOCK_SUCCESS=false');
-      err.status = 502;
-      throw err;
-    }
-
-    return {
-      provider,
-      provider_message_id: `mock-${Date.now()}`,
-    };
-  }
-
-  if (!process.env.SMS_API_KEY || !process.env.SMS_SECRET) {
-    const err = new Error('SMS provider chua duoc cau hinh day du');
-    err.status = 400;
+  if (!provider) {
+    const err = new Error('Chưa cấu hình SMS_PROVIDER thật');
+    err.status = 500;
     throw err;
   }
 
-  const err = new Error(`SMS provider "${provider}" chua duoc ho tro. Hay dung SMS_PROVIDER=mock hoac cau hinh provider hop le`);
-  err.status = 400;
+  if (provider === 'twilio') {
+    const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM } = process.env;
+    if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_FROM) {
+      const err = new Error('Twilio chưa được cấu hình đầy đủ: cần TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM');
+      err.status = 500;
+      throw err;
+    }
+
+    const response = await fetch(
+      `https://api.twilio.com/2010-04-01/Accounts/${encodeURIComponent(TWILIO_ACCOUNT_SID)}/Messages.json`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${Buffer.from(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`).toString('base64')}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          From: TWILIO_FROM,
+          To: normalizedPhone,
+          Body: message,
+        }),
+      }
+    );
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const err = new Error(payload.message || `Twilio gửi SMS thất bại (${response.status})`);
+      err.status = response.status;
+      throw err;
+    }
+    return {
+      provider,
+      provider_message_id: payload.sid || null,
+    };
+  }
+
+  if (provider === 'generic_http') {
+    const {
+      SMS_API_URL,
+      SMS_API_KEY,
+      SMS_API_KEY_HEADER = 'Authorization',
+      SMS_API_KEY_PREFIX = 'Bearer',
+      SMS_BRAND_NAME,
+      SMS_TO_FIELD = 'to',
+      SMS_MESSAGE_FIELD = 'message',
+      SMS_BRAND_FIELD = 'brand_name',
+    } = process.env;
+    if (!SMS_API_URL || !SMS_API_KEY) {
+      const err = new Error('SMS generic_http chưa được cấu hình đầy đủ: cần SMS_API_URL và SMS_API_KEY');
+      err.status = 500;
+      throw err;
+    }
+
+    const body = {
+      [SMS_TO_FIELD]: normalizedPhone,
+      [SMS_MESSAGE_FIELD]: message,
+    };
+    if (SMS_BRAND_NAME) body[SMS_BRAND_FIELD] = SMS_BRAND_NAME;
+
+    const response = await fetch(SMS_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        [SMS_API_KEY_HEADER]: SMS_API_KEY_PREFIX ? `${SMS_API_KEY_PREFIX} ${SMS_API_KEY}` : SMS_API_KEY,
+      },
+      body: JSON.stringify(body),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || payload.success === false) {
+      const err = new Error(payload.message || payload.error || `Nhà cung cấp SMS trả lỗi (${response.status})`);
+      err.status = response.status || 502;
+      throw err;
+    }
+    return {
+      provider,
+      provider_message_id: payload.message_id || payload.id || payload.sid || null,
+    };
+  }
+
+  const err = new Error(`SMS_PROVIDER="${provider}" chưa được hỗ trợ. Dùng twilio hoặc generic_http.`);
+  err.status = 500;
   throw err;
 }
 

@@ -15,15 +15,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadSpecialtyPageData() {
     try {
-        // 1. Fetch categories of type 'disease'
-        const catRes = await fetch(`${API_BASE}/cms/categories?type=disease`);
+        const slug = window.location.pathname.split('/').pop().replace('.html', '');
+        // 1. Fetch subcategories of this level-2 category (e.g. benh-chuyen-khoa or benh-co-the-nguoi)
+        const catRes = await fetch(`${API_BASE}/cms/disease-categories/${slug}`);
         const catResult = await catRes.json();
-        if (!catResult.success || !catResult.data || catResult.data.length === 0) {
-            console.warn('[Disease Page Loader] No disease categories found, keeping static fallback.');
+        if (!catResult.success || !catResult.data || !catResult.data.children || catResult.data.children.length === 0) {
+            console.warn('[Disease Page Loader] No subcategories found, keeping static fallback.');
             return;
         }
 
-        const categories = catResult.data;
+        const categories = catResult.data.children;
 
         // 2. Fetch all articles
         const artRes = await fetch(`${API_BASE}/cms/articles?limit=200`);
@@ -33,7 +34,23 @@ async function loadSpecialtyPageData() {
         // 3. Render sidebar links
         const navEl = document.getElementById('specialtyNav');
         if (navEl) {
-            const icons = [
+            // Icon mapping per page (slug -> icon file), keyed by subcategory slug
+            const slugIconMap = {
+                // benh-theo-doi-tuong subcategories
+                'nam-gioi': '../assets/images/benh-ly/benh-theo-doi-tuong/icon-nam-gioi.png',
+                'nu-gioi': '../assets/images/benh-ly/benh-theo-doi-tuong/icon-nu-gioi.png',
+                'tre-em': '../assets/images/benh-ly/benh-theo-doi-tuong/icon-tre-em.png',
+                'benh-nguoi-cao-tuoi': '../assets/images/benh-ly/benh-theo-doi-tuong/icon-nguoi-cao-tuoi.png',
+                // benh-co-the-nguoi subcategories (folder: benh-theo-co-the-nguoi)
+                'dau': '../assets/images/benh-ly/benh-theo-co-the-nguoi/icon-dau.png',
+                'co': '../assets/images/benh-ly/benh-theo-co-the-nguoi/icon-co.png',
+                'nguc': '../assets/images/benh-ly/benh-theo-co-the-nguoi/icon-nguc.png',
+                'bung': '../assets/images/benh-ly/benh-theo-co-the-nguoi/icon-bung.png',
+                'sinh-duc': '../assets/images/benh-ly/benh-theo-co-the-nguoi/icon-sinhduc.png',
+                'tu-chi': '../assets/images/benh-ly/benh-theo-co-the-nguoi/icon-tuchi.png',
+                'da': '../assets/images/benh-ly/benh-theo-co-the-nguoi/icon-da.png',
+            };
+            const fallbackIcons = [
                 '../assets/images/benh-ly/benh-chuyen-khoa/icon-co-xuong-khop.png',
                 '../assets/images/benh-ly/benh-chuyen-khoa/icon-da-toc-mong.png',
                 '../assets/images/benh-ly/benh-chuyen-khoa/icon-he-than-kinh.png',
@@ -49,7 +66,7 @@ async function loadSpecialtyPageData() {
             ];
 
             navEl.innerHTML = categories.map((cat, idx) => {
-                const icon = cat.image_url || icons[idx % icons.length];
+                const icon = cat.icon_url || cat.image_url || slugIconMap[cat.slug] || fallbackIcons[idx % fallbackIcons.length];
                 const activeClass = idx === 0 ? 'class="active"' : '';
                 const cleanName = getCleanCategoryName(cat.slug) || getCleanCategoryName(cat.name) || cat.name;
                 return `
@@ -67,7 +84,10 @@ async function loadSpecialtyPageData() {
         const contentArea = document.querySelector('.content-area');
         if (contentArea) {
             contentArea.innerHTML = categories.map(cat => {
-                const catArticles = articles.filter(a => a.category_id === cat.id);
+                const catArticles = articles.filter(a => 
+                    a.category_id === cat.id || 
+                    (Array.isArray(a.tags) && a.tags.includes(cat.slug))
+                );
                 const articleLinks = catArticles.map(art => `
                     <a href="article.html?slug=${encodeURIComponent(art.slug)}" id="article-${art.id}" style="scroll-margin-top: 100px;">
                         ${art.title}
@@ -117,10 +137,29 @@ function getCleanCategoryName(str) {
         'rang-ham-mat': 'R\u0103ng \u2013 H\u00e0m \u2013 M\u1eb7t',
         'than-tiet-nieu': 'Th\u1eadn \u2013 Ti\u1ebft ni\u1ec7u',
         'tieu-hoa': 'Ti\u00eau h\u00f3a \u2013 Gan m\u1eadt \u2013 T\u1ee5y',
-        'tim-mach': 'Tim m\u1ea1ch \u2013 Huy\u1ebft \u00e1p'
+        'tim-mach': 'Tim m\u1ea1ch \u2013 Huy\u1ebft \u00e1p',
+        // benh-theo-doi-tuong subcategories
+        'nam-gioi': 'Nam gi\u1edbi',
+        'nu-gioi': 'N\u1eef gi\u1edbi',
+        'tre-em': 'Tr\u1ebb em',
+        'benh-nguoi-cao-tuoi': 'Ng\u01b0\u1eddi cao tu\u1ed5i',
+        // benh-co-the-nguoi subcategories
+        'dau': 'Đầu',
+        'co': 'Cổ',
+        'nguc': 'Ngực',
+        'bung': 'Bụng',
+        'sinh-duc': 'Cơ quan sinh dục',
+        'tu-chi': 'Tứ chi',
+        'da': 'Da & Các mô'
     };
 
     if (slugMap[str]) return slugMap[str];
+
+    for (let i = 0; i < str.length; i++) {
+        if (str.charCodeAt(i) > 255) {
+            return str;
+        }
+    }
 
     try {
         const win1252Map = {

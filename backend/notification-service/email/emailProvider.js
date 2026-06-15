@@ -1,8 +1,14 @@
 const nodemailer = require('nodemailer');
 
 function createTransport() {
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    const err = new Error('SMTP chưa được cấu hình đầy đủ: cần SMTP_HOST, SMTP_USER, SMTP_PASS');
+    err.status = 500;
+    throw err;
+  }
+
   return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT) || 587,
     secure: process.env.SMTP_SECURE === 'true',
     auth: {
@@ -13,22 +19,12 @@ function createTransport() {
 }
 
 async function sendEmail({ to, subject, html, text }) {
-  const provider = process.env.EMAIL_PROVIDER || 'mock';
+  const provider = process.env.EMAIL_PROVIDER || 'smtp';
 
-  if (provider === 'mock') {
-    const success = process.env.EMAIL_MOCK_SUCCESS !== 'false';
-    console.log(`[Email mock] ${success ? 'sent' : 'failed'} to ${to}: ${subject}`);
-
-    if (!success) {
-      const err = new Error('Email mock gui that bai theo cau hinh EMAIL_MOCK_SUCCESS=false');
-      err.status = 502;
-      throw err;
-    }
-
-    return {
-      provider,
-      provider_message_id: `mock-email-${Date.now()}`,
-    };
+  if (provider !== 'smtp') {
+    const err = new Error(`EMAIL_PROVIDER="${provider}" chưa được hỗ trợ. Hiện chỉ cho phép smtp thật.`);
+    err.status = 500;
+    throw err;
   }
 
   const transporter = createTransport();

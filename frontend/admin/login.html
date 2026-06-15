@@ -305,6 +305,17 @@
     </div>
 
     <script>
+        function getAdminApiBase() {
+            return localStorage.getItem('MG_API_BASE') || (
+                (window.location.origin.includes('localhost:5500') ||
+                 window.location.origin.includes('localhost:5501') ||
+                 window.location.origin.includes('127.0.0.1:5500') ||
+                 window.location.origin.includes('127.0.0.1:5501'))
+                ? 'http://localhost:8000/api'
+                : window.location.origin.replace(/\/+$/, '') + '/api'
+            );
+        }
+
         // Nếu đã đăng nhập rồi thì vào thẳng index
         (function checkAuth() {
             try {
@@ -338,14 +349,7 @@
             btn.classList.add('loading');
             errorBox.classList.remove('show');
 
-            const API_BASE = localStorage.getItem('MG_API_BASE') || (
-                (window.location.origin.includes('localhost:5500') ||
-                 window.location.origin.includes('localhost:5501') ||
-                 window.location.origin.includes('127.0.0.1:5500') ||
-                 window.location.origin.includes('127.0.0.1:5501'))
-                ? 'http://localhost:8000/api'
-                : window.location.origin.replace(/\/+$/, '') + '/api'
-            );
+            const API_BASE = getAdminApiBase();
 
             fetch(API_BASE + '/identity/auth/admin/login', {
                 method: 'POST',
@@ -384,8 +388,47 @@
             });
         }
 
-        function handleForgotPwd() {
-            alert('Vui lòng liên hệ IT Support (098xxxxxx) để cấp lại mật khẩu cho tài khoản Admin nội bộ.');
+        async function handleForgotPwd() {
+            const target = prompt('Nhập email hoặc số điện thoại nhân viên để nhận OTP:');
+            if (!target) return;
+
+            const API_BASE = getAdminApiBase();
+            const sendRes = await fetch(API_BASE + '/identity/auth/send-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    target: target.trim(),
+                    purpose: 'reset_password',
+                    account_type: 'staff'
+                })
+            });
+            const sendData = await sendRes.json().catch(() => ({}));
+            if (!sendRes.ok || !sendData.success) {
+                alert(sendData.message || 'Không gửi được OTP.');
+                return;
+            }
+
+            const otp = prompt('Nhập mã OTP 6 số:');
+            if (!otp) return;
+            const newPassword = prompt('Nhập mật khẩu mới (ít nhất 8 ký tự, có chữ hoa và số):');
+            if (!newPassword) return;
+            const confirmPassword = prompt('Nhập lại mật khẩu mới:');
+            if (!confirmPassword) return;
+
+            const resetRes = await fetch(API_BASE + '/identity/auth/reset-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    target: target.trim(),
+                    purpose: 'reset_password',
+                    account_type: 'staff',
+                    otp_code: otp.trim(),
+                    new_password: newPassword,
+                    confirm_password: confirmPassword
+                })
+            });
+            const resetData = await resetRes.json().catch(() => ({}));
+            alert(resetData.message || (resetRes.ok ? 'Đã đặt lại mật khẩu.' : 'Không đặt lại được mật khẩu.'));
         }
     </script>
 </body>

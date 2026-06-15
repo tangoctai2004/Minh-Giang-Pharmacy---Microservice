@@ -69,6 +69,8 @@ CREATE TABLE `customers` (
   `loyalty_points` int NOT NULL DEFAULT '0' COMMENT 'Äiá»ƒm tÃ­ch luá»¹ (10.000Ä‘ = 1 Ä‘iá»ƒm)',
   `loyalty_tier` enum('member','silver','gold','vip') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'member' COMMENT 'Háº¡ng thÃ nh viÃªn: member(0-499Ä‘), silver(500-1999Ä‘), gold(2000-4999Ä‘), vip(5000+Ä‘)',
   `is_active` tinyint(1) NOT NULL DEFAULT '1' COMMENT '1=hoáº¡t Ä‘á»™ng, 0=Ä‘Ã£ khoÃ¡',
+  `email_verified_at` datetime DEFAULT NULL COMMENT 'Thời điểm khách hàng xác thực email bằng OTP',
+  `phone_verified_at` datetime DEFAULT NULL COMMENT 'Thời điểm khách hàng xác thực số điện thoại bằng OTP',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` datetime DEFAULT NULL COMMENT 'Soft delete — NULL=đang hoạt động, non-NULL=đã xoá mềm (tuân thủ Nghị định 13/2023/NĐ-CP bảo vệ DLCN)',

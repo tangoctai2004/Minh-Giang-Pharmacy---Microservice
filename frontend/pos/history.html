@@ -818,9 +818,16 @@
         <div class="hist-spacer"></div>
 
         <button onclick="openWebOrderModal()"
-            style="display:flex;align-items:center;gap:6px;background:#e0e7ff;color:#4f46e5;border:1px solid #c7d2fe;padding:8px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background 0.2s;margin-right:16px;"
+            style="display:flex;align-items:center;gap:6px;background:#e0e7ff;color:#4f46e5;border:1px solid #c7d2fe;padding:8px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background 0.2s;margin-right:12px;"
             onmouseover="this.style.background='#c7d2fe'" onmouseout="this.style.background='#e0e7ff'">
             <i class="fa-solid fa-globe"></i> Hoàn trả đơn Web
+        </button>
+
+        <button onclick="openRmaListModal()"
+            style="display:flex;align-items:center;gap:6px;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;padding:8px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background 0.2s;margin-right:16px;"
+            onmouseover="this.style.background='#fca5a5'" onmouseout="this.style.background='#fee2e2'">
+            <i class="fa-solid fa-clipboard-list"></i> Yêu cầu đổi trả
+            <span id="rmaPendingBadge" style="background:#ef4444;color:#fff;font-size:11px;font-weight:700;padding:1px 6px;border-radius:10px;display:none;margin-left:4px;">0</span>
         </button>
 
         <div class="hist-stats">
@@ -956,12 +963,12 @@
             <div style="margin-bottom: 20px;">
                 <label style="font-size: 13px; font-weight: 600; color: #334155; display: block; margin-bottom: 6px;">Lý
                     do trả:</label>
-                <select
+                <select id="refundReasonSelect"
                     style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; background:#fff;">
-                    <option>Khách đổi ý / Mua thừa</option>
-                    <option>Sản phẩm bị lỗi / Hỏng bao bì</option>
-                    <option>Sản phẩm cận date / Quá hạn</option>
-                    <option>Tư vấn sai thuốc / Dị ứng</option>
+                    <option value="Khách đổi ý / Mua thừa">Khách đổi ý / Mua thừa</option>
+                    <option value="Sản phẩm bị lỗi / Hỏng bao bì">Sản phẩm bị lỗi / Hỏng bao bì</option>
+                    <option value="Sản phẩm cận date / Quá hạn">Sản phẩm cận date / Quá hạn</option>
+                    <option value="Tư vấn sai thuốc / Dị ứng">Tư vấn sai thuốc / Dị ứng</option>
                 </select>
             </div>
 
@@ -978,6 +985,62 @@
                 <button onclick="confirmRefund()"
                     style="padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; border: none; background: #ef4444; color: white;">Xác
                     Nhận Nhập Lại Kho</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ RMA LIST MODAL ============ -->
+    <div class="refund-modal-overlay" id="rmaListModal">
+        <div class="refund-modal" style="max-width: 900px !important; width: 90%; text-align: left; padding: 24px; display: flex; flex-direction: column; height: 80vh; max-height: 800px;">
+            <!-- Modal Header -->
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 14px; flex-shrink: 0;">
+                <h3 style="margin: 0; font-size: 18px; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-clipboard-list" style="color: #ef4444;"></i>
+                    Danh Sách Yêu Cầu Đổi/Trả Hàng (RMA)
+                </h3>
+                <button onclick="closeRmaListModal()" style="background: none; border: none; font-size: 18px; color: #64748b; cursor: pointer;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <!-- Modal Body (Splitted Layout) -->
+            <div style="display: flex; flex: 1; overflow: hidden; margin-top: 16px; gap: 20px;">
+                
+                <!-- Left: Ticket List -->
+                <div style="width: 40%; display: flex; flex-direction: column; border-right: 1px solid #e2e8f0; padding-right: 16px; overflow: hidden;">
+                    <!-- Filter and Search -->
+                    <div style="margin-bottom: 12px; display: flex; gap: 8px; flex-shrink: 0;">
+                        <select id="rmaFilterStatus" onchange="loadRmaTickets()" style="flex: 1; height: 36px; padding: 0 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; background: #fff; cursor: pointer;">
+                            <option value="Tất cả trạng thái">Tất cả trạng thái</option>
+                            <option value="pending" selected>Chờ xử lý</option>
+                            <option value="completed">Đã hoàn thành</option>
+                            <option value="rejected">Từ chối</option>
+                        </select>
+                        <select id="rmaFilterChannel" onchange="loadRmaTickets()" style="flex: 1; height: 36px; padding: 0 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; background: #fff; cursor: pointer;">
+                            <option value="">Tất cả kênh</option>
+                            <option value="web">Kênh Web</option>
+                            <option value="pos">Kênh POS</option>
+                        </select>
+                    </div>
+                    <!-- Tickets container -->
+                    <div id="rmaTicketsContainer" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px;">
+                        <!-- List populated dynamically -->
+                    </div>
+                </div>
+                
+                <!-- Right: Ticket Details -->
+                <div id="rmaDetailSection" style="width: 60%; display: flex; flex-direction: column; overflow-y: auto; padding-left: 4px;">
+                    <!-- Placeholder when no request is selected -->
+                    <div id="rmaDetailPlaceholder" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; text-align: center; gap: 12px;">
+                        <i class="fa-solid fa-inbox" style="font-size: 48px;"></i>
+                        <span>Chọn một yêu cầu đổi trả bên trái để xem chi tiết và phê duyệt</span>
+                    </div>
+                    
+                    <!-- Real Detail Content (hidden initially) -->
+                    <div id="rmaDetailContent" style="display: none; flex-direction: column; gap: 16px;">
+                        <!-- Content populated dynamically -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1428,26 +1491,53 @@
         }
 
         // Refund Modal Controls
+        function validatePOSRefundQty(itemId, maxQty) {
+            const input = document.querySelector(`.refund-item-qty[data-item-id="${itemId}"]`);
+            if (input) {
+                let val = parseInt(input.value);
+                if (isNaN(val) || val < 1) {
+                    input.value = 1;
+                } else if (val > maxQty) {
+                    input.value = maxQty;
+                }
+            }
+            recalculatePOSRefundTotal();
+        }
+
+        function recalculatePOSRefundTotal() {
+            if (!currentRefundOrder) return;
+            let total = 0;
+            const checkboxes = document.querySelectorAll('.refund-item-check:checked');
+            checkboxes.forEach(cb => {
+                const itemId = cb.getAttribute('data-item-id');
+                const price = parseFloat(cb.getAttribute('data-unit-price')) || 0;
+                const qtyInput = document.querySelector(`.refund-item-qty[data-item-id="${itemId}"]`);
+                const qty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
+                total += price * qty;
+            });
+            const refundVal = document.getElementById('refundAmountDisplay');
+            if (refundVal) {
+                refundVal.textContent = total.toLocaleString('vi-VN') + '₫';
+            }
+        }
+
         function openRefundModal(order) {
+            currentRefundOrder = order;
             document.getElementById('refundOrderId').textContent = order.order_code;
             
             const listDiv = document.getElementById('refundItemsList');
             if (listDiv && Array.isArray(order.items)) {
                 listDiv.innerHTML = order.items.map(item => `
                     <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 8px; cursor: pointer;">
-                        <input type="checkbox" checked style="accent-color: #ef4444; width: 16px; height: 16px;">
-                        ${item.product_name}
-                        <input type="number" value="${item.quantity}" min="1" max="${item.quantity}"
+                        <input type="checkbox" checked class="refund-item-check" data-item-id="${item.id}" data-unit-price="${item.unit_price}" onchange="recalculatePOSRefundTotal()" style="accent-color: #ef4444; width: 16px; height: 16px;">
+                        <span style="font-weight: 500;">${item.product_name}</span>
+                        <input type="number" value="${item.quantity}" min="1" max="${item.quantity}" class="refund-item-qty" data-item-id="${item.id}" data-unit-price="${item.unit_price}" oninput="validatePOSRefundQty(${item.id}, ${item.quantity})"
                             style="width: 50px; height: 24px; margin-left: auto; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; outline: none;">
                     </label>
                 `).join('');
             }
 
-            const refundVal = document.getElementById('refundAmountDisplay');
-            if (refundVal) {
-                refundVal.textContent = parseFloat(order.total_amount).toLocaleString('vi-VN') + '₫';
-            }
-
+            recalculatePOSRefundTotal();
             document.getElementById('refundModal').classList.add('open');
         }
 
@@ -1463,41 +1553,92 @@
             btn.disabled = true;
             btn.textContent = 'ĐANG XỬ LÝ...';
 
+            const reason = document.getElementById('refundReasonSelect')?.value || 'Khách đổi ý / Mua thừa';
+            
+            // Gather selected items
+            const checkboxes = document.querySelectorAll('.refund-item-check:checked');
+            if (checkboxes.length === 0) {
+                alert('Vui lòng chọn ít nhất một sản phẩm để hoàn trả!');
+                btn.disabled = false;
+                btn.textContent = 'Xác Nhận Nhập Lại Kho';
+                return;
+            }
+
+            const items = [];
+            let refundAmount = 0;
+            checkboxes.forEach(cb => {
+                const orderItemId = cb.getAttribute('data-item-id');
+                const price = parseFloat(cb.getAttribute('data-unit-price')) || 0;
+                const qtyInput = document.querySelector(`.refund-item-qty[data-item-id="${orderItemId}"]`);
+                const qty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
+                refundAmount += price * qty;
+                items.push({
+                    order_item_id: parseInt(orderItemId),
+                    quantity: qty
+                });
+            });
+
+            const returnBody = {
+                order_id: currentRefundOrder.id,
+                order_channel: currentRefundOrder.order_channel || 'pos',
+                reason: reason,
+                refund_amount: refundAmount,
+                refund_method: 'cash',
+                items: items
+            };
+
             try {
-                const response = await fetch(`${POS_API_BASE}/order/orders/${currentRefundOrder.id}/status`, {
+                // 1. POST /api/order/returns (to create the return)
+                const createRes = await fetch(`${POS_API_BASE}/order/returns`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${auth.accessToken}`
+                    },
+                    body: JSON.stringify(returnBody)
+                });
+                const createJson = await createRes.json();
+                if (!createJson.success) {
+                    throw new Error(createJson.message || 'Lỗi khi tạo yêu cầu trả hàng');
+                }
+
+                const returnCode = createJson.data.return_code;
+
+                // 2. PUT /api/order/returns/:id/status with completed status (to restock and finalize)
+                const approveRes = await fetch(`${POS_API_BASE}/order/returns/${returnCode}/status`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${auth.accessToken}`
                     },
-                    body: JSON.stringify({ status: 'cancelled' })
+                    body: JSON.stringify({ status: 'completed' })
                 });
-                const res = await response.json();
-                if (res.success) {
-                    closeRefundModal();
-                    
-                    const toast = document.createElement('div');
-                    toast.style.cssText = `
-                        position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%) translateY(20px);
-                        background: #dc2626; color: #fff; padding: 14px 28px; border-radius: 12px;
-                        font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px;
-                        z-index: 2000; box-shadow: 0 10px 30px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s ease;
-                    `;
-                    toast.innerHTML = '<i class="fa-solid fa-circle-check"></i> Đã hoàn trả kho hàng thành công!';
-                    document.body.appendChild(toast);
-                    setTimeout(() => { toast.style.opacity = '1'; toast.style.transform = 'translateX(-50%) translateY(0)'; }, 10);
-                    setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
-
-                    // Reload list & details
-                    await loadStats();
-                    await loadOrders(currentPage);
-                    await showOrderDetail(currentRefundOrder.id);
-                } else {
-                    alert(res.message || 'Cập nhật hoàn trả thất bại');
+                const approveJson = await approveRes.json();
+                if (!approveJson.success) {
+                    throw new Error(approveJson.message || 'Lỗi khi phê duyệt phiếu trả hàng');
                 }
+
+                closeRefundModal();
+                
+                const toast = document.createElement('div');
+                toast.style.cssText = `
+                    position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%) translateY(20px);
+                    background: #10b981; color: #fff; padding: 14px 28px; border-radius: 12px;
+                    font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px;
+                    z-index: 2000; box-shadow: 0 10px 30px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s ease;
+                `;
+                toast.innerHTML = '<i class="fa-solid fa-circle-check"></i> Đã hoàn trả kho hàng thành công!';
+                document.body.appendChild(toast);
+                setTimeout(() => { toast.style.opacity = '1'; toast.style.transform = 'translateX(-50%) translateY(0)'; }, 10);
+                setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+
+                // Reload list & details
+                await loadStats();
+                await loadOrders(currentPage);
+                await showOrderDetail(currentRefundOrder.id);
             } catch (err) {
                 console.error('[POS] Refund error:', err);
-                alert('Không thể kết nối máy chủ để thực hiện hoàn trả!');
+                alert('Không thể thực hiện hoàn trả: ' + err.message);
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Xác Nhận Nhập Lại Kho';
@@ -1560,6 +1701,358 @@
                 closeDetail();
                 closeRefundModal();
                 closeWebOrderModal();
+                closeRmaListModal();
+            }
+        });
+
+        // ==========================================
+        // RMA (Return Merchandise Authorization) Logic
+        // ==========================================
+        let currentActiveRma = null;
+
+        // Open RMA List Modal
+        async function openRmaListModal() {
+            document.getElementById('rmaListModal').classList.add('open');
+            document.getElementById('rmaDetailPlaceholder').style.display = 'flex';
+            document.getElementById('rmaDetailContent').style.display = 'none';
+            currentActiveRma = null;
+            await loadRmaTickets();
+        }
+
+        // Close RMA List Modal
+        function closeRmaListModal() {
+            document.getElementById('rmaListModal').classList.remove('open');
+        }
+
+        // Update RMA Pending Badge Count
+        async function updateRmaPendingBadge() {
+            if (!auth || !auth.accessToken) return;
+            try {
+                const res = await fetch(`${POS_API_BASE}/order/returns/stats`, {
+                    headers: { 'Authorization': `Bearer ${auth.accessToken}` }
+                });
+                const response = await res.json();
+                const badge = document.getElementById('rmaPendingBadge');
+                if (badge && response.success && response.data) {
+                    const count = response.data.pending || 0;
+                    if (count > 0) {
+                        badge.textContent = count;
+                        badge.style.display = 'inline-block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            } catch (err) {
+                console.error('[POS] Failed to update RMA pending badge:', err);
+            }
+        }
+
+        // Load RMA Tickets list
+        async function loadRmaTickets() {
+            const container = document.getElementById('rmaTicketsContainer');
+            if (!container) return;
+
+            container.innerHTML = `<div style="text-align:center; padding: 20px; color: #64748b;"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải...</div>`;
+
+            const statusFilter = document.getElementById('rmaFilterStatus')?.value || 'pending';
+            const channelFilter = document.getElementById('rmaFilterChannel')?.value || '';
+
+            let url = `${POS_API_BASE}/order/returns?page=1&limit=50`;
+            if (statusFilter && statusFilter !== 'Tất cả trạng thái') {
+                url += `&status=${encodeURIComponent(statusFilter)}`;
+            }
+            if (channelFilter) {
+                url += `&channel=${encodeURIComponent(channelFilter)}`;
+            }
+
+            try {
+                const res = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${auth.accessToken}` }
+                });
+                const response = await res.json();
+
+                if (response.success && Array.isArray(response.data)) {
+                    const tickets = response.data;
+                    if (tickets.length === 0) {
+                        container.innerHTML = `<div style="text-align:center; padding: 20px; color: #94a3b8; font-size: 13px;">Không tìm thấy yêu cầu nào.</div>`;
+                        return;
+                    }
+
+                    container.innerHTML = tickets.map(item => {
+                        let statusBadge = '';
+                        let isSelected = currentActiveRma && currentActiveRma.return_code === item.return_code;
+                        
+                        if (item.status === 'pending') {
+                            statusBadge = `<span class="badge" style="background: #fef3c7; color: #d97706; font-size:11px; padding:2px 8px; border-radius:4px;"><i class="fa-solid fa-clock"></i> Chờ duyệt</span>`;
+                        } else if (item.status === 'rejected') {
+                            statusBadge = `<span class="badge" style="background: #fee2e2; color: #b91c1c; font-size:11px; padding:2px 8px; border-radius:4px;"><i class="fa-solid fa-ban"></i> Từ chối</span>`;
+                        } else {
+                            statusBadge = `<span class="badge" style="background: #dcfce7; color: #15803d; font-size:11px; padding:2px 8px; border-radius:4px;"><i class="fa-solid fa-check"></i> Đã duyệt</span>`;
+                        }
+
+                        const dateObj = new Date(item.created_at);
+                        const createdDate = dateObj.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) + ' ' + dateObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+                        return `
+                            <div onclick="showRmaTicketDetails('${item.return_code}')" class="rma-ticket-item" data-code="${item.return_code}"
+                                 style="padding: 12px; border: 1px solid ${isSelected ? '#10b981' : '#e2e8f0'}; background: ${isSelected ? '#f0fdf4' : '#fff'}; border-radius: 8px; cursor: pointer; transition: all 0.15s; display: flex; flex-direction: column; gap: 6px; box-shadow: ${isSelected ? '0 4px 12px rgba(16, 185, 129, 0.1)' : '0 2px 4px rgba(0, 0, 0, 0.02)'};"
+                                 onmouseover="this.style.borderColor='#10b981'; this.style.transform='translateY(-1px)';"
+                                 onmouseout="if(currentActiveRma?.return_code !== '${item.return_code}') { this.style.borderColor='#e2e8f0'; } this.style.transform='none';">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-weight: 700; color: #1e293b; font-size: 13px;">${item.return_code}</span>
+                                    ${statusBadge}
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 12px; color: #475569;">
+                                    <span>Đơn: <strong>${item.order_code}</strong></span>
+                                    <span style="font-weight: 600; color: #ef4444;">${parseFloat(item.refund_amount).toLocaleString('vi-VN')}₫</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #94a3b8; border-top: 1px dashed #e2e8f0; padding-top: 6px; margin-top: 2px;">
+                                    <span>${item.customer_name || 'Khách vãng lai'}</span>
+                                    <span>${createdDate}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    container.innerHTML = `<div style="text-align:center; padding: 20px; color: #ef4444; font-size: 13px;">Lỗi khi lấy dữ liệu!</div>`;
+                }
+            } catch (err) {
+                console.error('[POS] Load RMA list error:', err);
+                container.innerHTML = `<div style="text-align:center; padding: 20px; color: #ef4444; font-size: 13px;">Lỗi kết nối máy chủ!</div>`;
+            }
+        }
+
+        // Show RMA Ticket Details
+        async function showRmaTicketDetails(returnCode) {
+            // Highlight selected in list
+            document.querySelectorAll('.rma-ticket-item').forEach(el => {
+                const code = el.getAttribute('data-code');
+                if (code === returnCode) {
+                    el.style.borderColor = '#10b981';
+                    el.style.background = '#f0fdf4';
+                    el.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.1)';
+                } else {
+                    el.style.borderColor = '#e2e8f0';
+                    el.style.background = '#fff';
+                    el.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.02)';
+                }
+            });
+
+            const placeholder = document.getElementById('rmaDetailPlaceholder');
+            const content = document.getElementById('rmaDetailContent');
+
+            if (placeholder) placeholder.style.display = 'none';
+            if (content) {
+                content.style.display = 'flex';
+                content.innerHTML = `<div style="text-align:center; padding: 48px; color: #64748b;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><p style="margin-top:12px;">Đang tải chi tiết...</p></div>`;
+            }
+
+            try {
+                const res = await fetch(`${POS_API_BASE}/order/returns/${returnCode}`, {
+                    headers: { 'Authorization': `Bearer ${auth.accessToken}` }
+                });
+                const response = await res.json();
+
+                if (response.success && response.data) {
+                    const record = response.data;
+                    currentActiveRma = record;
+
+                    let statusBadge = '';
+                    if (record.status === 'pending') {
+                        statusBadge = `<span class="badge" style="background: #fef3c7; color: #d97706; padding: 4px 12px; font-weight: 600; border-radius: 9999px; font-size: 12px;"><i class="fa-solid fa-clock"></i> Chờ duyệt</span>`;
+                    } else if (record.status === 'rejected') {
+                        statusBadge = `<span class="badge" style="background: #fee2e2; color: #b91c1c; padding: 4px 12px; font-weight: 600; border-radius: 9999px; font-size: 12px;"><i class="fa-solid fa-ban"></i> Đã từ chối</span>`;
+                    } else {
+                        statusBadge = `<span class="badge" style="background: #dcfce7; color: #15803d; padding: 4px 12px; font-weight: 600; border-radius: 9999px; font-size: 12px;"><i class="fa-solid fa-check"></i> Đã duyệt (Nhập kho)</span>`;
+                    }
+
+                    const dateObj = new Date(record.created_at);
+                    const formattedDate = dateObj.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + dateObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+                    let itemsHtml = '';
+                    if (Array.isArray(record.items)) {
+                        itemsHtml = record.items.map(item => {
+                            const totalVal = item.quantity_returned * item.unit_price;
+                            return `
+                                <tr style="border-bottom: 1px solid #f1f5f9;">
+                                    <td style="padding: 10px 0;">
+                                        <div style="font-weight: 600; color: #1e293b;">${item.product_name}</div>
+                                        <small style="color: #64748b;">Đơn giá: ${parseFloat(item.unit_price).toLocaleString('vi-VN')}₫ / ${item.unit_name || 'Hộp'}</small>
+                                    </td>
+                                    <td style="padding: 10px 0; text-align: center; font-weight: 600;">${item.quantity_returned}</td>
+                                    <td style="padding: 10px 0; text-align: right; font-weight: 600; color: #ef4444;">${parseFloat(totalVal).toLocaleString('vi-VN')}₫</td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+
+                    let refundMethodLabel = 'Tiền mặt';
+                    if (record.refund_method === 'original_payment') refundMethodLabel = 'Hoàn trả tài khoản gốc (Online)';
+                    else if (record.refund_method === 'bank_transfer') refundMethodLabel = 'Chuyển khoản ngân hàng';
+
+                    let actionsHtml = '';
+                    if (record.status === 'pending') {
+                        actionsHtml = `
+                            <button id="btnRmaReject" onclick="rejectRmaTicket('${record.return_code}')" style="padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; border: 1.5px solid #cbd5e1; background: #fff; color: #ef4444; transition: all 0.2s;">Từ Chối Duyệt</button>
+                            <button id="btnRmaApprove" onclick="approveRmaTicket('${record.return_code}')" style="padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; border: none; background: #10b981; color: white; transition: all 0.2s;">Duyệt & Nhập Lại Kho</button>
+                        `;
+                    }
+
+                    content.innerHTML = `
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <h4 style="margin: 0; font-size: 16px; color: #0f172a; font-weight: 700;">Mã phiếu RMA: ${record.return_code}</h4>
+                                ${statusBadge}
+                            </div>
+                            <small style="color: #64748b; font-size: 12px;">Ngày tạo yêu cầu: ${formattedDate}</small>
+                        </div>
+                        
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px;">
+                            <div><strong>Đơn hàng gốc:</strong> <span style="color: #4f46e5; font-weight: 600;">${record.order_code}</span></div>
+                            <div><strong>Khách hàng:</strong> <span>${record.customer_name || 'Khách vãng lai'}</span></div>
+                            <div><strong>Số điện thoại:</strong> <span>${record.customer_phone || 'Mua trực tiếp'}</span></div>
+                            <div><strong>Kênh mua:</strong> <span style="text-transform: uppercase;">${record.order_channel}</span></div>
+                            <div style="grid-column: span 2;"><strong>Lý do trả hàng:</strong> <span style="color: #ef4444; font-weight: 500;">${record.reason || 'Không rõ lý do'}</span></div>
+                            <div style="grid-column: span 2;"><strong>Hình thức hoàn trả:</strong> <span>${refundMethodLabel}</span></div>
+                        </div>
+                        
+                        <div style="font-weight: 600; font-size: 13px; color: #334155; margin-bottom: -8px;">Danh sách thuốc yêu cầu trả:</div>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #e2e8f0; text-align: left; color: #475569; font-weight: 600;">
+                                    <th style="padding: 8px 0;">Thuốc / Sản phẩm</th>
+                                    <th style="padding: 8px 0; text-align: center;">SL trả</th>
+                                    <th style="padding: 8px 0; text-align: right;">Hoàn trả (Tạm tính)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsHtml || '<tr><td colspan="3" style="text-align:center; padding:10px 0;">Không có sản phẩm</td></tr>'}
+                            </tbody>
+                        </table>
+                        
+                        <div style="border-top: 1px solid #e2e8f0; padding-top: 12px; display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
+                            <span style="font-weight: 600; color: #475569; font-size: 14px;">Tổng số tiền hoàn trả:</span>
+                            <strong style="font-size: 20px; color: #ef4444; font-weight: 700;">${parseFloat(record.refund_amount).toLocaleString('vi-VN')}₫</strong>
+                        </div>
+                        
+                        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 16px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                            ${actionsHtml}
+                        </div>
+                    `;
+                } else {
+                    content.innerHTML = `<div style="text-align:center; padding: 48px; color: #ef4444;"><i class="fa-solid fa-triangle-exclamation fa-2x"></i><p style="margin-top:12px;">Không tìm thấy chi tiết yêu cầu.</p></div>`;
+                }
+            } catch (err) {
+                console.error('[POS] Get RMA details error:', err);
+                content.innerHTML = `<div style="text-align:center; padding: 48px; color: #ef4444;"><i class="fa-solid fa-triangle-exclamation fa-2x"></i><p style="margin-top:12px;">Lỗi kết nối máy chủ.</p></div>`;
+            }
+        }
+
+        // Approve RMA Ticket
+        async function approveRmaTicket(returnCode) {
+            if (!confirm(`Bạn có chắc chắn muốn DUYỆT phiếu trả hàng ${returnCode}?\nHành động này sẽ nhập lại kho thuốc và hoàn tiền.`)) return;
+
+            const btn = document.getElementById('btnRmaApprove');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang duyệt...`;
+            }
+
+            try {
+                const res = await fetch(`${POS_API_BASE}/order/returns/${returnCode}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${auth.accessToken}`
+                    },
+                    body: JSON.stringify({ status: 'completed' })
+                });
+                const response = await res.json();
+
+                if (response.success) {
+                    alert(`✅ Đã phê duyệt phiếu trả hàng ${returnCode} thành công!`);
+                    
+                    // Reload badge count
+                    await updateRmaPendingBadge();
+
+                    // Reload list & detail
+                    await loadRmaTickets();
+                    await showRmaTicketDetails(returnCode);
+
+                    // Reload POS stats & POS list in background (if any)
+                    await loadStats();
+                    await loadOrders(currentPage);
+                } else {
+                    alert(`❌ Phê duyệt thất bại: ${response.message}`);
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = 'Duyệt & Nhập Lại Kho';
+                    }
+                }
+            } catch (err) {
+                console.error('[POS] Approve RMA error:', err);
+                alert('❌ Lỗi kết nối khi phê duyệt phiếu trả hàng.');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Duyệt & Nhập Lại Kho';
+                }
+            }
+        }
+
+        // Reject RMA Ticket
+        async function rejectRmaTicket(returnCode) {
+            if (!confirm(`Bạn có chắc chắn muốn TỪ CHỐI phiếu trả hàng ${returnCode}?`)) return;
+
+            const btn = document.getElementById('btnRmaReject');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...`;
+            }
+
+            try {
+                const res = await fetch(`${POS_API_BASE}/order/returns/${returnCode}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${auth.accessToken}`
+                    },
+                    body: JSON.stringify({ status: 'rejected' })
+                });
+                const response = await res.json();
+
+                if (response.success) {
+                    alert(`❌ Đã từ chối phiếu trả hàng ${returnCode}`);
+
+                    // Reload badge count
+                    await updateRmaPendingBadge();
+
+                    // Reload list & detail
+                    await loadRmaTickets();
+                    await showRmaTicketDetails(returnCode);
+                } else {
+                    alert(`❌ Từ chối thất bại: ${response.message}`);
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = 'Từ Chối Duyệt';
+                    }
+                }
+            } catch (err) {
+                console.error('[POS] Reject RMA error:', err);
+                alert('❌ Lỗi kết nối khi từ chối phiếu trả hàng.');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Từ Chối Duyệt';
+                }
+            }
+        }
+
+        // Keyboard
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeDetail();
+                closeRefundModal();
+                closeWebOrderModal();
+                closeRmaListModal();
             }
         });
 
@@ -1619,6 +2112,8 @@
             if (auth && auth.accessToken) {
                 await loadStats();
                 await loadOrders(1);
+                await updateRmaPendingBadge();
+                setInterval(updateRmaPendingBadge, 10000);
             }
         }
 

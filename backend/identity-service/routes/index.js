@@ -32,6 +32,7 @@ router.get('/', (req, res) => {
       'PUT    /auth/change-password',
       'POST   /auth/send-otp',
       'POST   /auth/verify-otp',
+      'POST   /auth/reset-password',
       'POST   /auth/refresh',
       'POST   /auth/logout',
       'GET    /users',

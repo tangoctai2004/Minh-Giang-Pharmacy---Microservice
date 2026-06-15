@@ -1,6 +1,41 @@
 const router = require('express').Router();
 const pool = require('../db/pool');
 
+async function findProductForGift(connection, giftProductName) {
+    const cleanName = giftProductName.trim().toLowerCase();
+    
+    // 1. Exact match (case insensitive)
+    const [exactMatches] = await connection.query(
+        `SELECT id, name, base_unit FROM mg_catalog.products 
+         WHERE LOWER(name) = ? AND status = 'active' LIMIT 1`,
+        [cleanName]
+    );
+    if (exactMatches.length > 0) return exactMatches[0];
+
+    // 2. Fallback: replace space with %
+    const wildcardName = '%' + cleanName.replace(/\s+/g, '%') + '%';
+    const [likeMatches] = await connection.query(
+        `SELECT id, name, base_unit FROM mg_catalog.products 
+         WHERE LOWER(name) LIKE ? AND status = 'active' LIMIT 1`,
+        [wildcardName]
+    );
+    if (likeMatches.length > 0) return likeMatches[0];
+
+    // 3. Fallback: search with words > 2 chars
+    const words = cleanName.split(/\s+/).filter(w => w.length > 2);
+    if (words.length > 0) {
+        const componentWildcard = '%' + words.join('%') + '%';
+        const [componentMatches] = await connection.query(
+            `SELECT id, name, base_unit FROM mg_catalog.products 
+             WHERE LOWER(name) LIKE ? AND status = 'active' LIMIT 1`,
+            [componentWildcard]
+        );
+        if (componentMatches.length > 0) return componentMatches[0];
+    }
+    
+    return null;
+}
+
 /**
  * Helper to find or automatically create a customer by phone number.
  */
@@ -58,7 +93,8 @@ router.post('/', async (req, res) => {
             discount_amount,
             total_amount,
             payment_method,
-            items
+            items,
+            voucher_code
         } = req.body;
 
         if (!items || !Array.isArray(items) || items.length === 0) {
@@ -78,6 +114,92 @@ router.post('/', async (req, res) => {
             activeCustomerId = await findOrCreateCustomerByPhone(connection, customer_phone, customer_name);
         }
 
+        // --- Xử lý Voucher & Quà tặng POS ---
+        let calculatedDiscount = 0;
+        const promotionsToInsert = [];
+        const promoUsageIncrements = [];
+        const isPhoneValid = customer_phone && customer_phone.trim().length >= 10;
+
+        if (voucher_code && isPhoneValid) {
+            const normalizedCode = voucher_code.trim().toUpperCase();
+            const [promos] = await connection.query(
+                `SELECT id, name, code, type, discount_value, min_order_value, max_discount_amount, applicable_channel
+                 FROM mg_cms.promotions
+                 WHERE code = ?
+                   AND is_active = 1
+                   AND start_date <= NOW()
+                   AND end_date >= NOW()
+                   AND (usage_limit IS NULL OR usage_count < usage_limit)
+                 LIMIT 1`,
+                [normalizedCode]
+            );
+
+            if (promos.length > 0) {
+                const v = promos[0];
+                if (v.applicable_channel === 'all' || v.applicable_channel === 'pos') {
+                    let disc = 0;
+                    if (v.type === 'percent_discount' || v.type === 'percent') {
+                        disc = Math.round((subtotal * Number(v.discount_value)) / 100);
+                        if (v.max_discount_amount > 0) {
+                            disc = Math.min(disc, Number(v.max_discount_amount));
+                        }
+                    } else {
+                        disc = Number(v.discount_value);
+                    }
+                    calculatedDiscount = disc;
+                    promotionsToInsert.push({
+                        promotion_id: v.id,
+                        promo_code: v.code,
+                        promo_name: v.name,
+                        promo_type: v.type,
+                        discount_value: Number(v.discount_value),
+                        discount_applied: disc
+                    });
+                    promoUsageIncrements.push(v.id);
+                }
+            }
+        }
+
+        if (isPhoneValid) {
+            const [activeGifts] = await connection.query(
+                `SELECT id, name, gift_product_name, gift_product_qty, min_order_value
+                 FROM mg_cms.promotions
+                 WHERE type = 'buy_x_get_y'
+                   AND is_active = 1
+                   AND start_date <= NOW()
+                   AND end_date >= NOW()
+                   AND (usage_limit IS NULL OR usage_count < usage_limit)
+                   AND (applicable_channel = 'all' OR applicable_channel = 'pos')
+                   AND min_order_value <= ?
+                 ORDER BY min_order_value DESC`,
+                [subtotal]
+            );
+
+            for (const giftCampaign of activeGifts) {
+                const prod = await findProductForGift(connection, giftCampaign.gift_product_name);
+
+                if (prod) {
+                    items.push({
+                        product_id: prod.id,
+                        product_name: `🎁 [Quà tặng] ${prod.name}`,
+                        unit_name: prod.base_unit || 'Hộp',
+                        quantity: giftCampaign.gift_product_qty || 1,
+                        unit_price: 0
+                    });
+
+                    promotionsToInsert.push({
+                        promotion_id: giftCampaign.id,
+                        promo_code: null,
+                        promo_name: giftCampaign.name,
+                        promo_type: 'buy_x_get_y',
+                        discount_value: 0,
+                        discount_applied: 0
+                    });
+                    promoUsageIncrements.push(giftCampaign.id);
+                }
+            }
+        }
+
         // 2. Thêm đơn hàng vào bảng orders
         const [orderResult] = await connection.query(`
             INSERT INTO orders (
@@ -87,7 +209,7 @@ router.post('/', async (req, res) => {
             ) VALUES (?, 'pos', ?, ?, ?, NULL, ?, 0, ?, ?, ?, 'paid', 'completed', 0)
         `, [
             orderCode, activeCustomerId, customer_name || 'Khách vãng lai', customer_phone || null,
-            subtotal, discount_amount || 0, total_amount, payment_method || 'cash'
+            subtotal, discount_amount || calculatedDiscount, total_amount, payment_method || 'cash'
         ]);
         const orderId = orderResult.insertId;
 
@@ -135,10 +257,31 @@ router.post('/', async (req, res) => {
             }
         }
 
+        // 3.5. Ghi nhận lịch sử khuyến mãi (order_promotions) & tăng lượt sử dụng trong CMS
+        for (const promo of promotionsToInsert) {
+            await connection.query(`
+                INSERT INTO order_promotions (
+                    order_id, promotion_id, promo_code_snapshot, promo_name_snapshot,
+                    promo_type_snapshot, discount_value_snapshot, discount_applied
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            `, [
+                orderId, promo.promotion_id, promo.promo_code, promo.promo_name,
+                promo.promo_type, promo.discount_value, promo.discount_applied
+            ]);
+        }
+
+        for (const promoId of promoUsageIncrements) {
+            await connection.query(
+                `UPDATE mg_cms.promotions SET usage_count = usage_count + 1 WHERE id = ?`,
+                [promoId]
+            );
+        }
+
         // 4. Tích lũy điểm & Khấu trừ điểm trong mg_identity.customers & ghi nhận lịch sử vào mg_identity.loyalty_points_transactions
         if (activeCustomerId) {
             const pointsEarned = Math.floor(total_amount / 10);
-            const pointsRedeemed = discount_amount || 0;
+            const voucherDiscountTotal = promotionsToInsert.reduce((sum, p) => sum + (p.discount_applied || 0), 0);
+            const pointsRedeemed = Math.max(0, (discount_amount || 0) - voucherDiscountTotal);
             const netPointsChange = pointsEarned - pointsRedeemed;
 
             if (netPointsChange !== 0) {
@@ -361,8 +504,14 @@ router.put('/:id/status', async (req, res) => {
         }
 
         if (activeCustomerId) {
+            // Query total voucher discount from order_promotions
+            const [[promoSum]] = await connection.query(
+                'SELECT SUM(discount_applied) AS total_promo_discount FROM order_promotions WHERE order_id = ?',
+                [realId]
+            );
+            const voucherDiscountTotal = Number(promoSum?.total_promo_discount || 0);
             const pointsEarned = Math.floor(order.total_amount / 10);
-            const pointsRedeemed = order.discount_amount || 0;
+            const pointsRedeemed = Math.max(0, (order.discount_amount || 0) - voucherDiscountTotal);
             const netPointsChange = pointsEarned - pointsRedeemed;
 
             // 1. Chuyển từ trạng thái khác sang completed -> Cộng điểm tích lũy

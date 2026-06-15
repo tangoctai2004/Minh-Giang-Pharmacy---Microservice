@@ -349,8 +349,11 @@ async function clearCart() {
 function goToCheckout() {
     const auth = getAuth();
     if (!auth || !auth.accessToken) {
-        alert('Vui lòng đăng nhập để tiến hành thanh toán');
-        window.location.href = 'login.html';
+        if (typeof window.openClientAuthModal === 'function') {
+            window.openClientAuthModal('login');
+        } else {
+            alert('Vui lòng đăng nhập để tiến hành thanh toán');
+        }
         return;
     }
     window.location.href = 'checkout.html';

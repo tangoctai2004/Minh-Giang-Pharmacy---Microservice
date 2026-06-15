@@ -40,6 +40,12 @@
 
         if (slugMap[str]) return slugMap[str];
 
+        for (var i = 0; i < str.length; i++) {
+            if (str.charCodeAt(i) > 255) {
+                return str;
+            }
+        }
+
         try {
             var win1252Map = {
                 0x80: 0x20AC, 0x82: 0x201A, 0x83: 0x0192, 0x84: 0x201E, 0x85: 0x2026, 0x86: 0x2020, 0x87: 0x2021,
@@ -213,7 +219,7 @@
     }
 
     // Render related articles in sidebar
-    function renderRelatedArticles(articles, container) {
+    function renderRelatedArticles(articles, container, catSlug) {
         if (!container) return;
         if (!articles || articles.length === 0) {
             var card = container.closest('.sidebar-card');
@@ -221,10 +227,22 @@
             return;
         }
         var html = '';
-        articles.slice(0, 5).forEach(function (a) {
+        articles.slice(0, 6).forEach(function (a) {
             var href = 'article.html?slug=' + encodeURIComponent(a.slug || '');
             html += '<a href="' + href + '">' + escHtml(a.title) + '</a>';
         });
+
+        var showViewAll = articles.length > 6;
+        if (showViewAll) {
+            var viewAllHref = catSlug ? catSlug + '.html' : 'disease.html';
+            html += '<div style="text-align:center;margin-top:12px;padding-top:8px;border-top:1px dashed #f3f4f6;">'
+                + '<a href="' + viewAllHref + '" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#0b7a3e;text-decoration:none;padding:6px 16px;border:1px solid #0b7a3e;border-radius:20px;transition:all 0.2s;" '
+                + 'onmouseover="this.style.background=\'#0b7a3e\';this.style.color=\'white\'" '
+                + 'onmouseout="this.style.background=\'transparent\';this.style.color=\'#0b7a3e\'">'
+                + '<i class="fa-solid fa-arrow-right"></i> Xem tất cả'
+                + '</a>'
+                + '</div>';
+        }
         container.innerHTML = html;
     }
 
@@ -256,6 +274,122 @@
                 + '</div></a>';
         });
         container.innerHTML = html;
+    }
+
+    // Render related products in grid list under article content
+    function renderRelatedProductsGrid(products, container) {
+        if (!container) return;
+        if (!products || products.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+        var fallback = '../assets/images/product_frame.png';
+        var html = '<div style="margin-top: 40px; border-top: 2px solid #eff6ff; padding-top: 24px;">'
+            + '<h3 style="font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">'
+            + '<i class="fa-solid fa-pills" style="color: #10b981;"></i> Sản phẩm liên quan được đề xuất'
+            + '</h3>'
+            + '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">';
+
+        products.forEach(function (p) {
+            var price = p.retail_price || p.price || 0;
+            var priceStr = price ? new Intl.NumberFormat('vi-VN').format(Math.round(price)) + 'đ' : 'Liên hệ';
+            var thumb = p.thumbnail_url || p.image_url || p.thumbnail || fallback;
+            if (thumb.indexOf('/assets/') === 0) {
+                thumb = '..' + thumb;
+            }
+            if (thumb.indexOf('/uploads/') === 0) {
+                thumb = GATEWAY + thumb;
+            }
+            
+            html += '<div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; background: #fff; transition: box-shadow 0.2s;">'
+                + '<img src="' + thumb + '" style="width: 100%; height: 120px; object-fit: contain; margin-bottom: 8px; background: #f8fafc; border-radius: 6px;" alt="' + escHtml(p.name) + '" onerror="this.src=\'' + fallback + '\'">'
+                + '<h4 style="font-size: 13px; font-weight: 600; color: #0f172a; margin-bottom: 6px; line-height: 1.4; height: 36px; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="' + escHtml(p.name) + '">' + escHtml(p.name) + '</h4>'
+                + '<div style="display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 8px;">'
+                + '<span style="font-size: 13px; font-weight: 700; color: #ef4444;">' + priceStr + '</span>'
+                + '<a href="product.html?id=' + p.id + '" style="background: #10b981; color: white; border: none; border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 600; cursor: pointer; text-decoration: none;">Chọn mua</a>'
+                + '</div>'
+                + '</div>';
+        });
+
+        html += '</div></div>';
+        container.innerHTML = html;
+    }
+
+    // Render related articles in slider under article content
+    function renderRelatedArticlesGrid(articles, container) {
+        if (!container) return;
+        if (!articles || articles.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+
+        var sliderArticles = articles.slice(0, 8);
+
+        // Slider cards
+        var sliderCards = sliderArticles.map(function (art) {
+            var thumb = art.thumbnail || '../assets/images/placeholder-product.png';
+            if (thumb.indexOf('/uploads/') === 0) {
+                thumb = GATEWAY + thumb;
+            }
+            var href = 'article.html?slug=' + encodeURIComponent(art.slug || '');
+            return '<div onclick="window.location.href=\'' + href + '\'" style="min-width:160px;max-width:160px;flex-shrink:0;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;background:#fff;cursor:pointer;">'
+                + '<div style="width:160px;height:100px;background:#f1f5f9;overflow:hidden;">'
+                + '<img src="' + thumb + '" style="width:100%;height:100%;object-fit:cover;" alt="' + escHtml(art.title) + '">'
+                + '</div>'
+                + '<div style="padding:8px 10px;">'
+                + '<div style="font-size:11px;font-weight:600;color:#0f172a;line-height:1.4;height:30px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">' + escHtml(art.title) + '</div>'
+                + '</div>'
+                + '</div>';
+        }).join('');
+
+        var html = '<!-- Section: Bài viết liên quan -->'
+            + '<div style="margin-top:40px;border-top:2px solid #e2e8f0;padding-top:24px;">'
+            + '<h3 style="font-size:16px;font-weight:800;color:#0f172a;margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:8px;">'
+            + '<i class="fa-solid fa-newspaper" style="color:#3b82f6;"></i> BÀI VIẾT LIÊN QUAN'
+            + '</h3>'
+            + '<div style="position:relative;margin-bottom:24px;">'
+            + '<div id="client-article-slider" style="display:flex;gap:12px;overflow-x:auto;scroll-behavior:smooth;padding-bottom:8px;scrollbar-width:none;">'
+            + sliderCards
+            + '</div>'
+            + '<button onclick="document.getElementById(\'client-article-slider\').scrollBy({left:-180,behavior:\'smooth\'})" '
+            + 'style="position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;background:white;border:1px solid #e2e8f0;box-shadow:0 2px 6px rgba(0,0,0,0.1);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:#475569;">'
+            + '<i class="fa-solid fa-chevron-left"></i>'
+            + '</button>'
+            + '<button onclick="document.getElementById(\'client-article-slider\').scrollBy({left:180,behavior:\'smooth\'})" '
+            + 'style="position:absolute;right:-8px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;background:white;border:1px solid #e2e8f0;box-shadow:0 2px 6px rgba(0,0,0,0.1);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:#475569;">'
+            + '<i class="fa-solid fa-chevron-right"></i>'
+            + '</button>'
+            + '</div>'
+            + '</div>';
+
+        container.innerHTML = html;
+
+        setTimeout(function () {
+            initClientArticleSlider();
+        }, 100);
+    }
+
+    function initClientArticleSlider() {
+        var slider = document.getElementById('client-article-slider');
+        if (!slider || slider.children.length <= 3) return;
+
+        var scrollInterval;
+        var startAutoScroll = function () {
+            scrollInterval = setInterval(function () {
+                if (slider.scrollLeft + slider.clientWidth >= slider.scrollWidth - 10) {
+                    slider.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    slider.scrollBy({ left: 172, behavior: 'smooth' });
+                }
+            }, 3000);
+        };
+
+        startAutoScroll();
+
+        slider.addEventListener('mouseenter', function () {
+            clearInterval(scrollInterval);
+        });
+        slider.addEventListener('mouseleave', startAutoScroll);
     }
 
     // Render breadcrumb dynamically
@@ -332,10 +466,15 @@
             tagsHtml += '</div>';
         }
 
+        var productsContainerHTML = '<div id="article-related-products-container"></div>';
+        var relatedArticlesContainerHTML = '<div id="article-related-articles-container"></div>';
+
         articleMain.innerHTML = '<h1 class="article-title">' + escHtml(title) + '</h1>'
             + metaHtml + shareHtml + introHtml + tocHtml
             + '<div class="article-content" id="articleContent">' + content + '</div>'
-            + tagsHtml;
+            + tagsHtml
+            + productsContainerHTML
+            + relatedArticlesContainerHTML;
 
         // Build TOC from rendered content
         var contentEl = document.getElementById('articleContent');
@@ -349,11 +488,28 @@
         // Update breadcrumb
         renderBreadcrumb(article);
 
-        // Populate sidebar
-        renderRelatedArticles(article.related_articles, document.querySelector('.sidebar-related-list'));
+        // Ẩn block sản phẩm liên quan cũ ở sidebar
+        var sidebarProdsCard = document.querySelector('.sidebar-featured-list');
+        if (sidebarProdsCard) {
+            var card = sidebarProdsCard.closest('.sidebar-card');
+            if (card) card.style.display = 'none';
+        }
+
+        // Vẫn giữ tin liên quan dạng text rút gọn ở sidebar kèm nút Xem tất cả
+        var cat = article.disease_category;
+        var catSlug = 'disease';
+        if (cat) {
+            if (typeof cat === 'object') {
+                catSlug = cat.slug || 'disease';
+            } else if (typeof cat === 'string') {
+                catSlug = getSlugFromCleanName(getCleanCategoryName(cat)) || 'disease';
+            }
+        }
+        renderRelatedArticles(article.related_articles, document.querySelector('.sidebar-related-list'), catSlug);
         
-        var sidebarFeaturedList = document.querySelector('.sidebar-featured-list');
-        if (sidebarFeaturedList) {
+        // Render Grid sản phẩm liên quan ở cuối bài viết
+        var gridContainer = document.getElementById('article-related-products-container');
+        if (gridContainer) {
             var relatedProds = article.related_products || [];
             if (relatedProds.length > 0) {
                 var ids = relatedProds.map(function (p) { return p.id; }).filter(Boolean).join(',');
@@ -362,21 +518,27 @@
                         .then(function (prodRes) {
                             var catalogProds = (prodRes && prodRes.success && Array.isArray(prodRes.data)) ? prodRes.data : [];
                             if (catalogProds.length > 0) {
-                                renderRelatedProducts(catalogProds, sidebarFeaturedList);
+                                renderRelatedProductsGrid(catalogProds, gridContainer);
                             } else {
-                                renderRelatedProducts(relatedProds, sidebarFeaturedList);
+                                renderRelatedProductsGrid(relatedProds, gridContainer);
                             }
                         })
                         .catch(function (err) {
                             console.warn('[ArticleLoader] Catalog products fetch failed:', err);
-                            renderRelatedProducts(relatedProds, sidebarFeaturedList);
+                            renderRelatedProductsGrid(relatedProds, gridContainer);
                         });
                 } else {
-                    renderRelatedProducts(relatedProds, sidebarFeaturedList);
+                    renderRelatedProductsGrid(relatedProds, gridContainer);
                 }
             } else {
-                renderRelatedProducts(relatedProds, sidebarFeaturedList);
+                renderRelatedProductsGrid(relatedProds, gridContainer);
             }
+        }
+
+        // Render Slider Bài viết liên quan ở cuối bài viết (chỉ có slider)
+        var articlesGridContainer = document.getElementById('article-related-articles-container');
+        if (articlesGridContainer) {
+            renderRelatedArticlesGrid(article.related_articles, articlesGridContainer);
         }
     }
 

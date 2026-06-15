@@ -456,6 +456,11 @@
                                 onmouseout="this.style.background='#f1f5f9'">ÁP DỤNG</button>
                         </div>
 
+                        <!-- Available Vouchers List for POS -->
+                        <div id="posAvailableVouchers" style="margin-bottom:10px; max-height:130px; overflow-y:auto; display:flex; flex-direction:column; gap:6px; padding:2px 0;">
+                            <!-- Will be populated dynamically -->
+                        </div>
+
                         <!-- Simulated Loyalty Info -->
                         <div id="loyaltyPointsBox"
                             style="background:#fffbeb;border:1px dashed #fde047;border-radius:6px;padding:8px 10px;display:none;align-items:center;justify-content:space-between;">
@@ -622,10 +627,21 @@
     <!-- ============ ONLINE ORDERS DRAWER (PICK & PACK) ============ -->
     <div class="drawer-overlay" id="onlineDrawerOverlay" onclick="closeOnlineDrawer()"></div>
     <div class="hold-drawer" id="onlineDrawer">
-        <div class="drawer-header" style="background:#fff7ed; border-bottom-color:#fed7aa;">
-            <h2 style="color:#ea580c;"><i class="fa-solid fa-truck-fast"></i> Đơn Web Chờ Xử Lý</h2>
+        <div class="drawer-header" style="background:#fff7ed; border-bottom: 1px solid #fed7aa; padding-bottom: 8px;">
+            <h2 style="color:#ea580c;"><i class="fa-solid fa-truck-fast"></i> Đơn Web Online</h2>
             <button class="modal-close" style="color:#ea580c;" onclick="closeOnlineDrawer()"><i
                     class="fa-solid fa-xmark"></i></button>
+        </div>
+        <!-- Drawer Tabs -->
+        <div class="drawer-tabs" style="display: flex; border-bottom: 1px solid #fed7aa; background: #fff7ed; padding: 0 16px;">
+            <button type="button" id="posTabPending" onclick="switchPosOnlineTab('pending')" class="active" style="flex: 1; padding: 12px; border: none; background: none; font-size: 13px; font-weight: 700; color: #ea580c; border-bottom: 3px solid #ea580c; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; outline: none;">
+                Chờ nhận đơn
+                <span id="posPendingTabBadge" style="background: #ef4444; color: white; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 9999px; line-height: 1; display: none;">0</span>
+            </button>
+            <button type="button" id="posTabProcessing" onclick="switchPosOnlineTab('processing')" style="flex: 1; padding: 12px; border: none; background: none; font-size: 13px; font-weight: 700; color: #6b7280; border-bottom: 3px solid transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; outline: none;">
+                Đang xử lý
+                <span id="posProcessingTabBadge" style="background: #2563eb; color: white; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 9999px; line-height: 1; display: none;">0</span>
+            </button>
         </div>
         <div class="drawer-body" style="background:#fffaf5;" id="onlineOrdersList">
             <div style="padding: 24px; text-align: center; color: #6b7280;">
@@ -635,7 +651,7 @@
         </div>
         <div class="drawer-footer" style="background:#fff7ed; border-top-color:#fed7aa;">
             <span class="drawer-footer-text" style="color:#ea580c;"><i class="fa-solid fa-bolt"></i> Vui lòng xử lý đơn
-                Web trong vòng 15 phút</span>
+                Web nhanh chóng</span>
         </div>
     </div>
 
@@ -960,7 +976,9 @@
                 prescriptionInfo: null,
                 calculatorValue: '0',
                 voucherDiscount: 0,
-                paymentMethod: 'cash'
+                paymentMethod: 'cash',
+                activePromotions: [],
+                appliedVoucherCode: null
             };
 
             function formatMoney(value) {
@@ -1013,6 +1031,18 @@
                     if (!response.ok) throw gatewayErr;
                     return response.json();
                 }
+            }
+
+            async function cmsFetch(path, options = {}) {
+                const token = getPosAuthToken();
+                const headers = {
+                    ...(options.headers || {}),
+                    ...(token ? { Authorization: `Bearer ${token}` } : {})
+                };
+                const gatewayUrl = `${POS_API_BASE}/cms${path}`;
+                const response = await fetch(gatewayUrl, { ...options, headers });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json();
             }
 
             function showToast(message, type = 'success') {
@@ -1507,7 +1537,7 @@
                 const summaryList = document.querySelector('.checkout-summary-list');
                 if (!summaryList) return;
                 const { subtotal, discount, total } = getOrderTotals();
-                summaryList.innerHTML = posState.cart.length ? posState.cart.map((item) => `
+                let summaryHtml = posState.cart.length ? posState.cart.map((item) => `
                     <div class="checkout-summary-item">
                     <span>${escapeHtml(item.name)} × ${item.quantity} ${escapeHtml(item.unit_name)}</span>
                         <span>${formatMoney(item.quantity * getCartItemPrice(item))}</span>
@@ -1518,6 +1548,20 @@
                         <span>${formatMoney(0)}</span>
                     </div>
                 `;
+
+                // Render gifts in summary
+                const eligibleGifts = getEligibleGifts();
+                if (eligibleGifts.length > 0) {
+                    eligibleGifts.forEach(gift => {
+                        summaryHtml += `
+                            <div class="checkout-summary-item" style="color: #047857; font-weight: 600; border-bottom: 1px dashed #bbf7d0; padding-bottom: 6px; margin-bottom: 6px; display: flex; justify-content: space-between;">
+                                <span>🎁 [Quà tặng] ${escapeHtml(gift.gift_product_name)} × ${gift.gift_product_qty || 1}</span>
+                                <span style="color: #10b981;">Miễn phí</span>
+                            </div>
+                        `;
+                    });
+                }
+                summaryList.innerHTML = summaryHtml;
 
                 const summaryRows = document.querySelectorAll('.checkout-left > .checkout-summary-item');
                 if (summaryRows.length >= 2) {
@@ -1923,7 +1967,7 @@
                     return;
                 }
 
-                cartItems.innerHTML = posState.cart.map((item, index) => {
+                let cartHtml = posState.cart.map((item, index) => {
                     const selectedUnit = getCartUnit(item);
                     const baseQty = getCartBaseQty(item);
                     const unitAvailableQty = getUnitAvailableQty(item, item.unit_name);
@@ -1978,6 +2022,31 @@
                             </div>
                         </div>`;
                 }).join('');
+
+                // Render POS Auto-Gifts
+                const eligibleGifts = getEligibleGifts();
+                if (eligibleGifts.length > 0) {
+                    eligibleGifts.forEach(gift => {
+                        cartHtml += `
+                            <div class="pos-cart-item" style="border: 1px dashed #10b981; background: #f0fdf4; padding: 12px; border-radius: 8px; margin-top: 10px;">
+                                <div class="pos-cart-item-top" style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <div class="pos-cart-item-name" style="color: #047857; font-weight: 700; font-size: 13px;">🎁 [Quà tặng] ${escapeHtml(gift.gift_product_name)}</div>
+                                        <div class="pos-cart-unit-note" style="color: #065f46; font-weight: 600; font-size: 11px; margin-top: 4px;">
+                                            Khuyến mãi: ${escapeHtml(gift.name)}
+                                        </div>
+                                    </div>
+                                    <span style="background: #10b981; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700;">MIỄN PHÍ</span>
+                                </div>
+                                <div class="pos-cart-item-bottom" style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 12px; color: #065f46;">
+                                    <span>Số lượng: <strong>${gift.gift_product_qty || 1}</strong></span>
+                                    <span style="font-weight: 700; color: #047857;">0đ</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                cartItems.innerHTML = cartHtml;
 
                 cartItems.querySelectorAll('.pos-cart-item').forEach((itemEl) => {
                     const index = Number(itemEl.dataset.cartIndex);
@@ -2140,10 +2209,11 @@
             updateHeldOrdersCount();
             loadCategories().catch(() => showToast('Không tải được danh mục POS', 'error'));
             loadProducts().catch(() => showToast('Không tải được sản phẩm POS', 'error'));
+            loadActivePromotions().catch(() => {});
             refreshOnlineOrders().catch((err) => console.error(err));
             setInterval(() => {
                 refreshOnlineOrders().catch((err) => console.error(err));
-            }, 20000);
+            }, 3000);
 
             // Format and handle cash received input selection/typing
             const cashInputEl = document.getElementById('cashReceived');
@@ -2174,6 +2244,8 @@
                     if (phone.length < 10) {
                         // Reset & hide if length < 10
                         window.currentCustomerPoints = 0;
+                        posState.voucherDiscount = 0;
+                        posState.appliedVoucherCode = null;
                         if (loyaltyBox) loyaltyBox.style.display = 'none';
                         if (pointsCheckbox) pointsCheckbox.checked = false;
                         updateCartTotal();
@@ -2319,6 +2391,7 @@
 
                 renderCheckoutSummary();
                 renderHoldStatus();
+                renderPosAvailableVouchers();
                 document.getElementById('checkoutModal').classList.add('open');
                 document.body.style.overflow = 'hidden';
             }
@@ -2481,7 +2554,8 @@
                         unit_name: item.unit_name || getCartUnit(item)?.unit_name || 'Hộp',
                         quantity: item.quantity,
                         unit_price: getCartItemPrice(item)
-                    }))
+                    })),
+                    voucher_code: posState.appliedVoucherCode
                 };
 
                 const toast = document.createElement('div');
@@ -2510,6 +2584,7 @@
                     posState.cart = [];
                     posState.prescriptionInfo = null;
                     posState.voucherDiscount = 0;
+                    posState.appliedVoucherCode = null;
                     window.currentCustomerPoints = 0;
                     const phoneInput = document.querySelector('.pos-customer-input input');
                     if (phoneInput) phoneInput.value = '';
@@ -2728,6 +2803,7 @@
                 posState.cart = [];
                 posState.prescriptionInfo = null;
                 posState.voucherDiscount = 0;
+                posState.appliedVoucherCode = null;
                 window.currentCustomerPoints = 0;
                 if (phoneInput) phoneInput.value = '';
                 
@@ -2876,6 +2952,7 @@
                 posState.cart = [];
                 posState.prescriptionInfo = null;
                 posState.voucherDiscount = 0;
+                posState.appliedVoucherCode = null;
                 window.currentCustomerPoints = 0;
                 const phoneInput = document.querySelector('.pos-customer-input input');
                 if (phoneInput) phoneInput.value = '';
@@ -2992,10 +3069,63 @@
                 }
             }
 
+            // Real-time Web Orders State & Audio Alerts
+            window.activeOnlineTab = 'pending'; // 'pending' or 'processing'
+            window.knownPendingOrderIds = new Set();
+            window.isKnownPendingOrdersInitialized = false;
+            window.orderItemsCache = {}; // orderId -> items array
+
+            function playNotificationSound() {
+                try {
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const now = audioCtx.currentTime;
+                    
+                    const osc1 = audioCtx.createOscillator();
+                    const gain1 = audioCtx.createGain();
+                    osc1.type = 'sine';
+                    osc1.frequency.setValueAtTime(523.25, now); // C5
+                    osc1.frequency.setValueAtTime(659.25, now + 0.15); // E5
+                    
+                    gain1.gain.setValueAtTime(0.3, now);
+                    gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    
+                    osc1.connect(gain1);
+                    gain1.connect(audioCtx.destination);
+                    
+                    osc1.start(now);
+                    osc1.stop(now + 0.4);
+                } catch (e) {
+                    console.error('Audio play error:', e);
+                }
+            }
+
+            function switchPosOnlineTab(tab) {
+                window.activeOnlineTab = tab;
+                const tabPending = document.getElementById('posTabPending');
+                const tabProcessing = document.getElementById('posTabProcessing');
+                
+                if (!tabPending || !tabProcessing) return;
+                
+                if (tab === 'pending') {
+                    tabPending.style.color = '#ea580c';
+                    tabPending.style.borderBottomColor = '#ea580c';
+                    tabProcessing.style.color = '#6b7280';
+                    tabProcessing.style.borderBottomColor = 'transparent';
+                } else {
+                    tabProcessing.style.color = '#ea580c';
+                    tabProcessing.style.borderBottomColor = '#ea580c';
+                    tabPending.style.color = '#6b7280';
+                    tabPending.style.borderBottomColor = 'transparent';
+                }
+                
+                renderPosOnlineOrdersList();
+            }
+
             async function refreshOnlineOrders() {
                 try {
                     const token = getPosAuthToken();
-                    const response = await fetch(`${POS_API_BASE}/order/orders?channel=web&status=pending_approval&limit=100`, {
+                    // Fetch all web orders to handle both pending and active processing pipeline
+                    const response = await fetch(`${POS_API_BASE}/order/orders?channel=web&limit=100`, {
                         headers: {
                             ...(token ? { Authorization: `Bearer ${token}` } : {})
                         }
@@ -3005,71 +3135,359 @@
                         throw new Error(result.message || 'Lỗi tải đơn hàng trực tuyến');
                     }
                     
-                    const orders = result.data || [];
-                    onlineOrdersListCache = orders;
+                    const allOrders = result.data || [];
                     
-                    // Update badge
+                    // Filter orders
+                    const pendingOrders = allOrders.filter(o => o.order_status === 'pending_approval');
+                    const processingOrders = allOrders.filter(o => ['confirmed', 'picking', 'shipping'].includes(o.order_status));
+                    
+                    onlineOrdersListCache = allOrders;
+                    
+                    // 1. Check for NEW pending orders to trigger alert
+                    let hasNewOrder = false;
+                    for (const o of pendingOrders) {
+                        if (!window.knownPendingOrderIds.has(o.id)) {
+                            window.knownPendingOrderIds.add(o.id);
+                            if (window.isKnownPendingOrdersInitialized) {
+                                hasNewOrder = true;
+                            }
+                        }
+                    }
+                    
+                    // Remove resolved orders from cache
+                    const pendingIds = new Set(pendingOrders.map(o => o.id));
+                    for (const id of window.knownPendingOrderIds) {
+                        if (!pendingIds.has(id)) {
+                            window.knownPendingOrderIds.delete(id);
+                        }
+                    }
+                    
+                    if (!window.isKnownPendingOrdersInitialized) {
+                        window.isKnownPendingOrdersInitialized = true;
+                    }
+                    
+                    if (hasNewOrder) {
+                        playNotificationSound();
+                        showToast("Có đơn hàng Web mới vừa đặt!");
+                        openOnlineDrawer();
+                    }
+                    
+                    // 2. Update Badge & Tabs UI
                     const badge = document.getElementById('onlineOrdersBadge');
                     if (badge) {
-                        if (orders.length > 0) {
-                            badge.textContent = orders.length;
+                        if (pendingOrders.length > 0) {
+                            badge.textContent = pendingOrders.length;
                             badge.style.display = 'block';
                         } else {
                             badge.style.display = 'none';
                         }
                     }
                     
-                    // Render drawer list
-                    const container = document.getElementById('onlineOrdersList');
-                    if (container) {
-                        if (orders.length === 0) {
-                            container.innerHTML = `
-                                <div style="padding: 32px 16px; text-align: center; color: #6b7280;">
-                                    <i class="fa-solid fa-inbox" style="font-size: 36px; color: #cbd5e1; margin-bottom: 12px;"></i>
-                                    <p style="margin: 0; font-size: 14px; font-weight: 500;">Không có đơn hàng web nào chờ xử lý</p>
-                                </div>
-                            `;
+                    const pendingBadge = document.getElementById('posPendingTabBadge');
+                    if (pendingBadge) {
+                        if (pendingOrders.length > 0) {
+                            pendingBadge.textContent = pendingOrders.length;
+                            pendingBadge.style.display = 'inline-block';
                         } else {
-                            container.innerHTML = orders.map((order) => {
-                                const payInfo = getPaymentStatusInfo(order.payment_method, order.payment_status);
-                                const timeText = getTimeElapsed(order.created_at);
-                                const totalFormatted = Number(order.total_amount || 0).toLocaleString('vi-VN') + '₫';
-                                return `
-                                    <div class="hold-order-card" style="border-left:4px solid #f97316;" data-order-id="${order.id}">
-                                        <div class="hold-order-top" style="margin-bottom:8px;">
-                                            <div class="hold-order-id" style="color:#c2410c;font-size:14px;">
-                                                <i class="fa-solid fa-globe"></i> ${escapeHtml(order.order_code)}
-                                            </div>
-                                            <div class="hold-order-time" style="color:#ea580c;font-weight:600;">
-                                                <i class="fa-regular fa-clock"></i> ${timeText}
-                                            </div>
-                                        </div>
-                                        <div class="hold-order-items" style="color:#334155; margin-bottom: 8px; font-size: 13px;">
-                                            <span>Khách: <strong>${escapeHtml(order.customer_name || 'Khách vãng lai')}</strong> (${escapeHtml(order.customer_phone || 'Không có SĐT')})</span><br>
-                                            <span style="color:${payInfo.color};font-size:12px;font-weight:600;"><i class="${payInfo.icon}"></i> ${escapeHtml(payInfo.text)}</span>
-                                        </div>
-                                        <div class="hold-order-bottom">
-                                            <div class="hold-order-total">${totalFormatted}</div>
-                                            <div class="hold-order-actions">
-                                                <button class="hold-btn-resume" style="background:#f97316;color:white;border-color:#ea580c;"
-                                                    onclick="processOnlineOrder('${order.id}', '${order.order_code}', this)">
-                                                    <i class="fa-solid fa-box-open"></i> Nhận đơn lấy hàng
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                `;
-                            }).join('');
+                            pendingBadge.style.display = 'none';
                         }
                     }
+                    
+                    const processingBadge = document.getElementById('posProcessingTabBadge');
+                    if (processingBadge) {
+                        if (processingOrders.length > 0) {
+                            processingBadge.textContent = processingOrders.length;
+                            processingBadge.style.display = 'inline-block';
+                        } else {
+                            processingBadge.style.display = 'none';
+                        }
+                    }
+                    
+                    renderPosOnlineOrdersList();
                 } catch (error) {
                     console.error('[Refresh Online Orders Error]:', error);
                 }
             }
 
-            async function processOnlineOrder(orderId, orderCode, btn) {
+            function renderPosOnlineOrdersList() {
+                const container = document.getElementById('onlineOrdersList');
+                if (!container) return;
+                
+                const allOrders = onlineOrdersListCache || [];
+                
+                if (window.activeOnlineTab === 'pending') {
+                    const pendingOrders = allOrders.filter(o => o.order_status === 'pending_approval');
+                    if (pendingOrders.length === 0) {
+                        container.innerHTML = `
+                            <div style="padding: 40px 16px; text-align: center; color: #6b7280;">
+                                <i class="fa-solid fa-inbox" style="font-size: 36px; color: #cbd5e1; margin-bottom: 12px;"></i>
+                                <p style="margin: 0; font-size: 13px; font-weight: 500;">Không có đơn hàng web nào chờ nhận</p>
+                            </div>
+                        `;
+                    } else {
+                        container.innerHTML = pendingOrders.map((order) => {
+                            const payInfo = getPaymentStatusInfo(order.payment_method, order.payment_status);
+                            const timeText = getTimeElapsed(order.created_at);
+                            const totalFormatted = Number(order.total_amount || 0).toLocaleString('vi-VN') + '₫';
+                            return `
+                                <div class="hold-order-card" style="border-left:4px solid #ea580c; cursor: pointer;" data-order-id="${order.id}" onclick="toggleOrderCard('${order.id}')">
+                                    <div class="hold-order-top" style="margin-bottom:8px;">
+                                        <div class="hold-order-id" style="color:#c2410c;font-size:14px;font-weight:700;">
+                                            <i class="fa-solid fa-globe"></i> ${escapeHtml(order.order_code)}
+                                        </div>
+                                        <div class="hold-order-time" style="color:#ea580c;font-weight:600;">
+                                            <i class="fa-regular fa-clock"></i> ${timeText}
+                                        </div>
+                                    </div>
+                                    <div class="hold-order-items" style="color:#334155; margin-bottom: 8px; font-size: 13px;">
+                                        <span>Khách: <strong>${escapeHtml(order.customer_name || 'Khách vãng lai')}</strong> (${escapeHtml(order.customer_phone || 'Không có SĐT')})</span><br>
+                                        <span style="color:${payInfo.color};font-size:12px;font-weight:600;"><i class="${payInfo.icon}"></i> ${escapeHtml(payInfo.text)}</span>
+                                    </div>
+                                    <div class="hold-order-bottom">
+                                        <div class="hold-order-total">${totalFormatted}</div>
+                                        <div class="hold-order-actions">
+                                            <button class="hold-btn-resume" style="background:#ea580c;color:white;border-color:#ea580c;"
+                                                onclick="processOnlineOrder('${order.id}', '${order.order_code}', this, event)">
+                                                <i class="fa-solid fa-box-open"></i> Nhận đơn lấy hàng
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="order-card-details" style="display:none;"></div>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+                } else {
+                    // Processing tab
+                    const processingOrders = allOrders.filter(o => ['confirmed', 'picking', 'shipping'].includes(o.order_status));
+                    if (processingOrders.length === 0) {
+                        container.innerHTML = `
+                            <div style="padding: 40px 16px; text-align: center; color: #6b7280;">
+                                <i class="fa-solid fa-hourglass-empty" style="font-size: 36px; color: #cbd5e1; margin-bottom: 12px;"></i>
+                                <p style="margin: 0; font-size: 13px; font-weight: 500;">Không có đơn hàng nào đang xử lý</p>
+                            </div>
+                        `;
+                    } else {
+                        container.innerHTML = processingOrders.map((order) => {
+                            const payInfo = getPaymentStatusInfo(order.payment_method, order.payment_status);
+                            const timeText = getTimeElapsed(order.created_at);
+                            const totalFormatted = Number(order.total_amount || 0).toLocaleString('vi-VN') + '₫';
+                            const badgeStyle = getStatusBadgeStyle(order.order_status);
+                            const statusLabel = getStatusLabel(order.order_status);
+                            
+                            // Determine next action button
+                            let actionBtnHtml = '';
+                            if (order.order_status === 'confirmed') {
+                                actionBtnHtml = `
+                                    <button class="hold-btn-resume" style="background:#3b82f6;color:white;border-color:#3b82f6;"
+                                        onclick="advanceOnlineOrderStatus('${order.id}', 'confirmed', this, event)">
+                                        Lấy hàng <i class="fa-solid fa-arrow-right"></i>
+                                    </button>
+                                `;
+                            } else if (order.order_status === 'picking') {
+                                actionBtnHtml = `
+                                    <button class="hold-btn-resume" style="background:#8b5cf6;color:white;border-color:#8b5cf6;"
+                                        onclick="advanceOnlineOrderStatus('${order.id}', 'picking', this, event)">
+                                        Giao hàng <i class="fa-solid fa-arrow-right"></i>
+                                    </button>
+                                `;
+                            } else if (order.order_status === 'shipping') {
+                                actionBtnHtml = `
+                                    <button class="hold-btn-resume" style="background:#10b981;color:white;border-color:#10b981;"
+                                        onclick="advanceOnlineOrderStatus('${order.id}', 'shipping', this, event)">
+                                        ✓ Hoàn tất
+                                    </button>
+                                `;
+                            }
+                            
+                            return `
+                                <div class="hold-order-card" style="border-left:4px solid #2563eb; cursor: pointer;" data-order-id="${order.id}" onclick="toggleOrderCard('${order.id}')">
+                                    <div class="hold-order-top" style="margin-bottom:8px;">
+                                        <div class="hold-order-id" style="color:#1d4ed8;font-size:14px;font-weight:700;">
+                                            <i class="fa-solid fa-globe"></i> ${escapeHtml(order.order_code)}
+                                        </div>
+                                        <span class="status-badge" style="font-size: 11px; padding: 2px 8px; border-radius: 9999px; font-weight: 700; ${badgeStyle}">${statusLabel}</span>
+                                    </div>
+                                    <div class="hold-order-items" style="color:#334155; margin-bottom: 8px; font-size: 13px;">
+                                        <span>Khách: <strong>${escapeHtml(order.customer_name || 'Khách vãng lai')}</strong> (${escapeHtml(order.customer_phone || 'Không có SĐT')})</span><br>
+                                        <span style="color:${payInfo.color};font-size:12px;font-weight:600;"><i class="${payInfo.icon}"></i> ${escapeHtml(payInfo.text)}</span>
+                                    </div>
+                                    <div class="hold-order-bottom">
+                                        <div class="hold-order-total">${totalFormatted}</div>
+                                        <div class="hold-order-actions" style="gap: 6px;">
+                                            <button class="hold-btn-discard" style="background:#fecaca; color:#b91c1c; border-color:#fca5a5;"
+                                                onclick="cancelOnlineOrder('${order.id}', this, event)" title="Hủy đơn hàng">
+                                                <i class="fa-solid fa-xmark"></i>
+                                            </button>
+                                            ${actionBtnHtml}
+                                        </div>
+                                    </div>
+                                    <div class="order-card-details" style="display:none;"></div>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+                }
+            }
+
+            async function toggleOrderCard(orderId) {
+                const card = document.querySelector(`.hold-order-card[data-order-id="${orderId}"]`);
+                if (!card) return;
+                
+                const detailsContainer = card.querySelector('.order-card-details');
+                if (!detailsContainer) return;
+                
+                const isExpanded = card.classList.toggle('expanded');
+                if (isExpanded) {
+                    detailsContainer.style.display = 'block';
+                    if (!window.orderItemsCache[orderId]) {
+                        detailsContainer.innerHTML = '<div style="padding:6px 0;font-size:12px;color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải chi tiết...</div>';
+                        try {
+                            const token = getPosAuthToken();
+                            const response = await fetch(`${POS_API_BASE}/order/orders/${orderId}`, {
+                                headers: {
+                                    ...(token ? { Authorization: `Bearer ${token}` } : {})
+                                }
+                            });
+                            const result = await response.json();
+                            if (result.success && result.data?.items) {
+                                window.orderItemsCache[orderId] = result.data.items;
+                                renderOrderDetailsInline(orderId, result.data.items);
+                            } else {
+                                detailsContainer.innerHTML = '<div style="padding:6px 0;font-size:12px;color:#ef4444;">Không tải được chi tiết</div>';
+                            }
+                        } catch (err) {
+                            detailsContainer.innerHTML = '<div style="padding:6px 0;font-size:12px;color:#ef4444;">Lỗi tải chi tiết</div>';
+                        }
+                    } else {
+                        renderOrderDetailsInline(orderId, window.orderItemsCache[orderId]);
+                    }
+                } else {
+                    detailsContainer.style.display = 'none';
+                }
+            }
+
+            function renderOrderDetailsInline(orderId, items) {
+                const card = document.querySelector(`.hold-order-card[data-order-id="${orderId}"]`);
+                if (!card) return;
+                const detailsContainer = card.querySelector('.order-card-details');
+                if (!detailsContainer) return;
+                
+                detailsContainer.innerHTML = `
+                    <div style="margin-top: 8px; border-top: 1px dashed #e2e8f0; padding-top: 8px;" onclick="event.stopPropagation();">
+                        <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">Danh sách thuốc đặt:</div>
+                        <ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #334155; line-height: 1.5;">
+                            ${items.map(it => `
+                                <li style="margin-bottom: 4px;">
+                                    <strong>${escapeHtml(it.product_name)}</strong> 
+                                    <span style="color: #64748b;">x ${it.quantity} ${escapeHtml(it.unit_name)}</span>
+                                    <span style="float: right; font-weight: 600;">${Number(it.total_price).toLocaleString('vi-VN')}₫</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            async function advanceOnlineOrderStatus(orderId, currentStatus, btn, event) {
+                if (event) event.stopPropagation();
+                
+                const statusOrder = ['confirmed', 'picking', 'shipping', 'completed'];
+                const currentIndex = statusOrder.indexOf(currentStatus);
+                if (currentIndex === -1 || currentIndex === statusOrder.length - 1) return;
+                
+                const nextStatus = statusOrder[currentIndex + 1];
+                
                 const originalText = btn.innerHTML;
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+                btn.disabled = true;
+                
+                try {
+                    const token = getPosAuthToken();
+                    const response = await fetch(`${POS_API_BASE}/order/orders/${orderId}/status`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(token ? { Authorization: `Bearer ${token}` } : {})
+                        },
+                        body: JSON.stringify({ status: nextStatus })
+                    });
+                    const result = await response.json();
+                    if (!result.success) {
+                        throw new Error(result.message || 'Lỗi cập nhật trạng thái');
+                    }
+                    
+                    showToast(`Đơn hàng đã chuyển sang: ${getStatusLabel(nextStatus)}`);
+                    await refreshOnlineOrders();
+                } catch (error) {
+                    console.error('[Advance Status Error]:', error);
+                    showToast(error.message || 'Lỗi khi cập nhật trạng thái', 'error');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            }
+
+            async function cancelOnlineOrder(orderId, btn, event) {
+                if (event) event.stopPropagation();
+                if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')) return;
+                
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+                btn.disabled = true;
+                
+                try {
+                    const token = getPosAuthToken();
+                    const response = await fetch(`${POS_API_BASE}/order/orders/${orderId}/status`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(token ? { Authorization: `Bearer ${token}` } : {})
+                        },
+                        body: JSON.stringify({ status: 'cancelled' })
+                    });
+                    const result = await response.json();
+                    if (!result.success) {
+                        throw new Error(result.message || 'Lỗi hủy đơn');
+                    }
+                    
+                    showToast('Đã hủy đơn hàng thành công');
+                    await refreshOnlineOrders();
+                } catch (error) {
+                    console.error('[Cancel Order Error]:', error);
+                    showToast(error.message || 'Lỗi khi hủy đơn', 'error');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            }
+
+            function getStatusLabel(status) {
+                const labels = {
+                    pending_approval: 'Chờ duyệt',
+                    confirmed: 'Đã nhận đơn',
+                    picking: 'Đang lấy hàng',
+                    shipping: 'Đang giao',
+                    completed: 'Hoàn tất',
+                    cancelled: 'Đã hủy'
+                };
+                return labels[status] || status;
+            }
+
+            function getStatusBadgeStyle(status) {
+                const styles = {
+                    pending_approval: 'background: #fff3e0; color: #e65100; border: 1px solid #ffe0b2;',
+                    confirmed: 'background: #e3f2fd; color: #0d47a1; border: 1px solid #bbdefb;',
+                    picking: 'background: #fffde7; color: #f57f17; border: 1px solid #fff9c4;',
+                    shipping: 'background: #f3e5f5; color: #4a148c; border: 1px solid #e1bee7;',
+                    completed: 'background: #e8f5e9; color: #1b5e20; border: 1px solid #c8e6c9;',
+                    cancelled: 'background: #ffebee; color: #b71c1c; border: 1px solid #ffcdd2;'
+                };
+                return styles[status] || 'background: #f5f5f5; color: #333;';
+            }
+
+            async function processOnlineOrder(orderId, orderCode, btn, event) {
+                if (event) event.stopPropagation();
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Nhận đơn...';
                 btn.disabled = true;
                 
                 try {
@@ -3089,22 +3507,11 @@
                     
                     showToast(`Nhận đơn ${orderCode} thành công!`);
                     
-                    const card = btn.closest('.hold-order-card');
-                    if (card) {
-                        card.style.transition = 'all 0.3s ease';
-                        card.style.transform = 'translateX(100%)';
-                        card.style.opacity = '0';
-                        setTimeout(() => {
-                            card.remove();
-                            const remainingOrders = document.querySelectorAll('#onlineDrawer .hold-order-card').length;
-                            if (remainingOrders === 0) {
-                                closeOnlineDrawer();
-                            }
-                        }, 300);
-                    }
+                    // Switch tab to processing so the user sees the accepted order
+                    window.activeOnlineTab = 'processing';
+                    switchPosOnlineTab('processing');
                     
                     await refreshOnlineOrders();
-                    
                 } catch (error) {
                     console.error('[Process Online Order Error]:', error);
                     showToast(error.message || 'Lỗi khi xử lý nhận đơn', 'error');
@@ -3113,28 +3520,177 @@
                 }
             }
 
+
             // ========== CHECKOUT PROMO LOGIC ==========
+            async function loadActivePromotions() {
+                try {
+                    const result = await cmsFetch('/promotions/active');
+                    if (result.success && result.data) {
+                        posState.activePromotions = result.data;
+                    }
+                } catch (e) {
+                    console.error('[POS Load Active Promotions Error]:', e);
+                }
+            }
+
+            function getEligibleGifts() {
+                const phoneInput = document.querySelector('.pos-customer-input input');
+                const phone = phoneInput ? phoneInput.value.trim() : '';
+                if (phone.length < 10) return []; // Anonymous customers don't get gifts
+
+                const subtotal = posState.cart.reduce((sum, item) => sum + item.quantity * getCartItemPrice(item), 0);
+                if (!posState.activePromotions) return [];
+
+                // Filter for POS-applicable buy_x_get_y gift campaigns
+                return posState.activePromotions.filter(v => 
+                    v.type === 'buy_x_get_y' &&
+                    (v.applicable_channel === 'all' || v.applicable_channel === 'pos') &&
+                    subtotal >= Number(v.min_order_value || 0) &&
+                    v.gift_product_name
+                );
+            }
+
             function applyVoucher() {
+                const phoneInput = document.querySelector('.pos-customer-input input');
+                const phone = phoneInput ? phoneInput.value.trim() : '';
+                if (phone.length < 10) {
+                    showToast('Khách vãng lai không được áp dụng voucher. Vui lòng nhập SĐT khách hàng.', 'error');
+                    return;
+                }
                 const code = document.getElementById('voucherCodeInput').value.trim().toUpperCase();
                 if (code === '') {
                     showToast('Vui lòng nhập mã Voucher', 'error');
                     return;
                 }
                 const subtotal = posState.cart.reduce((sum, item) => sum + item.quantity * getCartItemPrice(item), 0);
-                catalogFetch('/promotions/vouchers/validate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code, order_amount: subtotal })
-                }).then((result) => {
-                    if (!result.success) {
-                        showToast(result.message || 'Voucher không hợp lệ', 'error');
-                        return;
-                    }
-                    posState.voucherDiscount = Number(result.data.discount_amount || 0);
-                    updateCartTotal();
-                    showToast(result.data.message || `Đã áp dụng mã ${code}`);
-                }).catch(() => showToast('Không kiểm tra được voucher', 'error'));
+                
+                cmsFetch(`/promotions/validate/${encodeURIComponent(code)}`)
+                    .then((result) => {
+                        if (!result.success || !result.data) {
+                            showToast(result.message || 'Voucher không hợp lệ', 'error');
+                            return;
+                        }
+                        const v = result.data;
+                        
+                        // Check channel applicability
+                        if (v.applicable_channel !== 'all' && v.applicable_channel !== 'pos') {
+                            showToast('Voucher này không áp dụng tại quầy POS!', 'error');
+                            return;
+                        }
+                        
+                        // Check minimum order value
+                        const minBill = Number(v.min_order_value || 0);
+                        if (subtotal < minBill) {
+                            showToast(`Đơn tối thiểu ${formatMoney(minBill)} để áp dụng!`, 'error');
+                            return;
+                        }
+                        
+                        // Calculate discount
+                        let discountAmount = 0;
+                        const val = Number(v.discount_value || 0);
+                        if (v.type === 'fixed_discount') {
+                            discountAmount = val;
+                        } else if (v.type === 'percent_discount') {
+                            discountAmount = (subtotal * val) / 100;
+                            const maxDisc = Number(v.max_discount_amount || 0);
+                            if (maxDisc > 0) {
+                                discountAmount = Math.min(discountAmount, maxDisc);
+                            }
+                        } else if (v.type === 'free_shipping') {
+                            discountAmount = 0; // Free shipping doesn't discount on POS
+                        }
+                        
+                        posState.voucherDiscount = Math.round(discountAmount);
+                        posState.appliedVoucherCode = code;
+                        updateCartTotal();
+                        showToast(`Đã áp dụng mã ${code} (-${formatMoney(posState.voucherDiscount)})`);
+                    })
+                    .catch((err) => {
+                        console.error('[POS Apply Voucher Error]:', err);
+                        showToast('Mã voucher không hợp lệ hoặc đã hết hạn', 'error');
+                    });
             }
+
+            async function renderPosAvailableVouchers() {
+                const container = document.getElementById('posAvailableVouchers');
+                if (!container) return;
+                
+                const phoneInput = document.querySelector('.pos-customer-input input');
+                const phone = phoneInput ? phoneInput.value.trim() : '';
+                if (phone.length < 10) {
+                    container.innerHTML = '<div style="font-size:11px;color:#854d0e;text-align:center;padding:12px 10px;background:#fffbeb;border:1px dashed #fde047;border-radius:8px;"><i class="fa-solid fa-triangle-exclamation" style="color:#eab308;margin-right:4px;"></i>Khách vãng lai không áp dụng voucher. Vui lòng nhập SĐT khách hàng.</div>';
+                    return;
+                }
+                
+                container.innerHTML = '<div style="font-size:11px;color:#94a3b8;padding:4px 0;"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải ưu đãi...</div>';
+                
+                try {
+                    const result = await cmsFetch('/promotions/active');
+                    if (result.success && result.data) {
+                        posState.activePromotions = result.data;
+                    }
+                    if (result.success && result.data && result.data.length > 0) {
+                        const subtotal = posState.cart.reduce((sum, item) => sum + item.quantity * getCartItemPrice(item), 0);
+                        
+                        // Filter for POS-applicable promotions with codes, exclude gift campaigns
+                        const posPromos = result.data.filter(v => (v.applicable_channel === 'all' || v.applicable_channel === 'pos') && v.type !== 'buy_x_get_y' && v.code);
+                        
+                        if (posPromos.length === 0) {
+                            container.innerHTML = '<div style="font-size:11px;color:#94a3b8;text-align:center;padding:10px 0;">Không có ưu đãi nào khả dụng tại quầy</div>';
+                            return;
+                        }
+
+                        container.innerHTML = posPromos.map(v => {
+                            const discountType = v.type === 'percent_discount' ? 'percent' : (v.type === 'fixed_discount' ? 'fixed' : 'freeship');
+                            const discountValue = Number(v.discount_value || 0);
+                            const minOrder = Number(v.min_order_value || 0);
+                            
+                            const isEligible = subtotal >= minOrder;
+                            const minOrderText = formatMoney(minOrder);
+                            const discountValText = discountType === 'percent' ? `${discountValue}%` : formatMoney(discountValue);
+                            const expiryText = v.end_date ? new Date(v.end_date).toLocaleDateString('vi-VN') : 'Vô thời hạn';
+                            
+                            let btnStyle = 'background:#10b981; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:700;';
+                            let disabledAttr = '';
+                            if (!isEligible) {
+                                btnStyle = 'background:#e2e8f0; color:#94a3b8; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:not-allowed;';
+                                disabledAttr = 'disabled';
+                            }
+                            
+                            return `
+                                <div class="pos-voucher-card" style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:6px 10px; font-size:12px; opacity: ${isEligible ? 1 : 0.65};">
+                                    <div style="flex:1; min-width:0; padding-right:8px;">
+                                        <div style="font-weight:700; color:#1e293b; display:flex; align-items:center; gap:6px;">
+                                            <span style="background:#e0f2fe; color:#0369a1; padding:1px 4px; border-radius:4px; font-size:10px;">${escapeHtml(v.code)}</span>
+                                            <span>Giảm ${discountValText}</span>
+                                        </div>
+                                        <div style="font-size:10px; color:#64748b; margin-top:2px;">
+                                            Đơn tối thiểu: ${minOrderText} | HSD: ${expiryText}
+                                        </div>
+                                    </div>
+                                    <button onclick="applyPosVoucherCode('${escapeHtml(v.code)}')" ${disabledAttr} style="${btnStyle}">
+                                        Áp dụng
+                                    </button>
+                                </div>
+                            `;
+                        }).join('');
+                    } else {
+                        container.innerHTML = '<div style="font-size:11px;color:#94a3b8;text-align:center;padding:10px 0;">Không có ưu đãi nào khả dụng</div>';
+                    }
+                } catch (e) {
+                    console.error('[POS renderVouchers] Error:', e);
+                    container.innerHTML = '<div style="font-size:11px;color:#ef4444;text-align:center;padding:10px 0;">Không tải được chương trình ưu đãi</div>';
+                }
+            }
+
+            function applyPosVoucherCode(code) {
+                const input = document.getElementById('voucherCodeInput');
+                if (input) {
+                    input.value = code;
+                    applyVoucher();
+                }
+            }
+            window.applyPosVoucherCode = applyPosVoucherCode;
 
             function togglePoints() {
                 const isChecked = document.getElementById('usePointsCheckbox').checked;

@@ -349,6 +349,17 @@
                     <span id="registerErrorMsg"></span>
                 </div>
 
+                <div id="otpStep" style="display:none; background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; padding:14px; border-radius:8px; font-size:13px; font-weight:500; margin-bottom:12px;">
+                    <div style="display:flex; gap:8px; align-items:flex-start; margin-bottom:10px;">
+                        <i class="fa-solid fa-envelope-circle-check" style="margin-top:2px;"></i>
+                        <span id="otpStepText">Mã OTP đã được gửi đến email của bạn.</span>
+                    </div>
+                    <div class="input-field">
+                        <input type="text" id="emailOtp" placeholder="Nhập mã OTP 6 số" inputmode="numeric" maxlength="6">
+                    </div>
+                    <button type="button" onclick="resendRegisterOtp()" style="margin-top:10px; border:0; background:transparent; color:#047857; font-weight:700; cursor:pointer;">Gửi lại mã OTP</button>
+                </div>
+
                 <button type="submit" class="submit-btn" id="registerBtn">Tạo Tài Khoản Mới</button>
             </form>
 
@@ -399,6 +410,7 @@
     <script>
         const GATEWAY = ((window.MGClientApi && window.MGClientApi.gatewayOrigin) || window.MG_API_GATEWAY_ORIGIN || 'http://localhost:8000').replace(/\/+$/, '');
         const API_BASE = GATEWAY + '/api/identity';
+        let pendingRegistration = null;
 
         function showRegisterError(msg) {
             const box = document.getElementById('registerError');
@@ -406,14 +418,100 @@
             box.style.display = 'flex';
         }
 
+        async function syncCartAfterLogin(accessToken) {
+            try {
+                const localCart = JSON.parse(localStorage.getItem('MG_CLIENT_CART') || '[]');
+                if (localCart.length > 0) {
+                    for (const item of localCart) {
+                        await fetch(GATEWAY + '/api/order/cart/items', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': 'Bearer ' + accessToken
+                            },
+                            body: JSON.stringify({
+                                product_id: item.product_id,
+                                product_name: item.product_name,
+                                product_sku: item.product_sku,
+                                thumbnail: item.thumbnail,
+                                quantity: item.quantity,
+                                unit_name: item.unit_name,
+                                unit_price: item.unit_price
+                            })
+                        });
+                    }
+                    localStorage.removeItem('MG_CLIENT_CART');
+                }
+            } catch (syncErr) {
+                console.error('Lỗi đồng bộ giỏ hàng:', syncErr);
+            }
+        }
+
+        async function verifyRegistrationOtp(btn) {
+            const otp = document.getElementById('emailOtp').value.trim();
+            if (!/^\d{6}$/.test(otp)) {
+                showRegisterError('Vui lòng nhập mã OTP gồm 6 số.');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Đang xác thực...';
+            document.getElementById('registerError').style.display = 'none';
+
+            const verifyRes = await fetch(API_BASE + '/auth/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    target: pendingRegistration.email,
+                    target_type: 'email',
+                    purpose: 'register',
+                    otp_code: otp
+                }),
+            });
+            const verifyData = await verifyRes.json();
+            if (!verifyRes.ok || !verifyData.success) {
+                showRegisterError(verifyData.message || 'Mã OTP không đúng.');
+                btn.disabled = false;
+                btn.textContent = 'Xác thực Email';
+                return;
+            }
+
+            const loginRes = await fetch(API_BASE + '/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email_or_phone: pendingRegistration.email, password: pendingRegistration.password }),
+            });
+            const loginData = await loginRes.json();
+            if (!loginRes.ok || !loginData.success) {
+                showRegisterError(loginData.message || 'Email đã xác thực, vui lòng đăng nhập lại.');
+                btn.disabled = false;
+                btn.textContent = 'Xác thực Email';
+                return;
+            }
+
+            localStorage.setItem('MG_CLIENT_AUTH', JSON.stringify({
+                accessToken:  loginData.data.accessToken,
+                refreshToken: loginData.data.refreshToken,
+                customer:     loginData.data.customer,
+                loggedInAt:   Date.now(),
+            }));
+            await syncCartAfterLogin(loginData.data.accessToken);
+            window.location.href = 'index.html';
+        }
+
         async function handleRegister(e) {
             e.preventDefault();
+            const btn = document.getElementById('registerBtn');
+
+            if (pendingRegistration) {
+                await verifyRegistrationOtp(btn);
+                return;
+            }
 
             const full_name = document.getElementById('full_name').value.trim();
             const phone     = document.getElementById('mobile').value.trim();
             const email     = document.getElementById('email').value.trim();
             const password  = document.getElementById('regPassword').value;
-            const btn       = document.getElementById('registerBtn');
 
             // Validate password
             if (password.length < 8 || !/\d/.test(password) || !/[A-Z]/.test(password)) {
@@ -441,48 +539,40 @@
                     return;
                 }
 
-                // Đăng ký thành công → lưu token và vào trang chủ luôn
-                localStorage.setItem('MG_CLIENT_AUTH', JSON.stringify({
-                    accessToken:  data.data.accessToken,
-                    refreshToken: data.data.refreshToken,
-                    customer:     data.data.customer,
-                    loggedInAt:   Date.now(),
-                }));
-
-                // Đồng bộ giỏ hàng từ local storage lên server
-                try {
-                    const localCart = JSON.parse(localStorage.getItem('MG_CLIENT_CART') || '[]');
-                    if (localCart.length > 0) {
-                        for (const item of localCart) {
-                            await fetch(GATEWAY + '/api/order/cart/items', {
-                                method: 'POST',
-                                headers: { 
-                                    'Content-Type': 'application/json',
-                                    'Authorization': 'Bearer ' + data.data.accessToken
-                                },
-                                body: JSON.stringify({
-                                    product_id: item.product_id,
-                                    product_name: item.product_name,
-                                    product_sku: item.product_sku,
-                                    thumbnail: item.thumbnail,
-                                    quantity: item.quantity,
-                                    unit_name: item.unit_name,
-                                    unit_price: item.unit_price
-                                })
-                            });
-                        }
-                        localStorage.removeItem('MG_CLIENT_CART');
-                    }
-                } catch (syncErr) {
-                    console.error('Lỗi đồng bộ giỏ hàng:', syncErr);
-                }
-
-                window.location.href = 'index.html';
+                pendingRegistration = { email, password };
+                document.getElementById('otpStep').style.display = 'block';
+                document.getElementById('otpStepText').textContent = 'Mã OTP đã được gửi đến ' + email + '. Vui lòng nhập mã để kích hoạt tài khoản.';
+                document.getElementById('emailOtp').focus();
+                btn.disabled = false;
+                btn.textContent = 'Xác thực Email';
 
             } catch (err) {
                 showRegisterError('Không thể kết nối máy chủ. Vui lòng thử lại sau.');
                 btn.disabled = false;
                 btn.textContent = 'Tạo Tài Khoản Mới';
+            }
+        }
+
+        async function resendRegisterOtp() {
+            if (!pendingRegistration) return;
+            try {
+                const res = await fetch(API_BASE + '/auth/send-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        target: pendingRegistration.email,
+                        target_type: 'email',
+                        purpose: 'register'
+                    }),
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    showRegisterError(data.message || 'Không gửi lại được OTP.');
+                    return;
+                }
+                document.getElementById('otpStepText').textContent = 'Mã OTP mới đã được gửi đến ' + pendingRegistration.email + '.';
+            } catch (err) {
+                showRegisterError('Không thể gửi lại OTP. Vui lòng thử lại sau.');
             }
         }
     </script>

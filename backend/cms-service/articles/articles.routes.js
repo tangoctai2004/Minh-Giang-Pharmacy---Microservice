@@ -51,8 +51,12 @@ router.get('/', async (req, res) => {
     if (disease_category_id) {
       const parsedDiseaseCat = Number(disease_category_id);
       if (!isNaN(parsedDiseaseCat)) {
-        conditions.push('(a.category_id = ? OR a.category_id IN (SELECT id FROM cms_categories WHERE parent_id = ?))');
-        params.push(parsedDiseaseCat, parsedDiseaseCat);
+        conditions.push(`(
+          a.category_id = ? 
+          OR a.category_id IN (SELECT id FROM cms_categories WHERE parent_id = ?)
+          OR JSON_CONTAINS(a.tags, (SELECT JSON_QUOTE(slug) FROM cms_categories WHERE id = ?))
+        )`);
+        params.push(parsedDiseaseCat, parsedDiseaseCat, parsedDiseaseCat);
       }
     }
 
@@ -89,7 +93,7 @@ router.get('/', async (req, res) => {
 
     const [rows] = await pool.query(
       `SELECT a.id, a.title, a.slug, a.thumbnail_url, a.excerpt,
-              a.view_count, a.published_at, a.category_id,
+              a.view_count, a.published_at, a.category_id, a.tags,
               c.name AS category_name, c.slug AS category_slug
        FROM articles a
        LEFT JOIN cms_categories c ON c.id = a.category_id
@@ -100,14 +104,23 @@ router.get('/', async (req, res) => {
     );
 
     // Map fields for client compatibility
-    const mapped = rows.map(r => ({
-      ...r,
-      thumbnail: r.thumbnail_url,
-      views: r.view_count,
-      author: "Dược sĩ Minh Giang",
-      disease_category: r.category_name,
-      created_at: r.published_at
-    }));
+    const mapped = rows.map(r => {
+      let parsedTags = [];
+      try {
+        parsedTags = typeof r.tags === 'string' ? JSON.parse(r.tags) : (r.tags || []);
+      } catch (e) {
+        parsedTags = [];
+      }
+      return {
+        ...r,
+        tags: parsedTags,
+        thumbnail: r.thumbnail_url,
+        views: r.view_count,
+        author: "Dược sĩ Minh Giang",
+        disease_category: r.category_name,
+        created_at: r.published_at
+      };
+    });
 
     res.json({
       success: true,
@@ -126,11 +139,11 @@ router.get('/', async (req, res) => {
 
 /**
  * GET /articles/admin — Danh sách tất cả bài (admin/manager)
- * Query params: ?status=draft|published|archived, ?category_id=, ?page=, ?limit=
+ * Query params: ?status=draft|published|archived, ?category_id=, ?disease_category_id=, ?q=, ?page=, ?limit=
  */
 router.get('/admin', canWrite, async (req, res) => {
   try {
-    const { status, category_id, page = 1, limit = 20 } = req.query;
+    const { status, category_id, disease_category_id, q, page = 1, limit = 20 } = req.query;
     const offset = (Math.max(1, Number(page)) - 1) * Math.min(50, Number(limit) || 20);
     const pageLimit = Math.min(50, Number(limit) || 20);
 
@@ -144,6 +157,21 @@ router.get('/admin', canWrite, async (req, res) => {
     if (category_id) {
       conditions.push('a.category_id = ?');
       params.push(Number(category_id));
+    }
+    if (disease_category_id) {
+      const parsedDiseaseCat = Number(disease_category_id);
+      if (!isNaN(parsedDiseaseCat)) {
+        conditions.push(`(
+          a.category_id = ? 
+          OR a.category_id IN (SELECT id FROM cms_categories WHERE parent_id = ?)
+          OR JSON_CONTAINS(a.tags, (SELECT JSON_QUOTE(slug) FROM cms_categories WHERE id = ?))
+        )`);
+        params.push(parsedDiseaseCat, parsedDiseaseCat, parsedDiseaseCat);
+      }
+    }
+    if (q && q.trim()) {
+      conditions.push('(a.title LIKE ? OR a.excerpt LIKE ?)');
+      params.push(`%${q.trim()}%`, `%${q.trim()}%`);
     }
 
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -167,17 +195,42 @@ router.get('/admin', canWrite, async (req, res) => {
     res.json({
       success: true,
       data: rows,
-      meta: {
+      pagination: {
         total: Number(total),
         page: Number(page),
         limit: pageLimit,
-        total_pages: Math.ceil(Number(total) / pageLimit),
+        pages: Math.ceil(Number(total) / pageLimit),
       },
     });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 });
+
+/**
+ * GET /articles/admin/stats — Thống kê bài viết cho Admin
+ */
+router.get('/admin/stats', canWrite, async (req, res) => {
+  try {
+    const [[{ total }]] = await pool.query("SELECT COUNT(*) AS total FROM articles WHERE status != 'archived'");
+    const [[{ published }]] = await pool.query("SELECT COUNT(*) AS published FROM articles WHERE status = 'published'");
+    const [[{ draft }]] = await pool.query("SELECT COUNT(*) AS draft FROM articles WHERE status = 'draft'");
+    const [[{ views }]] = await pool.query("SELECT COALESCE(SUM(view_count), 0) AS views FROM articles WHERE status != 'archived'");
+
+    res.json({
+      success: true,
+      data: {
+        total_articles: Number(total),
+        published_articles: Number(published),
+        draft_articles: Number(draft),
+        total_views: Number(views)
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 
 /**
  * GET /articles/:idOrSlug — Chi tiết bài viết
@@ -189,15 +242,18 @@ router.get('/:idOrSlug', async (req, res) => {
     const param = req.params.idOrSlug;
     const col = /^\d+$/.test(param) ? 'a.id' : 'a.slug';
 
+    const isAdmin = req.userRole === 'admin' || req.userRole === 'manager';
+    const statusCond = isAdmin ? '1=1' : "a.status = 'published'";
+
     const [rows] = await pool.query(
-      `SELECT a.id, a.title, a.slug, a.thumbnail_url,
+      `SELECT a.id, a.title, a.slug, a.thumbnail_url, a.status,
               COALESCE(a.content_sanitized, a.content) AS content,
               a.excerpt, a.tags, a.view_count, a.published_at,
-              a.category_id, a.author_id,
+              a.category_id, a.author_id, a.related_product_ids, a.related_article_ids,
               c.name AS category_name, c.slug AS category_slug
        FROM articles a
        LEFT JOIN cms_categories c ON c.id = a.category_id
-       WHERE ${col} = ? AND a.status = 'published'`,
+       WHERE ${col} = ? AND ${statusCond}`,
       [param]
     );
 
@@ -207,47 +263,107 @@ router.get('/:idOrSlug', async (req, res) => {
 
     const article = rows[0];
 
-    // Tăng view_count bất đồng bộ (không block response)
-    pool.query('UPDATE articles SET view_count = view_count + 1 WHERE id = ?', [article.id])
-      .catch(() => {});
+    // Tăng view_count bất đồng bộ (chỉ tính lượt xem của người dùng thực tế, không tính admin)
+    if (!isAdmin) {
+      pool.query('UPDATE articles SET view_count = view_count + 1 WHERE id = ?', [article.id])
+        .catch(() => {});
+    }
 
-    // Lấy bài viết liên quan cùng danh mục
-    const [relatedArticles] = await pool.query(
-      `SELECT id, title, slug, thumbnail_url AS thumbnail
-       FROM articles
-       WHERE category_id = ? AND id != ? AND status = 'published' AND published_at <= NOW()
-       LIMIT 3`,
-      [article.category_id, article.id]
-    );
+    // 1. Phân tích related_article_ids từ DB
+    let relatedArticles = [];
+    let customArticleIds = [];
+    try {
+      customArticleIds = typeof article.related_article_ids === 'string' 
+        ? JSON.parse(article.related_article_ids) 
+        : (article.related_article_ids || []);
+    } catch (e) {
+      customArticleIds = [];
+    }
 
-    // Gợi ý sản phẩm điều trị phù hợp theo từ khóa trong slug bài viết
-    const slugLower = article.slug.toLowerCase();
-    let relatedProducts = [];
-    if (slugLower.includes('gut') || slugLower.includes('gout')) {
-      relatedProducts = [
-        { id: 101, name: "Colchicine 1mg Viatris (Hộp 20 viên)", slug: "colchicine-1mg-viatris", price: 85000, thumbnail: "/assets/images/products/colchicine.png" },
-        { id: 102, name: "Allopurinol Stella 300mg (Hộp 30 viên)", slug: "allopurinol-stella-300mg", price: 92000, thumbnail: "/assets/images/products/allopurinol.png" }
-      ];
-    } else if (slugLower.includes('da-day') || slugLower.includes('gerd') || slugLower.includes('tieu-hoa') || slugLower.includes('dai-trang')) {
-      relatedProducts = [
-        { id: 103, name: "Thuốc dạ dày Phosphalugel (Hộp 20 gói)", slug: "phosphalugel-hop-20-goi", price: 110000, thumbnail: "/assets/images/products/phosphalugel.png" },
-        { id: 104, name: "Hỗn dịch uống Gaviscon (Hộp 24 gói)", slug: "gaviscon-hop-24-goi", price: 175000, thumbnail: "/assets/images/products/gaviscon.png" }
-      ];
-    } else if (slugLower.includes('tim-mach') || slugLower.includes('huyet-ap')) {
-      relatedProducts = [
-        { id: 105, name: "Thuốc huyết áp Amlodipine 5mg (Hộp 30 viên)", slug: "amlodipine-5mg-stella", price: 45000, thumbnail: "/assets/images/products/amlodipine.png" },
-        { id: 106, name: "Viên uống Kirkland CoQ10 300mg (100 viên)", slug: "kirkland-coq10-300mg", price: 420000, thumbnail: "/assets/images/products/coq10.png" }
-      ];
-    } else if (slugLower.includes('khop') || slugLower.includes('xuong')) {
-      relatedProducts = [
-        { id: 107, name: "Glucosamine Sulfate 1500mg (Hộp 60 viên)", slug: "glucosamine-sulfate-1500mg", price: 280000, thumbnail: "/assets/images/products/glucosamine.png" },
-        { id: 108, name: "Thuốc giảm đau kháng viêm Celecoxib 200mg", slug: "celecoxib-200mg", price: 120000, thumbnail: "/assets/images/products/celecoxib.png" }
-      ];
+    if (customArticleIds && customArticleIds.length > 0) {
+      const [rowsArt] = await pool.query(
+        `SELECT id, title, slug, thumbnail_url AS thumbnail
+         FROM articles
+         WHERE id IN (?) AND status = 'published' AND published_at <= NOW()`,
+        [customArticleIds]
+      );
+      // Giữ đúng thứ tự user đã chọn
+      relatedArticles = customArticleIds
+        .map(id => rowsArt.find(a => Number(a.id) === Number(id)))
+        .filter(Boolean);
     } else {
-      relatedProducts = [
-        { id: 109, name: "Viên sủi tăng đề kháng Berocca Performance", slug: "berocca-performance-vi-10-vien", price: 78000, thumbnail: "/assets/images/products/berocca.png" },
-        { id: 110, name: "Dầu cá thiên nhiên Kirkland Omega-3 1000mg", slug: "kirkland-omega-3-1000mg", price: 340000, thumbnail: "/assets/images/products/omega3.png" }
-      ];
+      // Fallback về bài viết cùng danh mục
+      const [rowsArt] = await pool.query(
+        `SELECT id, title, slug, thumbnail_url AS thumbnail
+         FROM articles
+         WHERE category_id = ? AND id != ? AND status = 'published' AND published_at <= NOW()
+         LIMIT 10`,
+        [article.category_id, article.id]
+      );
+      relatedArticles = rowsArt;
+    }
+
+    // 2. Phân tích related_product_ids từ DB
+    let relatedProducts = [];
+    let customProductIds = [];
+    try {
+      customProductIds = typeof article.related_product_ids === 'string' 
+        ? JSON.parse(article.related_product_ids) 
+        : (article.related_product_ids || []);
+    } catch (e) {
+      customProductIds = [];
+    }
+
+    if (customProductIds && customProductIds.length > 0) {
+      const [rowsProd] = await pool.query(
+        `SELECT id, name, retail_price AS price, image_url AS thumbnail
+         FROM mg_catalog.products
+         WHERE id IN (?) AND status = 'active'`,
+        [customProductIds]
+      );
+      // Giữ đúng thứ tự user đã chọn
+      relatedProducts = customProductIds.map(id => {
+        const p = rowsProd.find(prod => Number(prod.id) === Number(id));
+        if (p) {
+          return {
+            id: p.id,
+            name: p.name,
+            slug: toSlug(p.name),
+            price: Number(p.price),
+            thumbnail: p.thumbnail
+          };
+        }
+        return null;
+      }).filter(Boolean);
+    } else {
+      // Fallback gợi ý động dựa trên slug bài viết như cũ
+      const slugLower = article.slug.toLowerCase();
+      if (slugLower.includes('gut') || slugLower.includes('gout')) {
+        relatedProducts = [
+          { id: 101, name: "Colchicine 1mg Viatris (Hộp 20 viên)", slug: "colchicine-1mg-viatris", price: 85000, thumbnail: "/assets/images/products/colchicine.png" },
+          { id: 102, name: "Allopurinol Stella 300mg (Hộp 30 viên)", slug: "allopurinol-stella-300mg", price: 92000, thumbnail: "/assets/images/products/allopurinol.png" }
+        ];
+      } else if (slugLower.includes('da-day') || slugLower.includes('gerd') || slugLower.includes('tieu-hoa') || slugLower.includes('dai-trang')) {
+        relatedProducts = [
+          { id: 103, name: "Thuốc dạ dày Phosphalugel (Hộp 20 gói)", slug: "phosphalugel-hop-20-goi", price: 110000, thumbnail: "/assets/images/products/phosphalugel.png" },
+          { id: 104, name: "Hỗn dịch uống Gaviscon (Hộp 24 gói)", slug: "gaviscon-hop-24-goi", price: 175000, thumbnail: "/assets/images/products/gaviscon.png" }
+        ];
+      } else if (slugLower.includes('tim-mach') || slugLower.includes('huyet-ap')) {
+        relatedProducts = [
+          { id: 105, name: "Thuốc huyết áp Amlodipine 5mg (Hộp 30 viên)", slug: "amlodipine-5mg-stella", price: 45000, thumbnail: "/assets/images/products/amlodipine.png" },
+          { id: 106, name: "Viên uống Kirkland CoQ10 300mg (100 viên)", slug: "kirkland-coq10-300mg", price: 420000, thumbnail: "/assets/images/products/coq10.png" }
+        ];
+      } else if (slugLower.includes('khop') || slugLower.includes('xuong')) {
+        relatedProducts = [
+          { id: 107, name: "Glucosamine Sulfate 1500mg (Hộp 60 viên)", slug: "glucosamine-sulfate-1500mg", price: 280000, thumbnail: "/assets/images/products/glucosamine.png" },
+          { id: 108, name: "Thuốc giảm đau kháng viêm Celecoxib 200mg", slug: "celecoxib-200mg", price: 120000, thumbnail: "/assets/images/products/celecoxib.png" }
+        ];
+      } else {
+        relatedProducts = [
+          { id: 109, name: "Viên sủi tăng đề kháng Berocca Performance", slug: "berocca-performance-vi-10-vien", price: 78000, thumbnail: "/assets/images/products/berocca.png" },
+          { id: 110, name: "Dầu cá thiên nhiên Kirkland Omega-3 1000mg", slug: "kirkland-omega-3-1000mg", price: 340000, thumbnail: "/assets/images/products/omega3.png" }
+        ];
+      }
     }
 
     let parsedTags = [];
@@ -277,7 +393,9 @@ router.get('/:idOrSlug', async (req, res) => {
         slug: article.category_slug
       },
       related_products: relatedProducts,
-      related_articles: relatedArticles
+      related_articles: relatedArticles,
+      related_product_ids: customProductIds,
+      related_article_ids: customArticleIds
     };
 
     res.json({ success: true, data: responseData });
@@ -310,6 +428,8 @@ router.post(
         tags = null,
         status = 'draft',
         slug,
+        related_products = [],
+        related_articles = [],
       } = req.body;
 
       // Validate category tồn tại
@@ -329,12 +449,15 @@ router.post(
       const sanitized = sanitizeHtml(content);
       const publishedAt = status === 'published' ? new Date() : null;
 
+      const relatedProductIds = Array.isArray(related_products) ? related_products.map(p => typeof p === 'object' ? p.id : p) : [];
+      const relatedArticleIds = Array.isArray(related_articles) ? related_articles.map(a => typeof a === 'object' ? a.id : a) : [];
+
       const [result] = await pool.query(
         `INSERT INTO articles
            (title, slug, content, content_sanitized, sanitized_at,
             excerpt, thumbnail_url, category_id, author_id,
-            tags, status, published_at)
-         VALUES (?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?)`,
+            tags, status, published_at, related_product_ids, related_article_ids)
+         VALUES (?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           title,
           finalSlug,
@@ -347,6 +470,8 @@ router.post(
           tags ? JSON.stringify(tags) : null,
           status,
           publishedAt,
+          JSON.stringify(relatedProductIds),
+          JSON.stringify(relatedArticleIds),
         ]
       );
 
@@ -380,7 +505,7 @@ router.put(
         return res.status(404).json({ success: false, message: 'Không tìm thấy bài viết' });
       }
 
-      const { title, content, slug, excerpt, thumbnail_url, category_id, tags, status } = req.body || {};
+      const { title, content, slug, excerpt, thumbnail_url, category_id, tags, status, related_products, related_articles } = req.body || {};
       const fields = [];
       const params = [];
 
@@ -401,6 +526,18 @@ router.put(
       if (excerpt !== undefined) { fields.push('excerpt = ?'); params.push(excerpt || null); }
       if (thumbnail_url !== undefined) { fields.push('thumbnail_url = ?'); params.push(thumbnail_url || null); }
       if (tags !== undefined) { fields.push('tags = ?'); params.push(tags ? JSON.stringify(tags) : null); }
+
+      if (related_products !== undefined) {
+        const relatedProductIds = Array.isArray(related_products) ? related_products.map(p => typeof p === 'object' ? p.id : p) : [];
+        fields.push('related_product_ids = ?');
+        params.push(JSON.stringify(relatedProductIds));
+      }
+
+      if (related_articles !== undefined) {
+        const relatedArticleIds = Array.isArray(related_articles) ? related_articles.map(a => typeof a === 'object' ? a.id : a) : [];
+        fields.push('related_article_ids = ?');
+        params.push(JSON.stringify(relatedArticleIds));
+      }
 
       if (category_id !== undefined) {
         const [[cat]] = await pool.query(

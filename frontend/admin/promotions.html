@@ -354,7 +354,6 @@
         <!-- Inject via admin-components.js -->
     </header>
 
-    <!-- ============ MAIN CONTENT ============ -->
     <main class="admin-main">
 
         <!-- Page Header -->
@@ -364,10 +363,10 @@
                 <p class="page-subtitle">Quản lý Mã Giảm Giá, Quà Tặng Kèm và Chương Trình Tích Điểm</p>
             </div>
             <div class="page-actions">
-                <button class="btn-secondary">
+                <button class="btn-secondary" id="export-report-btn">
                     <i class="fa-solid fa-file-export"></i> Xuất Báo Cáo
                 </button>
-                <button class="btn-primary" onclick="openVoucherModal('new')">
+                <button class="btn-primary" onclick="openVoucherModal()">
                     <i class="fa-solid fa-plus"></i> Tạo Voucher Mới
                 </button>
             </div>
@@ -381,8 +380,8 @@
                 </div>
                 <div class="promo-stat-info">
                     <p>Voucher đang hoạt động</p>
-                    <h3>12</h3>
-                    <small>↑ 3 tháng này</small>
+                    <h3 id="stat-active-vouchers">—</h3>
+                    <small id="stat-active-vouchers-sub">Đang tải...</small>
                 </div>
             </div>
             <div class="promo-stat-card">
@@ -390,9 +389,9 @@
                     <i class="fa-solid fa-percent"></i>
                 </div>
                 <div class="promo-stat-info">
-                    <p>Tổng lượt dùng (tháng)</p>
-                    <h3>346</h3>
-                    <small>↑ 18% so tháng trước</small>
+                    <p>Tổng lượt dùng</p>
+                    <h3 id="stat-total-usage">—</h3>
+                    <small id="stat-total-usage-sub">Đang tải...</small>
                 </div>
             </div>
             <div class="promo-stat-card">
@@ -401,8 +400,8 @@
                 </div>
                 <div class="promo-stat-info">
                     <p>Chiến dịch Quà Tặng</p>
-                    <h3>4</h3>
-                    <small>2 đang chạy</small>
+                    <h3 id="stat-active-gifts">—</h3>
+                    <small id="stat-active-gifts-sub">Đang tải...</small>
                 </div>
             </div>
             <div class="promo-stat-card">
@@ -411,8 +410,8 @@
                 </div>
                 <div class="promo-stat-info">
                     <p>Voucher sắp hết hạn</p>
-                    <h3>3</h3>
-                    <small style="color:#ef4444;">Trong 7 ngày tới</small>
+                    <h3 id="stat-expiring-vouchers">—</h3>
+                    <small id="stat-expiring-vouchers-sub">Đang tải...</small>
                 </div>
             </div>
         </div>
@@ -433,25 +432,22 @@
         <!-- ===== TAB 1: VOUCHERS ===== -->
         <div id="tab-vouchers" class="page-tab-content active">
             <!-- Filter row -->
-            <div
-                style="display:flex;gap:12px;align-items:center;margin-bottom:16px;background:#fff;padding:14px 18px;border-radius:10px;border:1px solid var(--admin-border);">
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px;background:#fff;padding:14px 18px;border-radius:10px;border:1px solid var(--admin-border);">
                 <div class="header-search" style="flex:1;max-width:340px;">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" placeholder="Tìm theo mã voucher, tên chiến dịch...">
+                    <input type="text" id="voucher-search" placeholder="Tìm theo mã voucher, tên chiến dịch...">
                 </div>
-                <select
-                    style="height:38px;border:1px solid var(--admin-border);border-radius:8px;padding:0 12px;font-size:13px;color:#374151;">
-                    <option>Tất cả loại</option>
-                    <option>Giảm theo %</option>
-                    <option>Giảm tiền cứng</option>
-                    <option>Freeship</option>
+                <select id="voucher-filter-type" style="height:38px;border:1px solid var(--admin-border);border-radius:8px;padding:0 12px;font-size:13px;color:#374151;">
+                    <option value="">Tất cả loại</option>
+                    <option value="percent_discount">Giảm theo %</option>
+                    <option value="fixed_discount">Giảm tiền cứng</option>
+                    <option value="free_shipping">Freeship</option>
                 </select>
-                <select
-                    style="height:38px;border:1px solid var(--admin-border);border-radius:8px;padding:0 12px;font-size:13px;color:#374151;">
-                    <option>Tất cả trạng thái</option>
-                    <option>Đang hoạt động</option>
-                    <option>Dừng</option>
-                    <option>Hết hạn</option>
+                <select id="voucher-filter-status" style="height:38px;border:1px solid var(--admin-border);border-radius:8px;padding:0 12px;font-size:13px;color:#374151;">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="active">Đang hoạt động</option>
+                    <option value="inactive">Đã dừng</option>
+                    <option value="expired">Hết hạn</option>
                 </select>
             </div>
 
@@ -468,167 +464,14 @@
                             <th style="text-align:right;">Thao tác</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <!-- Row 1 -->
-                        <tr onclick="openVoucherModal('edit')" style="cursor:pointer;">
-                            <td>
-                                <span class="voucher-code-badge"><i class="fa-solid fa-scissors fa-xs"></i>
-                                    MINGIANG50</span>
-                                <div style="font-size:11px;color:#6b7280;margin-top:5px;">Khai trương Cơ sở 3 - Q.7
-                                </div>
-                            </td>
-                            <td><span class="discount-type percent"><i class="fa-solid fa-percent fa-xs"></i> Giảm 50%
-                                    (tối đa 200k)</span></td>
-                            <td>
-                                <div style="font-size:12px;color:#374151;">Đơn từ <strong>500,000₫</strong></div>
-                                <div style="font-size:11px;color:#9ca3af;">Không áp dụng SP đang sale</div>
-                            </td>
-                            <td>
-                                <div class="usage-bar-wrap">
-                                    <div class="usage-bar-track">
-                                        <div class="usage-bar-fill" style="width:72%;"></div>
-                                    </div>
-                                    <span class="usage-bar-text">72/100</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div style="font-size:13px;font-weight:600;color:#1e293b;">15/03/2026</div>
-                                <div style="font-size:11px;color:#ef4444;font-weight:600;">Còn 5 ngày</div>
-                            </td>
-                            <td><span class="status-badge active">Đang chạy</span></td>
-                            <td>
-                                <div class="action-btns" style="justify-content:flex-end;">
-                                    <button class="btn-icon" title="Chỉnh sửa"
-                                        onclick="event.stopPropagation(); openVoucherModal('edit')"><i
-                                            class="fa-solid fa-pencil"></i></button>
-                                    <button class="btn-icon" title="Dừng" onclick="event.stopPropagation();"><i
-                                            class="fa-solid fa-pause"></i></button>
-                                    <button class="btn-icon" title="Sao chép mã"
-                                        onclick="event.stopPropagation();this.innerHTML='<i class=\'fa-solid fa-check\'></i>';setTimeout(()=>this.innerHTML='<i class=\'fa-solid fa-copy\'></i>',1200);"><i
-                                            class="fa-solid fa-copy"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                        <!-- Row 2 -->
-                        <tr style="cursor:pointer;" onclick="openVoucherModal('edit')">
-                            <td>
-                                <span class="voucher-code-badge"><i class="fa-solid fa-scissors fa-xs"></i>
-                                    FREESHIP99</span>
-                                <div style="font-size:11px;color:#6b7280;margin-top:5px;">Miễn phí vận chuyển tháng 3
-                                </div>
-                            </td>
-                            <td><span class="discount-type fixed"><i class="fa-solid fa-truck fa-xs"></i> Freeship (tối
-                                    đa 30k)</span></td>
-                            <td>
-                                <div style="font-size:12px;color:#374151;">Đơn từ <strong>299,000₫</strong></div>
-                                <div style="font-size:11px;color:#9ca3af;">Tất cả sản phẩm</div>
-                            </td>
-                            <td>
-                                <div class="usage-bar-wrap">
-                                    <div class="usage-bar-track">
-                                        <div class="usage-bar-fill" style="width:100%;background:#ef4444;"></div>
-                                    </div>
-                                    <span class="usage-bar-text" style="color:#ef4444;">500/500</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div style="font-size:13px;font-weight:600;color:#1e293b;">01/04/2026</div>
-                                <div style="font-size:11px;color:#6b7280;">Còn 22 ngày</div>
-                            </td>
-                            <td><span class="status-badge" style="background:#fee2e2;color:#ef4444;">Hết lượt
-                                    dùng</span></td>
-                            <td>
-                                <div class="action-btns" style="justify-content:flex-end;">
-                                    <button class="btn-icon" title="Chỉnh sửa"
-                                        onclick="event.stopPropagation(); openVoucherModal('edit')"><i
-                                            class="fa-solid fa-pencil"></i></button>
-                                    <button class="btn-icon" title="Reset số lượt" onclick="event.stopPropagation();"><i
-                                            class="fa-solid fa-rotate-right"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                        <!-- Row 3 -->
-                        <tr style="cursor:pointer;" onclick="openVoucherModal('edit')">
-                            <td>
-                                <span class="voucher-code-badge"><i class="fa-solid fa-scissors fa-xs"></i>
-                                    DOCTORVIP</span>
-                                <div style="font-size:11px;color:#6b7280;margin-top:5px;">Ưu đãi dành riêng cho Thành
-                                    viên Vàng+</div>
-                            </td>
-                            <td><span class="discount-type percent"><i class="fa-solid fa-percent fa-xs"></i> Giảm
-                                    15%</span></td>
-                            <td>
-                                <div style="font-size:12px;color:#374151;">Thành viên <strong>Vàng trở lên</strong>
-                                </div>
-                                <div style="font-size:11px;color:#9ca3af;">Toa thuốc bổ sung ≥ 1,000,000₫</div>
-                            </td>
-                            <td>
-                                <div class="usage-bar-wrap">
-                                    <div class="usage-bar-track">
-                                        <div class="usage-bar-fill" style="width:31%;"></div>
-                                    </div>
-                                    <span class="usage-bar-text">31/100</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div style="font-size:13px;font-weight:600;color:#1e293b;">30/06/2026</div>
-                                <div style="font-size:11px;color:#6b7280;">Còn 112 ngày</div>
-                            </td>
-                            <td><span class="status-badge active">Đang chạy</span></td>
-                            <td>
-                                <div class="action-btns" style="justify-content:flex-end;">
-                                    <button class="btn-icon" title="Chỉnh sửa"
-                                        onclick="event.stopPropagation(); openVoucherModal('edit')"><i
-                                            class="fa-solid fa-pencil"></i></button>
-                                    <button class="btn-icon" title="Dừng" onclick="event.stopPropagation();"><i
-                                            class="fa-solid fa-pause"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                        <!-- Row 4 -->
-                        <tr>
-                            <td>
-                                <span class="voucher-code-badge"
-                                    style="border-color:#d1d5db;color:#9ca3af;background:#f9fafb;"><i
-                                        class="fa-solid fa-scissors fa-xs"></i> TET2026</span>
-                                <div style="font-size:11px;color:#6b7280;margin-top:5px;">Voucher Tết Bính Ngọ</div>
-                            </td>
-                            <td><span class="discount-type fixed"><i class="fa-solid fa-money-bill fa-xs"></i> Giảm
-                                    100,000₫</span></td>
-                            <td>
-                                <div style="font-size:12px;color:#374151;">Đơn từ <strong>800,000₫</strong></div>
-                                <div style="font-size:11px;color:#9ca3af;">Thuốc không kê đơn</div>
-                            </td>
-                            <td>
-                                <div class="usage-bar-wrap">
-                                    <div class="usage-bar-track">
-                                        <div class="usage-bar-fill" style="width:100%;background:#d1d5db;"></div>
-                                    </div>
-                                    <span class="usage-bar-text" style="color:#9ca3af;">200/200</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div style="font-size:13px;font-weight:600;color:#9ca3af;">01/02/2026</div>
-                                <div style="font-size:11px;color:#9ca3af;">Đã hết hạn</div>
-                            </td>
-                            <td><span class="status-badge" style="background:#f1f5f9;color:#94a3b8;">Hết hạn</span></td>
-                            <td>
-                                <div class="action-btns" style="justify-content:flex-end;">
-                                    <button class="btn-icon" title="Nhân bản chiến dịch"
-                                        onclick="alert('Đã nhân bản chiến dịch thành công!')"><i
-                                            class="fa-solid fa-clone"></i></button>
-                                </div>
-                            </td>
-                        </tr>
+                    <tbody id="vouchers-table-body">
+                        <!-- Loaded dynamically -->
                     </tbody>
                 </table>
                 <div class="pagination">
-                    <span class="page-info">Hiển thị 1 – 4 trên 12 voucher</span>
+                    <span class="page-info">Hiển thị 0 – 0 trên 0 voucher</span>
                     <div class="page-controls">
-                        <button class="btn-page" disabled><i class="fa-solid fa-chevron-left"></i></button>
-                        <button class="btn-page active">1</button>
-                        <button class="btn-page">2</button>
-                        <button class="btn-page"><i class="fa-solid fa-chevron-right"></i></button>
+                        <!-- Loaded dynamically -->
                     </div>
                 </div>
             </div>
@@ -641,64 +484,13 @@
                 <div>
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
                         <h2 style="font-size:15px;font-weight:700;color:#0f172a;">Danh sách chiến dịch Quà Tặng</h2>
-                        <button class="btn-primary" style="height:36px;font-size:13px;padding:0 14px;"
-                            onclick="openGiftModal()">
+                        <button class="btn-primary" style="height:36px;font-size:13px;padding:0 14px;" onclick="openGiftModal()">
                             <i class="fa-solid fa-plus"></i> Thêm chiến dịch
                         </button>
                     </div>
 
-                    <div class="gift-rule-card">
-                        <div class="gift-icon"><i class="fa-solid fa-capsules"></i></div>
-                        <div class="gift-info">
-                            <h4>Mua Thuốc Bổ ≥ 500k → Tặng Nước Súc Miệng Listerine 250ml</h4>
-                            <p>Áp dụng: Web & POS • Từ 10/03/2026 → 31/03/2026 • Đã dùng: <strong>84 lần</strong></p>
-                        </div>
-                        <div class="gift-actions">
-                            <span class="status-badge active" style="font-size:11px;">Đang chạy</span>
-                            <button class="btn-icon" title="Chỉnh sửa"><i class="fa-solid fa-pencil"></i></button>
-                            <button class="btn-icon" title="Dừng"><i class="fa-solid fa-pause"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="gift-rule-card">
-                        <div class="gift-icon"><i class="fa-solid fa-syringe"></i></div>
-                        <div class="gift-info">
-                            <h4>Mua Vitamin tổng hợp ≥ 3 hộp → Tặng Vitamin C DHG 1 hộp</h4>
-                            <p>Áp dụng: Chỉ POS • Từ 01/03/2026 → 31/03/2026 • Đã dùng: <strong>27 lần</strong></p>
-                        </div>
-                        <div class="gift-actions">
-                            <span class="status-badge active" style="font-size:11px;">Đang chạy</span>
-                            <button class="btn-icon" title="Chỉnh sửa"><i class="fa-solid fa-pencil"></i></button>
-                            <button class="btn-icon" title="Dừng"><i class="fa-solid fa-pause"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="gift-rule-card" style="opacity:0.7;">
-                        <div class="gift-icon" style="background:#f1f5f9;color:#94a3b8;"><i
-                                class="fa-solid fa-heart"></i></div>
-                        <div class="gift-info">
-                            <h4>Mua Nhóm Thuốc Tim Mạch ≥ 1,000k → Tặng Sổ Tay Sức Khỏe</h4>
-                            <p>Áp dụng: Web & POS • Từ 14/02/2026 → 14/02/2026 • Đã dùng: <strong>156 lần</strong></p>
-                        </div>
-                        <div class="gift-actions">
-                            <span class="status-badge" style="background:#f1f5f9;color:#94a3b8;font-size:11px;">Đã kết
-                                thúc</span>
-                            <button class="btn-icon" title="Nhân bản"><i class="fa-solid fa-clone"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="gift-rule-card" style="opacity:0.7;">
-                        <div class="gift-icon" style="background:#f1f5f9;color:#94a3b8;"><i class="fa-solid fa-sun"></i>
-                        </div>
-                        <div class="gift-info">
-                            <h4>Mua Kem Chống Nắng ≥ 2 tuýp → Tặng Son Dưỡng SPF15</h4>
-                            <p>Áp dụng: Chỉ Web • Từ 01/01/2026 → 28/02/2026 • Đã dùng: <strong>92 lần</strong></p>
-                        </div>
-                        <div class="gift-actions">
-                            <span class="status-badge" style="background:#f1f5f9;color:#94a3b8;font-size:11px;">Đã kết
-                                thúc</span>
-                            <button class="btn-icon" title="Nhân bản"><i class="fa-solid fa-clone"></i></button>
-                        </div>
+                    <div id="gifts-list-container">
+                        <!-- Loaded dynamically -->
                     </div>
                 </div>
 
@@ -710,22 +502,17 @@
                     <div class="promo-section-body">
                         <div style="margin-bottom:20px;">
                             <div style="font-size:12px;color:#6b7280;margin-bottom:6px;">Tổng quà đã tặng</div>
-                            <div style="font-size:28px;font-weight:800;color:#9333ea;">111</div>
-                            <div style="font-size:11px;color:#10b981;font-weight:600;">↑ 34% so tháng trước</div>
+                            <div style="font-size:28px;font-weight:800;color:#9333ea;" id="gift-total-sent">—</div>
+                            <div style="font-size:11px;color:#10b981;font-weight:600;">Hệ thống live update</div>
                         </div>
                         <div style="border-top:1px solid var(--admin-border);padding-top:16px;margin-bottom:16px;">
-                            <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">Chiến dịch đang chạy nhiều nhất
-                            </div>
-                            <div style="font-size:13px;font-weight:600;color:#0f172a;">Mua Thuốc Bổ ≥ 500k</div>
-                            <div style="font-size:12px;color:#9333ea;font-weight:500;">84 lần đã áp dụng</div>
+                            <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">Chiến dịch đang chạy nhiều nhất</div>
+                            <div style="font-size:13px;font-weight:600;color:#0f172a;" id="gift-top-campaign">—</div>
+                            <div style="font-size:12px;color:#9333ea;font-weight:500;" id="gift-top-campaign-usage">0 lần áp dụng</div>
                         </div>
                         <div style="border-top:1px solid var(--admin-border);padding-top:16px;">
-                            <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">Sản phẩm quà dùng nhiều nhất
-                            </div>
-                            <div style="font-size:13px;font-weight:600;color:#0f172a;">Nước Súc Miệng Listerine 250ml
-                            </div>
-                            <div style="font-size:12px;color:#6b7280;">Tồn kho quà: <strong style="color:#0f172a;">28
-                                    chai</strong></div>
+                            <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">Sản phẩm quà dùng nhiều nhất</div>
+                            <div style="font-size:13px;font-weight:600;color:#0f172a;" id="gift-top-product">—</div>
                         </div>
                     </div>
                 </div>
@@ -739,9 +526,8 @@
                 <div>
                     <div class="promo-section-card" style="margin-bottom:20px;">
                         <div class="promo-section-header">
-                            <h2><i class="fa-solid fa-ranking-star" style="color:#f59e0b;"></i> Cấu Hình Hạng Thành Viên
-                            </h2>
-                            <button class="btn-secondary" style="height:34px;font-size:12px;">
+                            <h2><i class="fa-solid fa-ranking-star" style="color:#f59e0b;"></i> Cấu Hình Hạng Thành Viên</h2>
+                            <button class="btn-secondary" style="height:34px;font-size:12px;" id="save-loyalty-tiers-btn">
                                 <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi
                             </button>
                         </div>
@@ -750,14 +536,13 @@
                             <div class="loyalty-tier-card">
                                 <div class="loyalty-tier-icon" style="background:#fef3c7;color:#92400e;">🥉</div>
                                 <div class="loyalty-tier-info">
-                                    <h4 style="color:#92400e;">Hạng Đồng</h4>
-                                    <p>Từ 0 – 999,999₫ tổng chi tiêu</p>
+                                    <h4 style="color:#92400e;">Hạng Đồng (Member)</h4>
+                                    <p id="tier-member-spending-desc">Đang tải...</p>
                                 </div>
                                 <div style="text-align:right;">
                                     <div style="font-size:12px;color:#6b7280;">Tỷ lệ tích điểm</div>
                                     <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end;">
-                                        <input type="number" value="1"
-                                            style="width:50px;padding:4px 8px;border:1px solid var(--admin-border);border-radius:6px;font-size:13px;text-align:center;">
+                                        <input type="number" id="tier-member-rate" value="1" step="0.1" style="width:65px;padding:4px 8px;border:1px solid var(--admin-border);border-radius:6px;font-size:13px;text-align:center;">
                                         <span style="font-size:12px;color:#6b7280;">điểm / 10,000₫</span>
                                     </div>
                                 </div>
@@ -766,14 +551,13 @@
                             <div class="loyalty-tier-card">
                                 <div class="loyalty-tier-icon" style="background:#f1f5f9;color:#475569;">🥈</div>
                                 <div class="loyalty-tier-info">
-                                    <h4 style="color:#475569;">Hạng Bạc</h4>
-                                    <p>Từ 1,000,000₫ – 4,999,999₫ tổng chi tiêu</p>
+                                    <h4 style="color:#475569;">Hạng Bạc (Silver)</h4>
+                                    <p id="tier-silver-spending-desc">Đang tải...</p>
                                 </div>
                                 <div style="text-align:right;">
                                     <div style="font-size:12px;color:#6b7280;">Tỷ lệ tích điểm</div>
                                     <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end;">
-                                        <input type="number" value="1.5"
-                                            style="width:50px;padding:4px 8px;border:1px solid var(--admin-border);border-radius:6px;font-size:13px;text-align:center;">
+                                        <input type="number" id="tier-silver-rate" value="1.5" step="0.1" style="width:65px;padding:4px 8px;border:1px solid var(--admin-border);border-radius:6px;font-size:13px;text-align:center;">
                                         <span style="font-size:12px;color:#6b7280;">điểm / 10,000₫</span>
                                     </div>
                                 </div>
@@ -782,14 +566,13 @@
                             <div class="loyalty-tier-card">
                                 <div class="loyalty-tier-icon" style="background:#fefce8;color:#a16207;">🥇</div>
                                 <div class="loyalty-tier-info">
-                                    <h4 style="color:#a16207;">Hạng Vàng</h4>
-                                    <p>Từ 5,000,000₫ – 19,999,999₫ tổng chi tiêu</p>
+                                    <h4 style="color:#a16207;">Hạng Vàng (Gold)</h4>
+                                    <p id="tier-gold-spending-desc">Đang tải...</p>
                                 </div>
                                 <div style="text-align:right;">
                                     <div style="font-size:12px;color:#6b7280;">Tỷ lệ tích điểm</div>
                                     <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end;">
-                                        <input type="number" value="2"
-                                            style="width:50px;padding:4px 8px;border:1px solid var(--admin-border);border-radius:6px;font-size:13px;text-align:center;">
+                                        <input type="number" id="tier-gold-rate" value="2" step="0.1" style="width:65px;padding:4px 8px;border:1px solid var(--admin-border);border-radius:6px;font-size:13px;text-align:center;">
                                         <span style="font-size:12px;color:#6b7280;">điểm / 10,000₫</span>
                                     </div>
                                 </div>
@@ -798,14 +581,13 @@
                             <div class="loyalty-tier-card">
                                 <div class="loyalty-tier-icon" style="background:#eff6ff;color:#1d4ed8;">💎</div>
                                 <div class="loyalty-tier-info">
-                                    <h4 style="color:#1d4ed8;">Hạng Kim Cương</h4>
-                                    <p>Từ 20,000,000₫ tổng chi tiêu trở lên</p>
+                                    <h4 style="color:#1d4ed8;">Hạng Kim Cương (VIP)</h4>
+                                    <p id="tier-vip-spending-desc">Đang tải...</p>
                                 </div>
                                 <div style="text-align:right;">
                                     <div style="font-size:12px;color:#6b7280;">Tỷ lệ tích điểm</div>
                                     <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end;">
-                                        <input type="number" value="3"
-                                            style="width:50px;padding:4px 8px;border:1px solid var(--admin-border);border-radius:6px;font-size:13px;text-align:center;">
+                                        <input type="number" id="tier-vip-rate" value="3" step="0.1" style="width:65px;padding:4px 8px;border:1px solid var(--admin-border);border-radius:6px;font-size:13px;text-align:center;">
                                         <span style="font-size:12px;color:#6b7280;">điểm / 10,000₫</span>
                                     </div>
                                 </div>
@@ -817,31 +599,34 @@
                     <div class="promo-section-card">
                         <div class="promo-section-header">
                             <h2><i class="fa-solid fa-coins" style="color:#f59e0b;"></i> Quy Tắc Quy Đổi Điểm</h2>
+                            <button class="btn-secondary" style="height:34px;font-size:12px;" id="save-loyalty-config-btn">
+                                <i class="fa-solid fa-floppy-disk"></i> Lưu quy tắc
+                            </button>
                         </div>
                         <div class="promo-section-body">
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label>Tỷ lệ quy đổi</label>
-                                    <input type="number" value="100" placeholder="VD: 100">
-                                    <div class="form-hint">100 điểm = 1,000₫ (mặc định)</div>
+                                    <label>Tỷ lệ quy đổi (Ví dụ: 100 điểm = 1,000đ)</label>
+                                    <input type="number" id="loyalty-rate" value="100" placeholder="VD: 100">
+                                    <div class="form-hint">Mỗi X điểm tích lũy đổi được 1,000₫ giảm giá</div>
                                 </div>
                                 <div class="form-group">
                                     <label>Số điểm tối thiểu để quy đổi</label>
-                                    <input type="number" value="500" placeholder="VD: 500">
-                                    <div class="form-hint">Khách cần ≥ 500 điểm mới được đổi</div>
+                                    <input type="number" id="loyalty-min" value="500" placeholder="VD: 500">
+                                    <div class="form-hint">Khách cần ≥ số điểm này mới được đổi</div>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label>Giá trị quy đổi tối đa / đơn hàng</label>
-                                <input type="number" value="200000" placeholder="VD: 200000">
-                                <div class="form-hint">Tối đa 200,000₫ từ điểm / đơn</div>
+                                <label>Giá trị quy đổi tối đa / đơn hàng (₫)</label>
+                                <input type="number" id="loyalty-max" value="200000" placeholder="VD: 200000">
+                                <div class="form-hint">Giới hạn số tiền tối đa quy đổi trên mỗi đơn hàng</div>
                             </div>
                             <div class="toggle-switch-wrap">
-                                <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                                <div class="toggle-switch on" id="loyalty-allow-web-toggle" onclick="handleToggleSwitchClick(this)"></div>
                                 <label>Cho phép quy đổi điểm trên Website</label>
                             </div>
                             <div class="toggle-switch-wrap">
-                                <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                                <div class="toggle-switch on" id="loyalty-allow-pos-toggle" onclick="handleToggleSwitchClick(this)"></div>
                                 <label>Cho phép quy đổi điểm tại POS Kiosk</label>
                             </div>
                         </div>
@@ -858,48 +643,47 @@
                             <div style="margin-bottom:16px;">
                                 <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
                                     <span style="font-size:13px;color:#92400e;font-weight:600;">🥉 Đồng</span>
-                                    <span style="font-size:13px;font-weight:700;">1,254 KH</span>
+                                    <span style="font-size:13px;font-weight:700;" id="loyalty-bronze-count">0 KH</span>
                                 </div>
                                 <div class="usage-bar-track">
-                                    <div class="usage-bar-fill" style="width:72%;background:#d97706;"></div>
+                                    <div class="usage-bar-fill" id="loyalty-bronze-bar" style="width:0%;background:#d97706;"></div>
                                 </div>
                             </div>
                             <div style="margin-bottom:16px;">
                                 <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
                                     <span style="font-size:13px;color:#475569;font-weight:600;">🥈 Bạc</span>
-                                    <span style="font-size:13px;font-weight:700;">387 KH</span>
+                                    <span style="font-size:13px;font-weight:700;" id="loyalty-silver-count">0 KH</span>
                                 </div>
                                 <div class="usage-bar-track">
-                                    <div class="usage-bar-fill" style="width:22%;background:#94a3b8;"></div>
+                                    <div class="usage-bar-fill" id="loyalty-silver-bar" style="width:0%;background:#94a3b8;"></div>
                                 </div>
                             </div>
                             <div style="margin-bottom:16px;">
                                 <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
                                     <span style="font-size:13px;color:#a16207;font-weight:600;">🥇 Vàng</span>
-                                    <span style="font-size:13px;font-weight:700;">89 KH</span>
+                                    <span style="font-size:13px;font-weight:700;" id="loyalty-gold-count">0 KH</span>
                                 </div>
                                 <div class="usage-bar-track">
-                                    <div class="usage-bar-fill" style="width:5%;background:#eab308;"></div>
+                                    <div class="usage-bar-fill" id="loyalty-gold-bar" style="width:0%;background:#eab308;"></div>
                                 </div>
                             </div>
                             <div style="margin-bottom:20px;">
                                 <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
                                     <span style="font-size:13px;color:#1d4ed8;font-weight:600;">💎 Kim Cương</span>
-                                    <span style="font-size:13px;font-weight:700;">14 KH</span>
+                                    <span style="font-size:13px;font-weight:700;" id="loyalty-diamond-count">0 KH</span>
                                 </div>
                                 <div class="usage-bar-track">
-                                    <div class="usage-bar-fill" style="width:1%;background:#3b82f6;"></div>
+                                    <div class="usage-bar-fill" id="loyalty-diamond-bar" style="width:0%;background:#3b82f6;"></div>
                                 </div>
                             </div>
 
-                            <div
-                                style="border-top:1px solid var(--admin-border);padding-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                            <div style="border-top:1px solid var(--admin-border);padding-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                                 <div style="text-align:center;background:#f8fafc;padding:12px;border-radius:8px;">
-                                    <div style="font-size:22px;font-weight:800;color:#0f172a;">2,146</div>
+                                    <div style="font-size:22px;font-weight:800;color:#0f172a;" id="loyalty-total-members">0</div>
                                     <div style="font-size:11px;color:#6b7280;">Tổng thành viên</div>
                                 </div>
                                 <div style="text-align:center;background:#f0fdf4;padding:12px;border-radius:8px;">
-                                    <div style="font-size:22px;font-weight:800;color:#16a34a;">4.2M</div>
+                                    <div style="font-size:22px;font-weight:800;color:#16a34a;" id="loyalty-total-points">0</div>
                                     <div style="font-size:11px;color:#6b7280;">Tổng điểm đang lưu</div>
                                 </div>
                             </div>
@@ -917,115 +701,99 @@
             <div class="standard-modal-header">
                 <div>
                     <h2 class="slide-title" id="voucherModalTitle">Tạo Voucher Mới</h2>
-                    <p style="font-size:13px;color:#6b7280;margin-top:4px;">Điền đầy đủ thông tin để tạo mã giảm giá.
-                    </p>
+                    <p style="font-size:13px;color:#6b7280;margin-top:4px;">Điền đầy đủ thông tin để tạo mã giảm giá.</p>
                 </div>
                 <button class="slide-close" onclick="closeVoucherModal()"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="standard-modal-body" style="padding:24px;">
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Mã Voucher <span style="color:#ef4444;">*</span></label>
-                        <input type="text" id="voucher-code-input" placeholder="VD: MINGIANG50"
-                            style="text-transform:uppercase;letter-spacing:1px;font-family:monospace;font-weight:700;">
-                        <div class="form-hint">Khách nhập mã này khi thanh toán.</div>
+            <form id="voucher-form">
+                <div class="standard-modal-body" style="padding:24px;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Mã Voucher <span style="color:#ef4444;">*</span></label>
+                            <input type="text" id="voucher-code-input" placeholder="VD: MINGIANG50" required
+                                style="text-transform:uppercase;letter-spacing:1px;font-family:monospace;font-weight:700;">
+                            <div class="form-hint">Khách nhập mã này khi thanh toán.</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Tên chiến dịch / Voucher <span style="color:#ef4444;">*</span></label>
+                            <input type="text" id="voucher-name-input" placeholder="VD: Giảm 50% Khai Trương" required>
+                        </div>
                     </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Tên phụ (Nhóm / Sự kiện)</label>
+                            <input type="text" id="voucher-campaign-input" placeholder="VD: Khai trương Cơ sở 3 - Q.7">
+                        </div>
+                        <div class="form-group">
+                            <label>Loại giảm giá <span style="color:#ef4444;">*</span></label>
+                            <select id="voucher-type-input" onchange="toggleDiscountFields(this.value)">
+                                <option value="percent">Giảm theo % (Phần trăm)</option>
+                                <option value="fixed">Giảm tiền cứng (₫)</option>
+                                <option value="freeship">Miễn phí vận chuyển</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group" id="discount-value-group">
+                            <label>Giá trị giảm <span style="color:#ef4444;">*</span></label>
+                            <input type="number" id="voucher-value-input" placeholder="VD: 50 (cho %)" required min="0">
+                            <div class="form-hint">Mức giảm theo loại đã chọn.</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Giảm tối đa (₫)</label>
+                            <input type="number" id="voucher-max-discount-input" placeholder="VD: 200000" min="0">
+                            <div class="form-hint">Để trống = không giới hạn.</div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Đơn hàng tối thiểu (₫)</label>
+                            <input type="number" id="voucher-min-order-input" placeholder="VD: 500000" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Số lượt dùng tối đa</label>
+                            <input type="number" id="voucher-limit-input" placeholder="VD: 100 (để trống = không giới hạn)" min="1">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Ngày bắt đầu <span style="color:#ef4444;">*</span></label>
+                            <input type="date" id="voucher-start-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Ngày hết hạn <span style="color:#ef4444;">*</span></label>
+                            <input type="date" id="voucher-end-input" required>
+                        </div>
+                    </div>
+
                     <div class="form-group">
-                        <label>Tên chiến dịch</label>
-                        <input type="text" placeholder="VD: Khai trương Cơ sở 3 - Q.7">
+                        <label>Áp dụng kênh</label>
+                        <div style="display:flex;gap:20px;margin-top:4px;">
+                            <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer;">
+                                <input type="checkbox" id="voucher-channel-web" checked> Website (E-commerce)
+                            </label>
+                            <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer;">
+                                <input type="checkbox" id="voucher-channel-pos" checked> POS Kiosk
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="toggle-switch-wrap">
+                        <div class="toggle-switch on" id="voucher-active-toggle" onclick="handleToggleSwitchClick(this)" data-active="true"></div>
+                        <label>Kích hoạt ngay sau khi lưu</label>
                     </div>
                 </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Loại giảm giá <span style="color:#ef4444;">*</span></label>
-                        <select onchange="toggleDiscountFields(this.value)">
-                            <option value="percent">Giảm theo % (Phần trăm)</option>
-                            <option value="fixed">Giảm tiền cứng (₫)</option>
-                            <option value="freeship">Miễn phí vận chuyển</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="discount-value-group">
-                        <label>Giá trị giảm <span style="color:#ef4444;">*</span></label>
-                        <input type="number" placeholder="VD: 50 (cho %)">
-                        <div class="form-hint">Mức giảm theo loại đã chọn.</div>
-                    </div>
+                <div class="standard-modal-footer" style="background:#fff;">
+                    <button type="button" class="btn-secondary" onclick="closeVoucherModal()">Hủy bỏ</button>
+                    <button type="submit" class="btn-primary" style="width:180px;justify-content:center;">
+                        <i class="fa-solid fa-floppy-disk"></i> Lưu Voucher
+                    </button>
                 </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Giảm tối đa (₫)</label>
-                        <input type="number" placeholder="VD: 200000">
-                        <div class="form-hint">Để trống = không giới hạn.</div>
-                    </div>
-                    <div class="form-group">
-                        <label>Đơn hàng tối thiểu (₫)</label>
-                        <input type="number" placeholder="VD: 500000">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Số lượt dùng tối đa</label>
-                        <input type="number" placeholder="VD: 100 (để trống = không giới hạn)">
-                    </div>
-                    <div class="form-group">
-                        <label>Giới hạn / mỗi khách</label>
-                        <input type="number" value="1">
-                        <div class="form-hint">Mỗi tài khoản dùng tối đa bao nhiêu lần.</div>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Ngày bắt đầu</label>
-                        <input type="date" value="2026-03-10">
-                    </div>
-                    <div class="form-group">
-                        <label>Ngày hết hạn</label>
-                        <input type="date" value="2026-03-31">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Điều kiện đặc biệt</label>
-                    <select>
-                        <option>Tất cả khách hàng</option>
-                        <option>Chỉ Thành viên (có tài khoản)</option>
-                        <option>Chỉ Thành viên Bạc trở lên</option>
-                        <option>Chỉ Thành viên Vàng trở lên</option>
-                        <option>Chỉ đơn hàng đầu tiên</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Áp dụng kênh</label>
-                    <div style="display:flex;gap:20px;margin-top:4px;">
-                        <label
-                            style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer;">
-                            <input type="checkbox" checked> Website (E-commerce)
-                        </label>
-                        <label
-                            style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer;">
-                            <input type="checkbox" checked> POS Kiosk
-                        </label>
-                    </div>
-                </div>
-
-                <div class="toggle-switch-wrap">
-                    <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
-                    <label>Kích hoạt ngay sau khi tạo</label>
-                </div>
-
-            </div>
-            <div class="standard-modal-footer" style="background:#fff;">
-                <button class="btn-secondary" onclick="closeVoucherModal()">Hủy bỏ</button>
-                <button class="btn-primary" onclick="alert('Đã tạo voucher thành công!'); closeVoucherModal();"
-                    style="width:180px;justify-content:center;">
-                    <i class="fa-solid fa-floppy-disk"></i> Lưu Voucher
-                </button>
-            </div>
+            </form>
         </div>
     </div>
 
@@ -1034,81 +802,99 @@
         <div class="standard-modal-container" style="max-width:600px;">
             <div class="standard-modal-header">
                 <div>
-                    <h2 class="slide-title">Thêm Chiến Dịch Quà Tặng</h2>
-                    <p style="font-size:13px;color:#6b7280;margin-top:4px;">Cấu hình quy tắc "Mua sản phẩm A → Tặng sản
-                        phẩm B".</p>
+                    <h2 class="slide-title" id="giftModalTitle">Thêm Chiến Dịch Quà Tặng</h2>
+                    <p style="font-size:13px;color:#6b7280;margin-top:4px;">Cấu hình quy tắc "Mua hàng đạt giá trị tối thiểu → Tặng sản phẩm quà".</p>
                 </div>
                 <button class="slide-close" onclick="closeGiftModal()"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="standard-modal-body" style="padding:24px;">
-
-                <div class="form-group">
-                    <label>Tên chiến dịch</label>
-                    <input type="text" placeholder="VD: Mua Thuốc Bổ ≥ 500k Tặng Nước Súc Miệng">
-                </div>
-
-                <div
-                    style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin-bottom:16px;">
-                    <div
-                        style="font-size:12px;font-weight:700;color:#15803d;margin-bottom:12px;text-transform:uppercase;">
-                        Điều kiện kích hoạt</div>
-                    <div class="form-row">
-                        <div class="form-group" style="margin-bottom:0;">
-                            <label>Sản phẩm / Danh mục cần mua</label>
-                            <input type="text" placeholder="Tìm sản phẩm hoặc danh mục...">
-                        </div>
-                        <div class="form-group" style="margin-bottom:0;">
-                            <label>Giá trị đơn tối thiểu (₫)</label>
-                            <input type="number" placeholder="VD: 500000">
-                        </div>
-                    </div>
-                </div>
-
-                <div
-                    style="background:#fdf4ff;border:1px solid #e9d5ff;border-radius:10px;padding:16px;margin-bottom:16px;">
-                    <div
-                        style="font-size:12px;font-weight:700;color:#7e22ce;margin-bottom:12px;text-transform:uppercase;">
-                        Quà tặng kèm</div>
-                    <div class="form-row">
-                        <div class="form-group" style="margin-bottom:0;">
-                            <label>Sản phẩm quà</label>
-                            <input type="text" placeholder="Tìm sản phẩm quà tặng...">
-                        </div>
-                        <div class="form-group" style="margin-bottom:0;">
-                            <label>Số lượng quà</label>
-                            <input type="number" value="1">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-row">
+            <form id="gift-form">
+                <div class="standard-modal-body" style="padding:24px;">
                     <div class="form-group">
-                        <label>Ngày bắt đầu</label>
-                        <input type="date" value="2026-03-10">
+                        <label>Tên chiến dịch <span style="color:#ef4444;">*</span></label>
+                        <input type="text" id="gift-name-input" placeholder="VD: Mua Thuốc Bổ ≥ 500k Tặng Nước Súc Miệng" required>
                     </div>
+
+                    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin-bottom:16px;">
+                        <div style="font-size:12px;font-weight:700;color:#15803d;margin-bottom:12px;text-transform:uppercase;">Điều kiện kích hoạt</div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Giá trị đơn tối thiểu (₫) <span style="color:#ef4444;">*</span></label>
+                            <input type="number" id="gift-min-order-input" placeholder="VD: 500000" required min="0">
+                        </div>
+                    </div>
+
+                    <div style="background:#fdf4ff;border:1px solid #e9d5ff;border-radius:10px;padding:16px;margin-bottom:16px;">
+                        <div style="font-size:12px;font-weight:700;color:#7e22ce;margin-bottom:12px;text-transform:uppercase;">Quà tặng kèm</div>
+                        <div class="form-row">
+                            <div class="form-group" style="margin-bottom:0; position:relative;">
+                                <label>Tên sản phẩm quà tặng <span style="color:#ef4444;">*</span></label>
+                                <input type="text" id="gift-product-input" placeholder="Gõ từ khóa tìm sản phẩm còn hàng..." required autocomplete="off">
+                                <div id="gift-products-dropdown" class="custom-autocomplete-dropdown"></div>
+                                <style>
+                                    .custom-autocomplete-dropdown {
+                                        position: absolute;
+                                        top: 100%;
+                                        left: 0;
+                                        width: 100%;
+                                        max-height: 200px;
+                                        overflow-y: auto;
+                                        background: #ffffff;
+                                        border: 1px solid #d1d5db;
+                                        border-radius: 6px;
+                                        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                                        z-index: 9999;
+                                        display: none;
+                                    }
+                                    .custom-autocomplete-dropdown-item {
+                                        padding: 10px 12px;
+                                        font-size: 13px;
+                                        color: #374151;
+                                        cursor: pointer;
+                                        border-bottom: 1px solid #f3f4f6;
+                                        transition: background 0.2s;
+                                        text-align: left;
+                                    }
+                                    .custom-autocomplete-dropdown-item:hover {
+                                        background: #f3f4f6;
+                                    }
+                                    .custom-autocomplete-dropdown-item:last-child {
+                                        border-bottom: none;
+                                    }
+                                </style>
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>Số lượng quà <span style="color:#ef4444;">*</span></label>
+                                <input type="number" id="gift-qty-input" value="1" required min="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Ngày bắt đầu <span style="color:#ef4444;">*</span></label>
+                            <input type="date" id="gift-start-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Ngày kết thúc <span style="color:#ef4444;">*</span></label>
+                            <input type="date" id="gift-end-input" required>
+                        </div>
+                    </div>
+
                     <div class="form-group">
-                        <label>Ngày kết thúc</label>
-                        <input type="date" value="2026-03-31">
+                        <label>Áp dụng kênh</label>
+                        <select id="gift-channel-select">
+                            <option value="all">Web & POS (tất cả)</option>
+                            <option value="web">Chỉ Website</option>
+                            <option value="pos">Chỉ POS Kiosk</option>
+                        </select>
                     </div>
                 </div>
-
-                <div class="form-group">
-                    <label>Áp dụng kênh</label>
-                    <select>
-                        <option>Web & POS (tất cả)</option>
-                        <option>Chỉ Website</option>
-                        <option>Chỉ POS Kiosk</option>
-                    </select>
+                <div class="standard-modal-footer" style="background:#fff;">
+                    <button type="button" class="btn-secondary" onclick="closeGiftModal()">Hủy bỏ</button>
+                    <button type="submit" class="btn-primary" style="width:200px;justify-content:center;">
+                        <i class="fa-solid fa-gift"></i> Lưu Chiến Dịch
+                    </button>
                 </div>
-
-            </div>
-            <div class="standard-modal-footer" style="background:#fff;">
-                <button class="btn-secondary" onclick="closeGiftModal()">Hủy bỏ</button>
-                <button class="btn-primary" onclick="alert('Đã tạo chiến dịch quà tặng!'); closeGiftModal();"
-                    style="width:200px;justify-content:center;">
-                    <i class="fa-solid fa-gift"></i> Tạo Chiến Dịch
-                </button>
-            </div>
+            </form>
         </div>
     </div>
 
@@ -1120,42 +906,11 @@
             document.querySelectorAll('.page-tab-content').forEach(c => c.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
         }
-
-        function openVoucherModal(mode) {
-            document.getElementById('voucherModalTitle').innerText =
-                mode === 'new' ? 'Tạo Voucher Mới' : 'Chỉnh sửa Voucher';
-            if (mode === 'edit') {
-                document.getElementById('voucher-code-input').value = 'MINGIANG50';
-            } else {
-                document.getElementById('voucher-code-input').value = '';
-            }
-            document.getElementById('voucherModal').classList.add('open');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeVoucherModal() {
-            document.getElementById('voucherModal').classList.remove('open');
-            document.body.style.overflow = '';
-        }
-
-        function openGiftModal() {
-            document.getElementById('giftModal').classList.add('open');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeGiftModal() {
-            document.getElementById('giftModal').classList.remove('open');
-            document.body.style.overflow = '';
-        }
-
-        function toggleDiscountFields(val) {
-            const group = document.getElementById('discount-value-group');
-            group.style.display = val === 'freeship' ? 'none' : 'block';
-        }
     </script>
 
     <!-- Shared Layout Components -->
     <script src="js/admin-components.js"></script>
+    <script src="js/promotions-api.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             renderAdminLayout('promotions');

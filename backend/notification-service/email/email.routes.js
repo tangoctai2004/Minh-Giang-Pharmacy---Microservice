@@ -62,7 +62,7 @@ router.post('/send', async (req, res) => {
         payload: {
           target: to,
           template_vars: vars,
-          provider: process.env.EMAIL_PROVIDER || 'mock',
+          provider: process.env.EMAIL_PROVIDER || 'smtp',
         },
       });
     }
@@ -86,7 +86,7 @@ router.post('/send', async (req, res) => {
 
     res.json({
       success: true,
-      message: providerResult.provider === 'mock' ? 'Email mock da gui thanh cong' : 'Email da gui thanh cong',
+      message: 'Email da gui thanh cong',
       data: {
         provider: providerResult.provider,
         messageId: providerResult.provider_message_id,

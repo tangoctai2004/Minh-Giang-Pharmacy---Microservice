@@ -240,12 +240,94 @@ const homeCatalog = {
         }
     },
 
+    async loadBanners() {
+        try {
+            const gateway = ((window.MGClientApi && window.MGClientApi.gatewayOrigin) || window.MG_API_GATEWAY_ORIGIN || 'http://localhost:8000').replace(/\/+$/, '');
+            
+            const resolveImg = (url) => {
+                if (!url) return '';
+                if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+                    return url;
+                }
+                if (url.startsWith('/uploads/') || url.startsWith('uploads/')) {
+                    const cleanPath = url.startsWith('/') ? url : '/' + url;
+                    return gateway + cleanPath;
+                }
+                return url;
+            };
+
+            // 1. Fetch hero slides
+            const heroRes = await fetch(`${gateway}/api/cms/banners?position=hero&t=${Date.now()}`);
+            if (heroRes.ok) {
+                const res = await heroRes.json();
+                if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+                    const banners = res.data;
+                    const sliderImages = document.getElementById('heroSliderImages');
+                    const sliderDots = document.getElementById('heroSliderDots');
+                    
+                    if (sliderImages && sliderDots) {
+                        sliderImages.innerHTML = banners.map((b) => {
+                            const url = b.link_url ? b.link_url : '#';
+                            const resolvedImgUrl = resolveImg(b.image_url);
+                            return `<img src="${resolvedImgUrl}" alt="${this.escape(b.title)}" class="main-slide" onclick="window.location.href='${url}'" style="cursor:pointer;" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;100&quot; height=&quot;100&quot; viewBox=&quot;0 0 100 100&quot;><rect width=&quot;100&quot; height=&quot;100&quot; fill=&quot;%23f1f5f9&quot;/><text x=&quot;50%&quot; y=&quot;50%&quot; dominant-baseline=&quot;middle&quot; text-anchor=&quot;middle&quot; font-family=&quot;sans-serif&quot; font-size=&quot;10&quot; fill=&quot;%2394a3b8&quot;>No Image</text></svg>';">`;
+                        }).join('');
+                        
+                        sliderDots.innerHTML = banners.map((_, index) => {
+                            return `<span class="dot ${index === 0 ? 'active' : ''}" onclick="currentSlide(${index})"></span>`;
+                        }).join('');
+                        
+                        if (typeof window.initSlider === 'function') {
+                            window.initSlider();
+                        }
+                    }
+                }
+            }
+
+            // 2. Fetch side banners
+            const sideRes = await fetch(`${gateway}/api/cms/banners?position=sidebar&t=${Date.now()}`);
+            if (sideRes.ok) {
+                const res = await sideRes.json();
+                if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+                    const sideBanners = res.data;
+                    const container = document.querySelector('.hero-side-banners');
+                    if (container) {
+                        container.innerHTML = sideBanners.slice(0, 2).map((b) => {
+                            const url = b.link_url ? b.link_url : '#';
+                            const resolvedImgUrl = resolveImg(b.image_url);
+                            return `
+                                <a href="${url}" class="side-banner">
+                                    <img src="${resolvedImgUrl}" alt="${this.escape(b.title)}">
+                                </a>
+                            `;
+                        }).join('');
+                    }
+                }
+            }
+
+            // 3. Fetch popup banner
+            const popupRes = await fetch(`${gateway}/api/cms/banners?position=popup&t=${Date.now()}`);
+            if (popupRes.ok) {
+                const res = await popupRes.json();
+                if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+                    const popupAd = res.data.find(b => b.is_active !== 0);
+                    if (popupAd) {
+                        popupAd.image_url = resolveImg(popupAd.image_url);
+                        showPopupAdModal(popupAd);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('[HomeCatalog] Banners error:', error);
+        }
+    },
+
     async init() {
         this.setInitialLoadingState();
         await this.loadActivePromotions();
         await Promise.all([
             this.loadCategories(),
             this.loadTopSearches(),
+            this.loadBanners(),
             ...this.productSections.map((section) => this.loadProductSection(section))
         ]);
     }
@@ -254,3 +336,97 @@ const homeCatalog = {
 document.addEventListener('DOMContentLoaded', () => {
     homeCatalog.init();
 });
+
+function showPopupAdModal(ad) {
+    const style = document.createElement('style');
+    style.textContent = `
+        .popup-ad-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(5px);
+            z-index: 100001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .popup-ad-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        .popup-ad-container {
+            position: relative;
+            max-width: 650px;
+            width: 90%;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            transform: scale(0.9);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .popup-ad-overlay.open .popup-ad-container {
+            transform: scale(1);
+        }
+        .popup-ad-img {
+            width: 100%;
+            display: block;
+            object-fit: cover;
+        }
+        .popup-ad-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(15, 23, 42, 0.6);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s;
+            backdrop-filter: blur(4px);
+        }
+        .popup-ad-close:hover {
+            background: rgba(15, 23, 42, 0.85);
+            transform: rotate(90deg);
+        }
+    `;
+    document.head.appendChild(style);
+
+    const overlay = document.createElement('div');
+    overlay.className = 'popup-ad-overlay';
+    
+    const url = ad.link_url ? ad.link_url : '#';
+    overlay.innerHTML = `
+        <div class="popup-ad-container">
+            <button class="popup-ad-close" onclick="closePopupAdModal(this)"><i class="fa-solid fa-xmark"></i></button>
+            <a href="${url}">
+                <img src="${ad.image_url}" class="popup-ad-img" alt="${ad.title || 'Quảng cáo'}">
+            </a>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    setTimeout(() => {
+        overlay.classList.add('open');
+    }, 1000);
+
+    window.closePopupAdModal = function(btn) {
+        const modal = btn.closest('.popup-ad-overlay');
+        if (modal) {
+            modal.classList.remove('open');
+            setTimeout(() => {
+                modal.remove();
+            }, 300);
+        }
+        sessionStorage.setItem('mg_popup_ad_shown', 'true');
+    };
+}

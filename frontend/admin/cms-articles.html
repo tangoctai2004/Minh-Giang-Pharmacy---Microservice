@@ -399,6 +399,179 @@
             min-width: 80px;
             flex: 1;
         }
+
+        /* Pagination Style */
+        .pagination .page-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pagination .page-controls button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            color: #334155;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            outline: none;
+        }
+
+        .pagination .page-controls button:hover:not(:disabled) {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+            color: var(--admin-primary);
+        }
+
+        .pagination .page-controls button.active {
+            background: var(--admin-primary);
+            border-color: var(--admin-primary);
+            color: #fff;
+        }
+
+        .pagination .page-controls button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+
+        /* Live Preview Panel Styles */
+        .storefront-content-preview img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 12px 0;
+        }
+
+        /* Storefront Article Preview Style */
+        .storefront-content-preview p {
+            margin-bottom: 16px;
+            font-size: 15px;
+            line-height: 1.7;
+            color: #334155;
+        }
+
+        .storefront-content-preview h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+
+        .storefront-content-preview h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .storefront-content-preview ul, .storefront-content-preview ol {
+            margin-bottom: 16px;
+            padding-left: 24px;
+        }
+
+        .storefront-content-preview li {
+            margin-bottom: 6px;
+            line-height: 1.6;
+        }
+
+        .storefront-content-preview table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+
+        .storefront-content-preview th, .storefront-content-preview td {
+            border: 1px solid #cbd5e1;
+            padding: 10px 12px;
+            text-align: left;
+        }
+
+        .storefront-content-preview th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .storefront-content-preview blockquote {
+            border-left: 4px solid var(--admin-primary);
+            padding: 10px 16px;
+            background: #f8fafc;
+            margin: 16px 0;
+            font-style: italic;
+        }
+
+        /* Preview slider scrollbar hide */
+        #preview-article-slider::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Editor body image handling */
+        .rich-editor-body img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 8px 0;
+            cursor: pointer;
+        }
+
+        .rich-editor-body img:hover {
+            outline: 2px solid var(--admin-primary);
+            outline-offset: 2px;
+        }
+
+        /* ===== STICKY HEADER PAGE LAYOUT ===== */
+        body {
+            overflow: hidden !important;
+        }
+
+        .admin-main {
+            height: calc(100vh - var(--header-height)) !important;
+            overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
+            padding: 24px 28px 12px 28px !important;
+            box-sizing: border-box !important;
+        }
+
+        .page-header, 
+        .cms-summary-grid, 
+        .page-tabs {
+            flex-shrink: 0 !important;
+        }
+
+        .page-tab-content {
+            flex: 1 !important;
+            overflow-y: auto !important;
+            min-height: 0 !important;
+            padding-bottom: 24px !important;
+            margin-top: 16px !important;
+        }
+
+        /* Adjust Left Sidebar in Tab 1 content */
+        .page-tab-content .cms-sidebar-panel {
+            position: sticky !important;
+            top: 0 !important;
+        }
+
+        /* ===== ICON PICKER POPULAR STYLES ===== */
+        .icon-pick-btn:hover {
+            border-color: var(--admin-accent) !important;
+            color: var(--admin-accent) !important;
+            background: #eff6ff !important;
+            transform: scale(1.05);
+        }
     </style>
 </head>
 
@@ -430,8 +603,8 @@
                         class="fa-solid fa-newspaper"></i></div>
                 <div class="cms-stat-info">
                     <p>Tổng bài viết</p>
-                    <h3>84</h3>
-                    <small>↑ 6 bài tháng này</small>
+                    <h3 id="stat-total-articles">0</h3>
+                    <small id="stat-total-articles-sub">Hệ thống live update</small>
                 </div>
             </div>
             <div class="cms-stat-card">
@@ -439,8 +612,8 @@
                         class="fa-solid fa-circle-check"></i></div>
                 <div class="cms-stat-info">
                     <p>Đã xuất bản</p>
-                    <h3>71</h3>
-                    <small>84.5% tổng số bài</small>
+                    <h3 id="stat-published-articles">0</h3>
+                    <small id="stat-published-articles-sub">Đang chạy</small>
                 </div>
             </div>
             <div class="cms-stat-card">
@@ -448,17 +621,17 @@
                         class="fa-solid fa-pen-to-square"></i></div>
                 <div class="cms-stat-info">
                     <p>Bản nháp / Chờ duyệt</p>
-                    <h3>13</h3>
-                    <small style="color:#ca8a04;">Cần xem xét</small>
+                    <h3 id="stat-draft-articles">0</h3>
+                    <small id="stat-draft-articles-sub">Cần xem xét</small>
                 </div>
             </div>
             <div class="cms-stat-card">
                 <div class="cms-stat-icon" style="background:#fdf4ff;color:#9333ea;"><i class="fa-solid fa-eye"></i>
                 </div>
                 <div class="cms-stat-info">
-                    <p>Lượt xem tháng này</p>
-                    <h3>12,840</h3>
-                    <small>↑ 23% so tháng trước</small>
+                    <p>Lượt xem</p>
+                    <h3 id="stat-total-views">0</h3>
+                    <small id="stat-total-views-sub">Tổng lượt đọc</small>
                 </div>
             </div>
         </div>
@@ -486,79 +659,17 @@
                         <h3><i class="fa-solid fa-filter" style="color:#6b7280;margin-right:6px;"></i>Lọc theo chuyên
                             mục</h3>
                     </div>
-                    <div class="category-tree">
-                        <div class="category-tree-item active" onclick="filterByCategory(this, 'all')">
+                    <div class="category-tree" id="sidebar-category-list">
+                        <div class="category-tree-item active" data-id="all" onclick="filterByCategory(this, 'all')">
                             <div class="cat-icon" style="background:#eff6ff;color:#3b82f6;"><i
                                     class="fa-solid fa-layer-group"></i></div>
                             <div class="cat-info">
                                 <h4>Tất cả bài viết</h4>
                                 <p>Tất cả chuyên mục</p>
                             </div>
-                            <span class="cat-count">84</span>
+                            <span class="cat-count" id="sidebar-all-count">0</span>
                         </div>
-                        <div class="category-tree-item" onclick="filterByCategory(this, 'chuyen-khoa')">
-                            <div class="cat-icon" style="background:#fdf4ff;color:#9333ea;"><i
-                                    class="fa-solid fa-stethoscope"></i></div>
-                            <div class="cat-info">
-                                <h4>Bệnh Chuyên Khoa</h4>
-                                <p>Nội, Ngoại, Sản, Nhi...</p>
-                            </div>
-                            <span class="cat-count">23</span>
-                        </div>
-                        <div class="category-tree-item" onclick="filterByCategory(this, 'truyen-nhiem')">
-                            <div class="cat-icon" style="background:#fff7ed;color:#ea580c;"><i
-                                    class="fa-solid fa-virus"></i></div>
-                            <div class="cat-info">
-                                <h4>Bệnh Truyền Nhiễm</h4>
-                                <p>Cúm, COVID, Sốt xuất huyết...</p>
-                            </div>
-                            <span class="cat-count">12</span>
-                        </div>
-                        <div class="category-tree-item" onclick="filterByCategory(this, 'man-tinh')">
-                            <div class="cat-icon" style="background:#fef2f2;color:#dc2626;"><i
-                                    class="fa-solid fa-heart-pulse"></i></div>
-                            <div class="cat-info">
-                                <h4>Bệnh Mãn Tính</h4>
-                                <p>Tiểu đường, Tim mạch, Huyết áp...</p>
-                            </div>
-                            <span class="cat-count">18</span>
-                        </div>
-                        <div class="category-tree-item" onclick="filterByCategory(this, 'theo-mua')">
-                            <div class="cat-icon" style="background:#fffbeb;color:#d97706;"><i
-                                    class="fa-solid fa-cloud-sun-rain"></i></div>
-                            <div class="cat-info">
-                                <h4>Bệnh Theo Mùa</h4>
-                                <p>Sốt rét, Tay chân miệng...</p>
-                            </div>
-                            <span class="cat-count">9</span>
-                        </div>
-                        <div class="category-tree-item" onclick="filterByCategory(this, 'ung-thu')">
-                            <div class="cat-icon" style="background:#f0fdf4;color:#16a34a;"><i
-                                    class="fa-solid fa-ribbon"></i></div>
-                            <div class="cat-info">
-                                <h4>Bệnh Ung Thư</h4>
-                                <p>Ung thư vú, phổi, đại tràng...</p>
-                            </div>
-                            <span class="cat-count">11</span>
-                        </div>
-                        <div class="category-tree-item" onclick="filterByCategory(this, 'co-the')">
-                            <div class="cat-icon" style="background:#eff6ff;color:#1d4ed8;"><i
-                                    class="fa-solid fa-person"></i></div>
-                            <div class="cat-info">
-                                <h4>Bệnh Theo Cơ Thể</h4>
-                                <p>Đầu, Mắt, Tim, Khớp...</p>
-                            </div>
-                            <span class="cat-count">8</span>
-                        </div>
-                        <div class="category-tree-item" onclick="filterByCategory(this, 'doi-tuong')">
-                            <div class="cat-icon" style="background:#f0fdf4;color:#059669;"><i
-                                    class="fa-solid fa-users"></i></div>
-                            <div class="cat-info">
-                                <h4>Theo Đối Tượng</h4>
-                                <p>Trẻ em, Phụ nữ, Người cao tuổi...</p>
-                            </div>
-                            <span class="cat-count">3</span>
-                        </div>
+                        <!-- Dynamic disease categories go here -->
                     </div>
                 </div>
 
@@ -568,166 +679,38 @@
                     <div style="display:flex;gap:12px;margin-bottom:16px;">
                         <div class="header-search" style="flex:1;">
                             <i class="fa-solid fa-magnifying-glass"></i>
-                            <input type="text" placeholder="Tìm kiếm bài viết, từ khóa...">
+                            <input type="text" id="article-search-input" placeholder="Tìm kiếm bài viết, từ khóa...">
                         </div>
-                        <select
+                        <select id="article-status-filter"
                             style="height:38px;border:1px solid var(--admin-border);border-radius:8px;padding:0 12px;font-size:13px;color:#374151;">
-                            <option>Tất cả trạng thái</option>
-                            <option>Đã xuất bản</option>
-                            <option>Bản nháp</option>
-                            <option>Chờ duyệt</option>
+                            <option value="all">Tất cả trạng thái</option>
+                            <option value="published">Đã xuất bản</option>
+                            <option value="draft">Bản nháp</option>
                         </select>
-                        <select
+                        <select id="article-sort-filter"
                             style="height:38px;border:1px solid var(--admin-border);border-radius:8px;padding:0 12px;font-size:13px;color:#374151;">
-                            <option>Mới nhất trước</option>
-                            <option>Xem nhiều nhất</option>
-                            <option>Cũ nhất trước</option>
+                            <option value="newest">Mới nhất trước</option>
+                            <option value="popular">Xem nhiều nhất</option>
                         </select>
                     </div>
 
                     <!-- Article Cards -->
-                    <div class="article-card" onclick="openArticleEditor('edit')">
-                        <div class="article-thumbnail">🫀</div>
-                        <div class="article-body">
-                            <h3>Bệnh Gout là gì? Nguyên nhân, Triệu chứng và Cách điều trị hiệu quả</h3>
-                            <div class="article-meta">
-                                <span><i class="fa-solid fa-folder"></i> Bệnh Chuyên Khoa</span>
-                                <span><i class="fa-regular fa-calendar"></i> 05/03/2026</span>
-                                <span><i class="fa-solid fa-eye"></i> 3,412 lượt xem</span>
-                                <span><i class="fa-regular fa-user"></i> DS. Nguyễn Minh Giang</span>
-                            </div>
-                            <p class="article-excerpt">Bệnh gout là một dạng viêm khớp do nồng độ axit uric trong máu
-                                tăng cao, tích tụ thành các tinh thể tại khớp, gây ra các cơn đau dữ dội, sưng đỏ và
-                                nóng rát đặc biệt ở ngón chân cái, mắt cá chân...</p>
-                        </div>
-                        <div class="article-actions">
-                            <span class="pub-status published"><i class="fa-solid fa-circle fa-xs"></i> Đã xuất
-                                bản</span>
-                            <button class="btn-icon" title="Chỉnh sửa"
-                                onclick="event.stopPropagation(); openArticleEditor('edit')"><i
-                                    class="fa-solid fa-pencil"></i></button>
-                            <button class="btn-icon" title="Xem ngoài web" onclick="event.stopPropagation();"><i
-                                    class="fa-solid fa-arrow-up-right-from-square"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="article-card" onclick="openArticleEditor('edit')">
-                        <div class="article-thumbnail">😷</div>
-                        <div class="article-body">
-                            <h3>Cúm A H1N1: Triệu chứng, Lây truyền và Phòng ngừa tại nhà</h3>
-                            <div class="article-meta">
-                                <span><i class="fa-solid fa-folder"></i> Bệnh Truyền Nhiễm</span>
-                                <span><i class="fa-regular fa-calendar"></i> 02/03/2026</span>
-                                <span><i class="fa-solid fa-eye"></i> 1,876 lượt xem</span>
-                                <span><i class="fa-regular fa-user"></i> BS. Trần Thị Hoa</span>
-                            </div>
-                            <p class="article-excerpt">Cúm A H1N1 là bệnh nhiễm trùng đường hô hấp do virus cúm type A
-                                chủng H1N1 gây ra. Bệnh có khả năng lây lan nhanh chóng qua giọt bắn và tiếp xúc trực
-                                tiếp với người bệnh, đặc biệt trong mùa đông xuân...</p>
-                        </div>
-                        <div class="article-actions">
-                            <span class="pub-status published"><i class="fa-solid fa-circle fa-xs"></i> Đã xuất
-                                bản</span>
-                            <button class="btn-icon" title="Chỉnh sửa"
-                                onclick="event.stopPropagation(); openArticleEditor('edit')"><i
-                                    class="fa-solid fa-pencil"></i></button>
-                            <button class="btn-icon" title="Xem ngoài web" onclick="event.stopPropagation();"><i
-                                    class="fa-solid fa-arrow-up-right-from-square"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="article-card" onclick="openArticleEditor('edit')">
-                        <div class="article-thumbnail">💊</div>
-                        <div class="article-body">
-                            <h3>Tiểu đường Type 2: Kiểm soát đường huyết và chế độ ăn khoa học</h3>
-                            <div class="article-meta">
-                                <span><i class="fa-solid fa-folder"></i> Bệnh Mãn Tính</span>
-                                <span><i class="fa-regular fa-calendar"></i> 28/02/2026</span>
-                                <span><i class="fa-solid fa-eye"></i> 5,201 lượt xem</span>
-                                <span><i class="fa-regular fa-user"></i> DS. Lê Văn Hùng</span>
-                            </div>
-                            <p class="article-excerpt">Tiểu đường type 2 là bệnh rối loạn chuyển hóa đặc trưng bởi tình
-                                trạng tăng đường huyết mãn tính do cơ thể không sử dụng insulin hiệu quả. Phương án điều
-                                trị kết hợp thuốc và thay đổi lối sống...</p>
-                        </div>
-                        <div class="article-actions">
-                            <span class="pub-status published"><i class="fa-solid fa-circle fa-xs"></i> Đã xuất
-                                bản</span>
-                            <button class="btn-icon" title="Chỉnh sửa"
-                                onclick="event.stopPropagation(); openArticleEditor('edit')"><i
-                                    class="fa-solid fa-pencil"></i></button>
-                            <button class="btn-icon" title="Xem ngoài web" onclick="event.stopPropagation();"><i
-                                    class="fa-solid fa-arrow-up-right-from-square"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="article-card" onclick="openArticleEditor('edit')">
-                        <div class="article-thumbnail">🌡️</div>
-                        <div class="article-body">
-                            <h3>Sốt xuất huyết Dengue: Nhận biết sớm, Phân độ nặng và Khi nào cần nhập viện?</h3>
-                            <div class="article-meta">
-                                <span><i class="fa-solid fa-folder"></i> Bệnh Truyền Nhiễm</span>
-                                <span><i class="fa-regular fa-calendar"></i> 20/02/2026</span>
-                                <span><i class="fa-solid fa-eye"></i> 2,588 lượt xem</span>
-                                <span><i class="fa-regular fa-user"></i> BS. Phạm Quốc Hùng</span>
-                            </div>
-                            <p class="article-excerpt">Sốt xuất huyết do virus Dengue lây qua muỗi Aedes Aegypti. Dấu
-                                hiệu cảnh báo nặng gồm: đau bụng dữ dội, nôn liên tục, chảy máu niêm mạc, li bì, tay
-                                chân lạnh...</p>
-                        </div>
-                        <div class="article-actions">
-                            <span class="pub-status draft"><i class="fa-solid fa-circle fa-xs"></i> Bản nháp</span>
-                            <button class="btn-icon" title="Chỉnh sửa"
-                                onclick="event.stopPropagation(); openArticleEditor('edit')"><i
-                                    class="fa-solid fa-pencil"></i></button>
-                            <button class="btn-icon" title="Xuất bản ngay"
-                                onclick="event.stopPropagation(); this.closest('.article-actions').querySelector('.pub-status').className='pub-status published'; this.closest('.article-actions').querySelector('.pub-status').innerHTML='<i class=\'fa-solid fa-circle fa-xs\'></i> Đã xuất bản';"><i
-                                    class="fa-solid fa-upload"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="article-card" onclick="openArticleEditor('edit')">
-                        <div class="article-thumbnail">🔬</div>
-                        <div class="article-body">
-                            <h3>Ung thư đại trực tràng: Tầm soát định kỳ và Các dấu hiệu cần chú ý</h3>
-                            <div class="article-meta">
-                                <span><i class="fa-solid fa-folder"></i> Bệnh Ung Thư</span>
-                                <span><i class="fa-regular fa-calendar"></i> 15/02/2026</span>
-                                <span><i class="fa-solid fa-eye"></i> 980 lượt xem</span>
-                                <span><i class="fa-regular fa-user"></i> BS. Nguyễn Hữu Đức</span>
-                            </div>
-                            <p class="article-excerpt">Ung thư đại trực tràng là một trong những loại ung thư phổ biến
-                                nhất tại Việt Nam. Tầm soát bằng nội soi đại tràng từ tuổi 45 là biện pháp hiệu quả nhất
-                                để phát hiện và điều trị sớm...</p>
-                        </div>
-                        <div class="article-actions">
-                            <span class="pub-status review"><i class="fa-solid fa-circle fa-xs"></i> Chờ duyệt</span>
-                            <button class="btn-icon" title="Duyệt & Xuất bản"
-                                onclick="event.stopPropagation(); this.closest('.article-actions').querySelector('.pub-status').className='pub-status published'; this.closest('.article-actions').querySelector('.pub-status').innerHTML='<i class=\'fa-solid fa-circle fa-xs\'></i> Đã xuất bản';"
-                                style="color:#16a34a;"><i class="fa-solid fa-check"></i></button>
-                            <button class="btn-icon" title="Chỉnh sửa"
-                                onclick="event.stopPropagation(); openArticleEditor('edit')"><i
-                                    class="fa-solid fa-pencil"></i></button>
-                        </div>
+                    <div id="articles-list-container">
+                        <!-- Dynamic article cards rendered here -->
                     </div>
 
                     <!-- Pagination -->
                     <div class="pagination" style="margin-top:8px;">
-                        <span class="page-info">Hiển thị 1 – 5 trên 84 bài viết</span>
+                        <span class="page-info">Hiển thị 0 – 0 trên 0 bài viết</span>
                         <div class="page-controls">
-                            <button class="btn-page" disabled><i class="fa-solid fa-chevron-left"></i></button>
-                            <button class="btn-page active">1</button>
-                            <button class="btn-page">2</button>
-                            <button class="btn-page">3</button>
-                            <button class="btn-page">...</button>
-                            <button class="btn-page">17</button>
-                            <button class="btn-page"><i class="fa-solid fa-chevron-right"></i></button>
+                            <!-- Dynamic controls here -->
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- ===== TAB 2: CATEGORIES ===== -->
         <!-- ===== TAB 2: CATEGORIES ===== -->
         <div id="tab-categories" class="page-tab-content">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
@@ -750,122 +733,8 @@
                                     <th style="text-align:right;">Thao tác</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <div style="display:flex;align-items:center;gap:10px;">
-                                            <div
-                                                style="width:32px;height:32px;border-radius:8px;background:#fdf4ff;color:#9333ea;display:flex;align-items:center;justify-content:center;font-size:14px;">
-                                                <i class="fa-solid fa-stethoscope"></i>
-                                            </div>
-                                            <div>
-                                                <div style="font-weight:600;font-size:13px;color:#0f172a;">Bệnh Chuyên
-                                                    Khoa</div>
-                                                <div style="font-size:11px;color:#9ca3af;">benh-chuyen-khoa.html</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td><code
-                                            style="font-size:11px;background:#f1f5f9;padding:2px 6px;border-radius:4px;">/benh-chuyen-khoa.html</code>
-                                    </td>
-                                    <td style="text-align:center;font-weight:700;">23</td>
-                                    <td>
-                                        <div class="action-btns" style="justify-content:flex-end;"><button
-                                                class="btn-icon"><i class="fa-solid fa-pencil"></i></button></div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div style="display:flex;align-items:center;gap:10px;">
-                                            <div
-                                                style="width:32px;height:32px;border-radius:8px;background:#fff7ed;color:#ea580c;display:flex;align-items:center;justify-content:center;font-size:14px;">
-                                                <i class="fa-solid fa-virus"></i>
-                                            </div>
-                                            <div>
-                                                <div style="font-weight:600;font-size:13px;color:#0f172a;">Bệnh Truyền
-                                                    Nhiễm</div>
-                                                <div style="font-size:11px;color:#9ca3af;">benh-truyen-nhiem.html</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td><code
-                                            style="font-size:11px;background:#f1f5f9;padding:2px 6px;border-radius:4px;">/benh-truyen-nhiem.html</code>
-                                    </td>
-                                    <td style="text-align:center;font-weight:700;">12</td>
-                                    <td>
-                                        <div class="action-btns" style="justify-content:flex-end;"><button
-                                                class="btn-icon"><i class="fa-solid fa-pencil"></i></button></div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div style="display:flex;align-items:center;gap:10px;">
-                                            <div
-                                                style="width:32px;height:32px;border-radius:8px;background:#fef2f2;color:#dc2626;display:flex;align-items:center;justify-content:center;font-size:14px;">
-                                                <i class="fa-solid fa-heart-pulse"></i>
-                                            </div>
-                                            <div>
-                                                <div style="font-weight:600;font-size:13px;color:#0f172a;">Bệnh Mãn Tính
-                                                </div>
-                                                <div style="font-size:11px;color:#9ca3af;">benh-man-tinh.html</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td><code
-                                            style="font-size:11px;background:#f1f5f9;padding:2px 6px;border-radius:4px;">/benh-man-tinh.html</code>
-                                    </td>
-                                    <td style="text-align:center;font-weight:700;">18</td>
-                                    <td>
-                                        <div class="action-btns" style="justify-content:flex-end;"><button
-                                                class="btn-icon"><i class="fa-solid fa-pencil"></i></button></div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div style="display:flex;align-items:center;gap:10px;">
-                                            <div
-                                                style="width:32px;height:32px;border-radius:8px;background:#f0fdf4;color:#16a34a;display:flex;align-items:center;justify-content:center;font-size:14px;">
-                                                <i class="fa-solid fa-ribbon"></i>
-                                            </div>
-                                            <div>
-                                                <div style="font-weight:600;font-size:13px;color:#0f172a;">Bệnh Ung Thư
-                                                </div>
-                                                <div style="font-size:11px;color:#9ca3af;">benh-ung-thu.html</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td><code
-                                            style="font-size:11px;background:#f1f5f9;padding:2px 6px;border-radius:4px;">/benh-ung-thu.html</code>
-                                    </td>
-                                    <td style="text-align:center;font-weight:700;">11</td>
-                                    <td>
-                                        <div class="action-btns" style="justify-content:flex-end;"><button
-                                                class="btn-icon"><i class="fa-solid fa-pencil"></i></button></div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div style="display:flex;align-items:center;gap:10px;">
-                                            <div
-                                                style="width:32px;height:32px;border-radius:8px;background:#fffbeb;color:#d97706;display:flex;align-items:center;justify-content:center;font-size:14px;">
-                                                <i class="fa-solid fa-cloud-sun-rain"></i>
-                                            </div>
-                                            <div>
-                                                <div style="font-weight:600;font-size:13px;color:#0f172a;">Bệnh Theo Mùa
-                                                </div>
-                                                <div style="font-size:11px;color:#9ca3af;">benh-theo-mua.html</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td><code
-                                            style="font-size:11px;background:#f1f5f9;padding:2px 6px;border-radius:4px;">/benh-theo-mua.html</code>
-                                    </td>
-                                    <td style="text-align:center;font-weight:700;">9</td>
-                                    <td>
-                                        <div class="action-btns" style="justify-content:flex-end;"><button
-                                                class="btn-icon"><i class="fa-solid fa-pencil"></i></button></div>
-                                    </td>
-                                </tr>
+                            <tbody id="categories-table-body">
+                                <!-- Dynamic category rows here -->
                             </tbody>
                         </table>
                     </div>
@@ -874,37 +743,84 @@
                 <!-- Right: Add category form -->
                 <div style="background:#fff;border:1px solid var(--admin-border);border-radius:12px;padding:20px;">
                     <h3 style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:16px;"><i
-                            class="fa-solid fa-plus-circle" style="color:#3b82f6;margin-right:6px;"></i>Thêm Danh Mục
-                        Mới</h3>
-                    <div class="form-group">
-                        <label>Tên danh mục <span style="color:#ef4444;">*</span></label>
-                        <input type="text" placeholder="VD: Bệnh Da Liễu">
-                    </div>
-                    <div class="form-group">
-                        <label>Trang HTML liên kết</label>
-                        <input type="text" placeholder="VD: benh-da-lieu.html">
-                        <div class="form-hint">File HTML sẽ được tạo và liên kết với danh mục này.</div>
-                    </div>
-                    <div class="form-group">
-                        <label>Biểu tượng (Font Awesome icon class)</label>
-                        <input type="text" placeholder="VD: fa-solid fa-hand-dots">
-                    </div>
-                    <div class="form-group">
-                        <label>Màu sắc chủ đạo</label>
-                        <div style="display:flex;gap:8px;align-items:center;">
-                            <input type="color" value="#3b82f6"
-                                style="width:42px;height:38px;padding:2px;border-radius:8px;cursor:pointer;">
-                            <input type="text" value="#3b82f6" style="flex:1;" placeholder="#hexcode">
+                            class="fa-solid fa-plus-circle" style="color:#3b82f6;margin-right:6px;"></i>Thêm Danh Mục Mới</h3>
+                    <form id="category-add-form">
+                        <div class="form-group">
+                            <label>Tên danh mục <span style="color:#ef4444;">*</span></label>
+                            <input type="text" id="cat-name-input" placeholder="VD: Bệnh Da Liễu" required>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Mô tả ngắn</label>
-                        <textarea placeholder="Mô tả về nhóm bệnh này..." style="min-height:70px;"></textarea>
-                    </div>
-                    <button class="btn-primary" style="width:100%;justify-content:center;height:40px;"
-                        onclick="alert('Đã thêm danh mục mới!')">
-                        <i class="fa-solid fa-folder-plus"></i> Tạo Danh Mục
-                    </button>
+                        <div class="form-group">
+                            <label>Trang HTML liên kết</label>
+                            <input type="text" id="cat-slug-input" placeholder="VD: benh-da-lieu">
+                            <div class="form-hint">Dùng làm slug URL (VD: benh-da-lieu)</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Loại danh mục <span style="color:#ef4444;">*</span></label>
+                            <select id="cat-type-select" required style="width: 100%;">
+                                <option value="disease" selected>Bệnh lý (Disease)</option>
+                                <option value="article">Chủ đề kiến thức chung (Article)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Danh mục cha</label>
+                            <select id="cat-parent-select" style="width: 100%;">
+                                <option value="">(Không có - Danh mục gốc)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Biểu tượng (Font Awesome class hoặc Tải ảnh lên)</label>
+                            <div style="display:flex;gap:8px;align-items:center;position:relative;">
+                                <div id="cat-icon-preview" style="width:40px;height:38px;border:1px solid var(--admin-border);border-radius:8px;display:flex;align-items:center;justify-content:center;background:#f8fafc;font-size:16px;color:#475569;overflow:hidden;flex-shrink:0;">
+                                    <i class="fa-solid fa-folder"></i>
+                                </div>
+                                <input type="text" id="cat-icon-input" placeholder="VD: fa-solid fa-hand-dots hoặc URL ảnh" style="flex:1;">
+                                
+                                <!-- Nút upload -->
+                                <button type="button" id="btn-upload-cat-icon" class="btn-secondary" style="height:38px;padding:0 12px;margin:0;" title="Tải ảnh làm icon">
+                                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                                </button>
+                                <input type="file" id="cat-icon-file-input" style="display:none;" accept="image/*">
+                                
+                                <!-- Nút bảng icon -->
+                                <button type="button" id="btn-show-icon-picker" class="btn-secondary" style="height:38px;padding:0 12px;margin:0;" title="Chọn từ bảng icon">
+                                    <i class="fa-solid fa-icons"></i>
+                                </button>
+                                
+                                <!-- Popover chọn icon -->
+                                <div id="icon-picker-popover" style="display:none;position:absolute;top:100%;right:0;width:320px;background:#fff;border:1px solid var(--admin-border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.15);z-index:1000;padding:12px;margin-top:6px;max-height:300px;overflow-y:auto;box-sizing:border-box;">
+                                    <div style="font-weight:700;font-size:12px;color:#1e293b;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f1f5f9;">Chọn Biểu Tượng Gợi Ý</div>
+                                    
+                                    <div style="margin-bottom:10px;">
+                                        <div style="font-size:11px;font-weight:600;color:#64748b;margin-bottom:4px;">Thuốc & Y tế</div>
+                                        <div class="icon-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;" data-category="medicine"></div>
+                                    </div>
+                                    <div style="margin-bottom:10px;">
+                                        <div style="font-size:11px;font-weight:600;color:#64748b;margin-bottom:4px;">Cơ thể người</div>
+                                        <div class="icon-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;" data-category="body"></div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size:11px;font-weight:600;color:#64748b;margin-bottom:4px;">Bệnh lý & Tổng quan</div>
+                                        <div class="icon-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;" data-category="disease"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Màu sắc chủ đạo</label>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <input type="color" id="cat-color-picker" value="#3b82f6"
+                                    style="width:42px;height:38px;padding:2px;border-radius:8px;cursor:pointer;">
+                                <input type="text" id="cat-color-input" value="#3b82f6" style="flex:1;" placeholder="#hexcode">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Mô tả ngắn</label>
+                            <textarea id="cat-desc-input" placeholder="Mô tả về nhóm bệnh này..." style="min-height:70px;"></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary" style="width:100%;justify-content:center;height:40px;">
+                            <i class="fa-solid fa-folder-plus"></i> Tạo Danh Mục
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -914,49 +830,23 @@
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
                 <div class="header-search" style="max-width:320px;">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" placeholder="Tìm kiếm hình ảnh...">
+                    <input type="text" id="media-search-input" placeholder="Tìm kiếm hình ảnh...">
                 </div>
-                <button class="btn-primary" style="height:36px;font-size:13px;padding:0 16px;">
+                <button class="btn-primary" style="height:36px;font-size:13px;padding:0 16px;" onclick="triggerMediaUpload()">
                     <i class="fa-solid fa-arrow-up-from-bracket"></i> Tải ảnh lên
                 </button>
+                <input type="file" id="media-file-input" style="display:none;" accept="image/jpeg,image/png,image/webp,image/gif">
             </div>
             <!-- Drag & Drop Zone -->
-            <div style="border: 2px dashed #cbd5e1; border-radius: 12px; padding: 40px; text-align:center; margin-bottom:20px; background:#f8fafc; cursor:pointer;"
-                onclick="alert('Mở hộp thoại chọn file...')">
+            <div id="media-dropzone" style="border: 2px dashed #cbd5e1; border-radius: 12px; padding: 40px; text-align:center; margin-bottom:20px; background:#f8fafc; cursor:pointer;">
                 <i class="fa-solid fa-cloud-arrow-up"
                     style="font-size:36px;color:#94a3b8;display:block;margin-bottom:12px;"></i>
                 <div style="font-size:15px;font-weight:600;color:#475569;margin-bottom:4px;">Kéo thả hình ảnh vào đây
                 </div>
-                <div style="font-size:12px;color:#94a3b8;">Hỗ trợ: JPG, PNG, WebP, SVG (tối đa 5MB/file)</div>
+                <div style="font-size:12px;color:#94a3b8;">Hỗ trợ: JPG, PNG, WebP, GIF (tối đa 50MB/file)</div>
             </div>
             <!-- Image Grid -->
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;">
-                <!-- Sample image placeholders -->
-                <script>
-                    const mediaItems = [
-                        { emoji: '🫀', label: 'benh-gut-thumb.jpg', size: '84 KB' },
-                        { emoji: '😷', label: 'cum-a-banner.png', size: '124 KB' },
-                        { emoji: '💊', label: 'tieu-duong-hero.jpg', size: '200 KB' },
-                        { emoji: '🌡️', label: 'sot-xuat-huyet.jpg', size: '156 KB' },
-                        { emoji: '🔬', label: 'ung-thu-dai-trang.jpg', size: '193 KB' },
-                        { emoji: '🧬', label: 'gen-di-truyen.png', size: '67 KB' },
-                        { emoji: '💉', label: 'tiem-ngua-vaccine.jpg', size: '145 KB' },
-                        { emoji: '🩺', label: 'kham-benh-chung.jpg', size: '112 KB' },
-                    ];
-                    document.addEventListener('DOMContentLoaded', () => {
-                        const grid = document.getElementById('media-grid');
-                        if (grid) mediaItems.forEach(m => {
-                            grid.innerHTML += `
-                            <div style="border:1px solid var(--admin-border);border-radius:10px;overflow:hidden;cursor:pointer;transition:box-shadow 0.15s;" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'">
-                                <div style="height:100px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:36px;">${m.emoji}</div>
-                                <div style="padding:8px 10px;">
-                                    <div style="font-size:11px;font-weight:600;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.label}</div>
-                                    <div style="font-size:10px;color:#9ca3af;">${m.size}</div>
-                                </div>
-                            </div>`;
-                        });
-                    });
-                </script>
                 <div id="media-grid" style="display:contents;"></div>
             </div>
         </div>
@@ -966,7 +856,7 @@
     <!-- ===== MODAL: ARTICLE EDITOR ===== -->
     <div class="standard-modal-overlay" id="articleEditorModal" style="align-items:stretch;">
         <div class="standard-modal-container"
-            style="max-width:900px;height:calc(100vh - 40px);display:flex;flex-direction:column;margin:20px auto;">
+            style="max-width:calc(100vw - 40px);width:100%;height:calc(100vh - 40px);display:flex;flex-direction:column;margin:20px auto;">
             <div class="standard-modal-header" style="flex-shrink:0;">
                 <div>
                     <h2 class="slide-title" id="editorTitle">Viết Bài Mới</h2>
@@ -975,58 +865,60 @@
                 </div>
                 <div style="display:flex;gap:8px;align-items:center;">
                     <button class="btn-secondary" style="height:34px;font-size:12px;"
-                        onclick="alert('Đã lưu bản nháp!')"><i class="fa-solid fa-floppy-disk"></i> Lưu nháp</button>
+                        onclick="saveArticle('draft')"><i class="fa-solid fa-floppy-disk"></i> Lưu nháp</button>
                     <button class="btn-primary" style="height:34px;font-size:12px;"
-                        onclick="alert('Đã xuất bản bài viết!'); closeArticleEditor();"><i
+                        onclick="saveArticle('published')"><i
                             class="fa-solid fa-upload"></i> Xuất bản</button>
                     <button class="slide-close" onclick="closeArticleEditor()"><i
                             class="fa-solid fa-xmark"></i></button>
                 </div>
             </div>
 
-            <div class="standard-modal-body"
-                style="flex:1;overflow-y:auto;padding:24px;display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start;">
-                <!-- Main content area -->
-                <div>
-                    <div class="form-group">
+            <div class="standard-modal-body" style="flex:1; overflow:hidden; padding:0; background:#f1f5f9; display:flex; max-height:none;">
+                <!-- CỘT 1: Soạn thảo (editor) -->
+                <div id="editor-edit-wrapper" style="flex:1; min-width:0; overflow-y:auto; padding:24px; background:#fff; display:flex; flex-direction:column; gap:16px;">
+                    <div class="form-group" style="margin-bottom:0; flex-shrink:0;">
                         <label>Tiêu đề bài viết <span style="color:#ef4444;">*</span></label>
                         <input type="text" id="article-title-input" placeholder="Nhập tiêu đề bài viết..."
                             style="font-size:18px;font-weight:600;padding:12px 14px;">
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" style="margin-bottom:0; flex-shrink:0;">
                         <label>Đoạn mở đầu / Tóm tắt (Meta description)</label>
-                        <textarea placeholder="Tóm tắt ngắn về nội dung bài viết (150-160 ký tự)..."
+                        <textarea id="article-excerpt-input" placeholder="Tóm tắt ngắn về nội dung bài viết (150-160 ký tự)..."
                             style="min-height:65px;"></textarea>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" style="flex:1; display:flex; flex-direction:column; margin-bottom:0; min-height:300px;">
                         <label>Nội dung chính</label>
-                        <div class="rich-editor">
-                            <div class="rich-editor-toolbar">
-                                <button class="toolbar-btn" title="Bold"><i class="fa-solid fa-bold"></i></button>
-                                <button class="toolbar-btn" title="Italic"><i class="fa-solid fa-italic"></i></button>
-                                <button class="toolbar-btn" title="Underline"><i
+                        <div class="rich-editor" style="flex:1; display:flex; flex-direction:column;">
+                            <div class="rich-editor-toolbar" style="flex-shrink:0;">
+                                <button class="toolbar-btn" title="Bold" onclick="execCmd('bold')"><i class="fa-solid fa-bold"></i></button>
+                                <button class="toolbar-btn" title="Italic" onclick="execCmd('italic')"><i class="fa-solid fa-italic"></i></button>
+                                <button class="toolbar-btn" title="Underline" onclick="execCmd('underline')"><i
                                         class="fa-solid fa-underline"></i></button>
                                 <div class="toolbar-sep"></div>
-                                <button class="toolbar-btn" title="Heading 2"><b style="font-size:11px;">H2</b></button>
-                                <button class="toolbar-btn" title="Heading 3"><b style="font-size:11px;">H3</b></button>
+                                <button class="toolbar-btn" title="Heading 2" onclick="execCmd('formatBlock', 'h2')"><b style="font-size:11px;">H2</b></button>
+                                <button class="toolbar-btn" title="Heading 3" onclick="execCmd('formatBlock', 'h3')"><b style="font-size:11px;">H3</b></button>
                                 <div class="toolbar-sep"></div>
-                                <button class="toolbar-btn" title="Bullet list"><i
+                                <button class="toolbar-btn" title="Bullet list" onclick="execCmd('insertUnorderedList')"><i
                                         class="fa-solid fa-list-ul"></i></button>
-                                <button class="toolbar-btn" title="Ordered list"><i
+                                <button class="toolbar-btn" title="Ordered list" onclick="execCmd('insertOrderedList')"><i
                                         class="fa-solid fa-list-ol"></i></button>
                                 <div class="toolbar-sep"></div>
-                                <button class="toolbar-btn" title="Chèn ảnh"><i class="fa-solid fa-image"></i></button>
-                                <button class="toolbar-btn" title="Chèn link"><i class="fa-solid fa-link"></i></button>
-                                <button class="toolbar-btn" title="Chèn bảng"><i class="fa-solid fa-table"></i></button>
+                                <button class="toolbar-btn" title="Chèn ảnh" onclick="insertImagePrompt()"><i class="fa-solid fa-image"></i></button>
+                                <button class="toolbar-btn" title="Chèn link" onclick="insertLinkPrompt()"><i class="fa-solid fa-link"></i></button>
+                                <button class="toolbar-btn" title="Chèn bảng" onclick="insertTablePrompt()"><i class="fa-solid fa-table"></i></button>
                                 <div class="toolbar-sep"></div>
-                                <button class="toolbar-btn" title="Chèn Callout / Lưu ý" style="color:#3b82f6;"><i
+                                <button class="toolbar-btn" title="Chèn Callout / Lưu ý" style="color:#3b82f6;" onclick="insertCallout('info')"><i
                                         class="fa-solid fa-circle-info"></i></button>
-                                <button class="toolbar-btn" title="Chèn Cảnh báo" style="color:#ef4444;"><i
+                                <button class="toolbar-btn" title="Chèn Cảnh báo" style="color:#ef4444;" onclick="insertCallout('warning')"><i
                                         class="fa-solid fa-triangle-exclamation"></i></button>
+                                <div class="toolbar-sep"></div>
+                                <button class="toolbar-btn" title="Chèn Khối Mở Đầu / Lời Khuyên" style="color:#10b981;" onclick="insertIntroBox()"><i class="fa-solid fa-quote-left"></i></button>
+                                <button class="toolbar-btn" title="Chèn Hộp Mục Lục / Tóm Tắt" style="color:#005824;" onclick="insertTocBox()"><i class="fa-solid fa-table-list"></i></button>
                             </div>
-                            <div class="rich-editor-body" contenteditable="true" style="outline:none;"
+                            <div class="rich-editor-body" id="article-content-body" contenteditable="true" style="outline:none; flex:1; overflow-y:auto; min-height:220px;"
                                 placeholder="Bắt đầu soạn nội dung bài viết...">
                                 <p style="color:#9ca3af;font-style:italic;">Nhập nội dung bài viết tại đây. Sử dụng
                                     thanh công cụ để định dạng văn bản và thêm hình ảnh...</p>
@@ -1035,8 +927,8 @@
                     </div>
                 </div>
 
-                <!-- Right sidebar settings -->
-                <div style="position:sticky;top:0;">
+                <!-- CỘT 2: Cài đặt bài viết (sidebar settings) -->
+                <div style="width:260px; flex-shrink:0; overflow-y:auto; padding:20px 16px; border-left:1px solid #e2e8f0; border-right:1px solid #e2e8f0; background:#fff;">
                     <div
                         style="background:#f8fafc;border:1px solid var(--admin-border);border-radius:10px;padding:16px;margin-bottom:14px;">
                         <h4 style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:12px;"><i
@@ -1044,33 +936,28 @@
                         </h4>
                         <div class="form-group" style="margin-bottom:12px;">
                             <label>Danh mục <span style="color:#ef4444;">*</span></label>
-                            <select>
-                                <option>Bệnh Chuyên Khoa</option>
-                                <option>Bệnh Truyền Nhiễm</option>
-                                <option>Bệnh Mãn Tính</option>
-                                <option>Bệnh Ung Thư</option>
-                                <option>Bệnh Theo Mùa</option>
-                                <option>Bệnh Theo Cơ Thể</option>
-                                <option>Theo Đối Tượng</option>
+                            <select id="article-category-select">
+                                <!-- Dynamic categories list here -->
                             </select>
                         </div>
                         <div class="form-group" style="margin-bottom:12px;">
                             <label>Tác giả</label>
-                            <select>
-                                <option>DS. Nguyễn Minh Giang</option>
-                                <option>BS. Trần Thị Hoa</option>
-                                <option>DS. Lê Văn Hùng</option>
-                                <option>BS. Phạm Quốc Hùng</option>
+                            <select id="article-author-select">
+                                <option value="1">DS. Nguyễn Minh Giang</option>
+                                <option value="2">BS. Trần Thị Hoa</option>
+                                <option value="3">DS. Lê Văn Hùng</option>
+                                <option value="4">BS. Phạm Quốc Hùng</option>
                             </select>
                         </div>
                         <div class="form-group" style="margin-bottom:0;">
                             <label>Ảnh đại diện</label>
-                            <div style="border:1.5px dashed #cbd5e1;border-radius:8px;padding:20px;text-align:center;cursor:pointer;background:#fff;"
-                                onclick="alert('Mở thư viện ảnh...')">
+                            <div id="article-cover-uploader" style="border:1.5px dashed #cbd5e1;border-radius:8px;padding:20px;text-align:center;cursor:pointer;background:#fff;overflow:hidden;"
+                                onclick="triggerCoverUpload()">
                                 <i class="fa-solid fa-image"
                                     style="color:#94a3b8;font-size:22px;display:block;margin-bottom:6px;"></i>
-                                <span style="font-size:11px;color:#9ca3af;">Chọn từ thư viện</span>
+                                <span style="font-size:11px;color:#9ca3af;">Chọn từ máy tính</span>
                             </div>
+                            <input type="file" id="article-cover-file-input" style="display:none;" accept="image/jpeg,image/png,image/webp,image/gif">
                         </div>
                     </div>
 
@@ -1079,45 +966,53 @@
                         <h4 style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:12px;"><i
                                 class="fa-solid fa-pills" style="color:#16a34a;margin-right:6px;"></i>Sản phẩm liên quan
                         </h4>
-                        <div
-                            style="border:1px solid var(--admin-border);border-radius:8px;padding:10px;background:#fff;margin-bottom:8px;display:flex;align-items:center;gap:8px;">
-                            <div style="font-size:14px;">💊</div>
-                            <div style="flex:1;">
-                                <div style="font-size:12px;font-weight:600;color:#0f172a;">Colchicin 0.5mg</div>
-                                <div style="font-size:10px;color:#9ca3af;">Thuốc điều trị Gout</div>
-                            </div>
-                            <button style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:13px;"><i
-                                    class="fa-solid fa-xmark"></i></button>
+                        <div id="article-related-products-list">
+                            <!-- Dynamic products chips go here -->
                         </div>
-                        <div
-                            style="border:1px solid var(--admin-border);border-radius:8px;padding:10px;background:#fff;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
-                            <div style="font-size:14px;">💊</div>
-                            <div style="flex:1;">
-                                <div style="font-size:12px;font-weight:600;color:#0f172a;">Allopurinol 300mg</div>
-                                <div style="font-size:10px;color:#9ca3af;">Hạ acid uric</div>
-                            </div>
-                            <button style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:13px;"><i
-                                    class="fa-solid fa-xmark"></i></button>
+                        <div style="position:relative; margin-top:8px;">
+                            <input type="text" id="article-product-search" placeholder="Nhập tên thuốc..." style="width:100%;height:34px;border:1px solid var(--admin-border);border-radius:8px;padding:0 10px;font-size:12px;box-sizing:border-box;">
+                            <div id="article-product-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--admin-border);border-radius:8px;max-height:200px;overflow-y:auto;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
                         </div>
-                        <button class="btn-secondary"
-                            style="width:100%;height:34px;font-size:12px;justify-content:center;"
-                            onclick="alert('Mở danh sách sản phẩm...')">
-                            <i class="fa-solid fa-plus"></i> Thêm sản phẩm
-                        </button>
+                    </div>
+
+                    <div
+                        style="background:#f8fafc;border:1px solid var(--admin-border);border-radius:10px;padding:16px;margin-bottom:14px;">
+                        <h4 style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:12px;"><i
+                                class="fa-solid fa-newspaper" style="color:#3b82f6;margin-right:6px;"></i>Bài viết liên quan
+                        </h4>
+                        <div id="article-related-articles-list">
+                            <!-- Dynamic articles chips go here -->
+                        </div>
+                        <div style="position:relative; margin-top:8px;">
+                            <input type="text" id="article-article-search" placeholder="Nhập tiêu đề bài viết..." style="width:100%;height:34px;border:1px solid var(--admin-border);border-radius:8px;padding:0 10px;font-size:12px;box-sizing:border-box;">
+                            <div id="article-article-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--admin-border);border-radius:8px;max-height:200px;overflow-y:auto;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
+                        </div>
                     </div>
 
                     <div
                         style="background:#f8fafc;border:1px solid var(--admin-border);border-radius:10px;padding:16px;">
                         <h4 style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:12px;"><i
                                 class="fa-solid fa-tags" style="color:#9333ea;margin-right:6px;"></i>Thẻ / Tags</h4>
-                        <div class="tag-input-area">
-                            <span class="tag-chip">Bệnh Gout <button>✕</button></span>
-                            <span class="tag-chip">Khớp <button>✕</button></span>
-                            <span class="tag-chip">Acid Uric <button>✕</button></span>
-                            <input type="text" placeholder="Thêm tag..."
-                                onkeydown="if(event.key==='Enter'&&this.value){const chip=document.createElement('span');chip.className='tag-chip';chip.innerHTML=this.value+' <button onclick=\'this.parentElement.remove()\'>✕</button>';this.parentNode.insertBefore(chip,this);this.value='';event.preventDefault();}">
+                        <div class="tag-input-area" id="article-tags-container">
+                            <input type="text" id="article-tag-input" placeholder="Thêm tag...">
                         </div>
                         <div style="font-size:11px;color:#9ca3af;margin-top:6px;">Nhấn Enter để thêm tag mới.</div>
+                    </div>
+                </div>
+
+                <!-- CỘT 3: Live Preview (luôn hiển thị) -->
+                <div style="flex:1; min-width:0; overflow-y:auto; background:#f8fafc; display:flex; flex-direction:column;">
+                    <div style="padding:12px 20px; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; gap:8px; flex-shrink:0; background:#fff;">
+                        <i class="fa-solid fa-eye" style="color:#3b82f6;"></i>
+                        <span style="font-size:13px; font-weight:700; color:#0f172a;">Xem trước bài viết</span>
+                        <span style="font-size:11px; color:#94a3b8; margin-left:auto;">Cập nhật realtime khi soạn thảo</span>
+                    </div>
+                    <div id="editor-preview-wrapper" style="padding:28px 32px; flex:1; overflow-y:auto;">
+                        <div style="text-align:center;padding:60px 20px;color:#94a3b8;">
+                            <i class="fa-solid fa-newspaper" style="font-size:40px;display:block;margin-bottom:12px;"></i>
+                            <div style="font-size:14px;font-weight:500;">Bản xem trước bài viết sẽ hiển thị tại đây</div>
+                            <div style="font-size:12px;margin-top:4px;">Bắt đầu soạn nội dung để xem kết quả...</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1133,33 +1028,13 @@
             document.getElementById(tabId).classList.add('active');
         }
 
-        function filterByCategory(el, catId) {
-            document.querySelectorAll('.category-tree-item').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
-        }
-
-        function openArticleEditor(mode) {
-            document.getElementById('editorTitle').innerText = mode === 'new' ? 'Viết Bài Mới' : 'Chỉnh Sửa Bài Viết';
-            if (mode === 'edit') {
-                document.getElementById('article-title-input').value = 'Bệnh Gout là gì? Nguyên nhân, Triệu chứng và Cách điều trị hiệu quả';
-            } else {
-                document.getElementById('article-title-input').value = '';
-            }
-            document.getElementById('articleEditorModal').classList.add('open');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeArticleEditor() {
-            document.getElementById('articleEditorModal').classList.remove('open');
-            document.body.style.overflow = '';
-        }
-
         function openCategoryModal() {
-            alert('Modal thêm danh mục - tương tự inline form bên phải.');
+            document.getElementById('cat-name-input')?.focus();
         }
     </script>
 
     <script src="js/admin-components.js"></script>
+    <script src="js/cms-articles-api.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             renderAdminLayout('cms');

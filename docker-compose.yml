@@ -48,6 +48,9 @@ services:
       DB_NAME: mg_identity
       JWT_SECRET: ${JWT_SECRET:-change_me_to_a_random_32_char_string}
       JWT_EXPIRES_IN: 8h
+      NOTIFICATION_SERVICE_URL: http://notification-service:8005
+      NOTIFICATION_REQUIRED: "true"
+      OTP_DEBUG_RESPONSE: "false"
     volumes:
       - ./backend/identity-service:/app
       - /app/node_modules
@@ -136,12 +139,26 @@ services:
       DB_USER: root
       DB_PASS: root
       DB_NAME: mg_notification
+      EMAIL_PROVIDER: smtp
       SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_SECURE: ${SMTP_SECURE:-false}
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASS: ${SMTP_PASS:-}
       SMTP_FROM_NAME: Minh Giang Pharmacy
+      EMAIL_FROM: ${EMAIL_FROM:-Minh Giang Pharmacy <noreply@minhgiangpharma.vn>}
+      SMS_PROVIDER: ${SMS_PROVIDER:-generic_http}
+      SMS_BRAND_NAME: ${SMS_BRAND_NAME:-MinhGiang}
+      SMS_API_URL: ${SMS_API_URL:-}
+      SMS_API_KEY: ${SMS_API_KEY:-}
+      SMS_API_KEY_HEADER: ${SMS_API_KEY_HEADER:-Authorization}
+      SMS_API_KEY_PREFIX: ${SMS_API_KEY_PREFIX:-Bearer}
+      SMS_TO_FIELD: ${SMS_TO_FIELD:-to}
+      SMS_MESSAGE_FIELD: ${SMS_MESSAGE_FIELD:-message}
+      SMS_BRAND_FIELD: ${SMS_BRAND_FIELD:-brand_name}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
+      TWILIO_FROM: ${TWILIO_FROM:-}
     volumes:
       - ./backend/notification-service:/app
       - /app/node_modules

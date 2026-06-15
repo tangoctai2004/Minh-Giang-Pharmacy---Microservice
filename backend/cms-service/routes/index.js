@@ -27,6 +27,7 @@ router.use('/categories',        require('../categories/categories.routes'));
 router.use('/diseases',           require('../diseases/diseases.routes'));
 router.use('/disease-categories', require('../disease_categories/disease-categories.routes'));
 router.use('/promotions',        require('../promotions/promotions.routes'));
+router.use('/loyalty',           require('../loyalty/loyalty.routes'));
 router.use('/store-config',      require('../store_config/store-config.routes'));
 router.use('/pages',             require('../pages/pages.routes'));
 router.use('/media',             require('../media/media.routes'));
@@ -59,13 +60,23 @@ router.get('/', (req, res) => {
       'PUT    /categories/:id              — Cập nhật danh mục (admin/manager)',
       'DELETE /categories/:id              — Ẩn danh mục (admin)',
       // ── Promotions ────────────────────────────────────────────────────────
+      'GET    /promotions/stats            — Thống kê dashboard (admin)',
       'GET    /promotions/active           — KM đang chạy (public)',
       'GET    /promotions/validate/:code   — Validate mã voucher (public)',
-      'GET    /promotions                  — Tất cả KM (admin)',
+      'GET    /promotions/export           — Xuất CSV (admin)',
+      'GET    /promotions                  — Tất cả KM có filter/page (admin)',
       'GET    /promotions/:id              — Chi tiết KM (admin)',
       'POST   /promotions                  — Tạo KM mới (admin)',
       'PUT    /promotions/:id              — Cập nhật KM (admin)',
+      'PUT    /promotions/:id/toggle       — Bật/tắt KM (admin)',
+      'POST   /promotions/:id/clone        — Nhân bản KM (admin)',
       'DELETE /promotions/:id              — Tắt KM (admin)',
+      // ── Loyalty ──────────────────────────────────────────────────────────
+      'GET    /loyalty/tiers               — Cấu hình hạng thành viên (admin)',
+      'PUT    /loyalty/tiers               — Lưu cấu hình hạng (admin)',
+      'GET    /loyalty/stats               — Phân bổ KH theo hạng (admin)',
+      'GET    /loyalty/config              — Cấu hình quy đổi điểm (admin)',
+      'PUT    /loyalty/config              — Lưu cấu hình quy đổi (admin)',
       // ── Store Config ──────────────────────────────────────────────────────
       'GET    /store-config/public         — Config công khai (public)',
       'GET    /store-config                — Tất cả config (admin)',

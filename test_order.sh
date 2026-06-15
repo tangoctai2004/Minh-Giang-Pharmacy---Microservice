@@ -15,7 +15,7 @@ chk() {
 # 1. Register and Login to get token
 echo "Creating test customer..."
 RANDOM_EMAIL="order_test_${RANDOM}@test.com"
-R=$(curl -s $AUTH_BASE/auth/register -H 'Content-Type: application/json' -d '{"full_name":"Order Tester","email":"'$RANDOM_EMAIL'","phone":"08'$RANDOM'88","password":"Test@123"}')
+R=$(curl -s $AUTH_BASE/auth/register -H 'Content-Type: application/json' -d '{"full_name":"Order Tester","email":"'$RANDOM_EMAIL'","phone":"08'$(printf "%08d" $((RANDOM%100000000)))'","password":"Test@123"}')
 R=$(curl -s $AUTH_BASE/auth/login -H 'Content-Type: application/json' -d '{"email_or_phone":"'$RANDOM_EMAIL'","password":"Test@123"}')
 CUST_TOKEN=$(echo "$R" | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['accessToken'])" 2>/dev/null)
 

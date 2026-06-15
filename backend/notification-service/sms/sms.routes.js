@@ -57,7 +57,7 @@ router.post('/send', async (req, res) => {
         payload: {
           target: phone,
           template_vars: vars,
-          provider: process.env.SMS_PROVIDER || 'mock',
+          provider: process.env.SMS_PROVIDER || null,
         },
       });
     }
@@ -71,7 +71,7 @@ router.post('/send', async (req, res) => {
 
     res.json({
       success: true,
-      message: providerResult.provider === 'mock' ? 'SMS mock da gui thanh cong' : 'SMS da gui thanh cong',
+      message: 'SMS da gui thanh cong',
       data: {
         provider: providerResult.provider,
         providerMessageId: providerResult.provider_message_id,

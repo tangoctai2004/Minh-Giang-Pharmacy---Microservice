@@ -80,6 +80,7 @@ router.get('/:slug', async (req, res) => {
           id: child.id,
           name: child.name,
           slug: child.slug,
+          icon_url: child.icon_url || null,
           article_count: Number(child.article_count || 0)
         }))
       }

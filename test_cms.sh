@@ -58,7 +58,7 @@ if [ ! -z "$ADMIN_TOKEN" ]; then
     R=$(curl -s -X POST "$BASE/articles" \
       -H "Authorization: Bearer $ADMIN_TOKEN" \
       -H 'Content-Type: application/json' \
-      -d '{"title":"Bài viết test tự động CMS","category_id":1,"content":"<p>Nội dung bài viết test tự động</p>","excerpt":"Tóm tắt bài viết test","status":"draft","tags":["test-cms"]}')
+      -d "{\"title\":\"Bài viết test tự động CMS $(date +%s)\",\"category_id\":1,\"content\":\"<p>Nội dung bài viết test tự động</p>\",\"excerpt\":\"Tóm tắt bài viết test\",\"status\":\"draft\",\"tags\":[\"test-cms\"]}")
     chk "POST /articles (create)" "True" "$R"
     ARTICLE_ID=$(echo "$R" | python3 -c "import sys,json; print(json.load(sys.stdin).get('data',{}).get('id', ''))" 2>/dev/null)
 
@@ -78,6 +78,24 @@ if [ ! -z "$ADMIN_TOKEN" ]; then
 
     R=$(curl -s "$BASE/store-config" -H "Authorization: Bearer $ADMIN_TOKEN")
     chk "GET /store-config" "True" "$R"
+
+    echo ""
+    echo "═══════ CMS PROMOTIONS & LOYALTY TESTS ═══════"
+
+    R=$(curl -s "$BASE/promotions/stats" -H "Authorization: Bearer $ADMIN_TOKEN")
+    chk "GET /promotions/stats" "True" "$R"
+
+    R=$(curl -s "$BASE/promotions" -H "Authorization: Bearer $ADMIN_TOKEN")
+    chk "GET /promotions (list)" "True" "$R"
+
+    R=$(curl -s "$BASE/loyalty/tiers" -H "Authorization: Bearer $ADMIN_TOKEN")
+    chk "GET /loyalty/tiers" "True" "$R"
+
+    R=$(curl -s "$BASE/loyalty/config" -H "Authorization: Bearer $ADMIN_TOKEN")
+    chk "GET /loyalty/config" "True" "$R"
+
+    R=$(curl -s "$BASE/loyalty/stats" -H "Authorization: Bearer $ADMIN_TOKEN")
+    chk "GET /loyalty/stats" "True" "$R"
 fi
 
 echo ""

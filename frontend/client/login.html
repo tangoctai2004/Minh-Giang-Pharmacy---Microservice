@@ -370,7 +370,7 @@
                     <label class="remember-checkbox">
                         <input type="checkbox"> Ghi nhớ
                     </label>
-                    <a href="#" class="forgot-link">Quên mật khẩu?</a>
+                    <a href="#" class="forgot-link" onclick="openForgotPassword(event)">Quên mật khẩu?</a>
                 </div>
 
                 <button type="submit" class="submit-btn" id="submitBtn">Đăng nhập ngay</button>
@@ -390,6 +390,39 @@
                 </div>
             </form>
 
+            <div id="forgotPanel" style="display:none; margin-top:18px; border-top:1px solid #e2e8f0; padding-top:18px;">
+                <div class="input-group">
+                    <label>Email hoặc SĐT đã đăng ký</label>
+                    <div class="input-field">
+                        <i class="fa-solid fa-envelope icon-left"></i>
+                        <input type="text" id="resetTarget" placeholder="Nhập email hoặc số điện thoại...">
+                    </div>
+                </div>
+                <div class="input-group" id="resetOtpGroup" style="display:none;">
+                    <label>Mã OTP</label>
+                    <div class="input-field">
+                        <i class="fa-solid fa-key icon-left"></i>
+                        <input type="text" id="resetOtp" placeholder="Nhập mã OTP 6 số" inputmode="numeric" maxlength="6">
+                    </div>
+                </div>
+                <div class="input-group" id="resetPasswordGroup" style="display:none;">
+                    <label>Mật khẩu mới</label>
+                    <div class="input-field">
+                        <i class="fa-solid fa-lock icon-left"></i>
+                        <input type="password" id="resetPassword" placeholder="Ít nhất 8 ký tự, có chữ hoa và số">
+                    </div>
+                </div>
+                <div class="input-group" id="resetConfirmGroup" style="display:none;">
+                    <label>Xác nhận mật khẩu mới</label>
+                    <div class="input-field">
+                        <i class="fa-solid fa-lock icon-left"></i>
+                        <input type="password" id="resetConfirmPassword" placeholder="Nhập lại mật khẩu mới">
+                    </div>
+                </div>
+                <button type="button" class="submit-btn" id="resetBtn" onclick="handlePasswordReset()">Gửi mã OTP</button>
+                <button type="button" onclick="closeForgotPassword()" style="margin-top:10px; border:0; background:transparent; color:#64748b; font-weight:700; cursor:pointer;">Quay lại đăng nhập</button>
+            </div>
+
             <div class="back-home">
                 <a href="index.html"><i class="fa-solid fa-arrow-left"></i> Quay lại trang chủ</a>
             </div>
@@ -400,6 +433,7 @@
     <script>
         const GATEWAY = ((window.MGClientApi && window.MGClientApi.gatewayOrigin) || window.MG_API_GATEWAY_ORIGIN || 'http://localhost:8000').replace(/\/+$/, '');
         const API_BASE = GATEWAY + '/api/identity';
+        let resetOtpSent = false;
 
         // Nếu đã đăng nhập rồi thì chuyển thẳng về trang chủ
         (function checkAuth() {
@@ -417,11 +451,121 @@
         function showError(msg) {
             const box = document.getElementById('loginError');
             document.getElementById('loginErrorMsg').textContent = msg;
+            box.style.background = '#fef2f2';
+            box.style.borderColor = '#fecaca';
+            box.style.color = '#ef4444';
             box.style.display = 'flex';
         }
 
         function hideError() {
             document.getElementById('loginError').style.display = 'none';
+        }
+
+        function openForgotPassword(e) {
+            e.preventDefault();
+            hideError();
+            document.getElementById('forgotPanel').style.display = 'block';
+            document.getElementById('resetTarget').focus();
+        }
+
+        function closeForgotPassword() {
+            resetOtpSent = false;
+            document.getElementById('forgotPanel').style.display = 'none';
+            document.getElementById('resetOtpGroup').style.display = 'none';
+            document.getElementById('resetPasswordGroup').style.display = 'none';
+            document.getElementById('resetConfirmGroup').style.display = 'none';
+            document.getElementById('resetBtn').textContent = 'Gửi mã OTP';
+        }
+
+        async function handlePasswordReset() {
+            hideError();
+            const target = document.getElementById('resetTarget').value.trim();
+            const btn = document.getElementById('resetBtn');
+            if (!target) {
+                showError('Vui lòng nhập email hoặc số điện thoại.');
+                return;
+            }
+
+            btn.disabled = true;
+            try {
+                if (!resetOtpSent) {
+                    btn.textContent = 'Đang gửi OTP...';
+                    const res = await fetch(API_BASE + '/auth/send-otp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            target,
+                            purpose: 'reset_password',
+                            account_type: 'customer'
+                        }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok || !data.success) {
+                        showError(data.message || 'Không gửi được OTP.');
+                        btn.disabled = false;
+                        btn.textContent = 'Gửi mã OTP';
+                        return;
+                    }
+                    resetOtpSent = true;
+                    document.getElementById('resetOtpGroup').style.display = 'block';
+                    document.getElementById('resetPasswordGroup').style.display = 'block';
+                    document.getElementById('resetConfirmGroup').style.display = 'block';
+                    document.getElementById('resetOtp').focus();
+                    btn.disabled = false;
+                    btn.textContent = 'Đặt lại mật khẩu';
+                    return;
+                }
+
+                const otp = document.getElementById('resetOtp').value.trim();
+                const newPassword = document.getElementById('resetPassword').value;
+                const confirmPassword = document.getElementById('resetConfirmPassword').value;
+                if (!/^\d{6}$/.test(otp)) {
+                    showError('Vui lòng nhập mã OTP gồm 6 số.');
+                    btn.disabled = false;
+                    return;
+                }
+                if (newPassword.length < 8 || !/\d/.test(newPassword) || !/[A-Z]/.test(newPassword)) {
+                    showError('Mật khẩu mới phải có ít nhất 8 ký tự, có chữ in hoa và chữ số.');
+                    btn.disabled = false;
+                    return;
+                }
+                if (newPassword !== confirmPassword) {
+                    showError('Mật khẩu mới và xác nhận mật khẩu không khớp.');
+                    btn.disabled = false;
+                    return;
+                }
+
+                btn.textContent = 'Đang đổi mật khẩu...';
+                const res = await fetch(API_BASE + '/auth/reset-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        target,
+                        purpose: 'reset_password',
+                        account_type: 'customer',
+                        otp_code: otp,
+                        new_password: newPassword,
+                        confirm_password: confirmPassword
+                    }),
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    showError(data.message || 'Không đặt lại được mật khẩu.');
+                    btn.disabled = false;
+                    btn.textContent = 'Đặt lại mật khẩu';
+                    return;
+                }
+
+                closeForgotPassword();
+                showError('Mật khẩu đã được đổi. Bạn có thể đăng nhập bằng mật khẩu mới.');
+                document.getElementById('loginError').style.background = '#f0fdf4';
+                document.getElementById('loginError').style.borderColor = '#bbf7d0';
+                document.getElementById('loginError').style.color = '#166534';
+            } catch (err) {
+                showError('Không thể kết nối máy chủ. Vui lòng thử lại sau.');
+                btn.disabled = false;
+                btn.textContent = resetOtpSent ? 'Đặt lại mật khẩu' : 'Gửi mã OTP';
+            }
         }
 
         async function handleLogin(e) {

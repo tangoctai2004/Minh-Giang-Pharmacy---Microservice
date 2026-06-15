@@ -18,6 +18,7 @@ DB_DIR="$(dirname "$0")"
 # - 99_verify_seed_quality.sql: kiểm tra chất lượng seed
 FILES=(
   "01_mg_identity.sql"
+  "migrations/20260615_add_customer_verification_columns.sql"
   "02_mg_catalog.sql"
   "06_mg_catalog_product_media_gpp.sql"
   "07_mg_catalog_quality_workflow.sql"
@@ -29,6 +30,7 @@ FILES=(
   "migrations/20260516_add_is_active_order.sql"
   "04_mg_cms.sql"
   "12_seed_clean_cms_content.sql"
+  "95_seed_disease_categories.sql"
   "05_mg_notification.sql"
   "90_seed_demo_baseline.sql"
   "99_verify_seed_quality.sql"

@@ -135,3 +135,6 @@ Postman/backup/
 !docker-compose.yml
 !Dockerfile
 !.gitignore
+
+# Local seeding script (one-time developer test tool)
+backend/order-service/seed_sales.js

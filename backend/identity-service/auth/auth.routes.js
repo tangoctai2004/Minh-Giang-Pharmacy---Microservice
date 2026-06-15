@@ -223,6 +223,7 @@ async function exchangeZaloCode(code, codeVerifier) {
 async function findOrCreateGoogleCustomer({ googleId, email, name, picture }) {
   const supportsGoogleId = await hasCustomerColumn('google_id');
   const supportsAvatar = await hasCustomerColumn('avatar_url');
+  const supportsEmailVerifiedAt = await hasCustomerColumn('email_verified_at');
   let customer = null;
 
   if (supportsGoogleId) {
@@ -250,6 +251,10 @@ async function findOrCreateGoogleCustomer({ googleId, email, name, picture }) {
         updateValues.push(picture);
         if (!customer.avatar_url) customer.avatar_url = picture;
       }
+      if (supportsEmailVerifiedAt && email) {
+        updateFields.push('email_verified_at = COALESCE(email_verified_at, NOW())');
+        customer.email_verified_at = customer.email_verified_at || new Date();
+      }
       if (updateFields.length) {
         updateValues.push(customer.id);
         await pool.query(`UPDATE customers SET ${updateFields.join(', ')} WHERE id = ?`, updateValues);
@@ -270,6 +275,7 @@ async function findOrCreateGoogleCustomer({ googleId, email, name, picture }) {
       avatar_url: picture || null,
       code,
       is_active: 1,
+      email_verified_at: email ? new Date() : null,
     });
     const [[newCustomer]] = await pool.query('SELECT * FROM customers WHERE id = ?', [result.insertId]);
     customer = newCustomer;
@@ -321,6 +327,7 @@ function sendOAuthCallbackPage(res, data) {
  * DONE - POST /auth/register          — Đăng ký tài khoản khách hàng mới
  * POST /auth/send-otp          — Gửi OTP đến SĐT/Email
  * POST /auth/verify-otp        — Xác minh OTP
+ * DONE - POST /auth/reset-password    — Đặt lại mật khẩu bằng OTP
  * DONE - POST /auth/refresh           — Làm mới access token bằng refresh token
  * DONE - POST /auth/logout            — Đăng xuất (thu hồi refresh token)
  * DONE - PUT  /auth/change-password   — Đổi mật khẩu
@@ -341,15 +348,20 @@ async function findAccount(identifier) {
   );
 
   // Nếu không thấy staff → tìm trong bảng customers
-  const [[customer]] = !user
-    ? await pool.query(
-        `SELECT id, full_name, email, phone, password_hash, is_active
-         FROM customers
-         WHERE (email = ? OR phone = ?) AND deleted_at IS NULL
-         LIMIT 1`,
-        [identifier, identifier]
-      )
-    : [[]];
+  let customer;
+  if (!user) {
+    const supportsEmailVerifiedAt = await hasCustomerColumn('email_verified_at');
+    const supportsPhoneVerifiedAt = await hasCustomerColumn('phone_verified_at');
+    [[customer]] = await pool.query(
+      `SELECT id, full_name, email, phone, password_hash, is_active
+              ${supportsEmailVerifiedAt ? ', email_verified_at' : ', NOW() AS email_verified_at'}
+              ${supportsPhoneVerifiedAt ? ', phone_verified_at' : ', NOW() AS phone_verified_at'}
+       FROM customers
+       WHERE (email = ? OR phone = ?) AND deleted_at IS NULL
+       LIMIT 1`,
+      [identifier, identifier]
+    );
+  }
 
   return { user, customer };
 }
@@ -501,6 +513,143 @@ async function deliverOtp({ target, targetType, otpCode, purpose }) {
   }
 }
 
+async function createAndDeliverOtp({ target, targetType, purpose }) {
+  const [[latest]] = await pool.query(
+    `SELECT id, created_at, last_send_at, blocked_until
+     FROM otp_codes
+     WHERE target = ? AND target_type = ? AND purpose = ?
+     ORDER BY id DESC
+     LIMIT 1`,
+    [target, targetType, purpose]
+  );
+
+  if (latest && latest.blocked_until && new Date(latest.blocked_until).getTime() > Date.now()) {
+    const err = new Error('Mã OTP đang bị tạm khoá do nhập sai quá nhiều lần. Vui lòng thử lại sau.');
+    err.status = 429;
+    err.blocked_until = latest.blocked_until;
+    throw err;
+  }
+
+  if (latest && latest.last_send_at) {
+    const elapsedSeconds = (Date.now() - new Date(latest.last_send_at).getTime()) / 1000;
+    if (elapsedSeconds < OTP_COOLDOWN_SECONDS) {
+      const err = new Error(`Vui lòng chờ ${Math.ceil(OTP_COOLDOWN_SECONDS - elapsedSeconds)} giây trước khi gửi lại OTP`);
+      err.status = 429;
+      throw err;
+    }
+  }
+
+  const [[{ sentToday }]] = await pool.query(
+    `SELECT COUNT(*) AS sentToday
+     FROM otp_codes
+     WHERE target = ? AND target_type = ? AND purpose = ? AND created_at >= CURDATE()`,
+    [target, targetType, purpose]
+  );
+  if (sentToday >= OTP_DAILY_LIMIT) {
+    const err = new Error('Đã vượt quá số lần gửi OTP trong ngày');
+    err.status = 429;
+    throw err;
+  }
+
+  const otpCode = generateOtpCode();
+  const otpHash = await bcrypt.hash(otpCode, 10);
+  await pool.query(
+    `INSERT INTO otp_codes
+     (target, target_type, otp_hash, purpose, expires_at, send_count_today, last_send_at)
+     VALUES (?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL ? SECOND), ?, NOW())`,
+    [target, targetType, otpHash, purpose, OTP_TTL_SECONDS, sentToday + 1]
+  );
+
+  const delivery = await deliverOtp({ target, targetType, otpCode, purpose });
+  if (!delivery.ok) {
+    const err = new Error('Không gửi được OTP qua hệ thống thông báo');
+    err.status = 502;
+    err.delivery = delivery;
+    throw err;
+  }
+
+  const data = {
+    target,
+    target_type: targetType,
+    purpose,
+    expires_in: OTP_TTL_SECONDS,
+    delivery,
+  };
+  return data;
+}
+
+async function consumeOtpCode({ target, targetType, purpose, otpCode }) {
+  const [[otp]] = await pool.query(
+    `SELECT *
+     FROM otp_codes
+     WHERE target = ? AND target_type = ? AND purpose = ? AND used_at IS NULL
+     ORDER BY id DESC
+     LIMIT 1`,
+    [target, targetType, purpose]
+  );
+
+  if (!otp) {
+    return { ok: false, status: 401, message: 'OTP không hợp lệ hoặc đã được sử dụng' };
+  }
+  if (otp.blocked_until && new Date(otp.blocked_until).getTime() > Date.now()) {
+    return {
+      ok: false,
+      status: 429,
+      message: 'OTP đang bị tạm khoá do nhập sai quá nhiều lần',
+      blocked_until: otp.blocked_until,
+    };
+  }
+  if (new Date(otp.expires_at).getTime() <= Date.now()) {
+    return { ok: false, status: 401, message: 'OTP đã hết hạn' };
+  }
+
+  const matched = await bcrypt.compare(otpCode, otp.otp_hash);
+  if (!matched) {
+    const attempts = Number(otp.attempts || 0) + 1;
+    const shouldBlock = attempts >= OTP_MAX_ATTEMPTS;
+    await pool.query(
+      `UPDATE otp_codes
+       SET attempts = ?, blocked_until = CASE WHEN ? THEN DATE_ADD(NOW(), INTERVAL 15 MINUTE) ELSE blocked_until END
+       WHERE id = ?`,
+      [attempts, shouldBlock, otp.id]
+    );
+    return {
+      ok: false,
+      status: 401,
+      message: shouldBlock
+        ? 'OTP sai quá nhiều lần. Tài khoản nhận OTP bị tạm khoá 15 phút.'
+        : 'OTP không đúng',
+      attempts_remaining: Math.max(0, OTP_MAX_ATTEMPTS - attempts),
+    };
+  }
+
+  await pool.query('UPDATE otp_codes SET used_at = NOW() WHERE id = ?', [otp.id]);
+  return { ok: true, otp };
+}
+
+async function findPasswordResetAccount(target, targetType, accountType) {
+  const column = targetType === 'email' ? 'email' : 'phone';
+  if (accountType === 'customer' || !accountType) {
+    const [[customer]] = await pool.query(
+      `SELECT id, 'customer' AS account_type FROM customers
+       WHERE ${column} = ? AND deleted_at IS NULL LIMIT 1`,
+      [target]
+    );
+    if (customer) return customer;
+  }
+
+  if (accountType === 'staff' || !accountType) {
+    const [[user]] = await pool.query(
+      `SELECT id, 'staff' AS account_type FROM users
+       WHERE ${column} = ? AND is_active = 1 LIMIT 1`,
+      [target]
+    );
+    if (user) return user;
+  }
+
+  return null;
+}
+
 // POST /auth/login — Đăng nhập chung (hỗ trợ cả username và email_or_phone)
 router.post('/login', async (req, res) => {
   try {
@@ -521,6 +670,18 @@ router.post('/login', async (req, res) => {
 
     // 3. Xác định account tìm được
     const account = user || customer;
+    if (customer && !customer.email_verified_at) {
+      return res.status(403).json({
+        success: false,
+        message: 'Tài khoản chưa xác thực email. Vui lòng kiểm tra email để nhập mã OTP.',
+        code: 'EMAIL_NOT_VERIFIED',
+        data: {
+          email: customer.email,
+          phone: customer.phone,
+        },
+      });
+    }
+
     if (!account || !account.is_active) {
       return res.status(401).json({
         success: false,
@@ -823,76 +984,125 @@ router.post('/login-pos', async (req, res) => {
 router.post('/register', async (req, res) => {
   try {
     const { full_name, email, phone, password } = req.body;
+    const normalizedEmail = normalizeTarget(email, 'email');
+    const normalizedPhone = normalizeTarget(phone, 'phone');
+    const isDev = process.env.NODE_ENV === 'development';
 
     // 1. Validate input
-    if (!full_name || !email || !phone || !password) {
+    if (!full_name || !normalizedEmail || !normalizedPhone || !password) {
       return res.status(400).json({
         success: false,
         message: 'Vui lòng nhập đầy đủ họ tên, email, số điện thoại và mật khẩu',
       });
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return res.status(400).json({ success: false, message: 'Email không hợp lệ' });
+    }
+    if (!/^\+?\d{9,15}$/.test(normalizedPhone)) {
+      return res.status(400).json({ success: false, message: 'Số điện thoại không hợp lệ' });
+    }
+    if (password.length < 8 || !/\d/.test(password) || !/[A-Z]/.test(password)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Mật khẩu phải có ít nhất 8 ký tự, có chữ in hoa và chữ số',
+      });
+    }
 
     // 2. Kiểm tra email hoặc phone đã tồn tại chưa
+    const supportsEmailVerifiedAt = await hasCustomerColumn('email_verified_at');
     const [[existing]] = await pool.query(
-      'SELECT id FROM customers WHERE (email = ? OR phone = ?) AND deleted_at IS NULL LIMIT 1',
-      [email, phone]
+      `SELECT id, email, phone, is_active,
+              ${supportsEmailVerifiedAt ? 'email_verified_at' : 'NOW() AS email_verified_at'}
+       FROM customers WHERE (email = ? OR phone = ?) AND deleted_at IS NULL LIMIT 1`,
+      [normalizedEmail, normalizedPhone]
     );
     if (existing) {
-      return res.status(409).json({
-        success: false,
-        message: 'Email hoặc số điện thoại đã được đăng ký',
+      if (existing.is_active && existing.email_verified_at) {
+        return res.status(409).json({
+          success: false,
+          message: 'Email hoặc số điện thoại đã được đăng ký',
+        });
+      }
+
+      let otp = null;
+      if (!isDev) {
+        otp = await createAndDeliverOtp({
+          target: normalizedEmail,
+          targetType: 'email',
+          purpose: 'register',
+        });
+      }
+      const passwordHash = await bcrypt.hash(password, 10);
+      await pool.query(
+        `UPDATE customers
+         SET full_name = ?, email = ?, phone = ?, password_hash = ?, is_active = ? ${supportsEmailVerifiedAt ? `, email_verified_at = ?` : ''}
+         WHERE id = ?`,
+        [full_name, normalizedEmail, normalizedPhone, passwordHash, isDev ? 1 : 0, isDev ? new Date() : null, existing.id]
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: isDev ? 'Tài khoản đăng ký thành công (Dev mode bypass OTP).' : 'Tài khoản đang chờ xác thực. Mã OTP mới đã được gửi đến email.',
+        data: {
+          customer: {
+            id: existing.id,
+            full_name,
+            email: normalizedEmail,
+            phone: normalizedPhone,
+            is_active: isDev ? 1 : 0,
+          },
+          ...(otp && { otp }),
+        },
+      });
+    }
+
+    let otp = null;
+    if (!isDev) {
+      otp = await createAndDeliverOtp({
+        target: normalizedEmail,
+        targetType: 'email',
+        purpose: 'register',
       });
     }
 
     // 3. Hash password
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // 4. Insert customer mới
+    // 4. Insert customer mới ở trạng thái chờ xác thực (hoặc active nếu là dev)
     const customerCode = await generateCustomerCode();
-    const [result] = await pool.query(
-      'INSERT INTO customers (full_name, email, phone, password_hash, code) VALUES (?, ?, ?, ?, ?)',
-      [full_name, email, phone, passwordHash, customerCode]
-    );
+    const [result] = await insertCustomer({
+      full_name,
+      email: normalizedEmail,
+      phone: normalizedPhone,
+      password_hash: passwordHash,
+      code: customerCode,
+      is_active: isDev ? 1 : 0,
+      email_verified_at: isDev ? new Date() : null,
+      phone_verified_at: isDev ? new Date() : null,
+    });
     const customerId = result.insertId;
-
-    // 5. Tạo access token (8h)
-    const accessToken = jwt.sign(
-      { id: customerId, role: 'customer', type: 'customer' },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
-    );
-
-    // 6. Tạo refresh token (30 ngày)
-    const refreshToken = jwt.sign(
-      { id: customerId, type: 'customer' },
-      process.env.JWT_SECRET,
-      { expiresIn: '30d' }
-    );
-
-    // 7. Lưu refresh token vào DB
-    const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
-    await pool.query(
-      `INSERT INTO refresh_tokens (user_id, user_type, token_hash, expires_at)
-       VALUES (?, 'customer', ?, DATE_ADD(NOW(), INTERVAL 30 DAY))`,
-      [customerId, tokenHash]
-    );
 
     // 8. Trả kết quả
     res.status(201).json({
       success: true,
+      message: isDev ? 'Đăng ký thành công (Dev mode bypass OTP).' : 'Đăng ký thành công. Vui lòng nhập mã OTP đã gửi đến email để kích hoạt tài khoản.',
       data: {
-        accessToken,
-        refreshToken,
         customer: {
           id:        customerId,
           full_name,
-          email,
-          phone,
+          email:     normalizedEmail,
+          phone:     normalizedPhone,
+          is_active: isDev ? 1 : 0,
         },
+        ...(otp && { otp }),
       },
     });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    res.status(err.status || 500).json({
+      success: false,
+      message: err.message,
+      ...(err.delivery && { delivery: err.delivery }),
+    });
   }
 });
 
@@ -907,6 +1117,7 @@ router.post('/google', async (req, res) => {
     let socialVerified = false;
     const supportsGoogleId = await hasCustomerColumn('google_id');
     const supportsAvatar = await hasCustomerColumn('avatar_url');
+    const supportsEmailVerifiedAt = await hasCustomerColumn('email_verified_at');
 
     // 1. Xác thực Google ID Token
     if (idToken) {
@@ -976,6 +1187,10 @@ router.post('/google', async (req, res) => {
           updateValues.push(picture);
           if (!customer.avatar_url) customer.avatar_url = picture;
         }
+        if (supportsEmailVerifiedAt && email) {
+          updateFields.push('email_verified_at = COALESCE(email_verified_at, NOW())');
+          customer.email_verified_at = customer.email_verified_at || new Date();
+        }
         if (updateFields.length) {
           updateValues.push(customer.id);
           await pool.query(`UPDATE customers SET ${updateFields.join(', ')} WHERE id = ?`, updateValues);
@@ -997,6 +1212,7 @@ router.post('/google', async (req, res) => {
         avatar_url: picture || null,
         code,
         is_active: 1,
+        email_verified_at: email ? new Date() : null,
       });
 
       const [[newCustomer]] = await pool.query(
@@ -1366,74 +1582,17 @@ router.post('/send-otp', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Số điện thoại nhận OTP không hợp lệ' });
     }
 
-    const [[latest]] = await pool.query(
-      `SELECT id, created_at, last_send_at, blocked_until
-       FROM otp_codes
-       WHERE target = ? AND target_type = ? AND purpose = ?
-       ORDER BY id DESC
-       LIMIT 1`,
-      [target, targetType, purpose]
-    );
-
-    if (latest && latest.blocked_until && new Date(latest.blocked_until).getTime() > Date.now()) {
-      return res.status(429).json({
-        success: false,
-        message: 'Mã OTP đang bị tạm khoá do nhập sai quá nhiều lần. Vui lòng thử lại sau.',
-        blocked_until: latest.blocked_until,
-      });
-    }
-
-    if (latest && latest.last_send_at) {
-      const elapsedSeconds = (Date.now() - new Date(latest.last_send_at).getTime()) / 1000;
-      if (elapsedSeconds < OTP_COOLDOWN_SECONDS) {
-        return res.status(429).json({
+    if (purpose === 'reset_password') {
+      const account = await findPasswordResetAccount(target, targetType, req.body.account_type);
+      if (!account) {
+        return res.status(404).json({
           success: false,
-          message: `Vui lòng chờ ${Math.ceil(OTP_COOLDOWN_SECONDS - elapsedSeconds)} giây trước khi gửi lại OTP`,
+          message: 'Không tìm thấy tài khoản phù hợp với thông tin đã nhập',
         });
       }
     }
 
-    const [[{ sentToday }]] = await pool.query(
-      `SELECT COUNT(*) AS sentToday
-       FROM otp_codes
-       WHERE target = ? AND target_type = ? AND purpose = ? AND created_at >= CURDATE()`,
-      [target, targetType, purpose]
-    );
-    if (sentToday >= OTP_DAILY_LIMIT) {
-      return res.status(429).json({
-        success: false,
-        message: 'Đã vượt quá số lần gửi OTP trong ngày',
-      });
-    }
-
-    const otpCode = generateOtpCode();
-    const otpHash = await bcrypt.hash(otpCode, 10);
-    await pool.query(
-      `INSERT INTO otp_codes
-       (target, target_type, otp_hash, purpose, expires_at, send_count_today, last_send_at)
-       VALUES (?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL ? SECOND), ?, NOW())`,
-      [target, targetType, otpHash, purpose, OTP_TTL_SECONDS, sentToday + 1]
-    );
-
-    const delivery = await deliverOtp({ target, targetType, otpCode, purpose });
-    if (!delivery.ok && process.env.NOTIFICATION_REQUIRED === 'true') {
-      return res.status(502).json({
-        success: false,
-        message: 'Không gửi được OTP qua hệ thống thông báo',
-        delivery,
-      });
-    }
-
-    const data = {
-      target,
-      target_type: targetType,
-      purpose,
-      expires_in: OTP_TTL_SECONDS,
-      delivery: delivery.ok ? delivery : { ...delivery, mode: 'local-fallback' },
-    };
-    if (process.env.NODE_ENV !== 'production' || process.env.OTP_DEBUG_RESPONSE === 'true') {
-      data.debug_otp = otpCode;
-    }
+    const data = await createAndDeliverOtp({ target, targetType, purpose });
 
     res.status(201).json({
       success: true,
@@ -1441,7 +1600,12 @@ router.post('/send-otp', async (req, res) => {
       data,
     });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    res.status(err.status || 500).json({
+      success: false,
+      message: err.message,
+      ...(err.blocked_until && { blocked_until: err.blocked_until }),
+      ...(err.delivery && { delivery: err.delivery }),
+    });
   }
 });
 
@@ -1460,54 +1624,24 @@ router.post('/verify-otp', async (req, res) => {
       });
     }
 
-    const [[otp]] = await pool.query(
-      `SELECT *
-       FROM otp_codes
-       WHERE target = ? AND target_type = ? AND purpose = ? AND used_at IS NULL
-       ORDER BY id DESC
-       LIMIT 1`,
-      [target, targetType, purpose]
-    );
-
-    if (!otp) {
-      return res.status(401).json({ success: false, message: 'OTP không hợp lệ hoặc đã được sử dụng' });
-    }
-    if (otp.blocked_until && new Date(otp.blocked_until).getTime() > Date.now()) {
-      return res.status(429).json({
+    const verification = await consumeOtpCode({ target, targetType, purpose, otpCode });
+    if (!verification.ok) {
+      return res.status(verification.status).json({
         success: false,
-        message: 'OTP đang bị tạm khoá do nhập sai quá nhiều lần',
-        blocked_until: otp.blocked_until,
+        message: verification.message,
+        ...(verification.blocked_until && { blocked_until: verification.blocked_until }),
+        ...(verification.attempts_remaining !== undefined && { attempts_remaining: verification.attempts_remaining }),
       });
     }
-    if (new Date(otp.expires_at).getTime() <= Date.now()) {
-      return res.status(401).json({ success: false, message: 'OTP đã hết hạn' });
-    }
-
-    const matched = await bcrypt.compare(otpCode, otp.otp_hash);
-    if (!matched) {
-      const attempts = Number(otp.attempts || 0) + 1;
-      const shouldBlock = attempts >= OTP_MAX_ATTEMPTS;
-      await pool.query(
-        `UPDATE otp_codes
-         SET attempts = ?, blocked_until = CASE WHEN ? THEN DATE_ADD(NOW(), INTERVAL 15 MINUTE) ELSE blocked_until END
-         WHERE id = ?`,
-        [attempts, shouldBlock, otp.id]
-      );
-      return res.status(401).json({
-        success: false,
-        message: shouldBlock
-          ? 'OTP sai quá nhiều lần. Tài khoản nhận OTP bị tạm khoá 15 phút.'
-          : 'OTP không đúng',
-        attempts_remaining: Math.max(0, OTP_MAX_ATTEMPTS - attempts),
-      });
-    }
-
-    await pool.query('UPDATE otp_codes SET used_at = NOW() WHERE id = ?', [otp.id]);
 
     if (purpose === 'register' || purpose === 'verify_email') {
       const column = targetType === 'email' ? 'email' : 'phone';
+      const verifiedColumn = targetType === 'email' ? 'email_verified_at' : 'phone_verified_at';
+      const supportsVerifiedColumn = await hasCustomerColumn(verifiedColumn);
       await pool.query(
-        `UPDATE customers SET is_active = 1 WHERE ${column} = ? AND deleted_at IS NULL`,
+        `UPDATE customers
+         SET is_active = 1${supportsVerifiedColumn ? `, ${verifiedColumn} = COALESCE(${verifiedColumn}, NOW())` : ''}
+         WHERE ${column} = ? AND deleted_at IS NULL`,
         [target]
       );
     }
@@ -1521,6 +1655,85 @@ router.post('/verify-otp', async (req, res) => {
         purpose,
         verified: true,
       },
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// POST /auth/reset-password — Đặt lại mật khẩu bằng OTP, không cần đăng nhập
+router.post('/reset-password', async (req, res) => {
+  try {
+    const targetType = inferTargetType(req.body.target, req.body.target_type);
+    const target = normalizeTarget(req.body.target, targetType);
+    const otpCode = String(req.body.otp_code || req.body.otp || '').trim();
+    const { new_password, confirm_password } = req.body;
+    const accountType = req.body.account_type;
+
+    if (!target || !OTP_TARGET_TYPES.has(targetType) || !/^\d{6}$/.test(otpCode)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng cung cấp email/số điện thoại và mã OTP hợp lệ',
+      });
+    }
+    if (!new_password || !confirm_password || new_password !== confirm_password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Mật khẩu mới và xác nhận mật khẩu không khớp',
+      });
+    }
+    if (new_password.length < 8 || !/\d/.test(new_password) || !/[A-Z]/.test(new_password)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Mật khẩu mới phải có ít nhất 8 ký tự, có chữ in hoa và chữ số',
+      });
+    }
+
+    const account = await findPasswordResetAccount(target, targetType, accountType);
+    if (!account) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy tài khoản phù hợp với thông tin đã nhập',
+      });
+    }
+
+    const verification = await consumeOtpCode({
+      target,
+      targetType,
+      purpose: 'reset_password',
+      otpCode,
+    });
+    if (!verification.ok) {
+      return res.status(verification.status).json({
+        success: false,
+        message: verification.message,
+        ...(verification.blocked_until && { blocked_until: verification.blocked_until }),
+        ...(verification.attempts_remaining !== undefined && { attempts_remaining: verification.attempts_remaining }),
+      });
+    }
+
+    const newHash = await bcrypt.hash(new_password, 10);
+    if (account.account_type === 'staff') {
+      await pool.query('UPDATE users SET password_hash = ? WHERE id = ?', [newHash, account.id]);
+    } else {
+      const verifiedColumn = targetType === 'email' ? 'email_verified_at' : 'phone_verified_at';
+      const supportsVerifiedColumn = await hasCustomerColumn(verifiedColumn);
+      await pool.query(
+        `UPDATE customers
+         SET password_hash = ?, is_active = 1${supportsVerifiedColumn ? `, ${verifiedColumn} = COALESCE(${verifiedColumn}, NOW())` : ''}
+         WHERE id = ?`,
+        [newHash, account.id]
+      );
+    }
+
+    await pool.query(
+      'UPDATE refresh_tokens SET revoked_at = NOW() WHERE user_id = ? AND user_type = ? AND revoked_at IS NULL',
+      [account.id, account.account_type === 'staff' ? 'staff' : 'customer']
+    );
+
+    res.json({
+      success: true,
+      message: 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.',
     });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

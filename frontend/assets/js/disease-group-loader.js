@@ -42,6 +42,12 @@
 
         if (slugMap[str]) return slugMap[str];
 
+        for (var i = 0; i < str.length; i++) {
+            if (str.charCodeAt(i) > 255) {
+                return str;
+            }
+        }
+
         try {
             var win1252Map = {
                 0x80: 0x20AC, 0x82: 0x201A, 0x83: 0x0192, 0x84: 0x201E, 0x85: 0x2026, 0x86: 0x2020, 0x87: 0x2021,

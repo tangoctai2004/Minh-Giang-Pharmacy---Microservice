@@ -88,6 +88,7 @@ router.get('/active', async (req, res) => {
         discount_type: voucher.discount_type,
         discount_value: discountValue,
         min_order_amount: minOrder,
+        max_discount: Number(voucher.max_discount || 0),
       };
     });
 

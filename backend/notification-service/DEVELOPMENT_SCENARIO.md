@@ -57,7 +57,7 @@ Notification service chịu trách nhiệm gửi thông báo đa kênh cho hệ 
 Ưu tiên thực tế cho đồ án:
 
 1. Email gửi được ổn định.
-2. SMS có mock/dev mode và có cấu trúc sẵn để thay provider thật.
+2. SMS gửi qua provider thật, thiếu cấu hình thì trả lỗi rõ ràng.
 3. Template CRUD chạy đúng DB.
 4. Có log trong bảng `notifications`.
 5. Response luôn đúng format `{ success: true/false, data/message }`.
@@ -215,31 +215,24 @@ Tiêu chí hoàn thành:
 - Gửi lỗi SMTP/SMS có log `failed`.
 - API vẫn trả lỗi đúng format cho client.
 
-## 7. Sprint 4 - SMS mock mode và provider thật
+## 7. Sprint 4 - SMS provider thật
 
-Mục tiêu: `/sms/send` dùng được trong đồ án kể cả khi chưa có tài khoản SMS thật.
+Mục tiêu: `/sms/send` chỉ báo thành công khi nhà cung cấp SMS thật đã nhận request thành công.
 
 Biến môi trường đề xuất trong `.env.example`:
 
 ```text
-SMS_PROVIDER=mock
-SMS_API_KEY=
-SMS_SECRET=
+SMS_PROVIDER=generic_http
+SMS_API_URL=https://sms-provider.example.com/send
+SMS_API_KEY=your_real_sms_api_key
 SMS_BRAND_NAME=MinhGiang
-SMS_MOCK_SUCCESS=true
 ```
 
-Luồng dev mode:
+Luồng gửi thật:
 
-- Nếu `SMS_PROVIDER=mock`, không gọi internet.
-- Log nội dung SMS ra console.
-- Trả `{ success: true, message: "SMS mock đã gửi thành công" }`.
-
-Luồng provider thật:
-
-- Tạo adapter riêng trong `sms/sms.routes.js` hoặc file nội bộ trong folder `sms`.
-- Provider đề xuất: ESMS hoặc SpeedSMS.
-- Nếu chưa có key thật, giữ provider thật ở trạng thái cấu hình sẵn nhưng không bắt buộc chạy.
+- Nếu thiếu key thật, API phải trả lỗi.
+- Provider hỗ trợ: `generic_http` hoặc `twilio`.
+- Không dùng mock/fallback cho OTP hoặc SMS.
 
 Request hiện tại cần giữ:
 
@@ -371,7 +364,7 @@ Body:
 }
 ```
 
-Test SMS mock:
+Test SMS provider thật:
 
 ```text
 POST http://localhost:8000/api/notification/sms/send
@@ -392,7 +385,7 @@ Body:
 fix: đồng bộ notification templates với schema hiện tại
 feat: hoàn thiện CRUD notification templates
 feat: lưu lịch sử gửi email và sms
-feat: thêm SMS mock provider cho local dev
+feat: thêm SMS provider thật cho OTP
 feat: thêm API xem lịch sử notifications
 fix: chuẩn hóa phân quyền notification routes
 docs: thêm kịch bản phát triển notification service
@@ -413,7 +406,7 @@ docs: thêm kịch bản phát triển notification service
 ## 13. Rủi ro và cách xử lý
 
 - SMTP Gmail dễ lỗi do thiếu App Password: dùng `.env.example` hướng dẫn rõ `SMTP_USER`, `SMTP_PASS`, `SMTP_SECURE`.
-- Provider SMS cần tài khoản thật: mặc định dùng `SMS_PROVIDER=mock` để đồ án luôn demo được.
+- Provider SMS cần tài khoản thật: nếu chưa có key, API trả lỗi để tránh hiểu nhầm là đã gửi.
 - Schema không khớp code: không sửa SQL chung, sửa query trong service theo schema hiện tại.
 - Gateway chưa whitelist route: trong phạm vi này chỉ ghi chú cho leader, không tự sửa `api-gateway`.
 - Bảng `notifications` bắt buộc `template_id`: với gửi trực tiếp không template, có thể chưa log ở Sprint 3 hoặc tạo một template mặc định qua API.
@@ -423,7 +416,7 @@ docs: thêm kịch bản phát triển notification service
 Notification service được xem là hoàn thành ở mức đồ án khi:
 
 - Gửi email trực tiếp và email theo template thành công.
-- Gửi SMS mock thành công, không trả `501`.
+- Gửi SMS thật thành công, không trả `501`.
 - CRUD template hoạt động đầy đủ.
 - Có lịch sử gửi notification trong DB.
 - Identity service có thể dùng service này để gửi OTP.
@@ -433,7 +426,7 @@ Notification service được xem là hoàn thành ở mức đồ án khi:
 
 Các hướng phát triển nâng cấp nên ưu tiên cho demo đã được bổ sung:
 
-- Email mock mode: mặc định `EMAIL_PROVIDER=mock`, không cần Gmail App Password vẫn test được `/email/send`.
+- Email SMTP thật: `EMAIL_PROVIDER=smtp`, cần App Password hoặc SMTP password hợp lệ.
 - Seed template mặc định: tạo nhanh bộ template OTP, đơn hàng, đổi trạng thái đơn hàng.
 - API thông báo đơn hàng: để `order-service` có thể gọi khi tạo đơn hoặc đổi trạng thái.
 - Retry notification thất bại: gửi lại notification có `status = failed`.
@@ -460,7 +453,7 @@ Test Postman đề xuất:
 POST http://localhost:8005/templates/seed-defaults
 ```
 
-2. Gửi email mock:
+2. Gửi email SMTP thật:
 
 ```text
 POST http://localhost:8005/email/send
@@ -469,8 +462,8 @@ POST http://localhost:8005/email/send
 ```json
 {
   "to": "customer@example.com",
-  "subject": "Test email mock",
-  "text": "Email mock khong can SMTP"
+  "subject": "Test email SMTP thật",
+  "text": "Email này phải được gửi qua SMTP thật"
 }
 ```
 

@@ -45,10 +45,14 @@ function makeProxy(target, prefix) {
         proxyRes.headers['access-control-allow-headers'] = 'Content-Type, Authorization';
       },
       proxyReq(proxyReq, req) {
+        if (process.env.GATEWAY_INTERNAL_TOKEN) {
+          proxyReq.setHeader('x-gateway-token', process.env.GATEWAY_INTERNAL_TOKEN);
+        }
         if (req.user) {
           proxyReq.setHeader('x-user-id',   String(req.user.id));
           proxyReq.setHeader('x-user-role', String(req.user.role  || ''));
           proxyReq.setHeader('x-user-type', String(req.user.type  || ''));
+          proxyReq.setHeader('x-user-permissions', JSON.stringify(req.user.permissions || []));
         }
       },
       error(err, req, res) {
@@ -77,6 +81,13 @@ const ROUTES = [
 for (const { prefix, target } of ROUTES) {
   app.use(prefix, authMiddleware, makeProxy(target, prefix));
 }
+
+// Proxy static uploads to CMS service preserving path
+app.use('/uploads/cms', createProxyMiddleware({
+  target: SERVICES.CMS,
+  changeOrigin: true,
+  pathRewrite: { '^/': '/uploads/cms/' }
+}));
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => {

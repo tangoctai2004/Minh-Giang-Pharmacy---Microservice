@@ -35,9 +35,13 @@ const PUBLIC_ROUTES = [
  * Kiểm tra xem request có nằm trong whitelist công khai không
  */
 function isPublic(req) {
+  const url = req.originalUrl.split('?')[0]; // bỏ query string khi so sánh
+  // Các endpoint admin không bao giờ công khai (ngoại trừ auth)
+  if (url.includes('/admin') && !url.includes('/auth/')) {
+    return false;
+  }
   return PUBLIC_ROUTES.some(({ method, path }) => {
     const methodOk = method === '*' || req.method === method;
-    const url      = req.originalUrl.split('?')[0]; // bỏ query string khi so sánh
     const pathOk   = typeof path === 'string'
       ? url === path || url.startsWith(path + '/')
       : path.test(url);
@@ -54,7 +58,20 @@ function isPublic(req) {
  *   Gateway sẽ forward user info xuống service con qua x-user-* headers
  */
 module.exports = function authMiddleware(req, res, next) {
-  if (isPublic(req)) return next();
+  if (isPublic(req)) {
+    // Route công khai: vẫn cố gắng decode JWT nếu có → cho phép service con
+    // biết được user role (ví dụ admin xem bài nháp qua endpoint công khai)
+    const authHeader = req.headers['authorization'];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.split(' ')[1];
+        req.user = jwt.verify(token, process.env.JWT_SECRET);
+      } catch (_) {
+        // Token không hợp lệ / hết hạn → bỏ qua, vẫn cho đi tiếp
+      }
+    }
+    return next();
+  }
 
   const authHeader = req.headers['authorization'];
   if (!authHeader || !authHeader.startsWith('Bearer ')) {

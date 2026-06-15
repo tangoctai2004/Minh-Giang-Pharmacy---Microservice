@@ -17,6 +17,9 @@ const router = require('express').Router();
 const pool = require('../db/pool');
 const requireRoles = require('../middlewares/requireRoles');
 const { requireFields, validateEnum } = require('../middlewares/validate');
+const fs = require('fs/promises');
+const path = require('path');
+const crypto = require('crypto');
 
 const MEDIA_TYPES = ['image', 'document', 'video', 'other'];
 
@@ -153,7 +156,6 @@ router.get('/:id', canRead, async (req, res) => {
 router.post(
   '/',
   canWrite,
-  requireFields(['original_name', 'stored_name', 'file_url', 'file_size', 'mime_type', 'media_type']),
   validateEnum('media_type', MEDIA_TYPES),
   async (req, res) => {
     try {
@@ -164,6 +166,7 @@ router.post(
         file_size,
         mime_type,
         media_type,
+        data_base64,
         thumbnail_url = null,
         width = null,
         height = null,
@@ -173,8 +176,44 @@ router.post(
         used_in_id = null,
       } = req.body;
 
-      // Validate extension theo whitelist DB constraint
-      const ext = stored_name.split('.').pop()?.toLowerCase();
+      if (!original_name || !mime_type || !media_type) {
+        return res.status(400).json({
+          success: false,
+          message: 'Thiếu các trường bắt buộc: original_name, mime_type, media_type'
+        });
+      }
+
+      let finalStoredName = stored_name;
+      let finalFileUrl = file_url;
+      let finalFileSize = file_size;
+
+      if (data_base64) {
+        const buffer = Buffer.from(data_base64.replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/, ''), 'base64');
+        if (!buffer.length || buffer.length > 8 * 1024 * 1024) {
+          return res.status(400).json({ success: false, message: 'Dung lượng ảnh phải lớn hơn 0 và không quá 8MB' });
+        }
+
+        const ext = mime_type === 'image/png' ? 'png' : (mime_type === 'image/webp' ? 'webp' : (mime_type === 'image/gif' ? 'gif' : 'jpg'));
+        const safeOriginalName = path.basename(String(original_name), path.extname(String(original_name))).replace(/[^a-zA-Z0-9_-]/g, '');
+        finalStoredName = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}-${safeOriginalName}.${ext}`;
+        
+        const uploadDir = path.join(__dirname, '..', 'uploads', 'cms');
+        await fs.mkdir(uploadDir, { recursive: true });
+        const fullPath = path.join(uploadDir, finalStoredName);
+        await fs.writeFile(fullPath, buffer);
+
+        finalFileUrl = `/uploads/cms/${finalStoredName}`;
+        finalFileSize = buffer.length;
+      } else {
+        if (!stored_name || !file_url || !file_size) {
+          return res.status(400).json({
+            success: false,
+            message: 'Thiếu thông tin file: stored_name, file_url, file_size khi không có data_base64'
+          });
+        }
+      }
+
+      const ext = finalStoredName.split('.').pop()?.toLowerCase();
       if (!ext || !SAFE_EXTENSIONS.includes(ext)) {
         return res.status(400).json({
           success: false,
@@ -182,7 +221,7 @@ router.post(
         });
       }
 
-      if (Number(file_size) <= 0) {
+      if (Number(finalFileSize) <= 0) {
         return res.status(400).json({ success: false, message: 'file_size phải lớn hơn 0' });
       }
 
@@ -194,15 +233,15 @@ router.post(
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           original_name,
-          stored_name,
-          file_url,
-          thumbnail_url,
-          Number(file_size),
+          finalStoredName,
+          finalFileUrl,
+          thumbnail_url || finalFileUrl,
+          Number(finalFileSize),
           mime_type,
           media_type,
           width ? Number(width) : null,
           height ? Number(height) : null,
-          alt_text,
+          alt_text || original_name,
           tags ? JSON.stringify(tags) : null,
           used_in,
           used_in_id ? Number(used_in_id) : null,
@@ -211,7 +250,7 @@ router.post(
         ]
       );
 
-      res.status(201).json({ success: true, data: { id: result.insertId } });
+      res.status(201).json({ success: true, data: { id: result.insertId, file_url: finalFileUrl } });
     } catch (err) {
       res.status(500).json({ success: false, message: err.message });
     }

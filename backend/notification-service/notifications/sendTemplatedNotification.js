@@ -45,7 +45,7 @@ async function sendTemplatedNotification({
     payload: {
       target,
       template_vars: templateVars || {},
-      provider: channel === 'email' ? (process.env.EMAIL_PROVIDER || 'mock') : (process.env.SMS_PROVIDER || 'mock'),
+      provider: channel === 'email' ? (process.env.EMAIL_PROVIDER || 'smtp') : (process.env.SMS_PROVIDER || null),
     },
   });
 

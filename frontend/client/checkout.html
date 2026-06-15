@@ -707,10 +707,7 @@
                     <button id="btnApplyVoucher" type="button">Áp dụng</button>
                 </div>
 
-                <div class="applied-promo" id="appliedPromoContainer" style="display: none;">
-                    <i class="fa-solid fa-circle-check"></i>
-                    <span id="appliedPromoText"></span>
-                    <button id="btnRemoveVoucher" type="button" style="margin-left: auto; background: none; border: none; color: #ef4444; cursor: pointer; font-size: 11px; font-weight: 600;">Hủy</button>
+                <div id="appliedPromosContainer" style="display: none; flex-direction: column; gap: 8px; margin-bottom: 16px;">
                 </div>
 
                 <div class="summary-details">
@@ -801,6 +798,37 @@
         });
 
         async function initCheckoutPage() {
+            // Load and cache store configs
+            if (window.getStoreConfig) {
+                window.storeConfig = await window.getStoreConfig();
+            } else {
+                try {
+                    const response = await fetch('/api/cms/store-config/public');
+                    const res = await response.json();
+                    window.storeConfig = res.success ? res.data : {};
+                } catch(e) {
+                    window.storeConfig = {};
+                }
+            }
+
+            const config = window.storeConfig || {};
+            if (config.settings_maintenance_mode === true || config.settings_maintenance_mode === 'true') {
+                alert('Hệ thống đang bảo trì. Vui lòng quay lại sau!');
+                window.location.href = 'index.html';
+                return;
+            }
+            if (config.settings_allow_orders === false || config.settings_allow_orders === 'false') {
+                alert('Tính năng mua hàng và đặt hàng trực tuyến hiện đang tạm dừng. Vui lòng quay lại sau!');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Clean up any legacy or hardcoded local vouchers first to force refresh
+            const local = localStorage.getItem('MG_CLIENT_VOUCHERS');
+            if (local && (local.includes('MG38K') || local.includes('MG70K') || local.includes('MG83K') || local.includes('Giảm 50k') || local.includes('MINGIANG50'))) {
+                localStorage.removeItem('MG_CLIENT_VOUCHERS');
+            }
+
             // Populate customer profile details if available
             const customer = auth.customer || auth.user || {};
             if (customer.full_name) document.getElementById('chkName').value = customer.full_name;
@@ -813,11 +841,43 @@
             // Setup Shipping toggles and visibility
             initShippingSelector();
 
-            // Setup Payment Method toggles
+            // Setup Payment Method toggles & visibility
+            const paymentBoxes = document.querySelectorAll('.payment-box');
+            let firstActiveSet = false;
+
+            paymentBoxes.forEach(box => {
+                const method = box.dataset.method;
+                let isEnabled = true;
+
+                if (method === 'cod') {
+                    isEnabled = config.settings_payment_cod !== undefined ? (config.settings_payment_cod === true || config.settings_payment_cod === 'true') : true;
+                } else if (method === 'vnpay') {
+                    isEnabled = config.settings_payment_vnpay !== undefined ? (config.settings_payment_vnpay === true || config.settings_payment_vnpay === 'true') : true;
+                } else if (method === 'momo') {
+                    isEnabled = config.settings_payment_momo !== undefined ? (config.settings_payment_momo === true || config.settings_payment_momo === 'true') : true;
+                } else if (method === 'qr_transfer') { // ZaloPay
+                    isEnabled = config.settings_payment_zalopay !== undefined ? (config.settings_payment_zalopay === true || config.settings_payment_zalopay === 'true') : true;
+                }
+
+                if (!isEnabled) {
+                    box.style.display = 'none';
+                    box.classList.remove('active');
+                } else {
+                    box.style.display = 'flex';
+                    if (!firstActiveSet) {
+                        box.classList.add('active');
+                        firstActiveSet = true;
+                    }
+                }
+            });
+
             initPaymentSelector();
 
             // Setup VAT invoice toggle
             initInvoiceToggle();
+
+            // Fetch active vouchers from backend first
+            await loadVouchersFromBackend();
 
             // Initialize and setup Vouchers handling
             initVouchersHandling();
@@ -1326,7 +1386,7 @@
 
             const format = (val) => new Intl.NumberFormat('vi-VN').format(Math.round(val)) + 'đ';
 
-            listContainer.innerHTML = cartItems.map(item => `
+            let itemsHtml = cartItems.map(item => `
                 <div class="summary-item">
                     <img src="${item.thumbnail && item.thumbnail.length > 5 ? item.thumbnail : '../assets/images/placeholder.png'}" alt="Item" class="summary-img" onerror="this.src='../assets/images/placeholder.png'">
                     <div class="summary-info">
@@ -1335,6 +1395,26 @@
                     </div>
                 </div>
             `).join('');
+
+            // Dynamic Auto-Gifts Rendering
+            const gifts = JSON.parse(localStorage.getItem('MG_CLIENT_GIFTS') || '[]');
+            const eligibleGifts = gifts.filter(g => activeSubtotal >= Number(g.min_order_value || 0));
+
+            if (eligibleGifts.length > 0) {
+                eligibleGifts.forEach(gift => {
+                    itemsHtml += `
+                        <div class="summary-item" style="border: 1px dashed #10b981; background: #f0fdf4; border-radius: 8px; padding: 8px; margin-top: 8px; display: flex; align-items: center; gap: 12px;">
+                            <img src="../assets/images/placeholder.png" alt="Gift Item" class="summary-img" style="border: 1px solid #10b981; width: 50px; height: 50px; border-radius: 6px; object-fit: cover;">
+                            <div class="summary-info" style="flex: 1; min-width: 0;">
+                                <h4 style="color: #047857; font-weight: 700; margin: 0; font-size: 13px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">🎁 [Quà tặng] ${gift.gift_product_name}</h4>
+                                <div class="qty-price" style="color: #065f46; font-weight: 600; font-size: 12px; margin-top: 2px;">SL: ${gift.gift_product_qty} x <span style="text-decoration: line-through; color: #9ca3af; font-size: 11px;">100.000đ</span> 0đ</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            listContainer.innerHTML = itemsHtml;
         }
 
         // --- SHIPPING SELECTOR DYNAMICS ---
@@ -1437,18 +1517,42 @@
             const activeShippingBox = document.querySelector('.delivery-box.active');
             const isDelivery = activeShippingBox && activeShippingBox.dataset.type === 'delivery';
 
-            // Calculate shipping fee: Free for the first 5km, remaining is 10,000đ/km
+            const config = window.storeConfig || {};
+            const baseFee = config.delivery_fee !== undefined ? Number(config.delivery_fee) : 15000;
+            const freeThreshold = config.delivery_free_threshold !== undefined ? Number(config.delivery_free_threshold) : 300000;
+
+            // Calculate shipping fee: Free if subtotal >= freeThreshold
             if (isDelivery) {
-                if (deliveryDistance <= 5) {
+                if (activeSubtotal >= freeThreshold) {
                     activeShippingFee = 0;
                 } else {
-                    activeShippingFee = (deliveryDistance - 5) * 10000;
+                    if (deliveryDistance <= 5) {
+                        activeShippingFee = baseFee;
+                    } else {
+                        activeShippingFee = baseFee + (deliveryDistance - 5) * 10000;
+                    }
                 }
             } else {
                 activeShippingFee = 0;
             }
 
-            activeTotal = activeSubtotal + activeShippingFee - activeDiscount;
+            // Recalculate applied voucher discount if any (crucial for dynamic free shipping discount values)
+            let discDiscount = 0;
+            let shipDiscount = 0;
+            const vouchers = JSON.parse(localStorage.getItem('MG_CLIENT_VOUCHERS') || '[]');
+
+            if (appliedDiscountVoucherCode) {
+                const v = vouchers.find(x => x.code === appliedDiscountVoucherCode);
+                if (v) discDiscount = getVoucherDiscountAmount(v, activeSubtotal);
+            }
+
+            if (appliedShippingVoucherCode) {
+                const v = vouchers.find(x => x.code === appliedShippingVoucherCode);
+                if (v) shipDiscount = getVoucherDiscountAmount(v, activeSubtotal);
+            }
+
+            activeDiscount = discDiscount + shipDiscount;
+            activeTotal = Math.max(0, activeSubtotal + activeShippingFee - activeDiscount);
 
             // Update UI elements
             const subtotalText = document.querySelector('.summary-details .summary-row:nth-child(2) span:nth-child(2)');
@@ -1485,17 +1589,33 @@
             const badge = document.getElementById('shippingFeedbackBadge');
             if (badge) {
                 const format = (val) => new Intl.NumberFormat('vi-VN').format(Math.round(val)) + 'đ';
-                if (distance <= 5) {
+                const config = window.storeConfig || {};
+                const baseFee = config.delivery_fee !== undefined ? Number(config.delivery_fee) : 15000;
+                const freeThreshold = config.delivery_free_threshold !== undefined ? Number(config.delivery_free_threshold) : 300000;
+                const maxRadius = config.delivery_max_radius !== undefined ? Number(config.delivery_max_radius) : 8;
+
+                if (activeSubtotal >= freeThreshold) {
                     badge.style.background = '#f0fdf4';
                     badge.style.border = '1px solid #bbf7d0';
                     badge.style.color = '#15803d';
-                    badge.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size: 14px;"></i> <span>🎉 Được FREE SHIP! (Khoảng cách ${distance}km &le; 5km - Miễn phí 5km đầu)</span>`;
+                    badge.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size: 14px;"></i> <span>🎉 Được FREE SHIP! (Đơn hàng từ ${format(freeThreshold)} - Đơn của bạn: ${format(activeSubtotal)})</span>`;
+                } else if (distance > maxRadius) {
+                    badge.style.background = '#fef2f2';
+                    badge.style.border = '1px solid #fecaca';
+                    badge.style.color = '#991b1b';
+                    badge.innerHTML = `<i class="fa-solid fa-circle-xmark" style="font-size: 14px;"></i> <span><strong>Vượt quá bán kính giao hàng tối đa!</strong> Nhà thuốc chỉ hỗ trợ ship trong phạm vi ${maxRadius}km (Hiện tại: ${distance}km). Vui lòng chọn "Nhận tại nhà thuốc".</span>`;
+                } else if (distance <= 5) {
+                    badge.style.background = '#f0fdf4';
+                    badge.style.border = '1px solid #bbf7d0';
+                    badge.style.color = '#15803d';
+                    badge.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size: 14px;"></i> <span>Phí vận chuyển giao hàng tận nơi: <strong>${format(baseFee)}</strong> (Khoảng cách ${distance}km &le; 5km)</span>`;
                 } else {
-                    const fee = (distance - 5) * 10000;
+                    const extra = (distance - 5) * 10000;
+                    const totalFee = baseFee + extra;
                     badge.style.background = '#fffbeb';
                     badge.style.border = '1px solid #fde68a';
                     badge.style.color = '#b45309';
-                    badge.innerHTML = `<i class="fa-solid fa-circle-exclamation" style="font-size: 14px;"></i> <span>Phí vận chuyển (Miễn phí 5km đầu): 10K/km &times; (${distance}km - 5km) = <strong style="color: #ef4444; font-size: 14px;">${format(fee)}</strong></span>`;
+                    badge.innerHTML = `<i class="fa-solid fa-circle-exclamation" style="font-size: 14px;"></i> <span>Phí giao hàng: Phí nền ${format(baseFee)} + Phụ phí ${format(extra)} (${distance - 5}km x 10K) = <strong style="color: #ef4444; font-size: 14px;">${format(totalFee)}</strong></span>`;
                 }
             }
         }
@@ -1533,6 +1653,8 @@
             const type = activeShippingBox ? activeShippingBox.dataset.type : 'pickup';
             let address = '';
 
+            const config = window.storeConfig || {};
+
             if (type === 'pickup') {
                 address = 'Nhận tại Nhà Thuốc Minh Giang (Hòa Bình)';
             } else {
@@ -1546,12 +1668,48 @@
                     return;
                 }
 
+                // Check radius limit
+                const maxRadius = config.delivery_max_radius !== undefined ? Number(config.delivery_max_radius) : 8;
+                if (deliveryDistance > maxRadius) {
+                    alert(`Vượt quá bán kính giao hàng tối đa! Nhà thuốc chỉ hỗ trợ ship trong phạm vi ${maxRadius}km (Địa chỉ của bạn cách ${deliveryDistance}km). Vui lòng chọn "Nhận tại nhà thuốc" hoặc liên hệ hotline.`);
+                    return;
+                }
+
                 address = `${detail}, ${ward}, ${district}, ${province}`;
             }
 
             // Payment method
             const activePaymentBox = document.querySelector('.payment-box.active');
             const paymentMethod = activePaymentBox ? activePaymentBox.dataset.method : 'cod';
+
+            // Check COD limits and payment availability
+            if (paymentMethod === 'cod') {
+                const codEnabled = config.delivery_cod_enabled !== undefined ? (config.delivery_cod_enabled === true || config.delivery_cod_enabled === 'true' || config.delivery_cod_enabled === 1 || config.delivery_cod_enabled === '1') : true;
+                if (!codEnabled) {
+                    alert('Phương thức thanh toán COD hiện đang bị khóa. Vui lòng chọn phương thức thanh toán khác.');
+                    return;
+                }
+
+                const codMax = config.delivery_cod_max !== undefined ? Number(config.delivery_cod_max) : 5000000;
+                if (activeTotal > codMax) {
+                    const formatVal = (val) => new Intl.NumberFormat('vi-VN').format(Math.round(val)) + 'đ';
+                    alert(`Đơn hàng của bạn có giá trị ${formatVal(activeTotal)}, vượt quá hạn mức thanh toán COD tối đa cho phép là ${formatVal(codMax)}. Vui lòng chọn phương thức thanh toán chuyển khoản online.`);
+                    return;
+                }
+            } else {
+                let isEnabled = true;
+                if (paymentMethod === 'vnpay') {
+                    isEnabled = config.settings_payment_vnpay !== undefined ? (config.settings_payment_vnpay === true || config.settings_payment_vnpay === 'true') : true;
+                } else if (paymentMethod === 'momo') {
+                    isEnabled = config.settings_payment_momo !== undefined ? (config.settings_payment_momo === true || config.settings_payment_momo === 'true') : true;
+                } else if (paymentMethod === 'qr_transfer') {
+                    isEnabled = config.settings_payment_zalopay !== undefined ? (config.settings_payment_zalopay === true || config.settings_payment_zalopay === 'true') : true;
+                }
+                if (!isEnabled) {
+                    alert('Phương thức thanh toán này hiện đang bị khóa. Vui lòng chọn phương thức thanh toán khác.');
+                    return;
+                }
+            }
 
             // VAT invoices details
             const isVatRequested = document.getElementById('chkInvoiceToggle').checked;
@@ -1578,7 +1736,8 @@
                 shipping_fee: activeShippingFee,
                 discount_amount: activeDiscount,
                 requires_vat_invoice: isVatRequested,
-                customer_notes: fullNotes
+                customer_notes: fullNotes,
+                applied_voucher_codes: [appliedDiscountVoucherCode, appliedShippingVoucherCode].filter(Boolean)
             };
 
             if (paymentMethod === 'cod') {
@@ -1614,15 +1773,18 @@
 
                 const result = await response.json();
                 if (result.success) {
-                    // Mark voucher as used in localStorage
-                    if (appliedVoucherCode) {
+                    // Mark vouchers as used in localStorage
+                    const codes = data.applied_voucher_codes || [];
+                    if (codes.length > 0) {
                         const vouchers = JSON.parse(localStorage.getItem('MG_CLIENT_VOUCHERS') || '[]');
-                        const target = vouchers.find(x => x.code === appliedVoucherCode);
-                        if (target) {
-                            target.used = true;
-                            localStorage.setItem('MG_CLIENT_VOUCHERS', JSON.stringify(vouchers));
-                        }
+                        codes.forEach(c => {
+                            const target = vouchers.find(x => x.code === c);
+                            if (target) target.used = true;
+                        });
+                        localStorage.setItem('MG_CLIENT_VOUCHERS', JSON.stringify(vouchers));
                     }
+                    appliedDiscountVoucherCode = null;
+                    appliedShippingVoucherCode = null;
 
                     // Update dynamic badge to 0
                     if (window.updateCartBadge) window.updateCartBadge();
@@ -1684,7 +1846,8 @@
         }
 
         // === VOUCHERS HANDLING ENGINE ===
-        let appliedVoucherCode = null;
+        let appliedDiscountVoucherCode = null;
+        let appliedShippingVoucherCode = null;
 
         function initVouchersHandling() {
             initVouchersStore();
@@ -1704,9 +1867,6 @@
                 });
             }
 
-            const btnRemove = document.getElementById('btnRemoveVoucher');
-            if (btnRemove) btnRemove.addEventListener('click', removeAppliedVoucher);
-
             const btnClose = document.getElementById('closeVoucherModal');
             if (btnClose) btnClose.addEventListener('click', closeVoucherModal);
 
@@ -1718,7 +1878,79 @@
             });
         }
 
+        async function loadVouchersFromBackend() {
+            try {
+                const response = await fetch(`${GATEWAY}/api/cms/promotions/active`, {
+                    headers: {
+                        'Authorization': `Bearer ${auth.accessToken}`
+                    }
+                });
+                const result = await response.json();
+                if (result.success && result.data) {
+                    const localVouchers = JSON.parse(localStorage.getItem('MG_CLIENT_VOUCHERS') || '[]');
+                    
+                    // Filter for Web-applicable promotions (excluding gifts)
+                    const webPromos = result.data.filter(v => (v.applicable_channel === 'all' || v.applicable_channel === 'web') && v.type !== 'buy_x_get_y');
+                    
+                    const backendVouchers = webPromos.map(v => {
+                        const localV = localVouchers.find(lv => lv.code === v.code);
+                        const isUsed = localV ? !!localV.used : false;
+                        
+                        return {
+                            code: v.code,
+                            title: v.name || v.description || `Giảm ${v.discount_value}`,
+                            value: Number(v.discount_value),
+                            min_bill: Number(v.min_order_value || 0),
+                            max_discount: Number(v.max_discount_amount || 0),
+                            desc: v.description || '',
+                            expiry: v.end_date ? `HSD: ${new Date(v.end_date).toLocaleDateString('vi-VN')}` : 'HSD: Vô thời hạn',
+                            badge_color: v.type === 'free_shipping' ? 'linear-gradient(135deg,#a7f3d0,#10b981)' :
+                                         (v.type === 'percent_discount' ? 'linear-gradient(135deg,#fca5a5,#ef4444)' : 'linear-gradient(135deg,#fbbf24,#f59e0b)'),
+                            discount_type: v.type,
+                            used: isUsed
+                        };
+                    });
+                    
+                    localStorage.setItem('MG_CLIENT_VOUCHERS', JSON.stringify(backendVouchers));
+
+                    // Filter and save web gift campaigns
+                    const webGifts = result.data.filter(v => (v.applicable_channel === 'all' || v.applicable_channel === 'web') && v.type === 'buy_x_get_y');
+                    localStorage.setItem('MG_CLIENT_GIFTS', JSON.stringify(webGifts));
+                    
+                    renderCartSummaryList(); // Force re-render cart to show active gifts
+                }
+            } catch (err) {
+                console.error('[Checkout Load Vouchers Backend] Error:', err);
+                initVouchersStore();
+            }
+        }
+
+        function getVoucherDiscountAmount(v, subtotal) {
+            if (v.discount_type === 'percent' || v.discount_type === 'percent_discount') {
+                let disc = Math.round((subtotal * v.value) / 100);
+                if (v.max_discount > 0) {
+                    disc = Math.min(disc, v.max_discount);
+                }
+                return disc;
+            } else if (v.discount_type === 'freeship' || v.discount_type === 'free_shipping') {
+                let disc = activeShippingFee;
+                if (v.value > 0) {
+                    disc = Math.min(activeShippingFee, v.value);
+                }
+                if (v.max_discount > 0) {
+                    disc = Math.min(disc, v.max_discount);
+                }
+                return disc;
+            }
+            return v.value;
+        }
+
         function initVouchersStore() {
+            const local = localStorage.getItem('MG_CLIENT_VOUCHERS');
+            if (local && (local.includes('MG38K') || local.includes('MG70K') || local.includes('MG83K') || local.includes('Giảm 50k'))) {
+                localStorage.removeItem('MG_CLIENT_VOUCHERS');
+            }
+
             const defaultVouchers = [
                 {
                     code: "MG38K",
@@ -1726,8 +1958,9 @@
                     value: 38000,
                     min_bill: 399000,
                     desc: "Áp dụng: Khách hàng lần đầu đăng nhập website<br>Không áp dụng cho các sản phẩm thuộc danh mục Flash Sale. Thuốc và danh mục hạn chế...",
-                    expiry: "HSD: 23:59, 31/03/2026",
+                    expiry: "HSD: 31/03/2026",
                     badge_color: "linear-gradient(135deg,#fca5a5,#ef4444)",
+                    discount_type: "fixed",
                     used: false
                 },
                 {
@@ -1736,8 +1969,9 @@
                     value: 70000,
                     min_bill: 699000,
                     desc: "Không áp dụng cho các sản phẩm thuộc danh mục Flash Sale. Thuốc và danh mục hạn chế...",
-                    expiry: "HSD: 23:59, 31/03/2026",
+                    expiry: "HSD: 31/03/2026",
                     badge_color: "linear-gradient(135deg,#fbbf24,#f59e0b)",
+                    discount_type: "fixed",
                     used: false
                 },
                 {
@@ -1746,8 +1980,9 @@
                     value: 83000,
                     min_bill: 830000,
                     desc: "Không áp dụng cho các sản phẩm thuộc danh mục Flash Sale...",
-                    expiry: "HSD: 23:59, 31/03/2026",
+                    expiry: "HSD: 31/03/2026",
                     badge_color: "linear-gradient(135deg,#fca5a5,#dc2626)",
+                    discount_type: "fixed",
                     used: false
                 }
             ];
@@ -1773,7 +2008,7 @@
 
             listContainer.innerHTML = unusedVouchers.map(v => {
                 const isEligible = activeSubtotal >= v.min_bill;
-                const isApplied = appliedVoucherCode === v.code;
+                const isApplied = appliedDiscountVoucherCode === v.code || appliedShippingVoucherCode === v.code;
 
                 let btnText = 'Áp dụng';
                 let btnStyle = 'background: #0b7a3e; color: #fff; cursor: pointer;';
@@ -1790,7 +2025,7 @@
                 }
 
                 const minBillText = new Intl.NumberFormat('vi-VN').format(v.min_bill) + 'đ';
-                const valueText = new Intl.NumberFormat('vi-VN').format(v.value) + 'đ';
+                const valueText = (v.discount_type === 'percent' || v.discount_type === 'percent_discount') ? `${v.value}%` : (new Intl.NumberFormat('vi-VN').format(v.value) + 'đ');
 
                 return `
                     <div class="modal-voucher-item" style="border: ${isApplied ? '2px solid #059669' : '1px solid #e5e7eb'}; border-radius: 8px; padding: 12px; display: flex; gap: 12px; align-items: center; background: #fff; text-align: left; position: relative;">
@@ -1801,7 +2036,7 @@
                         <div style="flex: 1; min-width: 0; font-size: 12px; line-height: 1.4;">
                             <strong style="font-size: 13px; color: #111827; display: block; margin-bottom: 2px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${v.title}</strong>
                             <span style="color: #6b7280; display: block; margin-bottom: 4px;">Đơn tối thiểu: ${minBillText}</span>
-                            <span style="color: #9ca3af; font-size: 11px;">HSD: 31/03/2026</span>
+                            <span style="color: #9ca3af; font-size: 11px;">${v.expiry}</span>
                         </div>
                         <button onclick="selectVoucherFromModal('${v.code}')" ${disabledAttr} style="${btnStyle} border: none; border-radius: 6px; padding: 8px 12px; font-size: 12px; font-weight: 600; flex-shrink: 0; transition: background 0.2s;">
                             ${isApplied ? '<i class="fa-solid fa-circle-check"></i> ' : ''}${btnText}
@@ -1822,8 +2057,6 @@
         }
 
         function autoApplyBestVoucher() {
-            if (appliedVoucherCode) return; // Do not overwrite manually applied code
-
             initVouchersStore();
             const vouchers = JSON.parse(localStorage.getItem('MG_CLIENT_VOUCHERS') || '[]');
             const unusedVouchers = vouchers.filter(v => !v.used);
@@ -1832,25 +2065,71 @@
 
             // Filter vouchers where activeSubtotal meets the minimum bill requirement
             const eligibleVouchers = unusedVouchers.filter(v => activeSubtotal >= v.min_bill);
-
             if (eligibleVouchers.length === 0) return;
 
-            // Sort by discount value descending to find the "best" one (highest discount value)
-            eligibleVouchers.sort((a, b) => b.value - a.value);
+            // Best discount voucher
+            const discountVouchers = eligibleVouchers.filter(v => v.discount_type !== 'free_shipping' && v.discount_type !== 'freeship');
+            if (discountVouchers.length > 0 && !appliedDiscountVoucherCode) {
+                discountVouchers.sort((a, b) => getVoucherDiscountAmount(b, activeSubtotal) - getVoucherDiscountAmount(a, activeSubtotal));
+                applyVoucherByCode(discountVouchers[0].code, true);
+            }
 
-            const bestVoucher = eligibleVouchers[0];
-
-            // Apply it!
-            applyVoucherByCode(bestVoucher.code, true);
+            // Best shipping voucher (only if delivery is active and shipping fee > 0)
+            const activeShippingBox = document.querySelector('.delivery-box.active');
+            const isDelivery = activeShippingBox && activeShippingBox.dataset.type === 'delivery';
+            if (isDelivery && activeShippingFee > 0 && !appliedShippingVoucherCode) {
+                const shippingVouchers = eligibleVouchers.filter(v => v.discount_type === 'free_shipping' || v.discount_type === 'freeship');
+                if (shippingVouchers.length > 0) {
+                    shippingVouchers.sort((a, b) => getVoucherDiscountAmount(b, activeSubtotal) - getVoucherDiscountAmount(a, activeSubtotal));
+                    applyVoucherByCode(shippingVouchers[0].code, true);
+                }
+            }
         }
 
-        function applyVoucherByCode(code, isAuto = false) {
+        async function applyVoucherByCode(code, isAuto = false) {
             initVouchersStore();
             const vouchers = JSON.parse(localStorage.getItem('MG_CLIENT_VOUCHERS') || '[]');
-            const v = vouchers.find(x => x.code === code.toUpperCase());
+            let v = vouchers.find(x => x.code === code.toUpperCase());
 
             if (!v) {
-                showToastMsg('Mã giảm giá không tồn tại!', 'error');
+                // Try to validate via backend API cms promotions
+                try {
+                    const response = await fetch(`${GATEWAY}/api/cms/promotions/validate/${encodeURIComponent(code)}`, {
+                        headers: {
+                            'Authorization': `Bearer ${auth.accessToken}`
+                        }
+                    });
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        const backendV = result.data;
+                        if (backendV.applicable_channel !== 'all' && backendV.applicable_channel !== 'web') {
+                            showToastMsg('Mã giảm giá này không áp dụng trên Website!', 'error');
+                            return;
+                        }
+                        v = {
+                            code: backendV.code,
+                            title: backendV.name || backendV.description || `Giảm ${backendV.discount_value}`,
+                            value: Number(backendV.discount_value),
+                            min_bill: Number(backendV.min_order_value || 0),
+                            max_discount: Number(backendV.max_discount_amount || 0),
+                            desc: backendV.description || '',
+                            expiry: backendV.end_date ? `HSD: ${new Date(backendV.end_date).toLocaleDateString('vi-VN')}` : 'HSD: Vô thời hạn',
+                            badge_color: backendV.type === 'free_shipping' ? 'linear-gradient(135deg,#a7f3d0,#10b981)' :
+                                         (backendV.type === 'percent_discount' ? 'linear-gradient(135deg,#fca5a5,#ef4444)' : 'linear-gradient(135deg,#fbbf24,#f59e0b)'),
+                            discount_type: backendV.type,
+                            used: false
+                        };
+                        // Add to local storage
+                        vouchers.push(v);
+                        localStorage.setItem('MG_CLIENT_VOUCHERS', JSON.stringify(vouchers));
+                    }
+                } catch (err) {
+                    console.error('[Voucher manual lookup error]:', err);
+                }
+            }
+
+            if (!v) {
+                showToastMsg('Mã giảm giá không tồn tại hoặc đã hết hạn!', 'error');
                 return;
             }
 
@@ -1865,25 +2144,28 @@
                 return;
             }
 
-            // Apply discount
-            activeDiscount = v.value;
-            appliedVoucherCode = v.code;
+            const isShipping = v.discount_type === 'free_shipping' || v.discount_type === 'freeship';
 
-            // Show applied banner
-            const container = document.getElementById('appliedPromoContainer');
-            const textSpan = document.getElementById('appliedPromoText');
-            textSpan.innerHTML = `Đã áp dụng mã <strong>${v.code}</strong> (giảm -${new Intl.NumberFormat('vi-VN').format(v.value)}đ)`;
-            container.style.display = 'flex';
+            if (isShipping) {
+                const activeShippingBox = document.querySelector('.delivery-box.active');
+                const isDelivery = activeShippingBox && activeShippingBox.dataset.type === 'delivery';
+                if (!isDelivery || activeShippingFee === 0) {
+                    showToastMsg('Vui lòng chọn hình thức giao hàng tận nơi để áp dụng mã giảm ship!', 'error');
+                    return;
+                }
+                appliedShippingVoucherCode = v.code;
+            } else {
+                appliedDiscountVoucherCode = v.code;
+            }
 
-            // Disable input and update apply button
-            document.getElementById('voucherInput').disabled = true;
-            const btnApply = document.getElementById('btnApplyVoucher');
-            btnApply.disabled = true;
-            btnApply.textContent = 'Đã áp dụng';
-            btnApply.style.background = '#d1fae5'; // Premium light green background
-            btnApply.style.color = '#065f46'; // Elegant dark green text
+            // Reset manual input value
+            document.getElementById('voucherInput').value = '';
+
+            // Handle Input & Button states
+            updateVoucherInputStates();
 
             recalculateSummary();
+            renderAppliedVouchers();
             
             if (isAuto) {
                 showToastMsg(`Hệ thống tự động áp dụng mã ưu đãi tốt nhất: ${v.code}!`, 'success');
@@ -1892,26 +2174,78 @@
             }
         }
 
-        function removeAppliedVoucher() {
-            activeDiscount = 0;
-            appliedVoucherCode = null;
-
-            // Hide applied banner
-            document.getElementById('appliedPromoContainer').style.display = 'none';
-
-            // Re-enable input and apply button
+        function updateVoucherInputStates() {
             const voucherInput = document.getElementById('voucherInput');
-            voucherInput.value = '';
-            voucherInput.disabled = false;
-            
             const btnApply = document.getElementById('btnApplyVoucher');
-            btnApply.disabled = false;
-            btnApply.textContent = 'Áp dụng';
-            btnApply.style.background = '#f3f4f6';
-            btnApply.style.color = '#374151';
+            if (!voucherInput || !btnApply) return;
 
+            if (appliedDiscountVoucherCode && appliedShippingVoucherCode) {
+                voucherInput.disabled = true;
+                voucherInput.placeholder = "Đã áp dụng tối đa mã giảm giá";
+                btnApply.disabled = true;
+                btnApply.textContent = 'Đã áp dụng';
+                btnApply.style.background = '#d1fae5';
+                btnApply.style.color = '#065f46';
+            } else {
+                voucherInput.disabled = false;
+                voucherInput.placeholder = "Thẻ quà tặng hoặc mã giảm giá";
+                btnApply.disabled = false;
+                btnApply.textContent = 'Áp dụng';
+                btnApply.style.background = '#0b7a3e';
+                btnApply.style.color = '#fff';
+            }
+        }
+
+        function removeVoucher(code) {
+            if (code === appliedDiscountVoucherCode) {
+                appliedDiscountVoucherCode = null;
+            } else if (code === appliedShippingVoucherCode) {
+                appliedShippingVoucherCode = null;
+            }
+
+            updateVoucherInputStates();
             recalculateSummary();
-            showToastMsg('Đã hủy áp dụng mã giảm giá.', 'success');
+            renderAppliedVouchers();
+            showToastMsg(`Đã hủy áp dụng mã ${code}.`, 'success');
+        }
+        window.removeVoucher = removeVoucher;
+
+        function renderAppliedVouchers() {
+            const container = document.getElementById('appliedPromosContainer');
+            if (!container) return;
+
+            const vouchers = JSON.parse(localStorage.getItem('MG_CLIENT_VOUCHERS') || '[]');
+            const activePromos = [];
+
+            if (appliedDiscountVoucherCode) {
+                const v = vouchers.find(x => x.code === appliedDiscountVoucherCode);
+                if (v) {
+                    const amt = getVoucherDiscountAmount(v, activeSubtotal);
+                    activePromos.push({ code: v.code, discount: amt, type: 'discount' });
+                }
+            }
+            if (appliedShippingVoucherCode) {
+                const v = vouchers.find(x => x.code === appliedShippingVoucherCode);
+                if (v) {
+                    const amt = getVoucherDiscountAmount(v, activeSubtotal);
+                    activePromos.push({ code: v.code, discount: amt, type: 'shipping' });
+                }
+            }
+
+            if (activePromos.length === 0) {
+                container.style.display = 'none';
+                container.innerHTML = '';
+                return;
+            }
+
+            container.style.display = 'flex';
+            container.innerHTML = activePromos.map(p => `
+                <div class="applied-promo" style="display: flex; align-items: center; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px 16px; color: #166534; font-size: 13px; font-weight: 500;">
+                    <i class="fa-solid fa-circle-check" style="color: #16a34a; font-size: 15px; margin-right: 8px;"></i>
+                    <span>Đã áp dụng mã <strong>${p.code}</strong> (${p.type === 'shipping' ? 'Giảm ship' : 'Giảm giá'} -${new Intl.NumberFormat('vi-VN').format(p.discount)}đ)</span>
+                    <button type="button" onclick="removeVoucher('${p.code}')" style="margin-left: auto; background: none; border: none; color: #ef4444; cursor: pointer; font-size: 11px; font-weight: 600; transition: color 0.15s;">Hủy</button>
+                </div>
+            `).join('');
         }
 
         function showToastMsg(message, type = 'success') {
