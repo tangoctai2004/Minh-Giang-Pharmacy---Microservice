@@ -1,10 +1,9 @@
 # API Mapping — client/index.html (Trang chủ)
 
-> **Trang**: `frontend/client/index.html`
-> **Mô tả**: Trang chủ Nhà Thuốc Minh Giang — hiển thị banner, sản phẩm khuyến mãi, danh mục, tra cứu bệnh, tìm kiếm hàng đầu
-> **Auth yêu cầu**: Không (trang public), nhưng nếu đã đăng nhập thì hiển thị thêm thông tin user
+> **Trang**: `frontend/client/index.html`  
+> **Mô tả**: Trang chủ Nhà Thuốc Minh Giang — hiển thị banner, sản phẩm khuyến mãi, danh mục, tra cứu bệnh, tìm kiếm hàng đầu  
+> **Auth yêu cầu**: Không (trang public), nhưng nếu đã đăng nhập thì hiển thị thêm thông tin user  
 > **Ngày phân tích**: 2026-04-10
-> **Cập nhật theo code hiện tại**: các API sản phẩm/danh mục/tìm kiếm của catalog đã có. Một số API nội dung/khuyến mãi phụ thuộc CMS hoặc chưa có route catalog riêng.
 
 ---
 
@@ -54,23 +53,6 @@
 ---
 
 ## 🔌 CHI TIẾT API TỪNG VÙNG
-
-## Trạng thái hiện tại của phần catalog
-
-| Nhu cầu trang chủ | API hiện có | Trạng thái |
-|---|---|---|
-| Gợi ý tìm kiếm | `GET /api/catalog/products/search-suggest?q=...` | Đã có |
-| Mega menu danh mục | `GET /api/catalog/categories/tree` | Đã có |
-| Sản phẩm theo danh mục | `GET /api/catalog/products?category_id=...` | Đã có |
-| Sản phẩm theo tag | `GET /api/catalog/products?tag=flash_sale` | Đã có nếu dữ liệu product có tag tương ứng |
-| Sản phẩm bán chạy/trending | `GET /api/catalog/products?sort=best_seller` hoặc `sort=trending` | Đã có |
-| Từ khóa tìm kiếm nhiều | `GET /api/catalog/products/top-searches?limit=30` | Đã có |
-| Danh mục nổi bật | `GET /api/catalog/categories?level=featured` | Route chạy được nhưng backend chưa xử lý riêng `level=featured` |
-
-API chưa có hoặc chưa đúng với catalog hiện tại:
-
-- `GET /api/catalog/promotions/active`: Gateway đang whitelist nhưng backend chưa có route.
-- `GET /api/catalog/promotions?tag=...`: backend hiện không có route list promotions tổng quát, chỉ có `/promotions/vouchers`, `/promotions/gifts`, `/promotions/loyalty/config`.
 
 ---
 

@@ -9,7 +9,7 @@ const REPO_ROOT = path.resolve(ROOT, '..');
 const DATA_DIR = path.join(ROOT, 'data');
 const CLEAN_DIR = path.join(ROOT, 'clean');
 const REPORTS_DIR = path.join(CLEAN_DIR, 'reports');
-const CATALOG_SEED = path.join(REPO_ROOT, 'infrastructure', 'database', '99_seed_full_catalog.sql');
+const CATALOG_SEED = path.join(REPO_ROOT, 'infrastructure', 'database', '10_seed_full_catalog.sql');
 const CMS_SCHEMA = path.join(REPO_ROOT, 'infrastructure', 'database', '04_mg_cms.sql');
 
 const PRODUCT_LIMIT_FOR_SEED_REVIEW = 4000;

@@ -80,6 +80,23 @@
             padding: 3px 9px;
             border-radius: 8px;
         }
+
+        /* Detail panel for modal */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 0;
+        }
+
+        .detail-left {
+            padding: 20px;
+            border-right: 1px solid var(--admin-border);
+        }
+
+        .detail-right {
+            padding: 20px;
+            background: #f8fafc;
+        }
     </style>
 </head>
 
@@ -174,95 +191,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Đơn 1: COD, mới nhất -->
-                        <tr class="new-order-row" onclick="openOrderModal('WEB-9025','pending')"
-                            style="cursor:pointer;">
-                            <td>
-                                <span class="table-sku"
-                                    style="font-size:14px;font-weight:700;color:#1e293b;">WEB-9025</span>
-                                <div style="font-size:10px;font-weight:700;color:#d97706;margin-top:2px;">⚡ VỪA VÀO
-                                </div>
-                            </td>
-                            <td>
-                                <div class="inv-name">Nguyễn Thị Lan</div>
-                                <div style="font-size:12px;color:#6b7280;">0912 000 111 • Q.1, TP.HCM</div>
-                            </td>
-                            <td>
-                                <div style="font-weight:600;color:#1f2937;">Hôm nay</div>
-                                <div style="font-size:12px;color:#ef4444;font-weight:600;">10:48 AM</div>
-                            </td>
-                            <td>
-                                <div style="font-size:12px;font-weight:600;color:#1e293b;">3 sản phẩm</div>
-                                <div style="font-size:11px;color:#9ca3af;">Vitamin C, Panadol, Oresol</div>
-                            </td>
-                            <td><span class="inv-price" style="font-size:15px;color:#0f172a;">285,000₫</span></td>
-                            <td><span class="pay-badge" style="background:#fef3c7;color:#92400e;"><i
-                                        class="fa-solid fa-money-bill-wave"></i> COD</span></td>
-                            <td>
-                                <div class="action-btns" style="justify-content:flex-end;gap:6px;">
-                                    <button class="btn-icon" title="Xem chi tiết"
-                                        onclick="event.stopPropagation(); openOrderModal('WEB-9025','pending')">
-                                        <i class="fa-solid fa-eye"></i>
-                                    </button>
-                                    <button class="btn-approve"
-                                        onclick="event.stopPropagation(); approveAndSend(this,'WEB-9025')">
-                                        <i class="fa-solid fa-check"></i> Duyệt & Giao Pick&Pack
-                                    </button>
-                                    <button class="btn-cancel" onclick="event.stopPropagation(); cancelOrder(this)">
-                                        <i class="fa-solid fa-xmark"></i> Huỷ
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- Đơn 2: Đã TT, cần HĐ VAT -->
-                        <tr class="new-order-row" onclick="openOrderModal('WEB-9024','pending')"
-                            style="cursor:pointer;">
-                            <td>
-                                <span class="table-sku"
-                                    style="font-size:14px;font-weight:700;color:#1e293b;">WEB-9024</span>
-                                <div style="font-size:10px;font-weight:700;color:#9333ea;margin-top:2px;">💎 HĐ VAT
-                                </div>
-                            </td>
-                            <td>
-                                <div class="inv-name">Trần Văn Nam</div>
-                                <div style="font-size:12px;color:#6b7280;">0909 222 333 • Q.Bình Thạnh</div>
-                            </td>
-                            <td>
-                                <div style="font-weight:600;color:#1f2937;">Hôm nay</div>
-                                <div style="font-size:12px;color:#ef4444;font-weight:600;">10:33 AM</div>
-                            </td>
-                            <td>
-                                <div style="font-size:12px;font-weight:600;color:#1e293b;">5 sản phẩm</div>
-                                <div style="font-size:11px;color:#9ca3af;">Detox, Vitamin tổng hợp...</div>
-                            </td>
-                            <td><span class="inv-price" style="font-size:15px;color:#0f172a;">1,240,000₫</span></td>
-                            <td><span class="pay-badge" style="background:#d1fae5;color:#065f46;"><i
-                                        class="fa-solid fa-circle-check"></i> VNPay</span></td>
-                            <td>
-                                <div class="action-btns" style="justify-content:flex-end;gap:6px;">
-                                    <button class="btn-icon" title="Xem chi tiết"
-                                        onclick="event.stopPropagation(); openOrderModal('WEB-9024','pending')">
-                                        <i class="fa-solid fa-eye"></i>
-                                    </button>
-                                    <button class="btn-approve"
-                                        onclick="event.stopPropagation(); approveAndSend(this,'WEB-9024')">
-                                        <i class="fa-solid fa-check"></i> Duyệt & Giao Pick&Pack
-                                    </button>
-                                    <button class="btn-cancel" onclick="event.stopPropagation(); cancelOrder(this)">
-                                        <i class="fa-solid fa-xmark"></i> Huỷ
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- Empty state nếu duyệt hết -->
-                        <tr id="emptyInbox" style="display:none;">
-                            <td colspan="7" style="text-align:center;padding:40px;color:#9ca3af;">
-                                <i class="fa-solid fa-inbox"
-                                    style="font-size:32px;display:block;margin-bottom:10px;opacity:.3;"></i>
-                                <div style="font-weight:600;">Inbox trống — Không có đơn nào đang chờ duyệt</div>
-                                <div style="font-size:12px;margin-top:4px;">Tất cả đơn đã được xử lý 🎉</div>
+                        <tr>
+                            <td colspan="7" style="text-align:center;padding:20px;color:#6b7280;">
+                                <i class="fa-solid fa-spinner fa-spin"></i> Đang tải dữ liệu...
                             </td>
                         </tr>
                     </tbody>
@@ -306,84 +237,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr onclick="openOrderModal('WEB-9023','done')" style="cursor:pointer;">
-                            <td><span class="table-sku"
-                                    style="font-size:14px;font-weight:700;color:#1e293b;">WEB-9023</span></td>
-                            <td>
-                                <div class="inv-name">Phạm Tố Ny</div>
-                                <div style="font-size:12px;color:#6b7280;">0988 333 111</div>
-                            </td>
-                            <td>
-                                <div style="font-weight:600;">10/03/2026</div>
-                                <div style="font-size:12px;color:#6b7280;">09:30 AM</div>
-                            </td>
-                            <td><span class="inv-price">95,000₫</span></td>
-                            <td><span class="pay-badge" style="background:#fef3c7;color:#92400e;">COD</span></td>
-                            <td><span class="status-badge active" style="background:#d1fae5;color:#065f46;">Hoàn
-                                    tất</span></td>
-                            <td>
-                                <div class="action-btns" style="justify-content:flex-end;"><button class="btn-icon"><i
-                                            class="fa-solid fa-print"></i></button></div>
-                            </td>
-                        </tr>
-                        <tr onclick="openOrderModal('WEB-9022','done')" style="cursor:pointer;">
-                            <td><span class="table-sku"
-                                    style="font-size:14px;font-weight:700;color:#1e293b;">WEB-9022</span></td>
-                            <td>
-                                <div class="inv-name">Lê Hoàng Minh</div>
-                                <div style="font-size:12px;color:#6b7280;">0977 555 666</div>
-                            </td>
-                            <td>
-                                <div style="font-weight:600;">10/03/2026</div>
-                                <div style="font-size:12px;color:#6b7280;">09:15 AM</div>
-                            </td>
-                            <td><span class="inv-price">620,000₫</span></td>
-                            <td><span class="pay-badge" style="background:#d1fae5;color:#065f46;">MoMo</span></td>
-                            <td><span class="status-badge active" style="background:#d1fae5;color:#065f46;">Hoàn
-                                    tất</span></td>
-                            <td>
-                                <div class="action-btns" style="justify-content:flex-end;"><button class="btn-icon"><i
-                                            class="fa-solid fa-print"></i></button></div>
-                            </td>
-                        </tr>
-                        <tr onclick="openOrderModal('WEB-9021','done')" style="cursor:pointer;">
-                            <td><span class="table-sku"
-                                    style="font-size:14px;font-weight:700;color:#1e293b;">WEB-9021</span></td>
-                            <td>
-                                <div class="inv-name">Võ Thị Thu</div>
-                                <div style="font-size:12px;color:#6b7280;">0901 777 888</div>
-                            </td>
-                            <td>
-                                <div style="font-weight:600;">10/03/2026</div>
-                                <div style="font-size:12px;color:#6b7280;">08:50 AM</div>
-                            </td>
-                            <td><span class="inv-price">340,000₫</span></td>
-                            <td><span class="pay-badge" style="background:#fef3c7;color:#92400e;">COD</span></td>
-                            <td><span class="status-badge active" style="background:#d1fae5;color:#065f46;">Hoàn
-                                    tất</span></td>
-                            <td>
-                                <div class="action-btns" style="justify-content:flex-end;"><button class="btn-icon"><i
-                                            class="fa-solid fa-print"></i></button></div>
-                            </td>
-                        </tr>
-                        <tr onclick="openOrderModal('WEB-9020','cancelled')" style="cursor:pointer;">
-                            <td><span class="table-sku"
-                                    style="font-size:14px;font-weight:700;color:#1e293b;">WEB-9020</span></td>
-                            <td>
-                                <div class="inv-name">Bùi Văn Hải</div>
-                                <div style="font-size:12px;color:#6b7280;">0966 000 111</div>
-                            </td>
-                            <td>
-                                <div style="font-weight:600;">09/03/2026</div>
-                                <div style="font-size:12px;color:#6b7280;">16:20 PM</div>
-                            </td>
-                            <td><span class="inv-price"
-                                    style="color:#9ca3af;text-decoration:line-through;">175,000₫</span></td>
-                            <td><span class="pay-badge" style="background:#fef3c7;color:#92400e;">COD</span></td>
-                            <td><span class="status-badge" style="background:#fee2e2;color:#dc2626;">Đã huỷ</span></td>
-                            <td>
-                                <div class="action-btns" style="justify-content:flex-end;"><button class="btn-icon"><i
-                                            class="fa-solid fa-eye"></i></button></div>
+                        <tr>
+                            <td colspan="7" style="text-align:center;padding:20px;color:#6b7280;">
+                                <i class="fa-solid fa-spinner fa-spin"></i> Đang tải dữ liệu...
                             </td>
                         </tr>
                     </tbody>
@@ -428,64 +284,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr onclick="openOrderModal('POS-260310-045','offline')" style="cursor:pointer;">
-                            <td><span class="table-sku" style="font-size:14px;font-weight:700;">POS-260310-045</span>
-                            </td>
-                            <td>
-                                <div class="inv-name">Nguyễn Văn A</div>
-                                <div style="font-size:12px;color:#6b7280;">Kiosk #01</div>
-                            </td>
-                            <td>
-                                <div style="font-weight:600;">10/03/2026</div>
-                                <div style="font-size:12px;color:#6b7280;">11:30 AM</div>
-                            </td>
-                            <td><span class="inv-price">270,000₫</span></td>
-                            <td><span class="pay-badge" style="background:#dbeafe;color:#1e40af;"><i
-                                        class="fa-solid fa-wallet"></i> Tiền mặt</span></td>
-                            <td>
-                                <div class="action-btns" style="justify-content:flex-end;"><button class="btn-icon"
-                                        onclick="event.stopPropagation()"><i class="fa-solid fa-print"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr onclick="openOrderModal('POS-260310-044','offline')" style="cursor:pointer;">
-                            <td><span class="table-sku" style="font-size:14px;font-weight:700;">POS-260310-044</span>
-                            </td>
-                            <td>
-                                <div class="inv-name">Nguyễn Văn A</div>
-                                <div style="font-size:12px;color:#6b7280;">Kiosk #01</div>
-                            </td>
-                            <td>
-                                <div style="font-weight:600;">10/03/2026</div>
-                                <div style="font-size:12px;color:#6b7280;">11:15 AM</div>
-                            </td>
-                            <td><span class="inv-price">85,000₫</span></td>
-                            <td><span class="pay-badge" style="background:#d1fae5;color:#047857;"><i
-                                        class="fa-solid fa-qrcode"></i> QR Chuyển khoản</span></td>
-                            <td>
-                                <div class="action-btns" style="justify-content:flex-end;"><button class="btn-icon"
-                                        onclick="event.stopPropagation()"><i class="fa-solid fa-print"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr onclick="openOrderModal('POS-260310-043','offline')" style="cursor:pointer;">
-                            <td><span class="table-sku" style="font-size:14px;font-weight:700;">POS-260310-043</span>
-                            </td>
-                            <td>
-                                <div class="inv-name">Nguyễn Văn A</div>
-                                <div style="font-size:12px;color:#6b7280;">Kiosk #01</div>
-                            </td>
-                            <td>
-                                <div style="font-weight:600;">10/03/2026</div>
-                                <div style="font-size:12px;color:#6b7280;">10:50 AM</div>
-                            </td>
-                            <td><span class="inv-price">1,450,000₫</span></td>
-                            <td><span class="pay-badge" style="background:#fef3c7;color:#b45309;"><i
-                                        class="fa-solid fa-credit-card"></i> Thẻ Visa</span></td>
-                            <td>
-                                <div class="action-btns" style="justify-content:flex-end;"><button class="btn-icon"
-                                        onclick="event.stopPropagation()"><i class="fa-solid fa-print"></i></button>
-                                </div>
+                        <tr>
+                            <td colspan="6" style="text-align:center;padding:20px;color:#6b7280;">
+                                <i class="fa-solid fa-spinner fa-spin"></i> Đang tải dữ liệu...
                             </td>
                         </tr>
                     </tbody>
@@ -517,82 +318,9 @@
                 <button class="slide-close" onclick="closeOrderModal()"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="standard-modal-body" style="padding:0;">
-                <div style="display:grid;grid-template-columns:3fr 2fr;">
-                    <div style="padding:24px;border-right:1px solid var(--admin-border);">
-                        <h3 style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:12px;">Sản phẩm đã đặt
-                        </h3>
-                        <table class="inventory-table" style="margin:0;">
-                            <thead>
-                                <tr>
-                                    <th style="padding:8px;font-size:12px;">Tên Thuốc</th>
-                                    <th style="padding:8px;font-size:12px;text-align:right;">SL</th>
-                                    <th style="padding:8px;font-size:12px;text-align:right;">Thành tiền</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td style="padding:8px;">
-                                        <div style="font-size:13px;font-weight:600;color:#1e293b;">Vitamin C DHC 1000mg
-                                        </div>
-                                        <div style="font-size:11px;color:#6b7280;">120,000₫ / Gói</div>
-                                    </td>
-                                    <td style="padding:8px;text-align:right;font-size:13px;font-weight:600;">2</td>
-                                    <td style="padding:8px;text-align:right;font-size:13px;font-weight:600;">240,000₫
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding:8px;">
-                                        <div style="font-size:13px;font-weight:600;color:#1e293b;">Panadol Extra 500mg
-                                        </div>
-                                        <div style="font-size:11px;color:#6b7280;">30,000₫ / Hộp</div>
-                                    </td>
-                                    <td style="padding:8px;text-align:right;font-size:13px;font-weight:600;">1</td>
-                                    <td style="padding:8px;text-align:right;font-size:13px;font-weight:600;">30,000₫
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <div
-                            style="margin-top:16px;padding-top:14px;border-top:1px dashed var(--admin-border);text-align:right;">
-                            <div style="font-size:12px;color:#6b7280;margin-bottom:3px;">Tiểu tổng: <span
-                                    style="font-weight:600;color:#1e293b;">270,000₫</span></div>
-                            <div style="font-size:12px;color:#6b7280;margin-bottom:3px;">Phí giao hàng: <span
-                                    style="font-weight:600;color:#1e293b;">15,000₫</span></div>
-                            <div style="font-size:14px;color:#047857;font-weight:700;">Tổng thu: <span
-                                    style="font-size:18px;">285,000₫</span></div>
-                        </div>
-                    </div>
-                    <div style="padding:24px;background:#f8fafc;">
-                        <h3 style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:16px;">Thông tin khách
-                            hàng</h3>
-                        <div style="margin-bottom:12px;">
-                            <div style="font-size:11px;color:#9ca3af;margin-bottom:2px;">Khách hàng</div>
-                            <div style="font-size:14px;font-weight:600;color:#1e293b;">Nguyễn Thị Lan</div>
-                        </div>
-                        <div style="margin-bottom:12px;">
-                            <div style="font-size:11px;color:#9ca3af;margin-bottom:2px;">Điện thoại</div>
-                            <div style="font-size:14px;font-weight:600;color:#1e293b;">0912 000 111</div>
-                        </div>
-                        <div style="margin-bottom:12px;">
-                            <div style="font-size:11px;color:#9ca3af;margin-bottom:2px;">Địa chỉ giao</div>
-                            <div style="font-size:13px;font-weight:500;color:#1e293b;line-height:1.5;">45 Lê Lợi, P.Bến
-                                Thành, Q.1<br>TP.HCM — <span style="color:#3b82f6;">≈ 2.1km</span></div>
-                        </div>
-                        <div style="margin-bottom:12px;">
-                            <div style="font-size:11px;color:#9ca3af;margin-bottom:2px;">Thời gian đặt</div>
-                            <div style="font-size:13px;font-weight:500;color:#1e293b;">10/03/2026 – 10:48 AM</div>
-                        </div>
-                        <div style="margin-bottom:12px;">
-                            <div style="font-size:11px;color:#9ca3af;margin-bottom:2px;">Ghi chú</div>
-                            <div style="font-size:12px;font-style:italic;color:#6b7280;">"Giao giờ hành chính, gọi trước
-                                15 phút"</div>
-                        </div>
-                        <div>
-                            <div style="font-size:11px;color:#9ca3af;margin-bottom:4px;">Thanh toán</div><span
-                                style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#92400e;background:#fef3c7;padding:4px 10px;border-radius:8px;"><i
-                                    class="fa-solid fa-money-bill-wave"></i> COD – Thu khi giao</span>
-                        </div>
-                    </div>
+                <div style="padding:40px; text-align:center; color:#9ca3af;">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size:24px; margin-bottom:10px;"></i>
+                    <p>Đang tải chi tiết đơn hàng...</p>
                 </div>
             </div>
             <div class="standard-modal-footer" id="orderModalActions" style="background:#fff;"></div>
@@ -600,7 +328,14 @@
     </div>
 
     <script>
-        const API_BASE = 'http://localhost:8000/api/order/orders';
+        const API_BASE = (localStorage.getItem('MG_API_BASE') || (
+            (window.location.origin.includes('localhost:5500') ||
+             window.location.origin.includes('localhost:5501') ||
+             window.location.origin.includes('127.0.0.1:5500') ||
+             window.location.origin.includes('127.0.0.1:5501'))
+            ? 'http://localhost:8000/api'
+            : window.location.origin.replace(/\/+$/, '') + '/api'
+        )) + '/order/orders';
 
         function getAuthHeader() {
             const authRaw = localStorage.getItem('MG_ADMIN_AUTH');
@@ -1075,17 +810,55 @@
             document.getElementById('orderModal').classList.add('open');
             document.body.style.overflow = 'hidden';
 
+            // Set loading spinner first
+            document.querySelector('#orderModal .standard-modal-body').innerHTML = `
+                <div style="padding:40px; text-align:center; color:#9ca3af;">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size:24px; margin-bottom:10px;"></i>
+                    <p>Đang tải chi tiết đơn hàng...</p>
+                </div>
+            `;
+            document.getElementById('orderModalActions').innerHTML = '';
+
             try {
                 const res = await fetch(`${API_BASE}/${orderId}`, { headers: getAuthHeader() });
                 const json = await res.json();
 
                 if (!json.success || !json.data) {
                     document.getElementById('orderModalTitle').innerText = `Lỗi tải chi tiết`;
+                    document.querySelector('#orderModal .standard-modal-body').innerHTML = `
+                        <div style="padding:40px; text-align:center; color:#ef4444;">
+                            <i class="fa-solid fa-circle-exclamation" style="font-size:24px; margin-bottom:10px;"></i>
+                            <p>Không tìm thấy thông tin chi tiết đơn hàng.</p>
+                        </div>
+                    `;
                     return;
                 }
 
                 const order = json.data;
                 const { date, time } = formatDateTime(order.created_at);
+
+                // Set up the layout template in standard-modal-body before rendering contents
+                document.querySelector('#orderModal .standard-modal-body').innerHTML = `
+                    <div class="detail-grid">
+                        <div class="detail-left">
+                            <h3 style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:12px;">
+                                <i class="fa-solid fa-list-check" style="color:#3b82f6;margin-right:6px;"></i>Danh sách sản phẩm
+                            </h3>
+                            <table style="width:100%; border-collapse:collapse; margin-bottom:16px;">
+                                <thead>
+                                    <tr style="border-bottom:1px solid var(--admin-border); text-align:left; font-size:11px; color:#6b7280;">
+                                        <th style="padding:8px 0;">Sản phẩm</th>
+                                        <th style="padding:8px; text-align:right;">SL</th>
+                                        <th style="padding:8px 0; text-align:right;">Thành tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                            <div class="price-summary" style="margin-top:16px; padding-top:16px; border-top:1px solid var(--admin-border); text-align:right;"></div>
+                        </div>
+                        <div class="detail-right"></div>
+                    </div>
+                `;
 
                 document.getElementById('orderModalTitle').innerText = `Chi tiết đơn — #${order.order_code}`;
 

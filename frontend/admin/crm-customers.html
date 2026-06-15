@@ -395,7 +395,7 @@
             <div style="display:flex;gap:12px;margin-bottom:14px;">
                 <div class="header-search" style="flex:1;">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" placeholder="Tìm theo tên, SĐT, mã thành viên...">
+                    <input type="text" id="customerSearchInput" placeholder="Tìm theo tên, SĐT, mã thành viên...">
                 </div>
                 <select
                     style="height:38px;border:1px solid var(--admin-border);border-radius:8px;padding:0 12px;font-size:13px;color:#374151;">
@@ -449,7 +449,7 @@
             <div style="display:flex;gap:12px;margin-bottom:14px;">
                 <div class="header-search" style="flex:1;">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" placeholder="Tìm theo tên khách hoặc mã đơn...">
+                    <input type="text" id="pointsSearchInput" placeholder="Tìm theo tên khách hoặc mã đơn...">
                 </div>
                 <select
                     style="height:38px;border:1px solid var(--admin-border);border-radius:8px;padding:0 12px;font-size:13px;color:#374151;">
@@ -472,97 +472,8 @@
                             <th>Thời gian</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <div style="display:flex;align-items:center;gap:8px;">
-                                    <div class="customer-avatar"
-                                        style="background:#ede9fe;color:#7c3aed;font-size:12px;">NL</div>
-                                    <div>
-                                        <div style="font-weight:600;font-size:13px;">Nguyễn Thị Linh</div>
-                                        <div style="font-size:11px;color:#9ca3af;">MV-001248</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td><span class="pub-status published" style="font-size:11px;border-radius:6px;">Tích
-                                    điểm</span></td>
-                            <td style="font-size:12px;color:#374151;">Mua hàng đơn #WEB-9015</td>
-                            <td style="font-weight:700;color:#10b981;">+465 điểm</td>
-                            <td style="font-weight:600;">3,280 điểm</td>
-                            <td style="font-size:12px;color:#6b7280;">10/03/2026 10:12</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div style="display:flex;align-items:center;gap:8px;">
-                                    <div class="customer-avatar"
-                                        style="background:#fef3c7;color:#92400e;font-size:12px;">TH</div>
-                                    <div>
-                                        <div style="font-weight:600;font-size:13px;">Trần Đức Hùng</div>
-                                        <div style="font-size:11px;color:#9ca3af;">MV-000415</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td><span class="pub-status draft" style="font-size:11px;border-radius:6px;">Quy đổi</span>
-                            </td>
-                            <td style="font-size:12px;color:#374151;">Dùng điểm giảm 50,000₫ đơn #WEB-9014</td>
-                            <td style="font-weight:700;color:#ef4444;">-500 điểm</td>
-                            <td style="font-weight:600;">12,300 điểm</td>
-                            <td style="font-size:12px;color:#6b7280;">10/03/2026 09:55</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div style="display:flex;align-items:center;gap:8px;">
-                                    <div class="customer-avatar"
-                                        style="background:#f0fdf4;color:#16a34a;font-size:12px;">PM</div>
-                                    <div>
-                                        <div style="font-weight:600;font-size:13px;">Phạm Tố Ny</div>
-                                        <div style="font-size:11px;color:#9ca3af;">MV-000987</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td><span class="pub-status published" style="font-size:11px;border-radius:6px;">Tích
-                                    điểm</span></td>
-                            <td style="font-size:12px;color:#374151;">Mua hàng tại quầy POS #POS-4521</td>
-                            <td style="font-weight:700;color:#10b981;">+95 điểm</td>
-                            <td style="font-weight:600;">1,450 điểm</td>
-                            <td style="font-size:12px;color:#6b7280;">10/03/2026 09:30</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div style="display:flex;align-items:center;gap:8px;">
-                                    <div class="customer-avatar"
-                                        style="background:#fdf4ff;color:#9333ea;font-size:12px;">LH</div>
-                                    <div>
-                                        <div style="font-weight:600;font-size:13px;">Lê Hoàng Minh</div>
-                                        <div style="font-size:11px;color:#9ca3af;">MV-000312</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td><span class="pub-status review" style="font-size:11px;border-radius:6px;">Điều
-                                    chỉnh</span></td>
-                            <td style="font-size:12px;color:#374151;">Admin bổ sung điểm sinh nhật tháng 3</td>
-                            <td style="font-weight:700;color:#3b82f6;">+200 điểm</td>
-                            <td style="font-weight:600;">8,920 điểm</td>
-                            <td style="font-size:12px;color:#6b7280;">10/03/2026 09:00</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div style="display:flex;align-items:center;gap:8px;">
-                                    <div class="customer-avatar"
-                                        style="background:#eff6ff;color:#3b82f6;font-size:12px;">VT</div>
-                                    <div>
-                                        <div style="font-weight:600;font-size:13px;">Võ Thị Thu</div>
-                                        <div style="font-size:11px;color:#9ca3af;">MV-001100</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td><span class="pub-status published" style="font-size:11px;border-radius:6px;">Tích
-                                    điểm</span></td>
-                            <td style="font-size:12px;color:#374151;">Mua hàng đơn #WEB-9021</td>
-                            <td style="font-weight:700;color:#10b981;">+340 điểm</td>
-                            <td style="font-weight:600;">2,210 điểm</td>
-                            <td style="font-size:12px;color:#6b7280;">10/03/2026 08:50</td>
-                        </tr>
+                    <tbody id="pointsHistoryTableBody">
+                        <!-- Dynamic points history transactions will be loaded here -->
                     </tbody>
                 </table>
             </div>
@@ -737,7 +648,7 @@
                 </div>
                 <div style="display:flex;gap:8px;align-items:center;">
                     <button class="btn-secondary" style="height:34px;font-size:12px;"
-                        onclick="alert('Điều chỉnh điểm thủ công...')"><i class="fa-solid fa-coins"></i> Điều chỉnh
+                        onclick="adjustPointsPrompt()"><i class="fa-solid fa-coins"></i> Điều chỉnh
                         điểm</button>
                     <button class="slide-close" onclick="closeCustomerModal()"><i
                             class="fa-solid fa-xmark"></i></button>
@@ -748,170 +659,128 @@
                     <div class="modal-left">
                         <!-- Hero -->
                         <div class="customer-hero">
-                            <div class="customer-hero-avatar" style="background:#ede9fe;color:#7c3aed;">NL</div>
+                            <div class="customer-hero-avatar" id="customerHeroAvatar" style="background:#ede9fe;color:#7c3aed;">NL</div>
                             <div>
-                                <div class="customer-hero-name">Nguyễn Thị Linh</div>
-                                <div class="customer-hero-sub">📱 0912 000 333 &nbsp;|&nbsp; 📧 linh.nguyen@gmail.com
-                                </div>
+                                <div class="customer-hero-name" id="customerHeroName">Nguyễn Thị Linh</div>
+                                <div class="customer-hero-sub" id="customerHeroSub">📱 0912 000 333 &nbsp;|&nbsp; 📧 linh.nguyen@gmail.com</div>
                                 <div style="margin-top:6px;display:flex;gap:6px;align-items:center;">
-                                    <span class="tier-badge tier-silver">🥈 Bạc</span>
-                                    <span style="font-size:11px;color:#9ca3af;">Từ 01/2025</span>
+                                    <span class="tier-badge" id="customerHeroTier">🥈 Bạc</span>
+                                    <span style="font-size:11px;color:#9ca3af;" id="customerHeroJoinDate">Từ 01/2025</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Points summary -->
-                        <div
-                            style="background:#eff6ff;border-radius:10px;padding:14px;margin-bottom:16px;display:flex;gap:20px;">
+                        <div style="background:#eff6ff;border-radius:10px;padding:14px;margin-bottom:16px;display:flex;gap:20px;">
                             <div style="text-align:center;flex:1;">
-                                <div style="font-size:22px;font-weight:800;color:#1d4ed8;">3,280</div>
+                                <div style="font-size:22px;font-weight:800;color:#1d4ed8;" id="customerCurrentPoints">3,280</div>
                                 <div style="font-size:11px;color:#6b7280;">Điểm hiện tại</div>
                             </div>
                             <div style="width:1px;background:#bfdbfe;"></div>
                             <div style="text-align:center;flex:1;">
-                                <div style="font-size:22px;font-weight:800;color:#374151;">6,200,000₫</div>
+                                <div style="font-size:22px;font-weight:800;color:#374151;" id="customerTotalSpending">6,200,000₫</div>
                                 <div style="font-size:11px;color:#6b7280;">Tổng chi tiêu</div>
                             </div>
                             <div style="width:1px;background:#bfdbfe;"></div>
                             <div style="text-align:center;flex:1;">
-                                <div style="font-size:22px;font-weight:800;color:#374151;">24</div>
+                                <div style="font-size:22px;font-weight:800;color:#374151;" id="customerTotalOrders">24</div>
                                 <div style="font-size:11px;color:#6b7280;">Tổng đơn hàng</div>
                             </div>
                         </div>
 
                         <!-- Progress to next tier -->
-                        <div style="margin-bottom:16px;">
+                        <div style="margin-bottom:16px;" id="customerProgressContainer">
                             <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;">
                                 <span style="font-weight:600;color:#374151;">Tiến độ lên hạng
-                                    <strong>Vàng</strong></span><span style="color:#6b7280;">6,200,000 /
-                                    15,000,000₫</span></div>
-                            <div class="points-bar">
-                                <div class="points-bar-fill" style="width:41%;background:#f59e0b;"></div>
+                                    <strong id="customerNextTierName">Vàng</strong></span>
+                                <span style="color:#6b7280;" id="customerNextTierProgress">6,200,000 / 15,000,000₫</span>
                             </div>
-                            <div style="font-size:11px;color:#9ca3af;margin-top:4px;">Còn cần chi thêm 8,800,000₫ để lên
-                                hạng Vàng 🥇</div>
+                            <div class="points-bar">
+                                <div class="points-bar-fill" id="customerProgressFill" style="width:41%;background:#f59e0b;"></div>
+                            </div>
+                            <div style="font-size:11px;color:#9ca3af;margin-top:4px;" id="customerNextTierHint">Còn cần chi thêm 8,800,000₫ để lên hạng Vàng 🥇</div>
                         </div>
 
                         <!-- Points history -->
                         <h4 style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:10px;"><i
-                                class="fa-solid fa-clock-rotate-left" style="color:#6b7280;margin-right:6px;"></i>Lịch
-                            Sử Điểm Gần Nhất</h4>
-                        <div>
-                            <div class="point-entry">
-                                <div class="pe-icon" style="background:#d1fae5;color:#065f46;"><i
-                                        class="fa-solid fa-plus fa-xs"></i></div>
-                                <div class="pe-info">
-                                    <h4>Mua hàng đơn #WEB-9015</h4>
-                                    <p>10/03/2026 – 10:12 AM</p>
-                                </div>
-                                <div class="pe-pts" style="color:#10b981;">+465 đ</div>
-                            </div>
-                            <div class="point-entry">
-                                <div class="pe-icon" style="background:#fef3c7;color:#92400e;"><i
-                                        class="fa-solid fa-minus fa-xs"></i></div>
-                                <div class="pe-info">
-                                    <h4>Quy đổi điểm giảm 20,000₫</h4>
-                                    <p>05/03/2026 – 15:30</p>
-                                </div>
-                                <div class="pe-pts" style="color:#ef4444;">-200 đ</div>
-                            </div>
-                            <div class="point-entry">
-                                <div class="pe-icon" style="background:#d1fae5;color:#065f46;"><i
-                                        class="fa-solid fa-plus fa-xs"></i></div>
-                                <div class="pe-info">
-                                    <h4>Mua hàng tại POS #POS-4490</h4>
-                                    <p>01/03/2026 – 09:15</p>
-                                </div>
-                                <div class="pe-pts" style="color:#10b981;">+320 đ</div>
-                            </div>
+                                class="fa-solid fa-clock-rotate-left" style="color:#6b7280;margin-right:6px;"></i>Lịch Sử Điểm Gần Nhất</h4>
+                        <div id="customerPointsHistoryList">
+                            <!-- Populated dynamically -->
                         </div>
                     </div>
 
                     <!-- Right: Purchase history & info -->
                     <div class="modal-right">
                         <h4 style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:12px;"><i
-                                class="fa-solid fa-bag-shopping" style="color:#6b7280;margin-right:6px;"></i>Lịch Sử Mua
-                            Hàng</h4>
-                        <div>
-                            <div class="purchase-row">
-                                <span style="font-size:11px;font-weight:700;color:#3b82f6;">#WEB-9015</span>
-                                <div>
-                                    <div style="font-size:12px;font-weight:600;color:#0f172a;">3 sản phẩm</div>
-                                    <div style="font-size:10px;color:#9ca3af;">10/03/2026</div>
-                                </div>
-                                <span style="font-weight:700;font-size:13px;">465,000₫</span>
-                            </div>
-                            <div class="purchase-row">
-                                <span style="font-size:11px;font-weight:700;color:#3b82f6;">#WEB-8900</span>
-                                <div>
-                                    <div style="font-size:12px;font-weight:600;color:#0f172a;">2 sản phẩm</div>
-                                    <div style="font-size:10px;color:#9ca3af;">05/03/2026</div>
-                                </div>
-                                <span style="font-weight:700;font-size:13px;">200,000₫</span>
-                            </div>
-                            <div class="purchase-row">
-                                <span style="font-size:11px;font-weight:700;color:#6b7280;">#POS-4490</span>
-                                <div>
-                                    <div style="font-size:12px;font-weight:600;color:#0f172a;">1 sản phẩm</div>
-                                    <div style="font-size:10px;color:#9ca3af;">01/03/2026</div>
-                                </div>
-                                <span style="font-weight:700;font-size:13px;">320,000₫</span>
-                            </div>
-                            <div class="purchase-row">
-                                <span style="font-size:11px;font-weight:700;color:#6b7280;">#POS-4310</span>
-                                <div>
-                                    <div style="font-size:12px;font-weight:600;color:#0f172a;">5 sản phẩm</div>
-                                    <div style="font-size:10px;color:#9ca3af;">20/02/2026</div>
-                                </div>
-                                <span style="font-weight:700;font-size:13px;">780,000₫</span>
-                            </div>
+                                class="fa-solid fa-bag-shopping" style="color:#6b7280;margin-right:6px;"></i>Lịch Sử Mua Hàng</h4>
+                        <div id="customerPurchaseHistoryList">
+                            <!-- Populated dynamically -->
                         </div>
 
                         <div style="border-top:1px solid var(--admin-border);padding-top:14px;margin-top:12px;">
                             <h4 style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:12px;"><i
-                                    class="fa-solid fa-pencil" style="color:#6b7280;margin-right:6px;"></i>Chỉnh Sửa
-                                Thông Tin</h4>
-                            <div class="form-group"><label>Tên đầy đủ</label><input type="text" value="Nguyễn Thị Linh">
-                            </div>
-                            <div class="form-group"><label>Số điện thoại</label><input type="tel" value="0912 000 333">
-                            </div>
-                            <div class="form-group"><label>Email</label><input type="email"
-                                    value="linh.nguyen@gmail.com"></div>
-                            <div class="form-group"><label>Ngày sinh</label><input type="date" value="1990-08-22"></div>
+                                    class="fa-solid fa-pencil" style="color:#6b7280;margin-right:6px;"></i>Chỉnh Sửa Thông Tin</h4>
+                            <div class="form-group"><label>Tên đầy đủ</label><input type="text" id="editFullName" value=""></div>
+                            <div class="form-group"><label>Số điện thoại</label><input type="tel" id="editPhone" value=""></div>
+                            <div class="form-group"><label>Email</label><input type="email" id="editEmail" value=""></div>
+                            <div class="form-group"><label>Ngày sinh</label><input type="date" id="editDOB" value=""></div>
                             <div class="form-group" style="margin-bottom:0;"><label>Ghi chú nội bộ</label><input
-                                    type="text" placeholder="VD: Dị ứng Penicillin, mua thuốc mãn tính hàng tháng...">
-                            </div>
+                                    type="text" id="editNotes" placeholder="VD: Dị ứng Penicillin, mua thuốc mãn tính hàng tháng..."></div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="standard-modal-footer" style="background:#fff;">
                 <button class="btn-secondary" onclick="closeCustomerModal()">Đóng</button>
-                <button class="btn-primary" onclick="alert('Đã lưu thông tin khách hàng!'); closeCustomerModal();"
-                    style="width:180px;justify-content:center;height:40px;"><i class="fa-solid fa-floppy-disk"></i> Lưu
-                    thay đổi</button>
+                <button class="btn-primary" id="saveCustomerBtn" onclick="saveCustomerChanges()"
+                    style="width:180px;justify-content:center;height:40px;"><i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi</button>
             </div>
         </div>
     </div>
 
     <script>
-        const API_BASE = 'http://localhost:8000/api/identity';
-        
-        async function fetchCustomers() {
-            try {
-                const authRaw = localStorage.getItem('MG_ADMIN_AUTH');
-                let token = '';
-                if (authRaw) {
-                    const parsed = JSON.parse(authRaw);
-                    token = parsed.accessToken;
-                }
+        const API_BASE = (localStorage.getItem('MG_API_BASE') || (
+            (window.location.origin.includes('localhost:5500') ||
+             window.location.origin.includes('localhost:5501') ||
+             window.location.origin.includes('127.0.0.1:5500') ||
+             window.location.origin.includes('127.0.0.1:5501'))
+            ? 'http://localhost:8000/api'
+            : window.location.origin.replace(/\/+$/, '') + '/api'
+        )) + '/identity';
 
+        function getAdminToken() {
+            const authRaw = localStorage.getItem('MG_ADMIN_AUTH');
+            if (authRaw) {
+                const parsed = JSON.parse(authRaw);
+                return parsed.accessToken;
+            }
+            return '';
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+        
+        async function fetchCustomers(query = '') {
+            try {
+                const token = getAdminToken();
                 if (!token) {
                     console.error("No token found. Redirect to login.");
                     return [];
                 }
 
-                const res = await fetch(API_BASE + '/customers', {
+                let url = API_BASE + '/customers';
+                if (query) {
+                    url += '?q=' + encodeURIComponent(query);
+                }
+
+                const res = await fetch(url, {
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
                 const data = await res.json();
@@ -925,14 +794,13 @@
             }
         }
 
-        const tierColors = { bronze: 'tier-bronze', silver: 'tier-silver', gold: 'tier-gold', diamond: 'tier-diamond' };
-
+        const tierColors = { member: 'tier-bronze', silver: 'tier-silver', gold: 'tier-gold', vip: 'tier-diamond' };
         function getTierInfo(points) {
             points = points || 0;
-            if (points < 20000) return { id: 'bronze', label: 'Đồng', icon: '🥉' };
-            if (points < 50000) return { id: 'silver', label: 'Bạc', icon: '🥈' };
-            if (points < 150000) return { id: 'gold', label: 'Vàng', icon: '🥇' };
-            return { id: 'diamond', label: 'Kim Cương', icon: '💎' };
+            if (points < 500) return { id: 'member', label: 'Đồng', icon: '🥉', nextLabel: 'Bạc', nextLimit: 500 };
+            if (points < 2000) return { id: 'silver', label: 'Bạc', icon: '🥈', nextLabel: 'Vàng', nextLimit: 2000 };
+            if (points < 5000) return { id: 'gold', label: 'Vàng', icon: '🥇', nextLabel: 'VIP', nextLimit: 5000 };
+            return { id: 'vip', label: 'VIP', icon: '💎', nextLabel: 'Đạt tối đa', nextLimit: 5000 };
         }
 
         async function renderTable() {
@@ -941,7 +809,9 @@
             
             tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">Đang tải dữ liệu...</td></tr>';
             
-            const customers = await fetchCustomers();
+            const searchInput = document.getElementById('customerSearchInput');
+            const query = searchInput ? searchInput.value.trim() : '';
+            const customers = await fetchCustomers(query);
             
             if (customers.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">Không có khách hàng nào.</td></tr>';
@@ -959,24 +829,48 @@
                         <div style="display:flex;align-items:center;gap:10px;">
                             <div class="customer-avatar" style="background:#f1f5f9;color:#334155;font-size:12px;">${initials}</div>
                             <div>
-                                <div style="font-weight:600;font-size:13px;color:#0f172a;">${c.full_name}</div>
-                                <div style="font-size:11px;color:#9ca3af;">${c.code || 'N/A'} · ${c.phone || 'N/A'}</div>
+                                <div style="font-weight:600;font-size:13px;color:#0f172a;">${escapeHtml(c.full_name)}</div>
+                                <div style="font-size:11px;color:#9ca3af;">${escapeHtml(c.code || 'N/A')} · ${escapeHtml(c.phone || 'N/A')}</div>
                             </div>
                         </div>
                     </td>
                     <td><span class="tier-badge ${tierColors[tier.id]}">${tier.icon} ${tier.label}</span></td>
-                    <td style="font-weight:700;color:#0f172a;">-</td>
+                    <td style="font-weight:700;color:#0f172a;" id="row-spent-${c.id}">-</td>
                     <td style="font-weight:600;">${(c.loyalty_points || 0).toLocaleString()} đ</td>
                     <td style="font-size:12px;color:#374151;">${new Date(c.created_at).toLocaleDateString()}</td>
                     <td>${isActiveStr}</td>
                     <td>
                         <div class="action-btns" style="justify-content:flex-end;">
-                            <button class="btn-icon" title="Xem chi tiết" onclick="openCustomerModal('view')"><i class="fa-solid fa-eye"></i></button>
-                            <button class="btn-icon" title="Gửi Zalo" onclick="alert('Mở Zalo chat với ${c.full_name}')"><i class="fa-brands fa-stripe-s"></i></button>
+                            <button class="btn-icon" title="Xem chi tiết" onclick="openCustomerModal('view', ${c.id})"><i class="fa-solid fa-eye"></i></button>
+                            <button class="btn-icon" title="Gửi Zalo" onclick="alert('Mở Zalo chat với ${escapeHtml(c.full_name)}')"><i class="fa-brands fa-stripe-s"></i></button>
                         </div>
                     </td>
                 </tr>
             `}).join('');
+
+            // Asynchronously fetch order totals for each customer to render spending
+            customers.forEach(async c => {
+                try {
+                    const token = getAdminToken();
+                    const orderBase = API_BASE.replace('/identity', '/order');
+                    const res = await fetch(`${orderBase}/orders?q=${encodeURIComponent(c.phone)}`, {
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    });
+                    if (res.ok) {
+                        const result = await res.json();
+                        if (result.success) {
+                            let totalSpent = 0;
+                            (result.data || []).forEach(o => {
+                                totalSpent += parseFloat(o.total_amount) || 0;
+                            });
+                            const spentCell = document.getElementById(`row-spent-${c.id}`);
+                            if (spentCell) spentCell.textContent = totalSpent.toLocaleString() + '₫';
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error fetching spent for customer", c.id, e);
+                }
+            });
         }
 
         function switchPageTab(tabId) {
@@ -984,11 +878,59 @@
             event.currentTarget.classList.add('active');
             document.querySelectorAll('.page-tab-content').forEach(c => c.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
+
+            if (tabId === 'tab-points') {
+                loadAllPointsTransactions();
+            }
         }
 
-        function openCustomerModal(mode) {
+        let activeCustomerId = null;
+        async function openCustomerModal(mode, customerId) {
             document.getElementById('customerModal').classList.add('open');
             document.body.style.overflow = 'hidden';
+
+            const titleEl = document.getElementById('customerModalTitle');
+            const subEl = document.getElementById('customerModalSub');
+            const saveBtn = document.getElementById('saveCustomerBtn');
+
+            // Reset history
+            document.getElementById('customerPointsHistoryList').innerHTML = '';
+            document.getElementById('customerPurchaseHistoryList').innerHTML = '';
+
+            if (mode === 'new') {
+                titleEl.textContent = 'Thêm Thành Viên Mới';
+                subEl.textContent = 'Đăng ký thông tin khách hàng mới';
+                activeCustomerId = null;
+                
+                // Hide components not relevant to a new user
+                document.querySelector('.customer-hero').style.display = 'none';
+                document.querySelector('[style*="background:#eff6ff"]').style.display = 'none';
+                document.getElementById('customerProgressContainer').style.display = 'none';
+                document.querySelector('.btn-secondary[onclick*="adjust"]').style.display = 'none';
+
+                // Reset fields
+                document.getElementById('editFullName').value = '';
+                document.getElementById('editPhone').value = '';
+                document.getElementById('editEmail').value = '';
+                document.getElementById('editDOB').value = '';
+                document.getElementById('editNotes').value = '';
+                
+                saveBtn.textContent = 'Tạo mới';
+                saveBtn.onclick = createCustomer;
+            } else {
+                titleEl.textContent = 'Chi Tiết Thành Viên';
+                activeCustomerId = customerId;
+                
+                document.querySelector('.customer-hero').style.display = 'flex';
+                document.querySelector('[style*="background:#eff6ff"]').style.display = 'flex';
+                document.getElementById('customerProgressContainer').style.display = 'block';
+                document.querySelector('.btn-secondary[onclick*="adjust"]').style.display = 'inline-block';
+
+                saveBtn.textContent = 'Lưu thay đổi';
+                saveBtn.onclick = saveCustomerChanges;
+
+                await loadCustomerDetails(customerId);
+            }
         }
 
         function closeCustomerModal() {
@@ -996,11 +938,391 @@
             document.body.style.overflow = '';
         }
 
-        document.addEventListener('DOMContentLoaded', renderTable);
+        async function loadCustomerDetails(id) {
+            try {
+                const token = getAdminToken();
+                if (!token) return;
+
+                const res = await fetch(`${API_BASE}/customers/${id}`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const result = await res.json();
+                if (!result.success) {
+                    showToast('Lỗi: ' + result.message, 'error');
+                    return;
+                }
+                const customer = result.data;
+                
+                const initials = customer.full_name ? customer.full_name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase() : 'KH';
+                const heroAvatar = document.getElementById('customerHeroAvatar');
+                heroAvatar.textContent = initials;
+
+                document.getElementById('customerHeroName').textContent = customer.full_name;
+                document.getElementById('customerHeroSub').innerHTML = `📱 ${customer.phone || 'N/A'} &nbsp;|&nbsp; 📧 ${customer.email || 'N/A'}`;
+                
+                const tier = getTierInfo(customer.loyalty_points);
+                const tierBadge = document.getElementById('customerHeroTier');
+                tierBadge.className = `tier-badge ${tierColors[tier.id]}`;
+                tierBadge.innerHTML = `${tier.icon} ${tier.label}`;
+
+                const subEl = document.getElementById('customerModalSub');
+                subEl.textContent = `${customer.code || 'KH-' + id} • ${tier.label}`;
+
+                const joinDateStr = new Date(customer.created_at).toLocaleDateString('vi-VN', { month: '2-digit', year: 'numeric' });
+                document.getElementById('customerHeroJoinDate').textContent = `Từ ${joinDateStr}`;
+
+                document.getElementById('customerCurrentPoints').textContent = (customer.loyalty_points || 0).toLocaleString();
+                const approxSpent = (customer.loyalty_points || 0) * 10;
+                document.getElementById('customerTotalSpending').textContent = approxSpent.toLocaleString() + '₫';
+                
+                document.getElementById('editFullName').value = customer.full_name || '';
+                document.getElementById('editPhone').value = customer.phone || '';
+                document.getElementById('editEmail').value = customer.email || '';
+                document.getElementById('editDOB').value = customer.date_of_birth ? customer.date_of_birth.substring(0, 10) : '';
+                document.getElementById('editNotes').value = '';
+
+                const progressContainer = document.getElementById('customerProgressContainer');
+                if (tier.id === 'vip') {
+                    progressContainer.style.display = 'none';
+                } else {
+                    progressContainer.style.display = 'block';
+                    document.getElementById('customerNextTierName').textContent = tier.nextLabel;
+                    const percent = Math.min(100, Math.floor((customer.loyalty_points / tier.nextLimit) * 100));
+                    document.getElementById('customerNextTierProgress').textContent = `${(customer.loyalty_points || 0).toLocaleString()} / ${tier.nextLimit.toLocaleString()} điểm`;
+                    document.getElementById('customerProgressFill').style.width = `${percent}%`;
+                    document.getElementById('customerNextTierHint').textContent = `Còn cần tích thêm ${(tier.nextLimit - customer.loyalty_points).toLocaleString()} điểm để lên hạng ${tier.nextLabel} 🥇`;
+                }
+
+                // Load Points logs
+                const loyaltyRes = await fetch(`${API_BASE}/customers/${id}/loyalty`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const loyaltyResult = await loyaltyRes.json();
+                if (loyaltyResult.success) {
+                    const txns = loyaltyResult.data.transactions || [];
+                    const historyList = document.getElementById('customerPointsHistoryList');
+                    historyList.innerHTML = txns.map(t => {
+                        const isAdd = t.points_change > 0;
+                        const iconBg = isAdd ? '#d1fae5' : '#fef3c7';
+                        const iconCol = isAdd ? '#065f46' : '#92400e';
+                        const icon = isAdd ? 'fa-plus' : 'fa-minus';
+                        const ptsCol = isAdd ? '#10b981' : '#ef4444';
+                        const ptsSign = isAdd ? '+' : '';
+                        const dateStr = new Date(t.created_at).toLocaleString('vi-VN');
+                        return `
+                            <div class="point-entry">
+                                <div class="pe-icon" style="background:${iconBg};color:${iconCol};"><i class="fa-solid ${icon} fa-xs"></i></div>
+                                <div class="pe-info">
+                                    <h4>${escapeHtml(t.description || '')}</h4>
+                                    <p>${dateStr}</p>
+                                </div>
+                                <div class="pe-pts" style="color:${ptsCol};">${ptsSign}${t.points_change} đ</div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    if (txns.length === 0) {
+                        historyList.innerHTML = '<p style="font-size:12px;color:#9ca3af;text-align:center;padding:10px;">Chưa có lịch sử tích điểm</p>';
+                    }
+                }
+
+                // Load Orders logs
+                const orderBase = API_BASE.replace('/identity', '/order');
+                const orderRes = await fetch(`${orderBase}/orders?q=${encodeURIComponent(customer.phone)}`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (orderRes.ok) {
+                    const orderResult = await orderRes.json();
+                    if (orderResult.success) {
+                        const orders = (orderResult.data || []).slice(0, 5);
+                        document.getElementById('customerTotalOrders').textContent = (orderResult.data || []).length;
+                        let totalSpent = 0;
+                        (orderResult.data || []).forEach(o => {
+                            totalSpent += parseFloat(o.total_amount) || 0;
+                        });
+                        document.getElementById('customerTotalSpending').textContent = totalSpent.toLocaleString() + '₫';
+
+                        const purchaseList = document.getElementById('customerPurchaseHistoryList');
+                        purchaseList.innerHTML = orders.map(o => {
+                            const dateStr = new Date(o.created_at).toLocaleDateString('vi-VN');
+                            const itemsCount = (o.items || []).length || 1;
+                            const amount = parseFloat(o.total_amount) || 0;
+                            return `
+                                <div class="purchase-row">
+                                    <span style="font-size:11px;font-weight:700;color:#3b82f6;">#${escapeHtml(o.order_code || 'ORD-' + o.id)}</span>
+                                    <div>
+                                        <div style="font-size:12px;font-weight:600;color:#0f172a;">${itemsCount} sản phẩm</div>
+                                        <div style="font-size:10px;color:#9ca3af;">${dateStr}</div>
+                                    </div>
+                                    <span style="font-weight:700;font-size:13px;">${amount.toLocaleString()}₫</span>
+                                </div>
+                            `;
+                        }).join('');
+
+                        if (orders.length === 0) {
+                            purchaseList.innerHTML = '<p style="font-size:12px;color:#9ca3af;text-align:center;padding:10px;">Chưa có đơn hàng nào</p>';
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Error loading customer details:", error);
+                showToast("Lỗi kết nối khi tải chi tiết khách hàng.", "error");
+            }
+        }
+
+        async function createCustomer() {
+            const fullName = document.getElementById('editFullName').value.trim();
+            const phone = document.getElementById('editPhone').value.trim();
+            const email = document.getElementById('editEmail').value.trim();
+            const dob = document.getElementById('editDOB').value.trim();
+
+            if (!fullName || !phone || !email) {
+                showToast('Vui lòng điền đầy đủ Tên, SĐT, và Email.', 'error');
+                return;
+            }
+
+            try {
+                const token = getAdminToken();
+                if (!token) return;
+
+                const response = await fetch(`${API_BASE}/customers`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({
+                        full_name: fullName,
+                        phone: phone,
+                        email: email,
+                        password: 'Customer123@',
+                        date_of_birth: dob || null
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showToast('Đăng ký khách hàng mới thành công!', 'success');
+                    closeCustomerModal();
+                    renderTable();
+                } else {
+                    showToast('Lỗi: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('Lỗi kết nối máy chủ.', 'error');
+            }
+        }
+
+        async function saveCustomerChanges() {
+            if (!activeCustomerId) return;
+            const fullName = document.getElementById('editFullName').value.trim();
+            const phone = document.getElementById('editPhone').value.trim();
+            const email = document.getElementById('editEmail').value.trim();
+            const dob = document.getElementById('editDOB').value.trim();
+
+            if (!fullName || !phone || !email) {
+                showToast('Vui lòng điền đầy đủ Tên, SĐT, và Email.', 'error');
+                return;
+            }
+
+            try {
+                const token = getAdminToken();
+                if (!token) return;
+
+                const response = await fetch(`${API_BASE}/customers/${activeCustomerId}`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({
+                        full_name: fullName,
+                        phone: phone,
+                        email: email,
+                        date_of_birth: dob || null
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showToast('Cập nhật thông tin khách hàng thành công!', 'success');
+                    closeCustomerModal();
+                    renderTable();
+                } else {
+                    showToast('Lỗi: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('Lỗi kết nối máy chủ.', 'error');
+            }
+        }
+
+        async function adjustPointsPrompt() {
+            if (!activeCustomerId) return;
+            const pointsChangeRaw = prompt("Nhập số điểm cần điều chỉnh (ví dụ: 100 để cộng thêm, -50 để trừ bớt):");
+            if (pointsChangeRaw === null) return;
+            const pointsChange = parseInt(pointsChangeRaw);
+            if (Number.isNaN(pointsChange) || pointsChange === 0) {
+                showToast('Số điểm điều chỉnh không hợp lệ.', 'error');
+                return;
+            }
+
+            const note = prompt("Nhập ghi chú điều chỉnh (không bắt buộc):") || "Điều chỉnh điểm từ quản trị viên";
+
+            try {
+                const token = getAdminToken();
+                if (!token) return;
+
+                const response = await fetch(`${API_BASE}/customers/${activeCustomerId}/loyalty/adjust`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({
+                        points_change: pointsChange,
+                        admin_note: note,
+                        description: note
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showToast('Điều chỉnh điểm thành công!', 'success');
+                    await loadCustomerDetails(activeCustomerId);
+                    renderTable();
+                } else {
+                    showToast('Lỗi: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('Lỗi kết nối máy chủ.', 'error');
+            }
+        }
+
+        async function loadAllPointsTransactions() {
+            const tbody = document.getElementById('pointsHistoryTableBody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">Đang tải lịch sử điểm...</td></tr>';
+            
+            try {
+                const token = getAdminToken();
+                if (!token) return;
+
+                const searchInput = document.getElementById('pointsSearchInput');
+                const query = searchInput ? searchInput.value.trim() : '';
+
+                let url = `${API_BASE}/customers/loyalty/transactions`;
+                if (query) {
+                    url += '?q=' + encodeURIComponent(query);
+                }
+
+                const res = await fetch(url, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const result = await res.json();
+                if (result.success) {
+                    const txns = result.data || [];
+                    if (txns.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">Chưa có giao dịch điểm nào.</td></tr>';
+                        return;
+                    }
+
+                    const typeLabels = {
+                        earn_purchase: { label: 'Tích điểm', class: 'published' },
+                        earn_bonus: { label: 'Thưởng', class: 'published' },
+                        redeem: { label: 'Quy đổi', class: 'draft' },
+                        adjust_add: { label: 'Điều chỉnh', class: 'review' },
+                        adjust_deduct: { label: 'Điều chỉnh', class: 'review' }
+                    };
+
+                    const runningPointsMap = {};
+                    tbody.innerHTML = txns.map(t => {
+                        const typeInfo = typeLabels[t.transaction_type] || { label: t.transaction_type, class: 'draft' };
+                        const isAdd = t.points_change > 0;
+                        const ptsColor = isAdd ? '#10b981' : '#ef4444';
+                        const ptsSign = isAdd ? '+' : '';
+                        const dateStr = new Date(t.created_at).toLocaleString('vi-VN');
+                        const initials = t.customer_name ? t.customer_name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase() : 'KH';
+
+                        if (runningPointsMap[t.customer_id] === undefined) {
+                            runningPointsMap[t.customer_id] = parseInt(t.current_points) || 0;
+                        }
+                        const postBalance = runningPointsMap[t.customer_id];
+                        runningPointsMap[t.customer_id] -= t.points_change;
+
+                        return `
+                            <tr>
+                                <td>
+                                    <div style="display:flex;align-items:center;gap:8px;">
+                                        <div class="customer-avatar" style="background:#f1f5f9;color:#334155;font-size:12px;">${initials}</div>
+                                        <div>
+                                            <div style="font-weight:600;font-size:13px;">${escapeHtml(t.customer_name || 'Khách vãng lai')}</div>
+                                            <div style="font-size:11px;color:#9ca3af;">${escapeHtml(t.customer_phone || '')}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="pub-status ${typeInfo.class}" style="font-size:11px;border-radius:6px;">${typeInfo.label}</span></td>
+                                <td style="font-size:12px;color:#374151;">${escapeHtml(t.description || '')}</td>
+                                <td style="font-weight:700;color:${ptsColor};">${ptsSign}${t.points_change} điểm</td>
+                                <td style="font-weight:600;">${postBalance.toLocaleString()} điểm</td>
+                                <td style="font-size:12px;color:#6b7280;">${dateStr}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:#ef4444;">Lỗi: ${result.message}</td></tr>`;
+                }
+            } catch (error) {
+                console.error("Error loading transactions:", error);
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#ef4444;">Lỗi kết nối máy chủ.</td></tr>';
+            }
+        }
+
+        // Search event listeners with 300ms debounce
+        let customerSearchTimeout = null;
+        let pointsSearchTimeout = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTable();
+
+            const customerSearch = document.getElementById('customerSearchInput');
+            if (customerSearch) {
+                customerSearch.addEventListener('input', () => {
+                    clearTimeout(customerSearchTimeout);
+                    customerSearchTimeout = setTimeout(() => {
+                        renderTable();
+                    }, 300);
+                });
+                customerSearch.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        clearTimeout(customerSearchTimeout);
+                        renderTable();
+                    }
+                });
+            }
+
+            const pointsSearch = document.getElementById('pointsSearchInput');
+            if (pointsSearch) {
+                pointsSearch.addEventListener('input', () => {
+                    clearTimeout(pointsSearchTimeout);
+                    pointsSearchTimeout = setTimeout(() => {
+                        loadAllPointsTransactions();
+                    }, 300);
+                });
+                pointsSearch.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        clearTimeout(pointsSearchTimeout);
+                        loadAllPointsTransactions();
+                    }
+                });
+            }
+        });
     </script>
 
     <script src="js/admin-components.js"></script>
     <script>document.addEventListener('DOMContentLoaded', () => { renderAdminLayout('crm'); });</script>
 </body>
-
 </html>

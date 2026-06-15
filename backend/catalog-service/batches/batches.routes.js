@@ -317,6 +317,14 @@ router.post('/', canWriteCatalog, requireFields(['supplier_id', 'received_date',
 
     if (status === 'completed') {
       await writeInboundMovements(conn, batchId, batchCode, req.userId);
+      const debtAmount = totalAmount - safePaidAmount;
+      await conn.query(
+        `UPDATE suppliers
+         SET total_purchase_value = total_purchase_value + ?,
+             current_debt = current_debt + ?
+         WHERE id = ?`,
+        [totalAmount, debtAmount, supplier_id]
+      );
     }
 
     await conn.query('COMMIT');
@@ -475,10 +483,18 @@ router.put('/:id', canWriteCatalog, validateEnum('status', ['draft', 'completed'
         [batchId]
       );
       const [[completedBatch]] = await conn.query(
-        `SELECT batch_code FROM batches WHERE id = ?`,
+        `SELECT batch_code, supplier_id, total_amount, paid_amount FROM batches WHERE id = ?`,
         [batchId]
       );
       await writeInboundMovements(conn, batchId, completedBatch.batch_code, req.userId);
+      const debtAmount = Number(completedBatch.total_amount) - Number(completedBatch.paid_amount);
+      await conn.query(
+        `UPDATE suppliers
+         SET total_purchase_value = total_purchase_value + ?,
+             current_debt = current_debt + ?
+         WHERE id = ?`,
+        [Number(completedBatch.total_amount), debtAmount, completedBatch.supplier_id]
+      );
     }
 
     await conn.query('COMMIT');

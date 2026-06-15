@@ -13,8 +13,15 @@ const PUBLIC_ROUTES = [
   // ── Nội dung CMS công khai (website) ────────────────────────────────────
   { method: 'GET', path: '/api/cms/articles' },
   { method: 'GET', path: '/api/cms/banners' },
+  { method: 'GET', path: '/api/cms/categories' },
+  { method: 'GET', path: '/api/cms/diseases' },
   { method: 'GET', path: '/api/cms/disease-categories' },
   { method: 'GET', path: '/api/cms/store-config/public' },
+  { method: 'GET', path: '/api/cms/pages' },
+  { method: 'GET', path: '/api/cms/promotions/active' },
+  { method: 'GET', path: '/api/cms/promotions/validate' },
+  { method: 'GET', path: '/api/cms/trending-searches' },
+  { method: 'POST', path: '/api/cms/trending-searches/track' },
 
   // ── Danh mục sản phẩm công khai ─────────────────────────────────────────
   { method: 'GET', path: '/api/catalog/products' },

@@ -29,7 +29,7 @@
         <div class="page-header">
             <div>
                 <h1 class="page-title">Trang Chủ</h1>
-                <p class="page-subtitle">Tổng quan hoạt động kinh doanh — Hôm nay, 05/03/2026</p>
+                <p class="page-subtitle" id="dashboardSubtitle">Tổng quan hoạt động kinh doanh — <span id="todayDate">...</span></p>
             </div>
             <div class="page-actions">
                 <button class="btn-secondary">
@@ -52,10 +52,10 @@
                         <i class="fa-solid fa-chart-line"></i>
                     </div>
                 </div>
-                <div class="summary-card-value">12.5M</div>
-                <span class="summary-card-trend up">
-                    <i class="fa-solid fa-arrow-up"></i> +12.5% so với hôm qua
-                </span>
+                <div class="summary-card-value" id="statRevenue">
+                    <i class="fa-solid fa-circle-notch fa-spin" style="font-size:18px;color:#d1d5db;"></i>
+                </div>
+                <span class="summary-card-trend" id="statRevenueTrend">—</span>
             </div>
 
             <!-- Card 2: POS Orders -->
@@ -66,10 +66,10 @@
                         <i class="fa-solid fa-cash-register"></i>
                     </div>
                 </div>
-                <div class="summary-card-value">47</div>
-                <span class="summary-card-trend up">
-                    <i class="fa-solid fa-arrow-up"></i> +5% hôm nay
-                </span>
+                <div class="summary-card-value" id="statPosOrders">
+                    <i class="fa-solid fa-circle-notch fa-spin" style="font-size:18px;color:#d1d5db;"></i>
+                </div>
+                <span class="summary-card-trend" id="statPosOrdersTrend">—</span>
             </div>
 
             <!-- Card 3: Web Orders -->
@@ -80,24 +80,24 @@
                         <i class="fa-solid fa-globe"></i>
                     </div>
                 </div>
-                <div class="summary-card-value">18</div>
-                <span class="summary-card-trend down">
-                    <i class="fa-solid fa-arrow-down"></i> -3% hôm nay
-                </span>
+                <div class="summary-card-value" id="statWebOrders">
+                    <i class="fa-solid fa-circle-notch fa-spin" style="font-size:18px;color:#d1d5db;"></i>
+                </div>
+                <span class="summary-card-trend" id="statWebOrdersTrend">—</span>
             </div>
 
-            <!-- Card 4: New Customers -->
+            <!-- Card 4: Low Stock Alert -->
             <div class="summary-card">
                 <div class="summary-card-top">
-                    <span class="summary-card-label">Khách hàng mới</span>
+                    <span class="summary-card-label">Sản phẩm sắp hết</span>
                     <div class="summary-card-icon orange">
-                        <i class="fa-solid fa-user-plus"></i>
+                        <i class="fa-solid fa-triangle-exclamation"></i>
                     </div>
                 </div>
-                <div class="summary-card-value">9</div>
-                <span class="summary-card-trend up">
-                    <i class="fa-solid fa-arrow-up"></i> +28% hôm nay
-                </span>
+                <div class="summary-card-value" id="statLowStock">
+                    <i class="fa-solid fa-circle-notch fa-spin" style="font-size:18px;color:#d1d5db;"></i>
+                </div>
+                <span class="summary-card-trend" id="statLowStockLabel">sản phẩm cần nhập thêm</span>
             </div>
 
         </div>
@@ -106,43 +106,22 @@
         <div class="chart-card">
             <div class="chart-header">
                 <h3 class="chart-title"><i class="fa-solid fa-chart-column"
-                        style="color:#10b981;margin-right:8px;"></i>Biểu đồ doanh thu</h3>
+                        style="color:#10b981;margin-right:8px;"></i>Biểu đồ doanh thu 7 ngày gần nhất</h3>
                 <div class="chart-filters">
-                    <button class="chart-filter-btn active">7 ngày</button>
-                    <button class="chart-filter-btn">30 ngày</button>
-                    <button class="chart-filter-btn">Quý này</button>
+                    <button class="chart-filter-btn active" onclick="loadRevenueChart(7, this)">7 ngày</button>
+                    <button class="chart-filter-btn" onclick="loadRevenueChart(30, this)">30 ngày</button>
                 </div>
             </div>
             <div class="chart-placeholder">
-                <div class="chart-bars">
-                    <div class="chart-bar" style="height:120px; background:linear-gradient(180deg,#10b981,#059669);">
-                        <span class="chart-bar-value">8.2M</span>
-                        <span class="chart-bar-label">T2</span>
-                    </div>
-                    <div class="chart-bar" style="height:155px; background:linear-gradient(180deg,#10b981,#059669);">
-                        <span class="chart-bar-value">10.5M</span>
-                        <span class="chart-bar-label">T3</span>
-                    </div>
-                    <div class="chart-bar" style="height:95px; background:linear-gradient(180deg,#10b981,#059669);">
-                        <span class="chart-bar-value">6.8M</span>
-                        <span class="chart-bar-label">T4</span>
-                    </div>
-                    <div class="chart-bar" style="height:175px; background:linear-gradient(180deg,#10b981,#059669);">
-                        <span class="chart-bar-value">12.1M</span>
-                        <span class="chart-bar-label">T5</span>
-                    </div>
-                    <div class="chart-bar" style="height:140px; background:linear-gradient(180deg,#10b981,#059669);">
-                        <span class="chart-bar-value">9.4M</span>
-                        <span class="chart-bar-label">T6</span>
-                    </div>
-                    <div class="chart-bar" style="height:190px; background:linear-gradient(180deg,#10b981,#059669);">
-                        <span class="chart-bar-value">13.8M</span>
-                        <span class="chart-bar-label">T7</span>
-                    </div>
-                    <div class="chart-bar" style="height:160px; background:linear-gradient(180deg,#34d399,#10b981);">
-                        <span class="chart-bar-value">12.5M</span>
-                        <span class="chart-bar-label">CN</span>
-                    </div>
+                <div class="chart-bars" id="revenueChartBars">
+                    <!-- Skeleton bars -->
+                    <div class="chart-bar" style="height:60px;background:#e5e7eb;border-radius:6px 6px 0 0;"></div>
+                    <div class="chart-bar" style="height:80px;background:#e5e7eb;border-radius:6px 6px 0 0;"></div>
+                    <div class="chart-bar" style="height:50px;background:#e5e7eb;border-radius:6px 6px 0 0;"></div>
+                    <div class="chart-bar" style="height:100px;background:#e5e7eb;border-radius:6px 6px 0 0;"></div>
+                    <div class="chart-bar" style="height:70px;background:#e5e7eb;border-radius:6px 6px 0 0;"></div>
+                    <div class="chart-bar" style="height:90px;background:#e5e7eb;border-radius:6px 6px 0 0;"></div>
+                    <div class="chart-bar" style="height:75px;background:#e5e7eb;border-radius:6px 6px 0 0;"></div>
                 </div>
             </div>
         </div>
@@ -157,7 +136,7 @@
                         <span class="alert-dot danger"></span>
                         Cảnh báo sắp hết hàng
                     </span>
-                    <span class="alert-count danger">5 sản phẩm</span>
+                    <span class="alert-count danger" id="lowStockCount">—</span>
                 </div>
                 <table class="alert-table">
                     <thead>
@@ -167,32 +146,10 @@
                             <th>Tồn kho</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td class="table-medicine-name">Amoxicillin 500mg</td>
-                            <td class="table-sku">MED-0042</td>
-                            <td><span class="stock-critical">3</span></td>
-                        </tr>
-                        <tr>
-                            <td class="table-medicine-name">Paracetamol 500mg</td>
-                            <td class="table-sku">MED-0015</td>
-                            <td><span class="stock-critical">5</span></td>
-                        </tr>
-                        <tr>
-                            <td class="table-medicine-name">Omeprazole 20mg</td>
-                            <td class="table-sku">MED-0078</td>
-                            <td><span class="stock-critical">7</span></td>
-                        </tr>
-                        <tr>
-                            <td class="table-medicine-name">Nhiệt kế Omron MC-246</td>
-                            <td class="table-sku">DEV-0112</td>
-                            <td><span class="stock-critical">8</span></td>
-                        </tr>
-                        <tr>
-                            <td class="table-medicine-name">Vitamin C DHC 1000mg</td>
-                            <td class="table-sku">SUP-0023</td>
-                            <td><span class="stock-low">12</span></td>
-                        </tr>
+                    <tbody id="lowStockTableBody">
+                        <tr><td colspan="3" style="text-align:center;padding:20px;color:#9ca3af;">
+                            <i class="fa-solid fa-circle-notch fa-spin"></i> Đang tải...
+                        </td></tr>
                     </tbody>
                 </table>
             </div>
@@ -204,7 +161,7 @@
                         <span class="alert-dot warning"></span>
                         Thuốc sắp hết hạn
                     </span>
-                    <span class="alert-count warning">4 lô hàng</span>
+                    <span class="alert-count warning" id="expiringCount">—</span>
                 </div>
                 <table class="alert-table">
                     <thead>
@@ -215,35 +172,10 @@
                             <th></th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td class="table-medicine-name">Efferalgan 500mg</td>
-                            <td class="table-sku">LO-2024-0892</td>
-                            <td><span class="expiry-badge urgent"><i class="fa-solid fa-triangle-exclamation"></i>
-                                    12/03/2026</span></td>
-                            <td><button class="btn-restock"><i class="fa-solid fa-rotate"></i> Nhập thêm</button></td>
-                        </tr>
-                        <tr>
-                            <td class="table-medicine-name">Thuốc ho Prospan</td>
-                            <td class="table-sku">LO-2024-1105</td>
-                            <td><span class="expiry-badge urgent"><i class="fa-solid fa-triangle-exclamation"></i>
-                                    20/03/2026</span></td>
-                            <td><button class="btn-restock"><i class="fa-solid fa-rotate"></i> Nhập thêm</button></td>
-                        </tr>
-                        <tr>
-                            <td class="table-medicine-name">Smecta hương cam</td>
-                            <td class="table-sku">LO-2025-0034</td>
-                            <td><span class="expiry-badge soon"><i class="fa-regular fa-clock"></i> 15/04/2026</span>
-                            </td>
-                            <td><button class="btn-restock"><i class="fa-solid fa-rotate"></i> Nhập thêm</button></td>
-                        </tr>
-                        <tr>
-                            <td class="table-medicine-name">Betadine 10%</td>
-                            <td class="table-sku">LO-2025-0087</td>
-                            <td><span class="expiry-badge soon"><i class="fa-regular fa-clock"></i> 01/05/2026</span>
-                            </td>
-                            <td><button class="btn-restock"><i class="fa-solid fa-rotate"></i> Nhập thêm</button></td>
-                        </tr>
+                    <tbody id="expiringTableBody">
+                        <tr><td colspan="4" style="text-align:center;padding:20px;color:#9ca3af;">
+                            <i class="fa-solid fa-circle-notch fa-spin"></i> Đang tải...
+                        </td></tr>
                     </tbody>
                 </table>
             </div>
@@ -254,26 +186,23 @@
 
     <!-- ============ SCRIPTS ============ -->
     <script>
-        // Chart filter toggle
-        document.querySelectorAll('.chart-filter-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.chart-filter-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
+        // Hiện ngày hôm nay
+        const todayEl = document.getElementById('todayDate');
+        if (todayEl) {
+            todayEl.textContent = 'Hôm nay, ' + new Date().toLocaleDateString('vi-VN', {
+                day: '2-digit', month: '2-digit', year: 'numeric'
             });
-        });
+        }
 
-        // Sidebar active state
-        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-        document.querySelectorAll('.sidebar-link').forEach(link => {
-            const href = link.getAttribute('href');
-            if (href === currentPage) {
-                link.classList.add('active');
-            } else if (href !== currentPage) {
-                // Keep the one we set in HTML
-            }
-        });
+        // Chart filter toggle
+        function loadRevenueChart(days, btn) {
+            document.querySelectorAll('.chart-filter-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            // Re-trigger chart load if admin-loader exposes it
+            if (window.loadAdminRevenueChart) window.loadAdminRevenueChart(days);
+        }
 
-        // Animate summary card values on load
+        // Animate summary cards on load
         document.querySelectorAll('.summary-card').forEach((card, idx) => {
             card.style.opacity = '0';
             card.style.transform = 'translateY(16px)';
@@ -283,18 +212,7 @@
                 card.style.transform = 'translateY(0)';
             }, 100 + idx * 80);
         });
-
-        // Animate chart bars on load
-        document.querySelectorAll('.chart-bar').forEach((bar, idx) => {
-            const targetHeight = bar.style.height;
-            bar.style.height = '0';
-            bar.style.transition = `height 0.6s cubic-bezier(0.4, 0, 0.2, 1) ${idx * 0.08}s`;
-            setTimeout(() => {
-                bar.style.height = targetHeight;
-            }, 200);
-        });
     </script>
-
 
     <!-- Shared Layout Components -->
     <script src="js/admin-components.js"></script>
@@ -303,6 +221,8 @@
             renderAdminLayout('dashboard');
         });
     </script>
+    <script src="js/admin-loader.js"></script>
+
 </body>
 
 </html>

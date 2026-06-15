@@ -763,8 +763,10 @@
     <script src="../assets/js/mega-menu-loader.js"></script>
     <script src="../assets/js/locations.js"></script>
     <script src="../assets/js/components.js"></script>
+    <script src="../assets/js/client-api.js"></script>
     <script>
-        const API_BASE = 'http://localhost:8000/api/order';
+        const GATEWAY = ((window.MGClientApi && window.MGClientApi.gatewayOrigin) || window.MG_API_GATEWAY_ORIGIN || 'http://localhost:8000').replace(/\/+$/, '');
+        const API_BASE = GATEWAY + '/api/order';
 
         function getProductThumbnail(thumbnail) {
             if (!thumbnail || thumbnail.length < 5 || thumbnail.includes('placeholder.png')) {

@@ -38,6 +38,7 @@ function exportText(value, maxLength = null) {
 }
 
 function sqlJson(value) {
+
   if (value === null || value === undefined) return 'NULL';
   return sqlString(JSON.stringify(value));
 }
@@ -238,7 +239,7 @@ function exportCatalogProducts() {
     '',
   ].join('\n');
 
-  fs.writeFileSync(path.join(DB_DIR, '99_seed_clean_catalog_products.sql'), sql, 'utf8');
+  fs.writeFileSync(path.join(DB_DIR, '11_seed_clean_catalog_products.sql'), sql, 'utf8');
 }
 
 function exportCmsContent() {
@@ -291,12 +292,12 @@ function exportCmsContent() {
     '',
   ].join('\n');
 
-  fs.writeFileSync(path.join(DB_DIR, '99_seed_clean_cms_content.sql'), sql, 'utf8');
+  fs.writeFileSync(path.join(DB_DIR, '12_seed_clean_cms_content.sql'), sql, 'utf8');
 }
 
 exportCatalogProducts();
 exportCmsContent();
 
 console.log('Generated:');
-console.log(path.relative(REPO_ROOT, path.join(DB_DIR, '99_seed_clean_catalog_products.sql')));
-console.log(path.relative(REPO_ROOT, path.join(DB_DIR, '99_seed_clean_cms_content.sql')));
+console.log(path.relative(REPO_ROOT, path.join(DB_DIR, '11_seed_clean_catalog_products.sql')));
+console.log(path.relative(REPO_ROOT, path.join(DB_DIR, '12_seed_clean_cms_content.sql')));

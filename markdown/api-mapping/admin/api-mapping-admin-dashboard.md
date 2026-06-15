@@ -1,9 +1,8 @@
 # API Mapping — admin/index.html (Dashboard)
 
-> **Trang**: Dashboard tổng quan kinh doanh
-> **Auth yêu cầu**: Có (Admin/Manager)
+> **Trang**: Dashboard tổng quan kinh doanh  
+> **Auth yêu cầu**: Có (Admin/Manager)  
 > **Ngày phân tích**: 2026-04-10
-> **Cập nhật theo code hiện tại**: hai API cảnh báo tồn kho trong bản thiết kế cũ chưa có trong catalog-service.
 
 ---
 
@@ -31,16 +30,6 @@
 ---
 
 ## API chi tiết
-
-## Trạng thái hiện tại của phần catalog
-
-| Nhu cầu dashboard | API trong bản thiết kế | Trạng thái |
-|---|---|---|
-| Cảnh báo sắp hết hàng | `GET /api/catalog/inventory/alerts/low-stock` | Chưa có |
-| Thuốc sắp hết hạn | `GET /api/catalog/inventory/alerts/expiring` | Chưa có |
-| Thống kê tồn kho tổng quan | `GET /api/catalog/inventory/stats` | Đã có, có thể dùng tạm |
-
-Nếu cần demo nhanh dashboard, dùng `GET /api/catalog/inventory/stats` để lấy số lượng sắp hết hàng và sắp hết hạn. Danh sách chi tiết từng sản phẩm/lô cần thêm API riêng ở giai đoạn sau.
 
 ### 1. Thống kê tổng quan hôm nay
 

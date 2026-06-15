@@ -3,7 +3,8 @@
  * Xử lý hiển thị và tương tác trên trang giỏ hàng (cart.html)
  */
 
-const API_BASE = 'http://localhost:8000/api/order';
+const GATEWAY = ((window.MGClientApi && window.MGClientApi.gatewayOrigin) || window.MG_API_GATEWAY_ORIGIN || 'http://localhost:8000').replace(/\/+$/, '');
+const API_BASE = GATEWAY + '/api/order';
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('[CartPage] DOMContentLoaded fired');
@@ -175,7 +176,50 @@ function renderCartUI(data) {
 
     container.innerHTML = headerHtml + itemsHtml + actionsHtml;
 
-    // Update Summary
+    // Gắn data giá vào từng row để dùng khi checkbox thay đổi
+    items.forEach(item => {
+        const row = container.querySelector(`.cart-item[data-id="${item.id}"]`);
+        if (row) {
+            row.dataset.subtotal = parseFloat(item.subtotal) || 0;
+        }
+    });
+
+    // Hàm tính lại tổng từ các item được chọn
+    function recalcFromChecked() {
+        const checkedRows = container.querySelectorAll('.cart-item .item-checkbox:checked');
+        let total = 0;
+        checkedRows.forEach(cb => {
+            const row = cb.closest('.cart-item');
+            if (row) total += parseFloat(row.dataset.subtotal) || 0;
+        });
+        activeSubtotal = total;
+        recalculateSummary();
+    }
+
+    // Gắn event cho từng checkbox item
+    container.querySelectorAll('.item-checkbox').forEach(cb => {
+        cb.addEventListener('change', () => {
+            // Đồng bộ trạng thái #selectAll
+            const allBoxes = container.querySelectorAll('.item-checkbox');
+            const allChecked = [...allBoxes].every(b => b.checked);
+            const selectAll = document.getElementById('selectAll');
+            if (selectAll) selectAll.checked = allChecked;
+            recalcFromChecked();
+        });
+    });
+
+    // Gắn event cho checkbox "Chọn tất cả"
+    const selectAll = document.getElementById('selectAll');
+    if (selectAll) {
+        selectAll.addEventListener('change', () => {
+            container.querySelectorAll('.item-checkbox').forEach(cb => {
+                cb.checked = selectAll.checked;
+            });
+            recalcFromChecked();
+        });
+    }
+
+    // Update Summary (lần đầu tính tất cả vì mặc định tất cả được check)
     updateSummaryUI(data.summary || {});
 
     // Auto-apply the best eligible discount code

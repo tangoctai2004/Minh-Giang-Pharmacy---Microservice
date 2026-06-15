@@ -793,7 +793,7 @@
             </div>
             <div class="pos-topbar-user">
                 <span class="avatar"><i class="fa-solid fa-user"></i></span>
-                <span>Nguyễn Văn A</span>
+                <span>...</span>
             </div>
         </div>
     </header>
@@ -806,11 +806,11 @@
         </div>
 
         <div class="hist-filter-group">
-            <input type="date" class="hist-date-input" value="2026-03-05">
-            <button class="hist-filter-btn active">
+            <input type="date" class="hist-date-input" id="filterDate">
+            <button class="hist-filter-btn active" id="btnToday">
                 <i class="fa-solid fa-filter"></i> Hôm nay
             </button>
-            <button class="hist-filter-btn">
+            <button class="hist-filter-btn" id="btnThisWeek">
                 <i class="fa-regular fa-calendar"></i> Tuần này
             </button>
         </div>
@@ -825,11 +825,15 @@
 
         <div class="hist-stats">
             <div class="hist-stat">
-                <div class="hist-stat-value">24</div>
-                <div class="hist-stat-label">Đơn hàng</div>
+                <div class="hist-stat-value">--</div>
+                <div class="hist-stat-label">Tổng đơn</div>
             </div>
             <div class="hist-stat">
-                <div class="hist-stat-value">5.2M</div>
+                <div class="hist-stat-value" style="color: #059669;">--</div>
+                <div class="hist-stat-label">Đơn POS hôm nay</div>
+            </div>
+            <div class="hist-stat" style="min-width: 100px;">
+                <div class="hist-stat-value" style="color: #005824;">--</div>
                 <div class="hist-stat-label">Doanh thu</div>
             </div>
         </div>
@@ -877,77 +881,12 @@
                 <h3><i class="fa-solid fa-file-invoice"></i> Chi tiết hoá đơn</h3>
                 <button class="detail-close" onclick="closeDetail()"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="detail-body">
-                <!-- Meta Info -->
-                <div class="detail-meta">
-                    <div class="detail-meta-item">
-                        <span class="detail-meta-label">Mã hoá đơn</span>
-                        <span class="detail-meta-value" id="detailId">HD-001</span>
-                    </div>
-                    <div class="detail-meta-item">
-                        <span class="detail-meta-label">Thời gian</span>
-                        <span class="detail-meta-value">20:45 — 05/03/2026</span>
-                    </div>
-                    <div class="detail-meta-item">
-                        <span class="detail-meta-label">Thu ngân</span>
-                        <span class="detail-meta-value">Nguyễn Văn A</span>
-                    </div>
-                    <div class="detail-meta-item">
-                        <span class="detail-meta-label">Thanh toán</span>
-                        <span class="detail-meta-value" style="color:#059669;">Tiền mặt</span>
-                    </div>
-                </div>
-
-                <div class="detail-divider"></div>
-
-                <!-- Items -->
-                <div class="detail-section-title">Sản phẩm đã mua</div>
-                <div class="detail-item-list">
-                    <div class="detail-item-row">
-                        <div class="detail-item-info">
-                            <div class="detail-item-name">Panadol Extra (Hộp 12 viên)</div>
-                            <div class="detail-item-qty">65,000₫ × 2</div>
-                        </div>
-                        <div class="detail-item-price">130,000₫</div>
-                    </div>
-                    <div class="detail-item-row">
-                        <div class="detail-item-info">
-                            <div class="detail-item-name">Amoxicillin 500mg</div>
-                            <div class="detail-item-qty">35,000₫ × 1</div>
-                        </div>
-                        <div class="detail-item-price">35,000₫</div>
-                    </div>
-                    <div class="detail-item-row">
-                        <div class="detail-item-info">
-                            <div class="detail-item-name">Vitamin C DHC 1000mg</div>
-                            <div class="detail-item-qty">120,000₫ × 1</div>
-                        </div>
-                        <div class="detail-item-price">120,000₫</div>
-                    </div>
-                </div>
-
-                <!-- Summary -->
-                <div class="detail-summary">
-                    <div class="detail-summary-row">
-                        <span class="label">Tạm tính</span>
-                        <span class="value">285,000₫</span>
-                    </div>
-                    <div class="detail-summary-row discount">
-                        <span class="label">Giảm giá</span>
-                        <span class="value">-15,000₫</span>
-                    </div>
-                    <div class="detail-summary-row">
-                        <span class="label">Tiền khách đưa</span>
-                        <span class="value">300,000₫</span>
-                    </div>
-                    <div class="detail-summary-row">
-                        <span class="label">Tiền thối</span>
-                        <span class="value">30,000₫</span>
-                    </div>
-                    <div class="detail-summary-total">
-                        <span class="label">TỔNG CỘNG</span>
-                        <span class="value">270,000₫</span>
-                    </div>
+            <div class="detail-body" id="detailBodyContent">
+                <!-- Placeholder: hiển thị khi chưa chọn đơn hàng nào -->
+                <div id="detailPlaceholder" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 300px; color: #9ca3af; text-align: center; gap: 12px;">
+                    <i class="fa-regular fa-file-lines" style="font-size: 48px; color: #d1d5db;"></i>
+                    <div style="font-size: 14px; font-weight: 600; color: #6b7280;">Chọn một giao dịch</div>
+                    <div style="font-size: 12px; color: #9ca3af;">Nhấp vào một dòng trong bảng<br>để xem chi tiết hoá đơn</div>
                 </div>
             </div>
 
@@ -1001,28 +940,16 @@
                         class="fa-solid fa-xmark"></i></button>
             </div>
             <p style="font-size: 14px; color: #475569; margin-bottom: 16px;">Mã đơn: <strong
-                    id="refundOrderId">HD-001</strong></p>
+                    id="refundOrderId">--</strong></p>
 
             <div style="margin-bottom: 16px;">
                 <label
                     style="font-size: 13px; font-weight: 600; color: #334155; display: block; margin-bottom: 6px;">Chọn
                     sản phẩm cần hoàn trả:</label>
-                <div
+                <div id="refundItemsList"
                     style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; max-height: 120px; overflow-y: auto; background: #f8fafc;">
-                    <label
-                        style="display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 8px; cursor: pointer;">
-                        <input type="checkbox" checked style="accent-color: #ef4444; width: 16px; height: 16px;">
-                        Panadol Extra (Hộp 12 viên)
-                        <input type="number" value="1" min="1" max="2"
-                            style="width: 50px; height: 24px; margin-left: auto; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; outline: none;">
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
-                        <input type="checkbox" style="accent-color: #ef4444; width: 16px; height: 16px;"> Amoxicillin
-                        500mg
-                        <input type="number" value="1" min="1" max="1"
-                            style="width: 50px; height: 24px; margin-left: auto; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; outline: none;"
-                            disabled>
-                    </label>
+                    <!-- Được render động bởi openRefundModal() -->
+                    <div style="font-size: 13px; color: #9ca3af; font-style: italic; text-align: center; padding: 8px;">Chưa có sản phẩm</div>
                 </div>
             </div>
 
@@ -1041,7 +968,7 @@
             <div
                 style="border-top: 1px solid #e2e8f0; padding-top: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                 <span style="font-weight: 600; color: #334155; font-size: 14px;">Số tiền hoàn trả (Tạm tính):</span>
-                <span style="font-weight: 700; font-size: 18px; color: #ef4444;">65,000₫</span>
+                <span id="refundAmountDisplay" style="font-weight: 700; font-size: 18px; color: #ef4444;">0₫</span>
             </div>
 
             <div style="display: flex; gap: 12px; justify-content: flex-end;">
@@ -1068,7 +995,17 @@
     </footer>
 
     <!-- ============ SCRIPTS ============ -->
+    <script src="js/pos-auth.js"></script>
     <script>
+        const POS_API_BASE = localStorage.getItem('MG_API_BASE') || (
+            (window.location.origin.includes('localhost:5500') ||
+             window.location.origin.includes('localhost:5501') ||
+             window.location.origin.includes('127.0.0.1:5500') ||
+             window.location.origin.includes('127.0.0.1:5501'))
+            ? 'http://localhost:8000/api'
+            : window.location.origin.replace(/\/+$/, '') + '/api'
+        );
+
         // Check Authentication on POS load
         const authStr = localStorage.getItem('MG_POS_AUTH');
         if (!authStr) {
@@ -1104,7 +1041,7 @@
         // Load Transaction Statistics
         async function loadStats() {
             try {
-                const response = await fetch('http://localhost:8000/api/order/orders/stats', {
+                const response = await fetch(`${POS_API_BASE}/order/orders/stats`, {
                     headers: {
                         'Authorization': `Bearer ${auth.accessToken}`
                     }
@@ -1140,10 +1077,29 @@
             }
         }
 
+        // ===== Filter State =====
+        let activeFilter = 'day';
+
+        function formatDateLocal(date) {
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function getMonday(d) {
+            d = new Date(d);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            return new Date(d.setDate(diff));
+        }
+
         // Load Orders List
         async function loadOrders(page = 1) {
             const searchInput = document.querySelector('.hist-search input');
             const searchVal = searchInput ? searchInput.value.trim() : '';
+            const dateInput = document.getElementById('filterDate');
+            const selectedDateVal = dateInput ? dateInput.value : '';
 
             const queryParams = new URLSearchParams({
                 page: page,
@@ -1152,6 +1108,17 @@
 
             if (searchVal) {
                 queryParams.set('search', searchVal);
+            }
+
+            if (selectedDateVal) {
+                if (activeFilter === 'day') {
+                    queryParams.set('date_from', selectedDateVal);
+                    queryParams.set('date_to', selectedDateVal);
+                } else if (activeFilter === 'week') {
+                    const monday = getMonday(new Date(selectedDateVal));
+                    queryParams.set('date_from', formatDateLocal(monday));
+                    queryParams.set('date_to', selectedDateVal);
+                }
             }
 
             const tbody = document.querySelector('.hist-table tbody');
@@ -1167,7 +1134,7 @@
             }
 
             try {
-                const response = await fetch(`http://localhost:8000/api/order/orders?${queryParams.toString()}`, {
+                const response = await fetch(`${POS_API_BASE}/order/orders?${queryParams.toString()}`, {
                     headers: {
                         'Authorization': `Bearer ${auth.accessToken}`
                     }
@@ -1343,7 +1310,7 @@
             }
 
             try {
-                const response = await fetch(`http://localhost:8000/api/order/orders/${orderId}`, {
+                const response = await fetch(`${POS_API_BASE}/order/orders/${orderId}`, {
                     headers: {
                         'Authorization': `Bearer ${auth.accessToken}`
                     }
@@ -1464,7 +1431,7 @@
         function openRefundModal(order) {
             document.getElementById('refundOrderId').textContent = order.order_code;
             
-            const listDiv = document.querySelector('#refundModal div[style*="max-height: 120px"]');
+            const listDiv = document.getElementById('refundItemsList');
             if (listDiv && Array.isArray(order.items)) {
                 listDiv.innerHTML = order.items.map(item => `
                     <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 8px; cursor: pointer;">
@@ -1476,7 +1443,7 @@
                 `).join('');
             }
 
-            const refundVal = document.querySelector('#refundModal span[style*="color: #ef4444"]');
+            const refundVal = document.getElementById('refundAmountDisplay');
             if (refundVal) {
                 refundVal.textContent = parseFloat(order.total_amount).toLocaleString('vi-VN') + '₫';
             }
@@ -1497,7 +1464,7 @@
             btn.textContent = 'ĐANG XỬ LÝ...';
 
             try {
-                const response = await fetch(`http://localhost:8000/api/order/orders/${currentRefundOrder.id}/status`, {
+                const response = await fetch(`${POS_API_BASE}/order/orders/${currentRefundOrder.id}/status`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1564,7 +1531,7 @@
             }
 
             try {
-                const response = await fetch(`http://localhost:8000/api/order/orders/${code}`, {
+                const response = await fetch(`${POS_API_BASE}/order/orders/${code}`, {
                     headers: {
                         'Authorization': `Bearer ${auth.accessToken}`
                     }
@@ -1598,10 +1565,42 @@
 
         // Initialize Page & Event Listeners
         async function initPage() {
-            // Set date input to today
-            const dateInput = document.querySelector('.hist-date-input');
+            const dateInput = document.getElementById('filterDate');
+            const btnToday = document.getElementById('btnToday');
+            const btnThisWeek = document.getElementById('btnThisWeek');
+
+            if (btnToday) {
+                btnToday.addEventListener('click', () => {
+                    activeFilter = 'day';
+                    btnToday.classList.add('active');
+                    btnThisWeek.classList.remove('active');
+                    if (dateInput) {
+                        dateInput.value = formatDateLocal(new Date());
+                    }
+                    loadOrders(1);
+                });
+            }
+
+            if (btnThisWeek) {
+                btnThisWeek.addEventListener('click', () => {
+                    activeFilter = 'week';
+                    btnThisWeek.classList.add('active');
+                    btnToday.classList.remove('active');
+                    if (dateInput) {
+                        dateInput.value = formatDateLocal(new Date());
+                    }
+                    loadOrders(1);
+                });
+            }
+
             if (dateInput) {
-                dateInput.value = new Date().toLocaleDateString('en-CA');
+                dateInput.value = formatDateLocal(new Date());
+                dateInput.addEventListener('change', () => {
+                    activeFilter = 'day';
+                    btnToday.classList.add('active');
+                    btnThisWeek.classList.remove('active');
+                    loadOrders(1);
+                });
             }
 
             // Register search input listener (debounce)
@@ -1629,7 +1628,6 @@
             initPage();
         }
     </script>
-    <script src="js/pos-auth.js"></script>
 
 </body>
 

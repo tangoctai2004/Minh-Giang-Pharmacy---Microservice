@@ -377,10 +377,16 @@
 
                 <div class="social-login">
                     <p>Hoặc đăng nhập bằng</p>
-                    <button type="button" class="social-btn">
-                        <i class="fa-solid fa-comment" style="color:#0068ff; font-size: 20px;"></i>
-                        Zalo
-                    </button>
+                    <div style="display: flex; gap: 12px; margin-top: 12px;">
+                        <button type="button" class="social-btn" onclick="loginWithZalo(event)" style="flex: 1; justify-content: center; gap: 8px;">
+                            <i class="fa-solid fa-comment" style="color:#0068ff; font-size: 18px;"></i>
+                            Zalo
+                        </button>
+                        <button type="button" class="social-btn" onclick="loginWithGoogle(event)" style="flex: 1; justify-content: center; gap: 8px;">
+                            <i class="fa-brands fa-google" style="color:#ea4335; font-size: 18px;"></i>
+                            Google
+                        </button>
+                    </div>
                 </div>
             </form>
 
@@ -390,8 +396,10 @@
         </div>
     </div>
 
+    <script src="../assets/js/client-api.js"></script>
     <script>
-        const API_BASE = 'http://localhost:8000/api/identity';
+        const GATEWAY = ((window.MGClientApi && window.MGClientApi.gatewayOrigin) || window.MG_API_GATEWAY_ORIGIN || 'http://localhost:8000').replace(/\/+$/, '');
+        const API_BASE = GATEWAY + '/api/identity';
 
         // Nếu đã đăng nhập rồi thì chuyển thẳng về trang chủ
         (function checkAuth() {
@@ -470,7 +478,7 @@
                     const localCart = JSON.parse(localStorage.getItem('MG_CLIENT_CART') || '[]');
                     if (localCart.length > 0) {
                         for (const item of localCart) {
-                            await fetch('http://localhost:8000/api/order/cart/items', {
+                            await fetch(GATEWAY + '/api/order/cart/items', {
                                 method: 'POST',
                                 headers: { 
                                     'Content-Type': 'application/json',
@@ -500,6 +508,141 @@
                 showError('Không thể kết nối máy chủ. Vui lòng thử lại sau.');
                 btn.disabled = false;
                 btn.textContent = 'Đăng nhập ngay';
+            }
+        }
+
+        async function loginWithZalo(e) {
+            const btn = e.currentTarget;
+            const oldText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> \u0110ang k\u1ebft n\u1ed1i...';
+
+            try {
+                const res = await fetch(API_BASE + '/auth/zalo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        zalo_id: 'mock_zalo_user_1234',
+                        name: 'Nguy\u1ec5n V\u0103n Zalo',
+                        picture: 'https://img.icons8.com/color/144/zalo.png'
+                    })
+                });
+
+                const data = await res.json();
+                if (data.success && data.data) {
+                    localStorage.setItem('MG_CLIENT_AUTH', JSON.stringify({
+                        accessToken:  data.data.accessToken,
+                        refreshToken: data.data.refreshToken,
+                        customer:     data.data.customer,
+                        loggedInAt:   Date.now()
+                    }));
+
+                    try {
+                        const localCart = JSON.parse(localStorage.getItem('MG_CLIENT_CART') || '[]');
+                        if (localCart.length > 0) {
+                            for (const item of localCart) {
+                                await fetch(GATEWAY + '/api/order/cart/items', {
+                                    method: 'POST',
+                                    headers: { 
+                                        'Content-Type': 'application/json',
+                                        'Authorization': 'Bearer ' + data.data.accessToken
+                                    },
+                                    body: JSON.stringify({
+                                        product_id: item.product_id,
+                                        product_name: item.product_name,
+                                        product_sku: item.product_sku,
+                                        thumbnail: item.thumbnail,
+                                        quantity: item.quantity,
+                                        unit_name: item.unit_name,
+                                        unit_price: item.unit_price
+                                    })
+                                });
+                            }
+                            localStorage.removeItem('MG_CLIENT_CART');
+                        }
+                    } catch (syncErr) {
+                        console.error('L\u1ed7i \u0111\u1ed3ng b\u1ed9 gi\u1ecf h\u00e0ng:', syncErr);
+                    }
+
+                    window.location.href = 'index.html';
+                } else {
+                    alert('L\u1ed7i \u0111\u0103ng nh\u1eadp Zalo: ' + (data.message || 'Kh\u00f4ng r\u00f5 nguy\u00ean nh\u00e2n'));
+                    btn.disabled = false;
+                    btn.innerHTML = oldText;
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Kh\u00f4ng th\u1ec3 k\u1ebft n\u1ed1i m\u00e1y ch\u1ee7 Zalo Mock.');
+                btn.disabled = false;
+                btn.innerHTML = oldText;
+            }
+        }
+
+        async function loginWithGoogle(e) {
+            const btn = e.currentTarget;
+            const oldText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> \u0110ang k\u1ebft n\u1ed1i...';
+
+            try {
+                const res = await fetch(API_BASE + '/auth/google', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        google_id: 'mock_google_user_5678',
+                        name: 'Nguy\u1ec5n V\u0103n Google',
+                        email: 'mock.google.user@gmail.com',
+                        picture: 'https://img.icons8.com/color/144/google-logo.png'
+                    })
+                });
+
+                const data = await res.json();
+                if (data.success && data.data) {
+                    localStorage.setItem('MG_CLIENT_AUTH', JSON.stringify({
+                        accessToken:  data.data.accessToken,
+                        refreshToken: data.data.refreshToken,
+                        customer:     data.data.customer,
+                        loggedInAt:   Date.now()
+                    }));
+
+                    try {
+                        const localCart = JSON.parse(localStorage.getItem('MG_CLIENT_CART') || '[]');
+                        if (localCart.length > 0) {
+                            for (const item of localCart) {
+                                await fetch(GATEWAY + '/api/order/cart/items', {
+                                    method: 'POST',
+                                    headers: { 
+                                        'Content-Type': 'application/json',
+                                        'Authorization': 'Bearer ' + data.data.accessToken
+                                    },
+                                    body: JSON.stringify({
+                                        product_id: item.product_id,
+                                        product_name: item.product_name,
+                                        product_sku: item.product_sku,
+                                        thumbnail: item.thumbnail,
+                                        quantity: item.quantity,
+                                        unit_name: item.unit_name,
+                                        unit_price: item.unit_price
+                                    })
+                                });
+                            }
+                            localStorage.removeItem('MG_CLIENT_CART');
+                        }
+                    } catch (syncErr) {
+                        console.error('L\u1ed7i \u0111\u1ed3ng b\u1ed9 gi\u1ecf h\u00e0ng:', syncErr);
+                    }
+
+                    window.location.href = 'index.html';
+                } else {
+                    alert('L\u1ed7i \u0111\u0103ng nh\u1eadp Google: ' + (data.message || 'Kh\u00f4ng r\u00f5 nguy\u00ean nh\u00e2n'));
+                    btn.disabled = false;
+                    btn.innerHTML = oldText;
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Kh\u00f4ng th\u1ec3 k\u1ebft n\u1ed1i m\u00e1y ch\u1ee7 Google Mock.');
+                btn.disabled = false;
+                btn.innerHTML = oldText;
             }
         }
     </script>

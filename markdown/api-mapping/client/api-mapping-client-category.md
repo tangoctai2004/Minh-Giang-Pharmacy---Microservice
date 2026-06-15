@@ -1,10 +1,9 @@
 # API Mapping — client/category.html (Danh mục sản phẩm)
 
-> **Trang**: `frontend/client/category.html`
-> **Mô tả**: Trang danh sách sản phẩm theo danh mục — lọc, sắp xếp, phân trang
-> **Auth yêu cầu**: Không (trang public)
+> **Trang**: `frontend/client/category.html`  
+> **Mô tả**: Trang danh sách sản phẩm theo danh mục — lọc, sắp xếp, phân trang  
+> **Auth yêu cầu**: Không (trang public)  
 > **Ngày phân tích**: 2026-04-10
-> **Cập nhật theo code hiện tại**: các API catalog chính của trang này đã có. Cần lưu ý backend dùng `origins`, không dùng `origin_ids`.
 
 ---
 
@@ -32,19 +31,6 @@
 ---
 
 ## 🔌 CHI TIẾT API TỪNG VÙNG
-
-## Trạng thái hiện tại
-
-| Nhu cầu trên màn hình | API hiện có | Trạng thái |
-|---|---|---|
-| Danh mục con | `GET /api/catalog/categories/{parent_id}/children` | Đã có |
-| Danh sách filter | `GET /api/catalog/products/filters?category_id={id}` | Đã có |
-| Danh sách sản phẩm | `GET /api/catalog/products?...` | Đã có |
-| Từ khóa tìm kiếm nhiều | `GET /api/catalog/products/top-searches?limit=30` | Đã có |
-| Mega menu danh mục | `GET /api/catalog/categories/tree` | Đã có |
-| Gợi ý tìm kiếm | `GET /api/catalog/products/search-suggest?q=...` | Đã có |
-
-Ghi chú: bản thiết kế cũ có `origin_ids`, nhưng backend hiện nhận `origins` theo tên xuất xứ. Nếu frontend muốn lọc xuất xứ, nên gửi `origins=Việt Nam,Hàn Quốc`.
 
 ---
 
@@ -148,7 +134,7 @@ GET /api/catalog/products/filters?category_id={id}
 **Mô tả UI**: Grid 12 product card, mỗi card hiện: ảnh, tên, đơn vị, giá gốc, giá mới, badge giảm giá, nút "Mua ngay", nút "Xem chi tiết".
 
 ```
-GET /api/catalog/products?category_id={id}&page={p}&limit=12&sort={sort}&price_min={min}&price_max={max}&brand_ids={ids}&origins={names}
+GET /api/catalog/products?category_id={id}&page={p}&limit=12&sort={sort}&price_min={min}&price_max={max}&brand_ids={ids}&origin_ids={ids}
 ```
 
 | Param | Type | Mô tả |

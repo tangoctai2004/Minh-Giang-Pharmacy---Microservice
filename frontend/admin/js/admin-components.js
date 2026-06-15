@@ -4,6 +4,62 @@
  * Giúp đồng bộ UI và dễ dàng cập nhật 1 nơi cho tất cả các trang.
  */
 
+// Intercept global fetch to automatically inject token and handle 401 Unauthorized
+const originalFetch = window.fetch;
+window.fetch = async function (resource, options = {}) {
+    const resolvedApiBase = localStorage.getItem('MG_API_BASE') || (
+        (window.location.origin.includes('localhost:5500') ||
+         window.location.origin.includes('localhost:5501') ||
+         window.location.origin.includes('127.0.0.1:5500') ||
+         window.location.origin.includes('127.0.0.1:5501'))
+        ? 'http://localhost:8000/api'
+        : window.location.origin.replace(/\/+$/, '') + '/api'
+    );
+    const isApiRequest = typeof resource === 'string' && (resource.includes('/api/') || resource.includes(resolvedApiBase));
+
+    if (isApiRequest) {
+        options.headers = options.headers || {};
+        let headers = options.headers;
+        let hasAuth = false;
+
+        if (typeof Headers !== 'undefined' && headers instanceof Headers) {
+            hasAuth = headers.has('Authorization');
+        } else {
+            hasAuth = !!(headers['Authorization'] || headers['authorization']);
+        }
+
+        if (!hasAuth) {
+            const authRaw = localStorage.getItem('MG_ADMIN_AUTH');
+            if (authRaw) {
+                try {
+                    const parsed = JSON.parse(authRaw);
+                    if (parsed.accessToken) {
+                        if (typeof Headers !== 'undefined' && headers instanceof Headers) {
+                            headers.set('Authorization', `Bearer ${parsed.accessToken}`);
+                        } else {
+                            headers['Authorization'] = `Bearer ${parsed.accessToken}`;
+                        }
+                    }
+                } catch (e) {}
+            }
+        }
+    }
+
+    try {
+        const response = await originalFetch(resource, options);
+        if (response.status === 401 && isApiRequest) {
+            console.warn('Unauthorized request detected (401), redirecting to admin login...');
+            localStorage.removeItem('MG_ADMIN_AUTH');
+            if (!window.location.pathname.endsWith('login.html')) {
+                window.location.href = 'login.html';
+            }
+        }
+        return response;
+    } catch (error) {
+        throw error;
+    }
+};
+
 function renderAdminLayout(activePageId) {
     const sidebarHTML = `
         <div class="sidebar-brand">

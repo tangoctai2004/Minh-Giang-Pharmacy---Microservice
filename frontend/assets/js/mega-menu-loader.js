@@ -5,7 +5,8 @@
 
 function catalogApi() {
     if (window.MGCatalogApi) return window.MGCatalogApi;
-    const baseUrl = window.MG_CATALOG_API_BASE || 'http://localhost:8000/api/catalog';
+    const gateway = ((window.MGClientApi && window.MGClientApi.gatewayOrigin) || window.MG_API_GATEWAY_ORIGIN || 'http://localhost:8000').replace(/\/+$/, '');
+    const baseUrl = window.MG_CATALOG_API_BASE || (gateway + '/api/catalog');
     return {
         async get(path, params) {
             const url = new URL(`${baseUrl.replace(/\/+$/, '')}/${String(path).replace(/^\/+/, '')}`);
@@ -19,7 +20,7 @@ function catalogApi() {
     };
 }
 
-// Gắn vào window để components.js có thể gọi sau khi nạp xong HTML
+// Bind to window so components.js can invoke after HTML is loaded
 window.initMegaMenu = initMegaMenu;
 
 async function initMegaMenu() {
@@ -31,9 +32,32 @@ async function initMegaMenu() {
         const result = await catalogApi().get('categories/tree');
 
         if (result.success && result.data) {
+            // Dynamically populate disease subcategories for B\u1ec7nh l\u00fd (7000)
+            var diseaseCat = null;
+            if (Array.isArray(result.data)) {
+                for (var i = 0; i < result.data.length; i++) {
+                    if (result.data[i].id === 7000) {
+                        diseaseCat = result.data[i];
+                        break;
+                    }
+                }
+            }
+            if (diseaseCat) {
+                diseaseCat.children = [
+                    { id: 'benh-chuyen-khoa', name: 'B\u1ec7nh chuy\u00ean khoa' },
+                    { id: 'benh-man-tinh', name: 'B\u1ec7nh m\u00e3n t\u00ednh' },
+                    { id: 'benh-theo-mua', name: 'B\u1ec7nh theo m\u00f9a' },
+                    { id: 'benh-truyen-nhiem', name: 'B\u1ec7nh truy\u1ec1n nhi\u1ec5m' },
+                    { id: 'benh-ung-thu', name: 'B\u1ec7nh ung th\u01b0' },
+                    { id: 'benh-la-hiem-gap', name: 'B\u1ec7nh l\u1ea1 / B\u1ec7nh hi\u1ebfm g\u1eb7p' },
+                    { id: 'benh-co-the-nguoi', name: 'B\u1ec7nh c\u01a1 th\u1ec3 ng\u01b0\u1eddi' },
+                    { id: 'benh-theo-doi-tuong', name: 'B\u1ec7nh theo \u0111\u1ed1i t\u01b0\u1ee3ng' }
+                ];
+            }
+
             renderNavList(navList, result.data);
 
-            // Tự động load nội dung cho danh mục đầu tiên (Thuốc) để sẵn sàng khi hover
+            // Auto-load content for the first rich category (usually Thu\u1ed1c)
             const firstRichCat = result.data.find(cat => cat.children && cat.children.length > 0 && ![7000, 8000, 9000].includes(cat.id));
             if (firstRichCat && firstRichCat.children[0]) {
                 loadSubNav(firstRichCat.id, firstRichCat.children[0].id, firstRichCat.children[0].children);
@@ -50,6 +74,9 @@ function getCategoryUrl(cat) {
         8000: 'health.html',
         9000: 'news.html'
     };
+    if (typeof cat.id === 'string' && cat.id.indexOf('benh-') === 0) {
+        return cat.id + '.html';
+    }
     return mapping[cat.id] || `category.html?id=${cat.id}`;
 }
 
@@ -60,13 +87,12 @@ function renderNavList(container, categories) {
         return renderRichItem(cat);
     }).join('');
 
-    // Kích hoạt lại dropdown handler (centering & hover logic)
+    // Re-initialize dropdown handler (centering & hover logic)
     if (typeof initDropdownHandler === 'function') {
         initDropdownHandler();
     }
 
-    // Thêm event delegation cho các mục Level 1 (nav-item)
-    // Để khi hover vào Level 1 thì tự động load sản phẩm của mục Level 2 đầu tiên
+    // Hover Level 1 nav items to load first Level 2 subcategory
     const navItems = container.querySelectorAll('.nav-item');
     navItems.forEach(item => {
         item.addEventListener('mouseenter', () => {
@@ -76,7 +102,6 @@ function renderNavList(container, categories) {
                 const firstSubItem = dropdownContent.querySelector('.dropdown-cat-item');
                 if (firstSubItem) {
                     const subId = firstSubItem.getAttribute('data-id');
-                    // Chỉ load nếu chưa có sản phẩm nào (tránh load lại nhiều lần vô ích)
                     const grid = document.getElementById(`grid-${parentId}`);
                     if (grid && (grid.innerHTML.trim() === '' || grid.querySelector('.loading'))) {
                         handleSubCategoryHover(parentId, subId);
@@ -86,21 +111,46 @@ function renderNavList(container, categories) {
         });
     });
 
-    // Thêm event delegation cho sidebar items (Level 2)
+    let hoverTimeout = null;
+    let pendingCatItem = null;
+
+    // Hover Level 2 sidebar items with hover-intent delay (150ms)
     container.addEventListener('mouseover', (e) => {
         const catItem = e.target.closest('.dropdown-cat-item');
         if (catItem) {
+            if (catItem.classList.contains('active') || catItem === pendingCatItem) {
+                return;
+            }
+
             const dropdownContent = catItem.closest('.dropdown-content');
             if (!dropdownContent) return;
             const parentId = dropdownContent.getAttribute('data-parent-id');
             const subId = catItem.getAttribute('data-id');
 
-            // Xử lý active state
-            catItem.parentElement.querySelectorAll('.dropdown-cat-item').forEach(li => li.classList.remove('active'));
-            catItem.classList.add('active');
+            if (hoverTimeout) {
+                clearTimeout(hoverTimeout);
+            }
+            pendingCatItem = catItem;
 
-            // Load Level 3 & Products
-            handleSubCategoryHover(parentId, subId);
+            hoverTimeout = setTimeout(() => {
+                catItem.parentElement.querySelectorAll('.dropdown-cat-item').forEach(li => li.classList.remove('active'));
+                catItem.classList.add('active');
+                handleSubCategoryHover(parentId, subId);
+                pendingCatItem = null;
+            }, 150);
+        }
+    });
+
+    container.addEventListener('mouseout', (e) => {
+        const catItem = e.target.closest('.dropdown-cat-item');
+        if (catItem && !catItem.contains(e.relatedTarget)) {
+            if (catItem === pendingCatItem) {
+                if (hoverTimeout) {
+                    clearTimeout(hoverTimeout);
+                    hoverTimeout = null;
+                }
+                pendingCatItem = null;
+            }
         }
     });
 }
@@ -131,9 +181,9 @@ function renderRichItem(cat) {
                         </div>
                         <div class="dropdown-products-header">
                             <div class="header-title-area">
-                                <span class="header-title">Bán chạy nhất</span>
+                                <span class="header-title">B\u00e1n ch\u1ea1y nh\u1ea5t</span>
                                 <span class="separator">|</span>
-                                <a href="${getCategoryUrl(cat)}" class="view-all">Xem tất cả <i class="fa-solid fa-chevron-right"></i></a>
+                                <a href="${getCategoryUrl(cat)}" class="view-all">Xem t\u1ea5t c\u1ea3 <i class="fa-solid fa-chevron-right"></i></a>
                             </div>
                         </div>
                         <div class="products-grid" id="grid-${cat.id}">
@@ -147,25 +197,29 @@ function renderRichItem(cat) {
 }
 
 function renderSimpleItem(cat) {
+    const hasChildren = cat.children && cat.children.length > 0;
+    const arrow = hasChildren ? ' <i class="fa-solid fa-chevron-down arrow-down"></i>' : '';
+    const dropdown = hasChildren ? `
+        <div class="dropdown-menu dropdown-simple">
+            <div class="dropdown-content">
+                <ul class="dropdown-simple-list">
+                    ${cat.children.map(sub => `
+                        <li class="dropdown-simple-item"><a href="${getCategoryUrl(sub)}">${sub.name}</a></li>
+                    `).join('')}
+                </ul>
+            </div>
+        </div>
+    ` : '';
+
     return `
         <li class="nav-item nav-item-simple">
-            <a href="${getCategoryUrl(cat)}">${cat.name} <i class="fa-solid fa-chevron-down arrow-down"></i></a>
-            <div class="dropdown-menu dropdown-simple">
-                <div class="dropdown-content">
-                    <ul class="dropdown-simple-list">
-                        ${cat.children.map(sub => `
-                            <li class="dropdown-simple-item"><a href="${getCategoryUrl(sub)}">${sub.name}</a></li>
-                        `).join('')}
-                    </ul>
-                </div>
-            </div>
+            <a href="${getCategoryUrl(cat)}">${cat.name}${arrow}</a>
+            ${dropdown}
         </li>
     `;
 }
 
 async function handleSubCategoryHover(parentId, subId) {
-    // Tìm dữ liệu cache từ tree hoặc fetch lại nếu cần
-    // Để đơn giản và nhanh, ta có thể lưu tree vào biến toàn cục
     if (!window.categoryTree) {
         const result = await catalogApi().get('categories/tree');
         window.categoryTree = result.data;
@@ -192,7 +246,6 @@ function loadSubNav(parentId, subId, level3Cats) {
         </a>
     `).join('');
 
-    // Mặc định load sản phẩm cho subId (Level 2)
     loadProducts(parentId, subId);
 }
 
@@ -202,7 +255,7 @@ async function loadProducts(parentId, categoryId, event) {
     const grid = document.getElementById(`grid-${parentId}`);
     if (!grid) return;
 
-    grid.innerHTML = '<div class="loading">Đang tải...</div>';
+    grid.innerHTML = '<div class="loading">\u0110ang t\u1ea3i...</div>';
 
     try {
         const result = await catalogApi().get('products', {
@@ -226,18 +279,18 @@ async function loadProducts(parentId, categoryId, event) {
                     <div class="product-info">
                         <h5><a href="product.html?id=${p.id}">${p.name}</a></h5>
                         <div class="product-price">
-                            <span class="price-old">${new Intl.NumberFormat('en-US').format(Math.round(p.price * 1.1))}đ</span>
-                            <span class="price-new">${new Intl.NumberFormat('en-US').format(Math.round(p.price))}đ</span>
+                            <span class="price-old">${new Intl.NumberFormat('en-US').format(Math.round(p.price * 1.1))}\u0111</span>
+                            <span class="price-new">${new Intl.NumberFormat('en-US').format(Math.round(p.price))}\u0111</span>
                         </div>
-                        <button class="btn-add-cart" onclick="event.stopPropagation(); event.preventDefault(); window.addToCart ? addToCart(${p.id}, event) : (window.location.href='product.html?id=${p.id}')">Thêm giỏ hàng</button>
+                        <button class="btn-add-cart" onclick="event.stopPropagation(); event.preventDefault(); window.addToCart ? addToCart(${p.id}, event) : (window.location.href='product.html?id=${p.id}')">Th\u00eam gi\u1ecf h\u00e0ng</button>
                     </div>
                 </div>
             `).join('');
         } else {
-            grid.innerHTML = '<div class="no-products">Chưa có sản phẩm trong danh mục này.</div>';
+            grid.innerHTML = '<div class="no-products">Ch\u01b0a c\u00f3 s\u1ea3n ph\u1ea9m trong danh m\u1ee5c n\u00e0y.</div>';
         }
     } catch (error) {
         console.error('[MegaMenu] Error loading products:', error);
-        grid.innerHTML = '<div class="error">Lỗi khi tải sản phẩm.</div>';
+        grid.innerHTML = '<div class="error">L\u1ed7i khi t\u1ea3i s\u1ea3n ph\u1ea9m.</div>';
     }
 }

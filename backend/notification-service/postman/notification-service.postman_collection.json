@@ -1,0 +1,157 @@
+{
+  "info": {
+    "name": "Minh Giang - Notification Service",
+    "description": "Postman collection for testing notification-service directly on port 8005.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8005"
+    },
+    {
+      "key": "template_id",
+      "value": "1"
+    },
+    {
+      "key": "notification_id",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/health"
+      }
+    },
+    {
+      "name": "Seed Default Templates",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/templates/seed-defaults"
+      }
+    },
+    {
+      "name": "List Templates",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/templates"
+      }
+    },
+    {
+      "name": "Send SMS Mock",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"phone\": \"0909123456\",\n  \"message\": \"Ma OTP Minh Giang Pharmacy cua ban la 123456\"\n}"
+        },
+        "url": "{{base_url}}/sms/send"
+      }
+    },
+    {
+      "name": "Send Email Mock",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"to\": \"customer@example.com\",\n  \"subject\": \"Test email mock\",\n  \"text\": \"Email mock khong can SMTP\"\n}"
+        },
+        "url": "{{base_url}}/email/send"
+      }
+    },
+    {
+      "name": "Send Order Created Notification",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_id\": 1001,\n  \"order_code\": \"MG-1001\",\n  \"customer_name\": \"Nguyen Van A\",\n  \"total_amount\": 250000,\n  \"email\": \"customer@example.com\",\n  \"phone\": \"0909123456\",\n  \"recipient_type\": \"customer\",\n  \"recipient_id\": 1\n}"
+        },
+        "url": "{{base_url}}/orders/created"
+      }
+    },
+    {
+      "name": "Send Order Status Changed Notification",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_id\": 1001,\n  \"order_code\": \"MG-1001\",\n  \"customer_name\": \"Nguyen Van A\",\n  \"status\": \"confirmed\",\n  \"email\": \"customer@example.com\",\n  \"phone\": \"0909123456\",\n  \"recipient_type\": \"customer\",\n  \"recipient_id\": 1\n}"
+        },
+        "url": "{{base_url}}/orders/status-changed"
+      }
+    },
+    {
+      "name": "List Notifications",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/notifications"
+      }
+    },
+    {
+      "name": "Retry Failed Notification",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/notifications/{{notification_id}}/retry"
+      }
+    },
+    {
+      "name": "Create In-App Notification",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"recipient_type\": \"customer\",\n  \"recipient_id\": 1,\n  \"title\": \"Don hang moi\",\n  \"body\": \"Don hang MG-1001 cua ban da duoc ghi nhan\",\n  \"reference_type\": \"order\",\n  \"reference_id\": 1001\n}"
+        },
+        "url": "{{base_url}}/in-app/send"
+      }
+    },
+    {
+      "name": "List My In-App Notifications",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/in-app/mine?recipient_type=customer&recipient_id=1"
+      }
+    },
+    {
+      "name": "Mark In-App As Read",
+      "request": {
+        "method": "PUT",
+        "url": "{{base_url}}/in-app/{{notification_id}}/read"
+      }
+    }
+  ]
+}

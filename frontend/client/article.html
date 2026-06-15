@@ -1,0 +1,594 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài viết — Nhà Thuốc Minh Giang</title>
+    <meta name="description" content="Tìm hiểu thông tin sức khỏe, bệnh lý và thuốc tại Nhà Thuốc Minh Giang.">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        /* === LAYOUT === */
+        .article-layout {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+            padding: 20px 0 40px;
+            align-items: start;
+        }
+
+        /* === BREADCRUMB === */
+        .breadcrumb {
+            padding: 12px 0;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .breadcrumb a {
+            color: #374151;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            color: #0b7a3e;
+        }
+
+        .breadcrumb span {
+            margin: 0 6px;
+            color: #9ca3af;
+        }
+
+        /* === ARTICLE MAIN === */
+        .article-main {
+            min-width: 0;
+            background: #fff;
+            border-radius: 12px;
+            padding: 32px 36px;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+        }
+
+        .article-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+            line-height: 1.35;
+            margin: 0 0 20px;
+        }
+
+        /* === INTRO QUOTE BOX === */
+        .intro-quote {
+            background: #f0faf4;
+            border-left: 4px solid #0b7a3e;
+            border-radius: 8px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .intro-quote::before {
+            content: '\201C\201C';
+            font-size: 36px;
+            color: #0b7a3e;
+            font-weight: 700;
+            line-height: 1;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .intro-quote p {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #374151;
+            margin: 0;
+        }
+
+        .intro-quote strong {
+            color: #0b7a3e;
+        }
+
+        /* === TABLE OF CONTENTS === */
+        .toc-box {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px 24px;
+            margin-bottom: 32px;
+        }
+
+        .toc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            cursor: pointer;
+        }
+
+        .toc-header h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #374151;
+            margin: 0;
+        }
+
+        .toc-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #6b7280;
+            font-size: 16px;
+            padding: 0;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-list>li {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 10px;
+        }
+
+        .toc-list>li>a {
+            color: #374151;
+            text-decoration: none;
+        }
+
+        .toc-list>li>a:hover {
+            color: #0b7a3e;
+        }
+
+        .toc-sub {
+            list-style: none;
+            padding: 0;
+            margin: 6px 0 0 16px;
+        }
+
+        .toc-sub li {
+            font-size: 13px;
+            font-weight: 400;
+            margin-bottom: 6px;
+            color: #4b5563;
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+        }
+
+        .toc-sub li::before {
+            content: "•";
+            color: #0b7a3e;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .toc-sub li a {
+            color: #4b5563;
+            text-decoration: none;
+        }
+
+        .toc-sub li a:hover {
+            color: #0b7a3e;
+        }
+
+        /* === ARTICLE CONTENT === */
+        .article-content h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0b7a3e;
+            margin: 36px 0 14px;
+            padding-top: 4px;
+        }
+
+        .article-content h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 24px 0 10px;
+        }
+
+        .article-content p {
+            font-size: 15px;
+            line-height: 1.75;
+            color: #374151;
+            margin: 0 0 14px;
+        }
+
+        .article-content p em {
+            font-style: italic;
+            color: #6b7280;
+        }
+
+        .article-content ul {
+            padding-left: 0;
+            list-style: none;
+            margin: 0 0 16px;
+        }
+
+        .article-content ul li {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #374151;
+            padding: 5px 0 5px 22px;
+            position: relative;
+        }
+
+        .article-content ul li::before {
+            content: "•";
+            color: #0b7a3e;
+            position: absolute;
+            left: 6px;
+            font-size: 16px;
+        }
+
+        .article-content ul li strong {
+            font-weight: 600;
+        }
+
+        /* === ARTICLE IMAGE === */
+        .article-figure {
+            margin: 24px 0;
+            text-align: center;
+        }
+
+        .article-figure img {
+            width: 100%;
+            max-height: 420px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .article-figure figcaption {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        /* === DATA TABLE === */
+        .article-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0 28px;
+            font-size: 14px;
+        }
+
+        .article-table thead tr {
+            background-color: #0b7a3e;
+            color: #fff;
+        }
+
+        .article-table th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .article-table td {
+            padding: 11px 16px;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: top;
+        }
+
+        .article-table tr:nth-child(even) td {
+            background: #f9fafb;
+        }
+
+        /* === INFO BOX === */
+        .info-box {
+            background: #f0faf4;
+            border: 1px solid #bbf0d2;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin: 20px 0;
+        }
+
+        .info-box p {
+            margin: 0;
+            font-size: 14px;
+            color: #1f4e31;
+        }
+
+        .info-box strong {
+            color: #0b7a3e;
+        }
+
+        /* === WARNING BOX === */
+        .warning-box {
+            background: #fef9ed;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin: 20px 0;
+        }
+
+        .warning-box p {
+            margin: 0;
+            font-size: 14px;
+            color: #92400e;
+        }
+
+        /* === FAQ === */
+        .faq-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            background: #f9fafb;
+            padding: 14px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .faq-answer {
+            padding: 14px 18px;
+            font-size: 14px;
+            line-height: 1.7;
+            color: #4b5563;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        /* === ARTICLE META === */
+        .article-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .article-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .article-meta i {
+            color: #9ca3af;
+        }
+
+        /* === ARTICLE SHARE === */
+        .article-share {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .article-share span {
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .share-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+        }
+
+        .share-fb {
+            background: #1877f2;
+            color: #fff;
+        }
+
+        .share-zalo {
+            background: #0068ff;
+            color: #fff;
+        }
+
+        /* === REFERENCES === */
+        .references-list {
+            font-size: 13px;
+            line-height: 1.7;
+            color: #6b7280;
+            padding-left: 18px;
+        }
+
+        .references-list li {
+            margin-bottom: 6px;
+        }
+
+        .references-list a {
+            color: #0b7a3e;
+        }
+
+        /* === SIDEBAR === */
+        .article-sidebar {
+            position: sticky;
+            top: 20px;
+        }
+
+        .sidebar-card {
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+        }
+
+        .sidebar-card-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            background: #0b7a3e;
+            padding: 12px 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Featured articles (image card style) */
+        .sidebar-featured-list {
+            padding: 0;
+        }
+
+        .sidebar-featured-item {
+            display: block;
+            text-decoration: none;
+        }
+
+        .sidebar-featured-img {
+            position: relative;
+            height: 120px;
+            overflow: hidden;
+        }
+
+        .sidebar-featured-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .sidebar-featured-img .overlay-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.65));
+            padding: 24px 10px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .sidebar-featured-text {
+            padding: 12px 14px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .sidebar-featured-text h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #111827;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* Related articles (text list style) */
+        .sidebar-related-list {
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sidebar-related-list a {
+            font-size: 13px;
+            color: #374151;
+            text-decoration: none;
+            line-height: 1.5;
+            border-bottom: 1px solid #f3f4f6;
+            padding-bottom: 10px;
+        }
+
+        .sidebar-related-list a:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .sidebar-related-list a:hover {
+            color: #0b7a3e;
+        }
+
+        .sidebar-related-list a.highlighted {
+            color: #0b7a3e;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header Banner -->
+    <div mg-include="../components/header_banner.html"></div>
+
+    <!-- Top Bar -->
+    <div mg-include="../components/top_bar.html"></div>
+
+    <!-- Main Header -->
+    <div mg-include="../components/main_header.html"></div>
+
+    <!-- Content -->
+    <main class="container">
+        <!-- Breadcrumb (được render động bởi article-loader.js) -->
+        <div class="breadcrumb" id="articleBreadcrumb">
+            <a href="index.html">Trang chủ</a><span>›</span>
+            <a href="disease.html">Bệnh lý</a><span>›</span>
+            <span style="color:#374151;">Đang tải...</span>
+        </div>
+
+        <div class="article-layout">
+            <!-- Left: Article Body (được render động bởi article-loader.js) -->
+            <article class="article-main">
+
+            </article>
+
+            <!-- Right Sidebar (được render động bởi article-loader.js) -->
+            <aside class="article-sidebar">
+
+                <!-- Sản phẩm liên quan -->
+                <div class="sidebar-card">
+                    <div class="sidebar-card-title">SảN PHẨM LIÊN QUAN</div>
+                    <div class="sidebar-featured-list">
+                        <!-- Inject bởi article-loader.js từ related_products -->
+                    </div>
+                </div>
+
+                <!-- Bài viết liên quan -->
+                <div class="sidebar-card">
+                    <div class="sidebar-card-title">TIN LIÊN QUAN</div>
+                    <div class="sidebar-related-list">
+                        <!-- Inject bởi article-loader.js từ related_articles -->
+                    </div>
+                </div>
+        </div><!-- end article-layout -->
+
+        <!-- Bottom Sections -->
+        <div class="bottom-sections">
+            <div mg-include="../components/disease_groups.html"></div>
+            <div mg-include="../components/top_searches.html"></div>
+            <div mg-include="../components/featured_products.html"></div>
+        </div>
+    </main>
+
+    <!-- Pre-Footer Promises -->
+    <div mg-include="../components/promises.html"></div>
+
+    <!-- Newsletter -->
+    <div mg-include="../components/newsletter.html"></div>
+
+    <!-- Main Footer -->
+    <div mg-include="../components/main_footer.html"></div>
+
+    <script src="../assets/js/dropdown-handler.js"></script>
+    <script src="../assets/js/mega-menu-loader.js"></script>
+    <script src="../assets/js/components.js"></script>
+    <script src="../assets/js/article-loader.js"></script>
+</body>
+
+</html>

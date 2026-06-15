@@ -3,7 +3,9 @@
  * Quản lý giỏ hàng phía Client và đồng bộ Server
  */
 
-const API_BASE_ORDER = 'http://localhost:8000/api/order';
+var GATEWAY = ((window.MGClientApi && window.MGClientApi.gatewayOrigin) || window.MG_API_GATEWAY_ORIGIN || 'http://localhost:8000').replace(/\/+$/, '');
+var API_BASE_ORDER = GATEWAY + '/api/order';
+var API_BASE_CATALOG = GATEWAY + '/api/catalog';
 
 /**
  * Thêm sản phẩm vào giỏ (Xử lý cả Local và Server)
@@ -56,7 +58,7 @@ function _canAddCatalogProduct(product) {
  */
 async function _addToCartLocal(productId, options) {
     try {
-        const resProd = await fetch(`http://localhost:8000/api/catalog/products/${productId}`);
+        const resProd = await fetch(`${API_BASE_CATALOG}/products/${productId}`);
         const prodData = await resProd.json();
         
         if (!prodData.success) throw new Error('Không lấy được thông tin sản phẩm');
@@ -107,7 +109,7 @@ async function _addToCartServer(productId, options) {
         const auth = _getAuth();
         
         // Lấy thêm thông tin sản phẩm từ catalog (để snapshot)
-        const resProd = await fetch(`http://localhost:8000/api/catalog/products/${productId}`);
+        const resProd = await fetch(`${API_BASE_CATALOG}/products/${productId}`);
         const prodData = await resProd.json();
         
         if (!prodData.success) throw new Error('Không lấy được thông tin sản phẩm');

@@ -32,10 +32,10 @@
                 <p class="page-subtitle">Quản lý danh sách đối tác cung cấp thuốc và theo dõi thanh toán công nợ.</p>
             </div>
             <div class="page-actions">
-                <button class="btn-secondary">
+                <button class="btn-secondary" onclick="exportExcel()">
                     <i class="fa-solid fa-file-export"></i> Xuất Excel
                 </button>
-                <button class="btn-primary" onclick="alert('Mở form Thêm NCC')">
+                <button class="btn-primary" onclick="openAddSupplierModal()">
                     <i class="fa-solid fa-plus"></i> Thêm Nhà Cung Cấp
                 </button>
             </div>
@@ -45,17 +45,17 @@
         <div class="filter-section">
             <div class="filter-group">
                 <label class="filter-label">Tình trạng công nợ</label>
-                <select class="filter-control">
-                    <option value="">Tất cả</option>
-                    <option value="">Có công nợ (>0)</option>
-                    <option value="">Không nợ</option>
+                <select class="filter-control" id="debtFilter" onchange="applyFiltersAndRender()">
+                    <option value="all">Tất cả</option>
+                    <option value="has-debt">Có công nợ (&gt;0)</option>
+                    <option value="no-debt">Không nợ</option>
                 </select>
             </div>
             <div class="filter-group">
                 <label class="filter-label">Trạng thái đối tác</label>
-                <select class="filter-control">
-                    <option value="">Đang giao dịch</option>
-                    <option value="">Ngừng giao dịch</option>
+                <select class="filter-control" id="statusFilter" onchange="applyFiltersAndRender()">
+                    <option value="active">Đang giao dịch</option>
+                    <option value="inactive">Ngừng giao dịch</option>
                 </select>
             </div>
         </div>
@@ -65,191 +65,19 @@
             <table class="inventory-table" style="border-collapse: collapse; margin-bottom: 0;">
                 <thead>
                     <tr>
-                        <th width="5%">Mã</th>
-                        <th width="20%">Tên Nhà Cung Cấp</th>
-                        <th width="15%">Người liên hệ / SĐT</th>
+                        <th width="8%">Mã</th>
+                        <th width="22%">Tên Nhà Cung Cấp</th>
+                        <th width="20%">Người liên hệ / SĐT</th>
                         <th width="15%">Tổng GT Nhập Hàng</th>
-                        <th width="15%">Công Nợ Hiện Tại (VND)</th>
+                        <th width="15%">Công Nợ Hiện Tại</th>
                         <th width="20%" style="text-align:right;">Thao tác</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <!-- ROW 1 -->
-                    <tr style="cursor:pointer;" onclick="toggleExpand('supp-1', this)">
-                        <td style="font-size:12px;color:#6b7280;">SUP-001</td>
-                        <td>
-                            <div class="inv-name" style="font-size:14px;">Công ty Cổ phần Dược phẩm ECO</div>
-                        </td>
-                        <td>
-                            <div style="font-size:13px;color:#1e293b;font-weight:600;">Nguyễn Văn Hưng</div>
-                            <div style="font-size:12px;color:#6b7280;"><i class="fa-solid fa-phone"
-                                    style="font-size:10px;margin-right:2px;"></i> 0901 234 567</div>
-                        </td>
-                        <td><span style="font-size:14px;font-weight:600;color:#1e293b;">450,500,000₫</span></td>
-                        <td><span style="font-size:15px;font-weight:700;color:#ef4444;">12,500,000₫</span></td>
-                        <td>
-                            <div class="action-btns" style="justify-content:flex-end;">
-                                <button class="btn-secondary" style="height:32px;font-size:12px;"
-                                    onclick="event.stopPropagation(); alert('Chuyển hướng xem lịch sử thanh toán')">Lịch
-                                    sử</button>
-                                <button class="btn-primary"
-                                    style="height:32px;font-size:12px;padding:0 12px;min-width:auto;"
-                                    onclick="event.stopPropagation(); alert('Mở form ghi nhận thanh toán')">Thanh toán
-                                    nợ</button>
-                            </div>
-                        </td>
-                    </tr>
-                    <!-- EXPANDABLE CONTENT 1 -->
-                    <tr class="expandable-row-content" id="supp-1">
-                        <td colspan="6" style="padding:0;">
-                            <div class="expanded-content-wrapper">
-                                <div
-                                    style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                                    <h3 style="font-size:14px;font-weight:700;color:#1e293b;">Lịch sử phiếu nhập
-                                        (Purchase Orders) chưa thanh toán:</h3>
-                                    <button class="btn-primary" style="background:#10b981;border-color:#10b981;"><i
-                                            class="fa-solid fa-money-bill-transfer"></i> Trả trước / Thanh toán nhanh
-                                        toàn bộ</button>
-                                </div>
-                                <table class="inventory-table"
-                                    style="margin:0;box-shadow:none;border:1px solid var(--admin-border);">
-                                    <thead style="background:#fff;">
-                                        <tr>
-                                            <th>Mã Nhập Hàng</th>
-                                            <th>Ngày lập phiếu</th>
-                                            <th>Giá trị đơn</th>
-                                            <th>Đã trả</th>
-                                            <th>Còn Thiếu (Nợ)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody style="background:#fff;">
-                                        <tr>
-                                            <td style="font-weight:600;">PO-260305-001</td>
-                                            <td>05/03/2026</td>
-                                            <td>12,500,000₫</td>
-                                            <td>0₫</td>
-                                            <td style="color:#ef4444;font-weight:600;">12,500,000₫</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- ROW 2 -->
-                    <tr style="cursor:pointer;" onclick="toggleExpand('supp-2', this)">
-                        <td style="font-size:12px;color:#6b7280;">SUP-042</td>
-                        <td>
-                            <div class="inv-name" style="font-size:14px;">Dược phẩm Hậu Giang (DHG Pharma)</div>
-                        </td>
-                        <td>
-                            <div style="font-size:13px;color:#1e293b;font-weight:600;">Trần Thị Thanh</div>
-                            <div style="font-size:12px;color:#6b7280;"><i class="fa-solid fa-phone"
-                                    style="font-size:10px;margin-right:2px;"></i> 0987 654 321</div>
-                        </td>
-                        <td><span style="font-size:14px;font-weight:600;color:#1e293b;">1,200,000,000₫</span></td>
-                        <td><span style="font-size:15px;font-weight:600;color:#10b981;">0₫</span></td>
-                        <td>
-                            <div class="action-btns" style="justify-content:flex-end;">
-                                <button class="btn-secondary" style="height:32px;font-size:12px;"
-                                    onclick="event.stopPropagation(); alert('Chuyển hướng xem lịch sử thanh toán')">Lịch
-                                    sử</button>
-                            </div>
-                        </td>
-                    </tr>
-                    <!-- EXPANDABLE CONTENT 2 -->
-                    <tr class="expandable-row-content" id="supp-2">
-                        <td colspan="6" style="padding:0;">
-                            <div class="expanded-content-wrapper">
-                                <div
-                                    style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                                    <h3 style="font-size:14px;font-weight:700;color:#1e293b;">Lịch sử phiếu nhập
-                                        (Purchase Orders) gần nhất:</h3>
-                                </div>
-                                <table class="inventory-table"
-                                    style="margin:0;box-shadow:none;border:1px solid var(--admin-border);">
-                                    <thead style="background:#fff;">
-                                        <tr>
-                                            <th>Mã Nhập Hàng</th>
-                                            <th>Ngày lập phiếu</th>
-                                            <th>Giá trị đơn</th>
-                                            <th>Đã trả</th>
-                                            <th>Còn Thiếu (Nợ)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody style="background:#fff;">
-                                        <tr>
-                                            <td style="font-weight:600;">PO-260304-002</td>
-                                            <td>04/03/2026</td>
-                                            <td>8,250,000₫</td>
-                                            <td>8,250,000₫</td>
-                                            <td style="color:#10b981;font-weight:600;">0₫</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- ROW 3 -->
-                    <tr style="cursor:pointer;" onclick="toggleExpand('supp-3', this)">
-                        <td style="font-size:12px;color:#6b7280;">SUP-008</td>
-                        <td>
-                            <div class="inv-name" style="font-size:14px;">Sanofi-Aventis Việt Nam</div>
-                        </td>
-                        <td>
-                            <div style="font-size:13px;color:#1e293b;font-weight:600;">Lê Minh Tú</div>
-                            <div style="font-size:12px;color:#6b7280;"><i class="fa-solid fa-phone"
-                                    style="font-size:10px;margin-right:2px;"></i> 0905 111 222</div>
-                        </td>
-                        <td><span style="font-size:14px;font-weight:600;color:#1e293b;">820,000,000₫</span></td>
-                        <td><span style="font-size:15px;font-weight:700;color:#ef4444;">15,400,000₫</span></td>
-                        <td>
-                            <div class="action-btns" style="justify-content:flex-end;">
-                                <button class="btn-secondary" style="height:32px;font-size:12px;"
-                                    onclick="event.stopPropagation(); alert('Chuyển hướng xem lịch sử thanh toán')">Lịch
-                                    sử</button>
-                                <button class="btn-primary"
-                                    style="height:32px;font-size:12px;padding:0 12px;min-width:auto;"
-                                    onclick="event.stopPropagation(); alert('Mở form ghi nhận thanh toán')">Thanh toán
-                                    nợ</button>
-                            </div>
-                        </td>
-                    </tr>
-                    <!-- EXPANDABLE CONTENT 3 -->
-                    <tr class="expandable-row-content" id="supp-3">
-                        <td colspan="6" style="padding:0;">
-                            <div class="expanded-content-wrapper">
-                                <div
-                                    style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                                    <h3 style="font-size:14px;font-weight:700;color:#1e293b;">Lịch sử phiếu nhập
-                                        (Purchase Orders) chưa thanh toán:</h3>
-                                    <button class="btn-primary" style="background:#10b981;border-color:#10b981;"><i
-                                            class="fa-solid fa-money-bill-transfer"></i> Trả trước / Thanh toán nhanh
-                                        toàn bộ</button>
-                                </div>
-                                <table class="inventory-table"
-                                    style="margin:0;box-shadow:none;border:1px solid var(--admin-border);">
-                                    <thead style="background:#fff;">
-                                        <tr>
-                                            <th>Mã Nhập Hàng</th>
-                                            <th>Ngày lập phiếu</th>
-                                            <th>Giá trị đơn</th>
-                                            <th>Đã trả</th>
-                                            <th>Còn Thiếu (Nợ)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody style="background:#fff;">
-                                        <tr>
-                                            <td style="font-weight:600;">PO-260220-412</td>
-                                            <td>20/02/2026</td>
-                                            <td>25,400,000₫</td>
-                                            <td>10,000,000₫</td>
-                                            <td style="color:#ef4444;font-weight:600;">15,400,000₫</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                <tbody id="supplierTableBody">
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px; color: #6b7280;">
+                            <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 24px; margin-bottom: 8px;"></i>
+                            Đang tải danh sách nhà cung cấp...
                         </td>
                     </tr>
                 </tbody>
@@ -257,43 +85,588 @@
 
             <!-- Pagination -->
             <div class="pagination" style="margin-top:16px;">
-                <span class="page-info">Hiển thị 1 - 3 trên 48 Nhà Cung Cấp</span>
-                <div class="page-controls">
-                    <button class="btn-page" disabled><i class="fa-solid fa-chevron-left"></i></button>
-                    <button class="btn-page active">1</button>
-                    <button class="btn-page">2</button>
-                    <button class="btn-page">...</button>
-                    <button class="btn-page"><i class="fa-solid fa-chevron-right"></i></button>
+                <span class="page-info" id="paginationInfo">Hiển thị 0 - 0 trên 0 Nhà Cung Cấp</span>
+                <div class="page-controls" id="paginationControls">
                 </div>
             </div>
         </div>
     </main>
 
+    <!-- ============ MODALS ============ -->
+    
+    <!-- Modal: Thêm Nhà Cung Cấp -->
+    <div class="standard-modal-overlay" id="addSupplierModal">
+        <div class="standard-modal-container" style="max-width: 500px;">
+            <div class="standard-modal-header">
+                <h2 style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0;">Thêm Nhà Cung Cấp Mới</h2>
+                <button onclick="closeAddSupplierModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #94a3b8;">&times;</button>
+            </div>
+            <form id="addSupplierForm">
+                <div class="standard-modal-body" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 13px; font-weight: 600; color: #475569;">Mã nhà cung cấp <span style="color: red;">*</span></label>
+                        <input type="text" id="supCode" required placeholder="VD: SUP-009" class="dyn-input" style="background: white;">
+                    </div>
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 13px; font-weight: 600; color: #475569;">Tên nhà cung cấp <span style="color: red;">*</span></label>
+                        <input type="text" id="supName" required placeholder="Tên công ty dược phẩm..." class="dyn-input" style="background: white;">
+                    </div>
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 13px; font-weight: 600; color: #475569;">Người liên hệ</label>
+                        <input type="text" id="supContactName" placeholder="Tên người liên hệ..." class="dyn-input" style="background: white;">
+                    </div>
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 13px; font-weight: 600; color: #475569;">Số điện thoại</label>
+                        <input type="text" id="supPhone" placeholder="Số điện thoại..." class="dyn-input" style="background: white;">
+                    </div>
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 13px; font-weight: 600; color: #475569;">Email</label>
+                        <input type="email" id="supEmail" placeholder="Email..." class="dyn-input" style="background: white;">
+                    </div>
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 13px; font-weight: 600; color: #475569;">Mã số thuế</label>
+                        <input type="text" id="supTaxCode" placeholder="Mã số thuế..." class="dyn-input" style="background: white;">
+                    </div>
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 13px; font-weight: 600; color: #475569;">Địa chỉ</label>
+                        <textarea id="supAddress" placeholder="Địa chỉ..." class="dyn-input" style="background: white; height: 60px; padding: 6px 10px; resize: none;"></textarea>
+                    </div>
+                </div>
+                <div class="standard-modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeAddSupplierModal()" style="height: 38px;">Hủy</button>
+                    <button type="submit" class="btn-primary" style="height: 38px;">Lưu lại</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Thanh Toán Nợ -->
+    <div class="standard-modal-overlay" id="payDebtModal">
+        <div class="standard-modal-container" style="max-width: 480px;">
+            <div class="standard-modal-header">
+                <h2 style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0;">Ghi Nhận Thanh Toán Công Nợ</h2>
+                <button onclick="closePayDebtModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #94a3b8;">&times;</button>
+            </div>
+            <form id="payDebtForm">
+                <div class="standard-modal-body" style="display: flex; flex-direction: column; gap: 14px;">
+                    <div style="background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <div style="font-size: 13px; color: #64748b;">Nhà cung cấp</div>
+                        <div style="font-size: 15px; font-weight: 700; color: #0f172a; margin-top: 2px;" id="payDebtSupplierName">---</div>
+                        
+                        <div style="font-size: 13px; color: #64748b; margin-top: 10px;">Tổng nợ hiện tại</div>
+                        <div style="font-size: 18px; font-weight: 800; color: #ef4444; margin-top: 2px;" id="payDebtTotal">0₫</div>
+                    </div>
+
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 13px; font-weight: 600; color: #475569;">Số tiền thanh toán (VND) <span style="color: red;">*</span></label>
+                        <input type="number" id="payAmount" required min="1000" class="dyn-input" style="background: white; font-weight: 700; color: #1e293b;">
+                    </div>
+
+                    <div style="font-size: 12px; color: #64748b; line-height: 1.5; background: #eff6ff; padding: 10px 12px; border-radius: 6px; border: 1px solid #bfdbfe;">
+                        <i class="fa-solid fa-circle-info" style="color: #2563eb; margin-right: 4px;"></i>
+                        Giao dịch này sẽ được ghi nhận vào Nhật ký chứng từ chi và khấu trừ trực tiếp công nợ trên hệ thống Master Data.
+                    </div>
+                </div>
+                <div class="standard-modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closePayDebtModal()" style="height: 38px;">Hủy</button>
+                    <button type="submit" class="btn-primary" style="height: 38px; background: #10b981; border-color: #10b981;">Xác nhận trả nợ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- ============ SCRIPTS ============ -->
     <script>
-        function toggleExpand(id, rowElement) {
+        let suppliersData = [];
+        let filteredSuppliers = [];
+        let currentPage = 1;
+        const itemsPerPage = 8;
+        const API_BASE = (localStorage.getItem('MG_API_BASE') || (
+            (window.location.origin.includes('localhost:5500') ||
+             window.location.origin.includes('localhost:5501') ||
+             window.location.origin.includes('127.0.0.1:5500') ||
+             window.location.origin.includes('127.0.0.1:5501'))
+            ? 'http://localhost:8000/api'
+            : window.location.origin.replace(/\/+$/, '') + '/api'
+        )) + '/catalog';
+
+        // Load active suppliers from API
+        async function loadSuppliers() {
+            try {
+                const response = await fetch(`${API_BASE}/suppliers?limit=100`);
+                const result = await response.json();
+                if (result.success) {
+                    suppliersData = result.data || [];
+                    applyFiltersAndRender();
+                } else {
+                    showToast('Lỗi khi tải danh sách nhà cung cấp: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('Lỗi kết nối đến máy chủ.', 'error');
+            }
+        }
+
+        // Apply filters and search
+        function applyFiltersAndRender() {
+            const debtFilter = document.getElementById('debtFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            const searchInput = document.querySelector('.header-search input');
+            const searchQuery = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+            filteredSuppliers = suppliersData.filter(sup => {
+                // Status Filter
+                if (statusFilter && sup.status !== statusFilter) {
+                    return false;
+                }
+
+                // Debt Filter
+                const debt = parseFloat(sup.current_debt) || 0;
+                if (debtFilter === 'has-debt' && debt <= 0) {
+                    return false;
+                }
+                if (debtFilter === 'no-debt' && debt > 0) {
+                    return false;
+                }
+
+                // Search query
+                if (searchQuery) {
+                    const code = (sup.code || '').toLowerCase();
+                    const name = (sup.name || '').toLowerCase();
+                    const contact = (sup.contact_name || '').toLowerCase();
+                    const phone = (sup.phone || '').toLowerCase();
+                    if (!code.includes(searchQuery) && !name.includes(searchQuery) && !contact.includes(searchQuery) && !phone.includes(searchQuery)) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            currentPage = 1;
+            renderSuppliersTable();
+        }
+
+        // Format Currency
+        function formatVND(amount) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
+        }
+
+        // Render Table Rows
+        function renderSuppliersTable() {
+            const tbody = document.getElementById('supplierTableBody');
+            tbody.innerHTML = '';
+
+            if (filteredSuppliers.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px; color: #6b7280;">
+                            <i class="fa-solid fa-folder-open" style="font-size: 32px; margin-bottom: 12px; opacity: 0.5; display: block;"></i>
+                            Không tìm thấy nhà cung cấp nào
+                        </td>
+                    </tr>
+                `;
+                document.getElementById('paginationInfo').textContent = 'Hiển thị 0 - 0 trên 0 Nhà Cung Cấp';
+                document.getElementById('paginationControls').innerHTML = '';
+                return;
+            }
+
+            const totalItems = filteredSuppliers.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+            const paginatedItems = filteredSuppliers.slice(startIndex, startIndex + itemsPerPage);
+
+            paginatedItems.forEach(sup => {
+                const debt = parseFloat(sup.current_debt) || 0;
+                const totalPurchase = parseFloat(sup.total_purchase_value) || 0;
+
+                const mainRow = document.createElement('tr');
+                mainRow.style.cursor = 'pointer';
+                mainRow.setAttribute('onclick', `toggleExpand('supp-${sup.id}', this, ${sup.id}, '${escapeHtml(sup.name)}')`);
+
+                mainRow.innerHTML = `
+                    <td style="font-size:12px;color:#6b7280; font-weight: 600;">${escapeHtml(sup.code || '')}</td>
+                    <td>
+                        <div class="inv-name" style="font-size:14px; font-weight: 600;">${escapeHtml(sup.name || '')}</div>
+                    </td>
+                    <td>
+                        <div style="font-size:13px;color:#1e293b;font-weight:600;">${escapeHtml(sup.contact_name || 'Chưa cập nhật')}</div>
+                        <div style="font-size:12px;color:#6b7280;">
+                            <i class="fa-solid fa-phone" style="font-size:10px;margin-right:2px;"></i> ${escapeHtml(sup.phone || 'N/A')}
+                        </div>
+                    </td>
+                    <td><span style="font-size:14px;font-weight:600;color:#1e293b;">${formatVND(totalPurchase)}</span></td>
+                    <td>
+                        <span style="font-size:15px;font-weight:700;color:${debt > 0 ? '#ef4444' : '#10b981'};">
+                            ${formatVND(debt)}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-btns" style="justify-content:flex-end;">
+                            <button class="btn-secondary" style="height:32px;font-size:12px;"
+                                onclick="event.stopPropagation(); showSupplierHistory('${escapeHtml(sup.name)}')">Lịch sử</button>
+                            ${debt > 0 ? `
+                            <button class="btn-primary"
+                                style="height:32px;font-size:12px;padding:0 12px;min-width:auto;"
+                                onclick="event.stopPropagation(); openPayDebtModal(${sup.id}, '${escapeHtml(sup.name)}', ${debt})">Thanh toán nợ</button>
+                            ` : ''}
+                        </div>
+                    </td>
+                `;
+
+                const detailRow = document.createElement('tr');
+                detailRow.className = 'expandable-row-content';
+                detailRow.id = `supp-${sup.id}`;
+                detailRow.innerHTML = `
+                    <td colspan="6" style="padding:0;">
+                        <div class="expanded-content-wrapper">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                                <h3 style="font-size:14px;font-weight:700;color:#1e293b;margin:0;">Lịch sử phiếu nhập hàng (Purchase Orders):</h3>
+                                <div style="display:flex; gap: 8px;">
+                                    <span style="font-size: 12px; color: #64748b; font-style: italic; align-self: center;" id="batches-meta-${sup.id}">Đang tải...</span>
+                                </div>
+                            </div>
+                            <div id="batches-loader-${sup.id}" style="text-align: center; padding: 20px; color: #64748b;">
+                                <i class="fa-solid fa-circle-notch fa-spin" style="margin-right: 6px;"></i> Đang tải danh sách phiếu nhập...
+                            </div>
+                            <table class="inventory-table" id="batches-table-${sup.id}"
+                                style="margin:0;box-shadow:none;border:1px solid var(--admin-border); display: none;">
+                                <thead style="background:#fff;">
+                                    <tr>
+                                        <th>Mã Nhập Hàng</th>
+                                        <th>Ngày lập phiếu</th>
+                                        <th>Trạng thái</th>
+                                        <th>Giá trị đơn</th>
+                                        <th>Đã trả</th>
+                                        <th>Còn Thiếu (Nợ)</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="background:#fff;" id="batches-tbody-${sup.id}">
+                                </tbody>
+                            </table>
+                        </div>
+                    </td>
+                `;
+
+                tbody.appendChild(mainRow);
+                tbody.appendChild(detailRow);
+            });
+
+            // Update Pagination Info
+            document.getElementById('paginationInfo').textContent = `Hiển thị ${startIndex + 1} - ${endIndex} trên ${totalItems} Nhà Cung Cấp`;
+            
+            // Render pagination controls
+            renderPaginationControls(totalPages);
+        }
+
+        // Render Pagination Controls
+        function renderPaginationControls(totalPages) {
+            const controls = document.getElementById('paginationControls');
+            controls.innerHTML = '';
+
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'btn-page';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+            prevBtn.onclick = () => { currentPage--; renderSuppliersTable(); };
+            controls.appendChild(prevBtn);
+
+            for (let i = 1; i <= totalPages; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `btn-page ${i === currentPage ? 'active' : ''}`;
+                pageBtn.textContent = i;
+                pageBtn.onclick = () => { currentPage = i; renderSuppliersTable(); };
+                controls.appendChild(pageBtn);
+            }
+
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'btn-page';
+            nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+            nextBtn.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+            nextBtn.onclick = () => { currentPage++; renderSuppliersTable(); };
+            controls.appendChild(nextBtn);
+        }
+
+        // Open & close Add Supplier Modal
+        function openAddSupplierModal() {
+            document.getElementById('addSupplierModal').classList.add('open');
+            document.getElementById('addSupplierForm').reset();
+        }
+
+        function closeAddSupplierModal() {
+            document.getElementById('addSupplierModal').classList.remove('open');
+        }
+
+        // Submit Add Supplier
+        document.getElementById('addSupplierForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const payload = {
+                code: document.getElementById('supCode').value.trim(),
+                name: document.getElementById('supName').value.trim(),
+                contact_name: document.getElementById('supContactName').value.trim() || null,
+                phone: document.getElementById('supPhone').value.trim() || null,
+                email: document.getElementById('supEmail').value.trim() || null,
+                tax_code: document.getElementById('supTaxCode').value.trim() || null,
+                address: document.getElementById('supAddress').value.trim() || null,
+                status: 'active'
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/suppliers`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showToast('Thêm nhà cung cấp mới thành công!', 'success');
+                    closeAddSupplierModal();
+                    loadSuppliers();
+                } else {
+                    showToast('Lỗi: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('Lỗi kết nối máy chủ.', 'error');
+            }
+        });
+
+        // Load batches (Purchase Orders) dynamically on expansion
+        const loadedBatches = {};
+        async function loadSupplierBatches(supplierId, supplierName) {
+            if (loadedBatches[supplierId]) return;
+
+            const loader = document.getElementById(`batches-loader-${supplierId}`);
+            const table = document.getElementById(`batches-table-${supplierId}`);
+            const tbody = document.getElementById(`batches-tbody-${supplierId}`);
+            const meta = document.getElementById(`batches-meta-${supplierId}`);
+
+            try {
+                const response = await fetch(`${API_BASE}/batches?q=${encodeURIComponent(supplierName)}`);
+                const result = await response.json();
+                
+                loader.style.display = 'none';
+                table.style.display = 'table';
+
+                if (result.success) {
+                    const supplierBatches = (result.data || []).filter(b => b.supplier_name === supplierName);
+                    tbody.innerHTML = '';
+                    
+                    if (supplierBatches.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 20px;">Không có phiếu nhập nào</td></tr>`;
+                        meta.textContent = '0 đơn hàng';
+                    } else {
+                        meta.textContent = `${supplierBatches.length} đơn hàng`;
+                        supplierBatches.forEach(b => {
+                            const total = parseFloat(b.total_amount) || 0;
+                            const paid = parseFloat(b.paid_amount) || 0;
+                            const due = Math.max(0, total - paid);
+
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td style="font-weight:600;">${escapeHtml(b.batch_code)}</td>
+                                <td>${new Date(b.received_date).toLocaleDateString('vi-VN')}</td>
+                                <td>
+                                    <span class="status-badge ${b.status === 'completed' ? 'completed' : 'pending'}">
+                                        ${b.status === 'completed' ? 'Hoàn thành' : 'Bản nháp'}
+                                    </span>
+                                </td>
+                                <td>${formatVND(total)}</td>
+                                <td>${formatVND(paid)}</td>
+                                <td style="font-weight:600; color: ${due > 0 ? '#ef4444' : '#10b981'};">${formatVND(due)}</td>
+                            `;
+                            tbody.appendChild(row);
+                        });
+                    }
+                    loadedBatches[supplierId] = true;
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="6" style="color: #ef4444; text-align: center; padding: 20px;">Lỗi tải: ${result.message}</td></tr>`;
+                    meta.textContent = 'Lỗi';
+                }
+            } catch (error) {
+                console.error(error);
+                loader.style.display = 'none';
+                table.style.display = 'table';
+                tbody.innerHTML = `<tr><td colspan="6" style="color: #ef4444; text-align: center; padding: 20px;">Lỗi kết nối máy chủ.</td></tr>`;
+                meta.textContent = 'Lỗi';
+            }
+        }
+
+        // Toggle Expand Wrapper
+        function toggleExpand(id, rowElement, supplierId, supplierName) {
             const contentRow = document.getElementById(id);
 
-            // Toggle the open class
             if (contentRow.classList.contains('open')) {
                 contentRow.classList.remove('open');
                 rowElement.style.background = '';
             } else {
-                // Close other opened rows first (optional UX pattern)
                 document.querySelectorAll('.expandable-row-content.open').forEach(el => {
                     el.classList.remove('open');
                 });
-                // Find all normal rows and reset their background
                 document.querySelectorAll('tbody > tr').forEach(el => {
                     if (!el.classList.contains('expandable-row-content')) {
                         el.style.background = '';
                     }
                 });
 
-                // Open this one
                 contentRow.classList.add('open');
-                rowElement.style.background = '#f8fafc'; // Match expandable background
+                rowElement.style.background = '#f8fafc';
+                
+                // Load batches on demand
+                loadSupplierBatches(supplierId, supplierName);
             }
+        }
+
+        // Excel / CSV Export
+        function exportExcel() {
+            if (filteredSuppliers.length === 0) {
+                showToast('Không có dữ liệu để xuất.', 'error');
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+            csvContent += "Mã,Tên Nhà Cung Cấp,Người Liên Xe,Số Điện Thoại,Email,Tổng Giá Trị Nhập Hàng (VND),Công Nợ Hiện Tại (VND),Trạng Thái\n";
+
+            filteredSuppliers.forEach(sup => {
+                const row = [
+                    sup.code || '',
+                    `"${(sup.name || '').replace(/"/g, '""')}"`,
+                    `"${(sup.contact_name || '').replace(/"/g, '""')}"`,
+                    sup.phone || '',
+                    sup.email || '',
+                    sup.total_purchase_value || 0,
+                    sup.current_debt || 0,
+                    sup.status || ''
+                ];
+                csvContent += row.join(",") + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `MG_NhaCungCap_CongNo_${new Date().toISOString().slice(0, 10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('Xuất danh sách thành công!', 'success');
+        }
+
+        // Pay Debt Logic
+        let currentPayDebtState = { supplierId: null, supplierName: '', totalDebt: 0 };
+        function openPayDebtModal(supplierId, supplierName, totalDebt) {
+            currentPayDebtState = { supplierId, supplierName, totalDebt };
+            document.getElementById('payDebtSupplierName').textContent = supplierName;
+            document.getElementById('payDebtTotal').textContent = formatVND(totalDebt);
+            document.getElementById('payAmount').value = totalDebt;
+            document.getElementById('payDebtModal').classList.add('open');
+        }
+
+        function closePayDebtModal() {
+            document.getElementById('payDebtModal').classList.remove('open');
+        }
+
+        document.getElementById('payDebtForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payAmount = parseFloat(document.getElementById('payAmount').value) || 0;
+            if (payAmount <= 0) {
+                showToast('Số tiền thanh toán phải lớn hơn 0.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/suppliers/${currentPayDebtState.supplierId}/pay-debt`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: payAmount })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showToast(`Ghi nhận thanh toán ${formatVND(payAmount)} cho ${currentPayDebtState.supplierName} thành công!`, 'success');
+                    closePayDebtModal();
+                    loadSuppliers();
+                } else {
+                    showToast('Lỗi: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('Lỗi kết nối máy chủ.', 'error');
+            }
+        });
+
+        // Link search input from Header
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const searchInput = document.querySelector('.header-search input');
+                if (searchInput) {
+                    searchInput.addEventListener('input', applyFiltersAndRender);
+                    searchInput.placeholder = "Tìm kiếm nhà cung cấp theo tên, mã, SĐT...";
+                }
+            }, 100);
+
+            loadSuppliers();
+        });
+
+        // Helper to escape HTML characters
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Show Toast Function
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 24px;
+                right: 24px;
+                background: ${type === 'success' ? '#10b981' : '#ef4444'};
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                font-family: 'Inter', sans-serif;
+                font-size: 14px;
+                font-weight: 600;
+                z-index: 9999;
+                opacity: 0;
+                transform: translateY(20px);
+                transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            `;
+            const icon = type === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-xmark"></i>';
+            toast.innerHTML = `${icon} <span>${message}</span>`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateY(0)';
+            }, 50);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(20px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Redirect/History stub
+        function showSupplierHistory(name) {
+            window.location.href = `batches.html?q=${encodeURIComponent(name)}`;
         }
     </script>
 
