@@ -194,10 +194,10 @@ req.userType // (String) — 'user' | 'customer'
 
 ### 7. API Mapping — PHẢI Đọc Trước Khi Code
 
-Thư mục `markdown/api-mapping/` chứa **28 file đặc tả API** cho từng trang frontend:
+Thư mục `docs/api-mapping/` chứa **28 file đặc tả API** cho từng trang frontend:
 
 ```
-markdown/api-mapping/
+docs/api-mapping/
 ├── admin/    (16 files — login, customers, orders, inventory, batches, ...)
 ├── client/   (9 files  — auth, cart, category, checkout, product, ...)
 └── pos/      (3 files  — login, main, history)
@@ -308,10 +308,10 @@ File mẫu tham khảo: backend/catalog-service/products/products.routes.js
   (GET / với pagination + search đã hoàn chỉnh)
 
 Schema DB:  infrastructure/database/mg_catalog.sql
-API specs:  markdown/api-mapping/admin/  (inventory, batches, suppliers, locations)
-            markdown/api-mapping/client/ (category, product)
+API specs:  docs/api-mapping/admin/  (inventory, batches, suppliers, locations)
+            docs/api-mapping/client/ (category, product)
 
-Khi implement POST/PUT/DELETE → thay thế các stub 501 hiện tại.
+Hiện tại tất cả các API POST/PUT/DELETE đã được triển khai hoàn chỉnh.
 GET public routes (products, categories) đã được gateway whitelist.
 ```
 
@@ -331,11 +331,11 @@ Các domain tôi cần implement:
 - returns/  → GET danh sách, POST tạo, GET /:id chi tiết, PUT /:id/approve
 
 Schema DB:  infrastructure/database/mg_order.sql
-API specs:  markdown/api-mapping/client/api-mapping-client-cart.md
-            markdown/api-mapping/client/api-mapping-client-checkout.md
-            markdown/api-mapping/admin/api-mapping-admin-orders.md
-            markdown/api-mapping/admin/api-mapping-admin-returns.md
-            markdown/api-mapping/admin/api-mapping-admin-fulfillment.md
+API specs:  docs/api-mapping/client/api-mapping-client-cart.md
+            docs/api-mapping/client/api-mapping-client-checkout.md
+            docs/api-mapping/admin/api-mapping-admin-orders.md
+            docs/api-mapping/admin/api-mapping-admin-returns.md
+            docs/api-mapping/admin/api-mapping-admin-fulfillment.md
 
 Cart cần req.userId từ gatewayAuth để biết giỏ hàng của ai.
 Order status flow: pending → confirmed → shipping → delivered (hoặc cancelled).
@@ -358,11 +358,11 @@ Backend domains:
 
 Schema DB:  infrastructure/database/mg_cms.sql
             infrastructure/database/mg_notification.sql
-API specs:  markdown/api-mapping/admin/api-mapping-admin-cms.md
-            markdown/api-mapping/admin/api-mapping-admin-promotions.md
-            markdown/api-mapping/admin/api-mapping-admin-storefront.md
-            markdown/api-mapping/client/api-mapping-client-disease-articles.md
-            markdown/api-mapping/client/api-mapping-client-index.md
+API specs:  docs/api-mapping/admin/api-mapping-admin-cms.md
+            docs/api-mapping/admin/api-mapping-admin-promotions.md
+            docs/api-mapping/admin/api-mapping-admin-storefront.md
+            docs/api-mapping/client/api-mapping-client-disease-articles.md
+            docs/api-mapping/client/api-mapping-client-index.md
 
 Frontend:
 - HTML static + vanilla JS (fetch API)
@@ -406,7 +406,7 @@ Bạn là lập trình viên trong dự án Nhà thuốc Minh Giang — kiến t
 5. AUTH: KHÔNG verify JWT trong service. Đọc req.userId, req.userRole,
    req.userType từ middleware gatewayAuth.js.
 
-6. TRƯỚC KHI CODE: Đọc file api-mapping tương ứng trong markdown/api-mapping/
+6. TRƯỚC KHI CODE: Đọc file api-mapping tương ứng trong docs/api-mapping/
    để đảm bảo đúng endpoint path, tên field, response format.
    Đọc file SQL schema trong infrastructure/database/ để đúng tên bảng/cột.
 
@@ -424,10 +424,10 @@ Bạn là lập trình viên trong dự án Nhà thuốc Minh Giang — kiến t
 
 | File                                   | Mô tả                              |
 |----------------------------------------|-------------------------------------|
-| `markdown/tasks/CODING_CONVENTIONS.md` | Chi tiết coding convention          |
-| `markdown/tasks/TASK_ASSIGNMENTS.md`   | Phân công endpoint theo thành viên  |
-| `markdown/project/SECURITY.md`         | Quy tắc bảo mật                    |
-| `markdown/project/GIT_GUIDE.md`        | Hướng dẫn Git workflow              |
-| `markdown/project/README.md`           | Tổng quan kiến trúc + quick start   |
-| `markdown/api-mapping/`               | 28 file đặc tả API frontend↔backend|
+| `docs/CODING_CONVENTIONS.md`           | Chi tiết coding convention          |
+| `docs/tasks/TASK_ASSIGNMENTS.md`       | Phân công endpoint theo thành viên  |
+| `docs/SECURITY.md`                     | Quy tắc bảo mật                    |
+| `docs/GIT_GUIDE.md`                    | Hướng dẫn Git workflow              |
+| `README.md`                            | Tổng quan kiến trúc + quick start   |
+| `docs/api-mapping/`                    | 28 file đặc tả API frontend↔backend|
 | `infrastructure/database/`            | Schema SQL cho từng service         |

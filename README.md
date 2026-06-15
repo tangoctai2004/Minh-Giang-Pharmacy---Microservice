@@ -1,118 +1,167 @@
-# Minh Giang Pharmacy - Hướng Dẫn Cài Đặt & Chạy Dự Án (Microservices Stack)
+# 🏥 Minh Giang Pharmacy - Hệ thống Quản lý Nhà thuốc (Microservices Stack)
 
-Tài liệu này hướng dẫn chi tiết cách tải (clone), build và khởi chạy dự án **Minh Giang Pharmacy** dành cho mọi thành viên trong nhóm phát triển (cả trên macOS và Windows).
+[![Node.js](https://img.shields.io/badge/Node.js-v18+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Docker Compose](https://img.shields.io/badge/Docker_Compose-v2+-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![RabbitMQ](https://img.shields.io/badge/RabbitMQ-Message_Queue-FF6600?logo=rabbitmq&logoColor=white)](https://www.rabbitmq.com/)
 
----
-
-## 🛠 1. Yêu Cầu Hệ Thống (Prerequisites)
-
-Trước khi bắt đầu, hãy đảm bảo máy tính của bạn đã cài đặt các công cụ sau:
-
-1. **Git**: Để clone và quản lý mã nguồn.
-2. **Docker & Docker Desktop**: Bắt buộc phải cài đặt để chạy các microservices, database và RabbitMQ.
-3. **Node.js (v16 trở lên)**: Để cài đặt package hoặc chạy test nếu cần.
-4. **Python (v3.x)**: Dùng để khởi chạy server cho Frontend tĩnh (tích hợp trong file menu).
-5. **VS Code (Visual Studio Code)**: Trình chỉnh sửa code khuyên dùng.
+Dự án phát triển Hệ thống quản lý nhà thuốc **Minh Giang** theo kiến trúc Microservices — được xây dựng phục vụ cho môn học **Kiến trúc hướng dịch vụ (SOA 2026)**.
 
 ---
 
-## 🚀 2. Các Bước Cài Đặt & Chạy Dự Án
+## 🗺️ 1. Kiến Trúc Hệ Thống Tổng Quan
 
-### Bước 1: Clone Dự Án Về Máy Local
-Mở terminal (trên Mac) hoặc Git Bash (trên Windows) và chạy lệnh:
-```bash
-git clone <URL_REPOSITOY_CỦA_NHÓM>
-cd "Minh Giang Pharmacy"
+Hệ thống được thiết kế theo mô hình Microservices phân lớp, giao tiếp qua API Gateway đồng thời trao đổi bất đồng bộ qua Message Broker (RabbitMQ).
+
+```text
+       ┌────────────────────────────────────────────────────────┐
+       │             Browser / POS / Admin (Frontend)           │
+       └───────────────────────────┬────────────────────────────┘
+                                   │
+                                   ▼
+                   ┌──────────────────────────────┐
+                   │     API Gateway (Cổng 8000)   │ <─── JWT verify tập trung
+                   └───────────────┬──────────────┘
+                                   │
+         ┌───────────────┬─────────┼─────────┬───────────────┐
+         ▼               ▼         ▼         ▼               ▼
+     [Cổng 8001]    [Cổng 8002] [Cổng 8003] [Cổng 8004]     [Cổng 8005]
+    ┌───────────┐  ┌───────────┐┌──────────┐┌───────────┐  ┌───────────┐
+    │ Identity  │  │  Catalog  ││  Order   ││    CMS    │  │Notification
+    │  Service  │  │  Service  ││ Service  ││  Service  │  │  Service  │
+    └─────┬─────┘  └─────┬─────┘└────┬─────┘└─────┬─────┘  └─────┬─────┘
+          │              │           │            │              │
+          └──────────────┼───────────┼────────────┼──────────────┘
+                         ▼           ▼            ▼
+                   ┌──────────────────────────────────────┐
+                   │    MySQL 8.0 (Mỗi service 1 schema)   │
+                   │    RabbitMQ (Truyền tin bất đồng bộ)   │
+                   └──────────────────────────────────────┘
 ```
 
-### Bước 2: Thiết Lập File Môi Trường (Environment Variables)
-Sao chép file cấu hình mẫu `.env.example` thành file `.env` ở thư mục gốc:
-* **macOS / Linux / Windows (Git Bash):**
-  ```bash
-  cp .env.example .env
-  ```
-* **Windows (PowerShell / CMD):**
-  ```powershell
-  copy .env.example .env
-  ```
-*(Bạn có thể mở file `.env` vừa tạo để thay đổi mã bảo mật `JWT_SECRET` hoặc cấu hình SMTP gửi email nếu cần).*
+### Bản đồ Cổng Dịch vụ & Cơ sở dữ liệu
 
-### Bước 3: Khởi Chạy Hệ Thống
-Có 3 cách cực kỳ đơn giản để chạy toàn bộ hệ thống (Docker database, services và frontend):
-
-#### 👉 Cách 1: Sử dụng phím tắt trong VS Code (Khuyên dùng - Cả Windows & Mac)
-Mở dự án bằng VS Code, sau đó nhấn tổ hợp phím:
-* **macOS:** `Cmd + Shift + B`
-* **Windows:** `Ctrl + Shift + B`
-*Hệ thống sẽ tự động chạy Docker services, bật server frontend và hiển thị menu tương tác ngay trên VS Code.*
-
-#### 👉 Cách 2: Chạy qua file Script chạy nhanh
-* **Trên macOS:**
-  ```bash
-  ./local-menu.sh
-  ```
-* **Trên Windows:** Chỉ cần kích đúp chuột vào file [local-menu.bat](file:///Users/tangoctai/StudySpace/SOA.2026/Minh%20Giang%20Pharmacy/local-menu.bat) hoặc mở terminal (CMD/PowerShell) gõ:
-  ```cmd
-  .\local-menu.bat
-  ```
-
-#### 👉 Cách 3: Chạy chay bằng dòng lệnh Docker thủ công
-Nếu bạn không muốn sử dụng menu tương tác:
-```bash
-# Build và chạy ngầm tất cả các container
-docker compose up -d --build
-```
+| Microservice | Port | Cơ sở dữ liệu / Schema | Mô tả chức năng |
+| :--- | :---: | :--- | :--- |
+| **API Gateway** | `8000` | — | Định tuyến yêu cầu, kiểm tra JWT tập trung |
+| **Identity Service** | `8001` | `mg_identity` | Quản lý tài khoản, phân quyền, ca làm việc (Shift) |
+| **Catalog Service** | `8002` | `mg_catalog` | Quản lý sản phẩm, danh mục, kho hàng, nhà cung cấp |
+| **Order Service** | `8003` | `mg_order` | Quản lý giỏ hàng, đặt hàng (Checkout), hóa đơn, trả hàng |
+| **CMS Service** | `8004` | `mg_cms` | Quản lý tin tức, chương trình khuyến mãi, cấu hình cửa hàng |
+| **Notification Service** | `8005` | `mg_notification` | Gửi Email thông báo (Nodemailer), stub SMS |
+| **RabbitMQ** | `15672` | — | UI Quản trị Message Queue (`guest`/`guest`) |
+| **MySQL Database** | `3306` | `root` / `root` | Database engine chung cho toàn bộ services con |
 
 ---
 
-## 🗺 3. Bản Đồ Cổng Dịch Vụ & Địa Chỉ Truy Cập
+## 🛠️ 2. Hướng Dẫn Khởi Chạy Nhanh (Quick Start)
 
-Sau khi chạy thành công, hệ thống sẽ mở các cổng dịch vụ sau trên máy của bạn (`localhost`):
+### Yêu cầu hệ thống
+- **Docker Desktop** (Bắt buộc)
+- **Node.js (v18 trở lên)** (Để chạy debug cục bộ hoặc chạy test)
+- **Git**
 
-| Tên Dịch Vụ / Ứng Dụng | Cổng (Port) | Đường Dẫn Truy Cập / API Endpoint |
-| :--- | :---: | :--- |
-| **Trang khách hàng** | `5500` / `5501` | http://localhost:5500/client/index.html |
-| **Trang Admin** | `5500` / `5501` | http://localhost:5500/admin/login.html |
-| **Trang POS** | `5500` / `5501` | http://localhost:5500/pos/login.html |
-| **API Gateway** (Điểm nhận request) | `8000` | http://localhost:8000/api/... |
-| **Identity Service** (Auth/User) | `8001` | http://localhost:8001/health |
-| **Catalog Service** (Sản phẩm) | `8002` | http://localhost:8002/health |
-| **Order Service** (Giỏ hàng/Đơn hàng) | `8003` | http://localhost:8003/health |
-| **CMS Service** (Tin tức/Khuyến mãi) | `8004` | http://localhost:8004/health |
-| **Notification Service** (Email) | `8005` | http://localhost:8005/health |
-| **RabbitMQ** (Message Queue) | `15672` | http://localhost:15672 (TK/MK: `guest`/`guest`) |
-| **MySQL Database** | `3306` | Khách: `minhgiang_db`, TK/MK: `root`/`root` |
+### Các bước cài đặt
+
+1. **Clone dự án và truy cập thư mục gốc**:
+   ```bash
+   git clone <URL_REPOSITOY_CỦA_NHÓM>
+   cd "Minh Giang Pharmacy"
+   ```
+
+2. **Thiết lập biến môi trường**:
+   Sao chép tệp cấu hình mẫu `.env.example` thành `.env` ở thư mục gốc:
+   ```bash
+   cp .env.example .env
+   ```
+   *(Bạn có thể mở tệp `.env` vừa tạo để thay đổi mã bảo mật `JWT_SECRET` hoặc cấu hình SMTP gửi email nếu cần).*
+
+3. **Khởi chạy hệ thống**: Có 3 cách đơn giản để chạy toàn bộ hệ thống (Database, Services và Frontend):
+
+   * **👉 Cách 1: Sử dụng phím tắt trong VS Code (Khuyên dùng)**
+     Mở dự án bằng VS Code, sau đó nhấn tổ hợp phím:
+     - **macOS:** `Cmd + Shift + B`
+     - **Windows:** `Ctrl + Shift + B`
+     *Hệ thống sẽ tự động chạy Docker services, bật server frontend tĩnh và hiển thị menu tương tác ngay trên VS Code.*
+
+   * **👉 Cách 2: Chạy qua menu kịch bản tương tác**
+     - **Trên macOS / Linux:**
+       ```bash
+       ./local-menu.sh
+       ```
+     - **Trên Windows:** Chạy trực tiếp qua Git Bash hoặc chạy [local-menu.bat](file:///Users/tangoctai/StudySpace/SOA.2026/Minh%20Giang%20Pharmacy/local-menu.bat) bằng Command Prompt.
+
+   * **👉 Cách 3: Chạy trực tiếp bằng Docker Compose CLI**
+     ```bash
+     docker compose up -d --build
+     ```
+
+---
+
+## 🗺️ 3. Đường Dẫn Truy Cập Giao Diện
+
+Sau khi hệ thống khởi chạy thành công, frontend tĩnh được host tại cổng `5500` (hoặc cổng tự động tìm thấy tiếp theo như `5501`):
+
+- **Trang Khách Hàng:** [http://localhost:5500/client/index.html](http://localhost:5500/client/index.html)
+- **Trang Quản Trị (Admin):** [http://localhost:5500/admin/login.html](http://localhost:5500/admin/login.html)
+- **Trang Bán Hàng Tại Quầy (POS):** [http://localhost:5500/pos/login.html](http://localhost:5500/pos/login.html)
 
 ---
 
 ## 🧪 4. Chạy Kiểm Thử Tự Động (Integration Tests)
 
-Dự án đi kèm các file script giúp kiểm tra nhanh xem các API Backend có hoạt động ổn định hay không. Hãy chạy các lệnh này trước khi push code lên Git:
+Dự án đã tích hợp kịch bản kiểm thử hợp nhất [test.sh](file:///Users/tangoctai/StudySpace/SOA.2026/Minh%20Giang%20Pharmacy/test.sh) ở thư mục gốc giúp kiểm tra nhanh xem các API Backend có hoạt động ổn định hay không:
 
-* **Test tổng quan hệ thống Auth & Identity:**
+* **Chạy toàn bộ kiểm thử hệ thống**:
   ```bash
-  bash test_all.sh
+  ./test.sh
+  # Hoặc
+  ./test.sh all
   ```
-* **Test luồng Giỏ hàng & Đặt hàng:**
+* **Chạy kiểm thử riêng lẻ từng phân hệ**:
   ```bash
-  bash test_order.sh
-  ```
-* **Test luồng CMS:**
-  ```bash
-  bash test_cms.sh
+  ./test.sh auth         # Kiểm thử Đăng nhập, Tài khoản & Ca làm việc
+  ./test.sh cms          # Kiểm thử Tin tức & Khuyến mãi
+  ./test.sh order        # Kiểm thử Giỏ hàng & Hóa đơn
+  ./test.sh promotions   # Kiểm thử logic Vouchers & Quà tặng tự động
   ```
 
 ---
 
-## 🚨 5. Một Số Lỗi Thường Gặp & Cách Khắc Phục
+## 🔒 5. Luồng Xác Thực JWT Tập Trung
 
-### 1. Lỗi cổng `3306` hoặc `5500` đã được sử dụng
-* **Mô tả:** Không start được MySQL Container hoặc Frontend.
-* **Khắc phục:** Tắt phần mềm MySQL cục bộ trên máy của bạn (nếu có) để nhường cổng `3306` cho Docker. Đối với Frontend, kịch bản chạy sẽ tự động tìm cổng trống tiếp theo (như `5502`, `5503`) nếu cổng `5500` bị bận.
+```text
+Client (Web/Admin/POS) ────► API Gateway (Port 8000) ────► Microservices (Port 800x)
+                         [Xác thực JWT Token]         [Nhận thông tin qua Header]
+                         - Giải mã JWT token          - x-user-id
+                         - Gắn quyền vào Header       - x-user-role
+                                                      - x-user-type
+```
+*Tất cả các route công khai (Public Routes) như lấy danh sách sản phẩm, tin tức sẽ được Gateway cho qua trực tiếp. Đối với các route bảo mật, Gateway sẽ chặn lại, xác thực JWT và chuyển thông tin giải mã xuống các service con qua Custom Headers để xử lý tiếp.*
 
-### 2. Lỗi `\r: command not found` khi chạy script trên Windows
-* **Mô tả:** Do Git trên Windows tự động chuyển định dạng dòng (Line Ending) từ LF thành CRLF.
-* **Khắc phục:** Mở file bị lỗi trong VS Code, nhìn xuống góc dưới bên phải màn hình, click vào chữ **`CRLF`** và chuyển nó thành **`LF`**, sau đó lưu lại file. *(Dự án đã tích hợp cấu hình tự động sửa lỗi này thông qua file `.gitattributes`)*.
+---
 
-### 3. Docker báo lỗi `daemon is not running`
-* **Khắc phục:** Hãy chắc chắn bạn đã mở phần mềm **Docker Desktop** trước khi chạy lệnh build/chạy hệ thống.
+## 📐 6. Quy Ước Phát Triển Nhóm
+
+- **Git Branching**:
+  - Nhánh bảo vệ chính: `main`
+  - Nhánh tích hợp chính: `dev`
+  - Nhánh phát triển tính năng: `feature/ten-chuc-nang` hoặc `service/ten-service`
+- **Git Commit Message**:
+  - Định dạng: `<type>: <mô tả ngắn bằng tiếng Việt>`
+  - Ví dụ: `feat: tích hợp api thanh toán hóa đơn` hoặc `fix: sửa lỗi query tồn kho`
+- **Quy tắc Code (Coding Conventions)**: Mọi API trả về định dạng JSON đều bắt buộc tuân thủ quy tắc có trường `{ success: true/false, data: ... }`. Đọc kĩ tài liệu chi tiết tại [docs/CODING_CONVENTIONS.md](file:///Users/tangoctai/StudySpace/SOA.2026/Minh%20Giang%20Pharmacy/docs/CODING_CONVENTIONS.md).
+
+---
+
+## 📚 7. Mục Lục Tài Liệu Kỹ Thuật (Docs)
+
+Để tìm hiểu chi tiết hơn về từng phân hệ, vui lòng truy cập các tài liệu tương ứng nằm trong thư mục [docs/](file:///Users/tangoctai/StudySpace/SOA.2026/Minh%20Giang%20Pharmacy/docs):
+
+1. 🚀 **Hướng dẫn Thiết lập chi tiết**: [docs/SETUP.md](file:///Users/tangoctai/StudySpace/SOA.2026/Minh%20Giang%20Pharmacy/docs/SETUP.md) — Hướng dẫn cài đặt chi tiết trên Windows/Mac, sửa các lỗi cổng bị bận.
+2. 🔒 **Chính sách & Quy chuẩn Bảo mật**: [docs/SECURITY.md](file:///Users/tangoctai/StudySpace/SOA.2026/Minh%20Giang%20Pharmacy/docs/SECURITY.md) — Cách quản lý mã bảo mật, tránh rò rỉ file cấu hình `.env` lên Git.
+3. 📐 **Quy chuẩn Code & API**: [docs/CODING_CONVENTIONS.md](file:///Users/tangoctai/StudySpace/SOA.2026/Minh%20Giang%20Pharmacy/docs/CODING_CONVENTIONS.md) — Chi tiết về MySQL query patterns, soft delete, và định dạng JSON response.
+4. ⛓️ **Hướng dẫn sử dụng Git**: [docs/GIT_GUIDE.md](file:///Users/tangoctai/StudySpace/SOA.2026/Minh%20Giang%20Pharmacy/docs/GIT_GUIDE.md) — Lộ trình phối hợp kéo code, đẩy code và mở PR cho nhóm.
+5. 🤖 **Quy tắc làm việc với AI**: [docs/AI_RULES.md](file:///Users/tangoctai/StudySpace/SOA.2026/Minh%20Giang%20Pharmacy/docs/AI_RULES.md) — Định hướng khi sử dụng các mô hình AI hỗ trợ sinh code.
+6. 📋 **Danh sách Phân công Công việc**: [docs/tasks/TASK_ASSIGNMENTS.md](file:///Users/tangoctai/StudySpace/SOA.2026/Minh%20Giang%20Pharmacy/docs/tasks/TASK_ASSIGNMENTS.md) — Nhiệm vụ và phân rã các sprint cho từng thành viên.
+7. 🔌 **Bản đồ Ánh xạ API (API Mappings)**: [docs/api-mapping/](file:///Users/tangoctai/StudySpace/SOA.2026/Minh%20Giang%20Pharmacy/docs/api-mapping/) — Bản đồ mô tả UI HTML gọi API cụ thể nào ở Backend.

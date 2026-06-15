@@ -217,6 +217,13 @@ Minh Giang Pharmacy/
 │   ├── cms-service/                  # Nội dung & banner (port 8004)
 │   └── notification-service/         # Gửi email/SMS (port 8005)
 │
+├── docs/                             # Tài liệu dự án
+│   ├── api-mapping/                  # Đặc tả API frontend-backend
+│   ├── tasks/                        # Phân công công việc
+│   ├── SETUP.md                      # Tài liệu cài đặt
+│   ├── SECURITY.md                   # Hướng dẫn bảo mật
+│   └── CODING_CONVENTIONS.md         # Quy chuẩn viết code
+│
 ├── frontend/                         # Giao diện người dùng
 │   ├── admin/                        # Trang quản trị
 │   ├── client/                       # Trang khách hàng
@@ -224,13 +231,14 @@ Minh Giang Pharmacy/
 │   ├── components/                   # Các phần tử dùng chung
 │   └── assets/                       # Hình ảnh, font, CSS
 │
-├── infrastructure/                   # Setup ban đầu
-│   ├── database/                     # SQL files init database
-│   └── postman/                      # Postman collection
+├── infrastructure/                   # Hạ tầng dùng chung
+│   ├── database/                     # SQL files init database & migrations
+│   └── postman/                      # Postman collection & sync config
 │
 ├── docker-compose.yml                # Cấu hình tất cả containers
 ├── .env.example                      # Template biến môi trường
 ├── .gitignore                        # Các file không commit
+├── test.sh                           # Công cụ chạy kiểm thử tự động
 └── README.md                         # Tài liệu chính
 ```
 

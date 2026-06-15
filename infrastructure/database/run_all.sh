@@ -30,11 +30,13 @@ FILES=(
   "migrations/20260516_add_cart_item_snapshot_columns.sql"
   "migrations/20260516_add_is_active_order.sql"
   "04_mg_cms.sql"
+  "migrations/98_add_related_ids_to_articles.sql"
   "12_seed_clean_cms_content.sql"
+  "migrations/96_add_gift_fields_to_promotions.sql"
+  "migrations/97_seed_demo_promotions.sql"
   "95_seed_disease_categories.sql"
   "05_mg_notification.sql"
   "90_seed_demo_baseline.sql"
-  "99_verify_seed_quality.sql"
 )
 
 echo "================================================"

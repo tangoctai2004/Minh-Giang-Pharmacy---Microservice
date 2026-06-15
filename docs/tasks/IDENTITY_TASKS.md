@@ -1,4 +1,7 @@
-# 🔐 IDENTITY SERVICE — Chi Tiết Task
+# 🔐 IDENTITY SERVICE — Chi Tiết Task (ĐÃ HOÀN THÀNH 100%)
+
+> [!NOTE]
+> **Trạng thái:** Tất cả các task và giai đoạn phát triển được mô tả dưới đây đã được hoàn thành 100%, tích hợp thành công vào codebase và vượt qua toàn bộ kịch bản kiểm thử tự động.
 
 **Service:** identity-service (port 8001)  
 **Database:** mg_identity  

@@ -530,7 +530,7 @@ async function seedRealProducts() {
         await connection.query('SET FOREIGN_KEY_CHECKS = 1');
 
         // 2. Đọc file JSON
-        const jsonPath = path.join(__dirname, '../../../du lieu test/ts_products_real.json');
+        const jsonPath = path.join(__dirname, '../../../infrastructure/database/ts_products_real.json');
         console.log(`📂 Đang đọc dữ liệu từ: ${jsonPath}`);
         const rawData = fs.readFileSync(jsonPath, 'utf8');
         const allProducts = JSON.parse(rawData);

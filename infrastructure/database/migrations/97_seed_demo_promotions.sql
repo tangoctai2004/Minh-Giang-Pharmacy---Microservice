@@ -27,7 +27,7 @@ VALUES
 -- 2. Freeship tháng 3
 ('Miễn Phí Vận Chuyển', 'Miễn phí vận chuyển tháng này', 'FREESHIP99',
  'free_shipping', 30000, 299000, 30000,
- 'all', 500, 500,
+ 'all', 500, 120,
  DATE_SUB(NOW(), INTERVAL 20 DAY), DATE_ADD(NOW(), INTERVAL 22 DAY),
  1, 'web'),
 

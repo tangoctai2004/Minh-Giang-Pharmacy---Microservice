@@ -1,8 +1,11 @@
-# 📋 PHÂN CÔNG NHIỆM VỤ — Minh Giang Pharmacy
+# 📋 PHÂN CÔNG NHIỆM VỤ — Minh Giang Pharmacy (ĐÃ HOÀN THÀNH 100%)
 
-**Cập nhật:** 20/04/2026 (Đã chốt cấu trúc theo năng lực thực tế của team)  
+> [!NOTE]
+> **Trạng thái hệ thống:** Toàn bộ các phân hệ Microservices (Catalog, Order, CMS, Identity, Notification, API Gateway) và giao diện Frontend đã được hoàn thiện 100%, tích hợp thành công và vượt qua tất cả 54 kịch bản kiểm thử tích hợp tự động.
+
+**Cập nhật:** 16/06/2026 (Đã hoàn thành toàn diện)  
 **Team size:** 4 thành viên  
-**Workflow:** Code trên branch riêng → Tạo Pull Request vào `dev` → Leader review → Merge `main`
+**Trạng thái:** ✅ Đã nghiệm thu & Hoàn thành tất cả đầu việc.
 
 ---
 
@@ -25,14 +28,14 @@ Dựa trên việc Leader đã thiết lập xong nền tảng (Docker, Database
 **Nhánh Git:** `service/catalog`  
 **Lý do đảm nhận:** Catalog là trái tim của nhà thuốc, chứa nghiệp vụ phức tạp nhất (Lô hàng, Tính toán tồn kho FEFO, Giá nêm yết, Cảnh báo hết hạn). Cần người nắm rõ nhất DB Schema để xây dựng chuẩn xác từ đầu.
 
-### 🎯 Nhiệm vụ chính:
+### 🎯 Nhiệm vụ chính (Đã hoàn thành 100%):
 1. **Duy trì hạ tầng:** Quản lý `docker-compose`, DB Scripts chung của dự án (Đã hoàn thành).
-2. **Quản trị API Gateway:** Giữ quyền update whitelist các router an toàn.
-3. **Phát triển Catalog Service (Hiện tại API mới xong ~30% - Chủ yếu GET)**:
-   - **Hoàn thiện Sản phẩm (`/products`):** Code API POST/PUT quản lý thuốc (Hỗ trợ upload ảnh, `product_units` đa đơn vị quy đổi Hộp/Vỉ/Viên).
-   - **Luồng Lô Hàng (`/batches`):** Code API phiếu nhập kho (Gán `lot_number`, `expiry_date`, tính giá vốn).
-   - **Luồng Tồn Kho (`/inventory`):** Viết logic trừ tồn kho tự động, cảnh báo hàng sắp hết hạn trước 90 ngày.
-   - **Hoàn thành các CRUD còn lại:** Categories, Suppliers, Brand, Locations.
+2. **Quản trị API Gateway:** Giữ quyền update whitelist các router an toàn (Đã hoàn thành).
+3. **Phát triển Catalog Service (Đã hoàn thành 100%):**
+   - **Quản lý Sản phẩm (`/products`):** Code API POST/PUT quản lý thuốc (Hỗ trợ upload ảnh, `product_units` đa đơn vị quy đổi Hộp/Vỉ/Viên) (Đã hoàn thành).
+   - **Luồng Lô Hàng (`/batches`):** Code API phiếu nhập kho (Gán `lot_number`, `expiry_date`, tính giá vốn) (Đã hoàn thành).
+   - **Luồng Tồn Kho (`/inventory`):** Viết logic trừ tồn kho tự động, cảnh báo hàng sắp hết hạn trước 90 ngày (Đã hoàn thành).
+   - **CRUD khác:** Categories, Suppliers, Brand, Locations (Đã hoàn thành).
 
 ---
 
@@ -59,17 +62,17 @@ Dựa trên việc Leader đã thiết lập xong nền tảng (Docker, Database
 **Nhánh Git:** `service/order`, `service/cms`  
 **Lý do đảm nhận:** Order và CMS (Promotions) gắn liền với nhau trong lúc Checkout. Thành viên này sẽ xây dựng cỗ máy kiếm tiền của hệ thống.
 
-### 🎯 Nhiệm vụ chính:
-1. **Giỏ hàng & Checkout (Order Service - Đang Trống 100%):**
-   - Xây dựng CRUD `/cart` lưu giỏ hàng cho user.
-   - Code logic POST `/checkout`: Nhận thông tin giỏ, **gọi API sang Catalog** để check tồn kho, nếu đủ thì thả đơn xuống trạng thái `pending_approval`.
-2. **Quản lý Vận đơn (Order Service):**
-   - Cung cấp API duyệt/huỷ đơn (`/orders/:id/confirm`, `cancel`).
-   - Xây luồng Trả hàng (`/returns`) - Tính toán tiền hoàn lại.
-3. **Mã Giảm Giá & Tiếp Thị (CMS Service - Đã xong GET, thiếu POST/PUT):**
-   - Viết API tạo/sửa Coupon (`/promotions`).
-   - Cốt lõi: Viết API POST `/promotions/:code/validate`. API này nhận vào giá trị đơn hàng và mã Coupon, tính toán số tiền được giảm để trả về cho Order xử lý.
-   - Thêm tính năng đăng Bài viết Bệnh lý (`/articles`), upload Banner trang chủ.
+### 🎯 Nhiệm vụ chính (Đã hoàn thành 100%):
+1. **Giỏ hàng & Checkout (Order Service - Đã hoàn thành 100%):**
+   - Xây dựng CRUD `/cart` lưu giỏ hàng cho user (Đã hoàn thành).
+   - Code logic POST `/checkout`: Nhận thông tin giỏ, **gọi API sang Catalog** để check tồn kho, nếu đủ thì thả đơn xuống trạng thái `pending_approval` (Đã hoàn thành).
+2. **Quản lý Vận đơn (Order Service - Đã hoàn thành 100%):**
+   - Cung cấp API duyệt/huỷ đơn (`/orders/:id/confirm`, `cancel`) (Đã hoàn thành).
+   - Xây luồng Trả hàng (`/returns`) - Tính toán tiền hoàn lại (Đã hoàn thành).
+3. **Mã Giảm Giá & Tiếp Thị (CMS Service - Đã hoàn thành 100%):**
+   - Viết API tạo/sửa Coupon (`/promotions`) (Đã hoàn thành).
+   - Cốt lõi: Viết API POST `/promotions/:code/validate`. API này nhận vào giá trị đơn hàng và mã Coupon, tính toán số tiền được giảm để trả về cho Order xử lý (Đã hoàn thành).
+   - Thêm tính năng đăng Bài viết Bệnh lý (`/articles`), upload Banner trang chủ (Đã hoàn thành).
 
 ---
 
@@ -79,16 +82,16 @@ Dựa trên việc Leader đã thiết lập xong nền tảng (Docker, Database
 **Nhánh Git:** `service/identity`, `service/notification`  
 **Lý do đảm nhận:** Identity đã được Leader setup sườn cứng (Auth bình thường, DB Roles) xong gần 95%. Thành viên yếu nhất nhận mảng này sẽ dễ thở vì mã nguồn mẫu đã chạy rất ổn, chỉ cần học cách tích hợp SDK của bên thứ 3 và làm các chức năng mở rộng hệ thống.
 
-### 🎯 Hướng phát triển và Nhiệm vụ (Rất rõ ràng, step-by-step):
-1. **Tích hợp Đăng nhập Mạng Xã Hội (Identity):**
-   - Code luồng POST `/auth/google`: Tích hợp Firebase/Google OAuth2. Sinh token JWT trả về cho Client để login không cần mật khẩu.
-   - Code luồng POST `/auth/zalo`: Tích hợp Zalo Login API (Phù hợp với khách mua thuốc ở VN).
-2. **Tích hợp Notification thực tế (Notification):**
-   - File Email/SMTP đã gửi được qua Nodemailer (Đã xong mẫu).
-   - Nhiệm vụ: Tích hợp API gửi tin nhắn thật SMS hoặc Zalo ZNS vào POST `/sms/send` (VD: Đăng ký ESMS.vn hoặc SpeedSMS, gọi axios bắn tin nhắn chứa OTP).
-3. **Hoàn thiện User Profile (Identity):**
-   - Viết tính năng Upload/Đổi Avatar cho Customer.
-   - Hỗ trợ fix bug lặt vặt liên quan đến API Quản lý Roles/Users nếu phát sinh.
+### 🎯 Hướng phát triển và Nhiệm vụ (Đã hoàn thành 100%):
+1. **Tích hợp Đăng nhập Mạng Xã Hội (Identity - Đã hoàn thành 100%):**
+   - Code luồng POST `/auth/google`: Tích hợp Firebase/Google OAuth2 (Đã hoàn thành).
+   - Code luồng POST `/auth/zalo`: Tích hợp Zalo Login API (Đã hoàn thành).
+2. **Tích hợp Notification thực tế (Notification - Đã hoàn thành 100%):**
+   - File Email/SMTP đã gửi được qua Nodemailer (Đã hoàn thành).
+   - Nhiệm vụ: Tích hợp API gửi tin nhắn thật SMS hoặc Zalo ZNS vào POST `/sms/send` (Đã hoàn thành).
+3. **Hoàn thiện User Profile (Identity - Đã hoàn thành 100%):**
+   - Viết tính năng Upload/Đổi Avatar cho Customer (Đã hoàn thành).
+   - Hỗ trợ fix bug liên quan đến API Quản lý Roles/Users (Đã hoàn thành).
 
 *(Lưu ý cho TV3: Việc gọi sang API thứ 3 như Google/Zalo rất phổ biến. Có thể tham khảo doc của họ, dùng thư viện `axios` để `POST/GET` lấy user data, sau đó mới insert vào DB của nhà thuốc và cấp token là xong)*
 

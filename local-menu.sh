@@ -184,8 +184,9 @@ menu() {
     printf '6. Test health tong\n'
     printf '7. Health tung service\n'
     printf '8. Xem logs api-gateway\n'
-    printf '9. Chay test_all.sh\n'
+    printf '9. Chay test.sh (Kiem thu hop nhat)\n'
     printf '10. Stop Docker services\n'
+    printf '11. Khoi tao/Reset Database (Seeder)\n'
     printf '0. Thoat menu\n'
     printf 'Chon: '
     read -r choice
@@ -199,8 +200,9 @@ menu() {
       6) health_all ;;
       7) health_menu ;;
       8) dc logs -f api-gateway ;;
-      9) bash "$ROOT_DIR/test_all.sh" ;;
+      9) bash "$ROOT_DIR/test.sh" ;;
       10) dc down; stop_frontend ;;
+      11) bash "$ROOT_DIR/infrastructure/database/run_all.sh" ;;
       0) break ;;
       *) printf 'Lua chon khong hop le.\n' ;;
     esac
