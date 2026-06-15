@@ -9,6 +9,8 @@ const PUBLIC_ROUTES = [
   // ── Xác thực tài khoản ──────────────────────────────────────────────────
   { method: 'POST', path: '/api/identity/auth' },       // /auth/login, /auth/register, /auth/send-otp...
   { method: 'GET',  path: '/api/identity/auth/refresh' },
+  { method: 'GET',  path: '/api/identity/auth/google' },
+  { method: 'GET',  path: '/api/identity/auth/zalo' },
 
   // ── Nội dung CMS công khai (website) ────────────────────────────────────
   { method: 'GET', path: '/api/cms/articles' },

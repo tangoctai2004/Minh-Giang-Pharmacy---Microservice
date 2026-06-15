@@ -515,21 +515,31 @@
             const btn = e.currentTarget;
             const oldText = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> \u0110ang k\u1ebft n\u1ed1i...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang kết nối...';
 
-            try {
-                const res = await fetch(API_BASE + '/auth/zalo', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        zalo_id: 'mock_zalo_user_1234',
-                        name: 'Nguy\u1ec5n V\u0103n Zalo',
-                        picture: 'https://img.icons8.com/color/144/zalo.png'
-                    })
-                });
+            const width = 600;
+            const height = 650;
+            const left = (window.screen.width - width) / 2;
+            const top = (window.screen.height - height) / 2;
+            const popupUrl = API_BASE + '/auth/zalo/redirect';
+            const popup = window.open(popupUrl, 'zalo-oauth', `width=${width},height=${height},left=${left},top=${top}`);
 
-                const data = await res.json();
-                if (data.success && data.data) {
+            if (!popup) {
+                alert('Vui lòng cho phép trình duyệt mở popup để đăng nhập bằng Zalo.');
+                btn.disabled = false;
+                btn.innerHTML = oldText;
+                return;
+            }
+
+            const messageHandler = async (event) => {
+                if (event.origin !== GATEWAY && event.origin !== window.location.origin) {
+                    return;
+                }
+                const data = event.data;
+                if (data && data.success && data.data) {
+                    window.removeEventListener('message', messageHandler);
+                    clearInterval(timer);
+
                     localStorage.setItem('MG_CLIENT_AUTH', JSON.stringify({
                         accessToken:  data.data.accessToken,
                         refreshToken: data.data.refreshToken,
@@ -561,43 +571,54 @@
                             localStorage.removeItem('MG_CLIENT_CART');
                         }
                     } catch (syncErr) {
-                        console.error('L\u1ed7i \u0111\u1ed3ng b\u1ed9 gi\u1ecf h\u00e0ng:', syncErr);
+                        console.error('Lỗi đồng bộ giỏ hàng:', syncErr);
                     }
 
                     window.location.href = 'index.html';
-                } else {
-                    alert('L\u1ed7i \u0111\u0103ng nh\u1eadp Zalo: ' + (data.message || 'Kh\u00f4ng r\u00f5 nguy\u00ean nh\u00e2n'));
+                }
+            };
+
+            window.addEventListener('message', messageHandler);
+
+            const timer = setInterval(() => {
+                if (popup.closed) {
+                    clearInterval(timer);
+                    window.removeEventListener('message', messageHandler);
                     btn.disabled = false;
                     btn.innerHTML = oldText;
                 }
-            } catch (err) {
-                console.error(err);
-                alert('Kh\u00f4ng th\u1ec3 k\u1ebft n\u1ed1i m\u00e1y ch\u1ee7 Zalo Mock.');
-                btn.disabled = false;
-                btn.innerHTML = oldText;
-            }
+            }, 1000);
         }
 
         async function loginWithGoogle(e) {
             const btn = e.currentTarget;
             const oldText = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> \u0110ang k\u1ebft n\u1ed1i...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang kết nối...';
 
-            try {
-                const res = await fetch(API_BASE + '/auth/google', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        google_id: 'mock_google_user_5678',
-                        name: 'Nguy\u1ec5n V\u0103n Google',
-                        email: 'mock.google.user@gmail.com',
-                        picture: 'https://img.icons8.com/color/144/google-logo.png'
-                    })
-                });
+            const width = 600;
+            const height = 650;
+            const left = (window.screen.width - width) / 2;
+            const top = (window.screen.height - height) / 2;
+            const popupUrl = API_BASE + '/auth/google/redirect';
+            const popup = window.open(popupUrl, 'google-oauth', `width=${width},height=${height},left=${left},top=${top}`);
 
-                const data = await res.json();
-                if (data.success && data.data) {
+            if (!popup) {
+                alert('Vui lòng cho phép trình duyệt mở popup để đăng nhập bằng Google.');
+                btn.disabled = false;
+                btn.innerHTML = oldText;
+                return;
+            }
+
+            const messageHandler = async (event) => {
+                if (event.origin !== GATEWAY && event.origin !== window.location.origin) {
+                    return;
+                }
+                const data = event.data;
+                if (data && data.success && data.data) {
+                    window.removeEventListener('message', messageHandler);
+                    clearInterval(timer);
+
                     localStorage.setItem('MG_CLIENT_AUTH', JSON.stringify({
                         accessToken:  data.data.accessToken,
                         refreshToken: data.data.refreshToken,
@@ -629,22 +650,26 @@
                             localStorage.removeItem('MG_CLIENT_CART');
                         }
                     } catch (syncErr) {
-                        console.error('L\u1ed7i \u0111\u1ed3ng b\u1ed9 gi\u1ecf h\u00e0ng:', syncErr);
+                        console.error('Lỗi đồng bộ giỏ hàng:', syncErr);
                     }
 
                     window.location.href = 'index.html';
-                } else {
-                    alert('L\u1ed7i \u0111\u0103ng nh\u1eadp Google: ' + (data.message || 'Kh\u00f4ng r\u00f5 nguy\u00ean nh\u00e2n'));
+                }
+            };
+
+            window.addEventListener('message', messageHandler);
+
+            const timer = setInterval(() => {
+                if (popup.closed) {
+                    clearInterval(timer);
+                    window.removeEventListener('message', messageHandler);
                     btn.disabled = false;
                     btn.innerHTML = oldText;
                 }
-            } catch (err) {
-                console.error(err);
-                alert('Kh\u00f4ng th\u1ec3 k\u1ebft n\u1ed1i m\u00e1y ch\u1ee7 Google Mock.');
-                btn.disabled = false;
-                btn.innerHTML = oldText;
-            }
+            }, 1000);
         }
+
+
     </script>
 </body>
 
