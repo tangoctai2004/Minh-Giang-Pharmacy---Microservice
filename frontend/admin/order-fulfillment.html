@@ -545,7 +545,7 @@
                             </div>
                             <button class="btn-secondary"
                                 style="height:30px;font-size:12px;padding:0 12px;width:100%;justify-content:center;"
-                                onclick="alert('Mở giao diện xuất hóa đơn điện tử...')">
+                                onclick="showToast('Mở giao diện xuất hóa đơn điện tử...', 'info')">
                                 <i class="fa-solid fa-file-export"></i> Xuất Hóa Đơn Điện Tử
                             </button>
                         </div>
@@ -568,7 +568,7 @@
     </div>
 
     <script>
-        const API_BASE = (localStorage.getItem('MG_API_BASE') || (
+        var API_BASE = (localStorage.getItem('MG_API_BASE') || (
             (window.location.origin.includes('localhost:5500') ||
              window.location.origin.includes('localhost:5501') ||
              window.location.origin.includes('127.0.0.1:5500') ||
@@ -578,10 +578,10 @@
         )) + '/order/orders';
 
         function getAuthHeader() {
-            const authRaw = localStorage.getItem('MG_ADMIN_AUTH');
+            var authRaw = localStorage.getItem('MG_ADMIN_AUTH');
             if (!authRaw) return {};
             try {
-                const parsed = JSON.parse(authRaw);
+                var parsed = JSON.parse(authRaw);
                 return {
                     'Authorization': `Bearer ${parsed.accessToken}`,
                     'Content-Type': 'application/json'
@@ -598,9 +598,9 @@
 
         // Format Date Time
         function formatDateTime(dateStr) {
-            const d = new Date(dateStr);
-            const date = d.toLocaleDateString('vi-VN');
-            const time = d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            var d = new Date(dateStr);
+            var date = d.toLocaleDateString('vi-VN');
+            var time = d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
             return { date, time };
         }
 
@@ -608,11 +608,11 @@
         async function loadBoard() {
             try {
                 // Set Loading state
-                const colContainers = document.querySelectorAll('.pipeline-cards');
+                var colContainers = document.querySelectorAll('.pipeline-cards');
                 colContainers.forEach(c => c.innerHTML = `<div style="text-align:center;padding:20px;color:#9ca3af;"><i class="fa-solid fa-spinner fa-spin"></i></div>`);
 
-                const res = await fetch(`${API_BASE}?channel=web&limit=200`, { headers: getAuthHeader() });
-                const json = await res.json();
+                var res = await fetch(`${API_BASE}?channel=web&limit=200`, { headers: getAuthHeader() });
+                var json = await res.json();
 
                 if (!json.success) {
                     colContainers.forEach(c => c.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;">Lỗi tải dữ liệu</div>`);
@@ -620,22 +620,22 @@
                 }
 
                 // Filter & Sort orders
-                const orders = json.data.filter(o => o.order_status !== 'pending_approval' && o.order_status !== 'cancelled');
+                var orders = json.data.filter(o => o.order_status !== 'pending_approval' && o.order_status !== 'cancelled');
 
-                const confirmedOrders = orders.filter(o => o.order_status === 'confirmed');
-                const pickingOrders = orders.filter(o => o.order_status === 'picking');
-                const shippingOrders = orders.filter(o => o.order_status === 'shipping');
+                var confirmedOrders = orders.filter(o => o.order_status === 'confirmed');
+                var pickingOrders = orders.filter(o => o.order_status === 'picking');
+                var shippingOrders = orders.filter(o => o.order_status === 'shipping');
                 
                 // Completed today only
-                const completedOrders = orders.filter(o => {
+                var completedOrders = orders.filter(o => {
                     if (o.order_status !== 'completed') return false;
-                    const updatedDate = new Date(o.updated_at).toDateString();
-                    const todayDate = new Date().toDateString();
+                    var updatedDate = new Date(o.updated_at).toDateString();
+                    var todayDate = new Date().toDateString();
                     return updatedDate === todayDate;
                 });
 
                 // Update Stats
-                const statsH3s = document.querySelectorAll('.order-stat h3');
+                var statsH3s = document.querySelectorAll('.order-stat h3');
                 if (statsH3s.length >= 4) {
                     statsH3s[0].innerText = confirmedOrders.length;
                     statsH3s[1].innerText = pickingOrders.length;
@@ -644,7 +644,7 @@
                 }
 
                 // Update Column counts
-                const colCounts = document.querySelectorAll('.col-count');
+                var colCounts = document.querySelectorAll('.col-count');
                 if (colCounts.length >= 4) {
                     colCounts[0].innerText = confirmedOrders.length;
                     colCounts[1].innerText = pickingOrders.length;
@@ -672,12 +672,12 @@
             }
 
             list.forEach(order => {
-                const { date, time } = formatDateTime(order.created_at);
-                const card = document.createElement('div');
+                var { date, time } = formatDateTime(order.created_at);
+                var card = document.createElement('div');
                 card.className = 'order-card';
                 card.onclick = () => openOrderDetail(order.order_code || order.id, order.order_status);
 
-                let tagsHtml = '';
+                var tagsHtml = '';
                 if (order.payment_method === 'cod' || order.payment_method === 'cash') {
                     tagsHtml += `<span class="order-tag cod">COD</span>`;
                 } else {
@@ -688,7 +688,7 @@
                     tagsHtml += `<span class="order-tag vat">Cần HĐ VAT</span>`;
                 }
 
-                let actionsHtml = '';
+                var actionsHtml = '';
                 if (status === 'confirmed') {
                     actionsHtml = `
                         <div class="card-actions">
@@ -724,16 +724,16 @@
         async function advanceOrder(btn, orderId, nextStatus) {
             if (btn) btn.disabled = true;
             try {
-                const res = await fetch(`${API_BASE}/${orderId}/status`, {
+                var res = await fetch(`${API_BASE}/${orderId}/status`, {
                     method: 'PUT',
                     headers: getAuthHeader(),
                     body: JSON.stringify({ status: nextStatus })
                 });
-                const json = await res.json();
+                var json = await res.json();
                 if (json.success) {
                     loadBoard();
                 } else {
-                    alert('Lỗi cập nhật: ' + json.message);
+                    showToast('Lỗi cập nhật: ' + json.message, 'error');
                     if (btn) btn.disabled = false;
                 }
             } catch (err) {
@@ -743,8 +743,8 @@
         }
 
         function checkPickDone() {
-            const checks = document.querySelectorAll('.pick-item input[type=checkbox]');
-            const allChecked = [...checks].every(c => c.checked);
+            var checks = document.querySelectorAll('.pick-item input[type=checkbox]');
+            var allChecked = [...checks].every(c => c.checked);
             document.getElementById('pick-done-notice').style.display = allChecked ? 'block' : 'none';
         }
 
@@ -755,20 +755,20 @@
             document.body.style.overflow = 'hidden';
 
             try {
-                const res = await fetch(`${API_BASE}/${orderId}`, { headers: getAuthHeader() });
-                const json = await res.json();
+                var res = await fetch(`${API_BASE}/${orderId}`, { headers: getAuthHeader() });
+                var json = await res.json();
 
                 if (!json.success || !json.data) {
                     document.getElementById('modalOrderId').innerText = `Lỗi tải chi tiết`;
                     return;
                 }
 
-                const order = json.data;
-                const { date, time } = formatDateTime(order.created_at);
+                var order = json.data;
+                var { date, time } = formatDateTime(order.created_at);
 
                 document.getElementById('modalOrderId').innerText = `Chi tiết — #${order.order_code}`;
                 
-                const statusLabels = {
+                var statusLabels = {
                     confirmed: 'Đã Duyệt - Chờ Lấy Hàng',
                     picking: 'Đang Lấy Hàng',
                     shipping: 'Đang Giao Hàng',
@@ -777,7 +777,7 @@
                 document.getElementById('modalOrderStatus').innerText = `Trạng thái: ${statusLabels[order.order_status] || order.order_status}`;
 
                 // VAT section
-                const vatSection = document.getElementById('vat-section');
+                var vatSection = document.getElementById('vat-section');
                 if (order.requires_vat_invoice) {
                     vatSection.style.display = 'block';
                     vatSection.innerHTML = `
@@ -785,7 +785,7 @@
                         <div style="font-size:12px;color:#374151;">Tên công ty: <strong>${order.vat_company_name || 'N/A'}</strong></div>
                         <div style="font-size:12px;color:#374151;">MST: <strong>${order.vat_tax_code || 'N/A'}</strong></div>
                         <div style="font-size:12px;color:#374151;margin-bottom:8px;">Email nhận HĐ: <strong>${order.vat_email || 'N/A'}</strong></div>
-                        <button class="btn-secondary" style="height:30px;font-size:12px;padding:0 12px;width:100%;justify-content:center;" onclick="alert('Mở giao diện xuất hóa đơn điện tử...')">
+                        <button class="btn-secondary" style="height:30px;font-size:12px;padding:0 12px;width:100%;justify-content:center;" onclick="showToast('Mở giao diện xuất hóa đơn điện tử...', 'info')">
                             <i class="fa-solid fa-file-export"></i> Xuất Hóa Đơn Điện Tử
                         </button>
                     `;
@@ -794,17 +794,17 @@
                 }
 
                 // Render Timeline Steps indices
-                const steps = document.querySelectorAll('#orderTimeline .tl-step');
-                const statusIdx = {
+                var steps = document.querySelectorAll('#orderTimeline .tl-step');
+                var statusIdx = {
                     confirmed: 1, // Confirm done, Pick current
                     picking: 2,   // Pick done, Pack current
                     shipping: 3,  // Pack done, Deliver current
                     completed: 4  // All done
                 };
-                const idx = statusIdx[order.order_status] ?? 1;
+                var idx = statusIdx[order.order_status] ?? 1;
 
                 steps.forEach((step, i) => {
-                    const dot = step.querySelector('.tl-dot');
+                    var dot = step.querySelector('.tl-dot');
                     if (i < idx) {
                         step.className = 'tl-step done';
                         dot.className = 'tl-dot done';
@@ -819,21 +819,21 @@
                 });
 
                 // Pick List Checklist
-                const pickListContainer = document.querySelector('.detail-left > div:first-of-type');
+                var pickListContainer = document.querySelector('.detail-left > div:first-of-type');
                 pickListContainer.innerHTML = '';
-                let itemsSubtotal = 0;
+                var itemsSubtotal = 0;
 
                 // Simple shelves layout map generator for realistic shelves display
-                const shelves = ['Kệ A1-T2', 'Kệ B2-T1', 'Kệ C3-T3', 'Kệ A2-T1', 'Kệ B1-T2'];
+                var shelves = ['Kệ A1-T2', 'Kệ B2-T1', 'Kệ C3-T3', 'Kệ A2-T1', 'Kệ B1-T2'];
 
                 if (order.items && order.items.length > 0) {
                     order.items.forEach((item, index) => {
-                        const rowTotal = item.quantity * item.unit_price;
+                        var rowTotal = item.quantity * item.unit_price;
                         itemsSubtotal += rowTotal;
 
-                        const shelf = shelves[index % shelves.length];
+                        var shelf = shelves[index % shelves.length];
 
-                        const div = document.createElement('div');
+                        var div = document.createElement('div');
                         div.className = 'pick-item';
                         div.innerHTML = `
                             <input type="checkbox" onchange="checkPickDone()">
@@ -849,7 +849,7 @@
                 document.getElementById('pick-done-notice').style.display = 'none';
 
                 // Pricing Sums
-                const pricingDiv = pickListContainer.nextElementSibling;
+                var pricingDiv = pickListContainer.nextElementSibling;
                 pricingDiv.innerHTML = `
                     <div style="display:flex;justify-content:space-between;font-size:12px;color:#6b7280;margin-bottom:4px;">
                         <span>Tiểu tổng:</span><span style="font-weight:600;color:#0f172a;">${formatVND(order.subtotal || itemsSubtotal)}</span>
@@ -866,8 +866,8 @@
                 `;
 
                 // Customer info details panel
-                const customerDiv = document.querySelector('.detail-right');
-                let payBadgeStyle = 'background:#fef3c7;color:#92400e;';
+                var customerDiv = document.querySelector('.detail-right');
+                var payBadgeStyle = 'background:#fef3c7;color:#92400e;';
                 if (order.payment_method !== 'cod' && order.payment_method !== 'cash') {
                     payBadgeStyle = 'background:#d1fae5;color:#065f46;';
                 }
@@ -893,16 +893,16 @@
                             <option>🕒 14:00 – 17:00 (Chiều)</option>
                             <option>⚡ Giao ngay (30–60 phút)</option>
                         </select>
-                        <button class="btn-primary" style="width:100%;justify-content:center;height:36px;" onclick="const d = document.getElementById('deliverer-select').value; alert('Đã phân công giao hàng cho ' + d + '!');">
+                        <button class="btn-primary" style="width:100%;justify-content:center;height:36px;" onclick="const d = document.getElementById('deliverer-select').value; showToast('Đã phân công giao hàng cho ' + d + '!', 'success');">
                             <i class="fa-solid fa-paper-plane"></i> Xác nhận phân công
                         </button>
                     </div>
                 `;
 
                 // Footer Actions inside modal
-                const footer = document.getElementById('modalFooter');
+                var footer = document.getElementById('modalFooter');
                 if (order.order_status === 'completed') {
-                    footer.innerHTML = `<button class="btn-secondary" onclick="closeOrderDetail()">Đóng</button><button class="btn-primary" style="height:40px;width:180px;justify-content:center;" onclick="closeOrderDetail(); alert('Đang in...');"><i class="fa-solid fa-print"></i> In Biên Lai</button>`;
+                    footer.innerHTML = `<button class="btn-secondary" onclick="closeOrderDetail()">Đóng</button><button class="btn-primary" style="height:40px;width:180px;justify-content:center;" onclick="closeOrderDetail(); showToast('Đang in biên lai...', 'info');"><i class="fa-solid fa-print"></i> In Biên Lai</button>`;
                 } else if (order.order_status === 'confirmed') {
                     footer.innerHTML = `
                         <button class="btn-secondary" onclick="closeOrderDetail()">Đóng</button>

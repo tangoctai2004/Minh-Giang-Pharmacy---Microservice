@@ -3,7 +3,7 @@
  * Loads live order stats, inventory alerts, and revenue chart on the admin dashboard.
  */
 
-const API_BASE = localStorage.getItem('MG_API_BASE') || (
+var API_BASE = localStorage.getItem('MG_API_BASE') || (
     (window.location.origin.includes('localhost:5500') ||
      window.location.origin.includes('localhost:5501') ||
      window.location.origin.includes('127.0.0.1:5500') ||
@@ -27,8 +27,8 @@ async function initAdminDashboard() {
 // ========== ORDER STATS ==========
 async function loadOrderStats() {
     try {
-        const today = new Date().toISOString().slice(0, 10);
-        const [posRes, webRes] = await Promise.all([
+        var today = new Date().toISOString().slice(0, 10);
+        var [posRes, webRes] = await Promise.all([
             fetch(`${API_BASE}/order/orders?channel=pos&date_from=${today}&date_to=${today}&limit=1`, {
                 headers: { 'Authorization': `Bearer ${getAdminToken()}` }
             }),
@@ -37,11 +37,11 @@ async function loadOrderStats() {
             })
         ]);
 
-        const posData = await posRes.json();
-        const webData = await webRes.json();
+        var posData = await posRes.json();
+        var webData = await webRes.json();
 
-        const posCount = posData.success ? (posData.pagination?.total ?? 0) : 0;
-        const webCount = webData.success ? (webData.pagination?.total ?? 0) : 0;
+        var posCount = posData.success ? (posData.pagination?.total ?? 0) : 0;
+        var webCount = webData.success ? (webData.pagination?.total ?? 0) : 0;
 
         setText('statPosOrders', posCount);
         setText('statWebOrders', webCount);
@@ -64,23 +64,23 @@ async function loadOrderStats() {
 // ========== INVENTORY ALERTS ==========
 async function loadInventoryAlerts() {
     try {
-        const res = await fetch(`${API_BASE}/catalog/inventory`, {
+        var res = await fetch(`${API_BASE}/catalog/inventory`, {
             headers: { 'Authorization': `Bearer ${getAdminToken()}` }
         });
-        const result = await res.json();
+        var result = await res.json();
 
         if (result.success && result.data) {
-            const inventory = result.data;
+            var inventory = result.data;
 
             // Low stock (≤ 10)
-            const lowStock = inventory
+            var lowStock = inventory
                 .filter(item => Number(item.stock_total) <= 10)
                 .sort((a, b) => Number(a.stock_total) - Number(b.stock_total))
                 .slice(0, 5);
             renderLowStockTable(lowStock, inventory.filter(i => Number(i.stock_total) <= 10).length);
 
             // Expiring soon
-            const expiring = inventory
+            var expiring = inventory
                 .filter(item => item.nearest_expiry !== null)
                 .map(item => ({ ...item, expiryDate: new Date(item.nearest_expiry) }))
                 .sort((a, b) => a.expiryDate - b.expiryDate)
@@ -88,7 +88,7 @@ async function loadInventoryAlerts() {
             renderExpiringTable(expiring);
 
             // Update card 4
-            const lowCount = inventory.filter(i => Number(i.stock_total) <= 10).length;
+            var lowCount = inventory.filter(i => Number(i.stock_total) <= 10).length;
             setText('statLowStock', lowCount);
             setText('statLowStockLabel', `sản phẩm cần nhập thêm`);
         }
@@ -101,8 +101,8 @@ async function loadInventoryAlerts() {
 }
 
 function renderLowStockTable(items, totalCount) {
-    const tbody = document.getElementById('lowStockTableBody');
-    const badge = document.getElementById('lowStockCount');
+    var tbody = document.getElementById('lowStockTableBody');
+    var badge = document.getElementById('lowStockCount');
     if (!tbody) return;
 
     if (badge) badge.textContent = `${totalCount} sản phẩm`;
@@ -115,7 +115,7 @@ function renderLowStockTable(items, totalCount) {
     }
 
     tbody.innerHTML = items.map(item => {
-        const isCritical = Number(item.stock_total) <= 5;
+        var isCritical = Number(item.stock_total) <= 5;
         return `<tr>
             <td class="table-medicine-name">${item.name}</td>
             <td class="table-sku">${item.sku}</td>
@@ -125,8 +125,8 @@ function renderLowStockTable(items, totalCount) {
 }
 
 function renderExpiringTable(items) {
-    const tbody = document.getElementById('expiringTableBody');
-    const badge = document.getElementById('expiringCount');
+    var tbody = document.getElementById('expiringTableBody');
+    var badge = document.getElementById('expiringCount');
     if (!tbody) return;
 
     if (badge) badge.textContent = `${items.length} lô hàng`;
@@ -138,11 +138,11 @@ function renderExpiringTable(items) {
         return;
     }
 
-    const now = new Date();
+    var now = new Date();
     tbody.innerHTML = items.map(item => {
-        const diffDays = Math.ceil((item.expiryDate - now) / 86400000);
-        const isUrgent = diffDays <= 30;
-        const dateStr = item.expiryDate.toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit', year:'numeric' });
+        var diffDays = Math.ceil((item.expiryDate - now) / 86400000);
+        var isUrgent = diffDays <= 30;
+        var dateStr = item.expiryDate.toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit', year:'numeric' });
         return `<tr>
             <td class="table-medicine-name">${item.name}</td>
             <td class="table-sku">${item.sku || item.batch_code || '—'}</td>
@@ -158,24 +158,24 @@ function renderExpiringTable(items) {
 
 // ========== REVENUE CHART ==========
 window.loadAdminRevenueChart = async function(days = 7) {
-    const chartBars = document.getElementById('revenueChartBars');
+    var chartBars = document.getElementById('revenueChartBars');
     if (!chartBars) return;
 
     // Tạo mảng ngày gần nhất
-    const dayLabels = ['CN','T2','T3','T4','T5','T6','T7'];
-    const dates = [];
+    var dayLabels = ['CN','T2','T3','T4','T5','T6','T7'];
+    var dates = [];
     for (let i = days - 1; i >= 0; i--) {
-        const d = new Date();
+        var d = new Date();
         d.setDate(d.getDate() - i);
         dates.push(d);
     }
 
     try {
         // Lấy đơn POS + web trong khoảng ngày
-        const from = dates[0].toISOString().slice(0, 10);
-        const to = dates[dates.length - 1].toISOString().slice(0, 10);
+        var from = dates[0].toISOString().slice(0, 10);
+        var to = dates[dates.length - 1].toISOString().slice(0, 10);
 
-        const [posRes, webRes] = await Promise.all([
+        var [posRes, webRes] = await Promise.all([
             fetch(`${API_BASE}/order/orders?channel=pos&date_from=${from}&date_to=${to}&limit=1000`, {
                 headers: { 'Authorization': `Bearer ${getAdminToken()}` }
             }),
@@ -184,33 +184,33 @@ window.loadAdminRevenueChart = async function(days = 7) {
             })
         ]);
 
-        const posData = await posRes.json();
-        const webData = await webRes.json();
-        const allOrders = [
+        var posData = await posRes.json();
+        var webData = await webRes.json();
+        var allOrders = [
             ...(posData.success ? posData.data : []),
             ...(webData.success ? webData.data : [])
         ];
 
         // Group by date
-        const revenueByDate = {};
+        var revenueByDate = {};
         dates.forEach(d => { revenueByDate[d.toISOString().slice(0, 10)] = 0; });
         allOrders.forEach(o => {
-            const dateKey = new Date(o.created_at).toISOString().slice(0, 10);
+            var dateKey = new Date(o.created_at).toISOString().slice(0, 10);
             if (revenueByDate[dateKey] !== undefined) {
                 revenueByDate[dateKey] += Number(o.total_amount || 0);
             }
         });
 
-        const values = Object.values(revenueByDate);
-        const maxVal = Math.max(...values, 1);
-        const maxBarPx = 180;
+        var values = Object.values(revenueByDate);
+        var maxVal = Math.max(...values, 1);
+        var maxBarPx = 180;
 
         chartBars.innerHTML = dates.map((d, i) => {
-            const val = values[i];
-            const height = Math.max(8, Math.round((val / maxVal) * maxBarPx));
-            const label = dayLabels[d.getDay()];
-            const isToday = d.toDateString() === new Date().toDateString();
-            const valLabel = val >= 1000000 ? (val / 1000000).toFixed(1) + 'M' : (val / 1000).toFixed(0) + 'K';
+            var val = values[i];
+            var height = Math.max(8, Math.round((val / maxVal) * maxBarPx));
+            var label = dayLabels[d.getDay()];
+            var isToday = d.toDateString() === new Date().toDateString();
+            var valLabel = val >= 1000000 ? (val / 1000000).toFixed(1) + 'M' : (val / 1000).toFixed(0) + 'K';
             return `<div class="chart-bar" style="height:${height}px;background:${isToday ? 'linear-gradient(180deg,#34d399,#10b981)' : 'linear-gradient(180deg,#10b981,#059669)'};">
                 <span class="chart-bar-value">${val > 0 ? valLabel : '0'}</span>
                 <span class="chart-bar-label" ${isToday ? 'style="font-weight:700;"' : ''}>${label}</span>
@@ -219,15 +219,15 @@ window.loadAdminRevenueChart = async function(days = 7) {
 
         // Animate
         chartBars.querySelectorAll('.chart-bar').forEach((bar, i) => {
-            const h = bar.style.height;
+            var h = bar.style.height;
             bar.style.height = '0';
             bar.style.transition = `height 0.5s cubic-bezier(0.4,0,0.2,1) ${i * 0.07}s`;
             setTimeout(() => bar.style.height = h, 50);
         });
 
         // Update revenue card
-        const todayKey = new Date().toISOString().slice(0, 10);
-        const todayRevenue = revenueByDate[todayKey] || 0;
+        var todayKey = new Date().toISOString().slice(0, 10);
+        var todayRevenue = revenueByDate[todayKey] || 0;
         setText('statRevenue', formatM(todayRevenue));
         setTrend('statRevenueTrend', todayRevenue, null, 'doanh thu hôm nay');
 
@@ -238,19 +238,19 @@ window.loadAdminRevenueChart = async function(days = 7) {
 
 // ========== HELPERS ==========
 function setText(id, val) {
-    const el = document.getElementById(id);
+    var el = document.getElementById(id);
     if (el) el.textContent = val;
 }
 
 function setTrend(id, val, prev, suffix) {
-    const el = document.getElementById(id);
+    var el = document.getElementById(id);
     if (!el) return;
     el.textContent = val + ' ' + suffix;
     el.className = 'summary-card-trend';
 }
 
 function renderTableError(tbodyId, colspan, msg) {
-    const el = document.getElementById(tbodyId);
+    var el = document.getElementById(tbodyId);
     if (el) el.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center;padding:20px;color:#ef4444;">
         <i class="fa-solid fa-circle-exclamation"></i> ${msg}
     </td></tr>`;
@@ -264,13 +264,13 @@ function formatM(amount) {
 
 function handleRestock(medName) {
     if (confirm(`Xác nhận tạo yêu cầu nhập thêm hàng cho: ${medName}?`)) {
-        alert(`Đã gửi yêu cầu nhập hàng cho: ${medName}`);
+        showToast(`Đã gửi yêu cầu nhập hàng cho: ${medName}`, 'success');
     }
 }
 
 function getAdminToken() {
     try {
-        const auth = JSON.parse(localStorage.getItem('MG_ADMIN_AUTH') || '{}');
+        var auth = JSON.parse(localStorage.getItem('MG_ADMIN_AUTH') || '{}');
         return auth.accessToken || '';
     } catch (e) { return ''; }
 }

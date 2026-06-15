@@ -328,7 +328,7 @@
     </div>
 
     <script>
-        const API_BASE = (localStorage.getItem('MG_API_BASE') || (
+        var API_BASE = (localStorage.getItem('MG_API_BASE') || (
             (window.location.origin.includes('localhost:5500') ||
              window.location.origin.includes('localhost:5501') ||
              window.location.origin.includes('127.0.0.1:5500') ||
@@ -343,11 +343,11 @@
 
         function playNotificationSound() {
             try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const now = audioCtx.currentTime;
+                var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                var now = audioCtx.currentTime;
                 
-                const osc1 = audioCtx.createOscillator();
-                const gain1 = audioCtx.createGain();
+                var osc1 = audioCtx.createOscillator();
+                var gain1 = audioCtx.createGain();
                 osc1.type = 'sine';
                 osc1.frequency.setValueAtTime(523.25, now); // C5
                 osc1.frequency.setValueAtTime(659.25, now + 0.15); // E5
@@ -366,10 +366,10 @@
         }
 
         function getAuthHeader() {
-            const authRaw = localStorage.getItem('MG_ADMIN_AUTH');
+            var authRaw = localStorage.getItem('MG_ADMIN_AUTH');
             if (!authRaw) return {};
             try {
-                const parsed = JSON.parse(authRaw);
+                var parsed = JSON.parse(authRaw);
                 return {
                     'Authorization': `Bearer ${parsed.accessToken}`,
                     'Content-Type': 'application/json'
@@ -380,10 +380,10 @@
         }
 
         // State trackers
-        let activeTab = 'tab-inbox';
-        let currentHistoryPage = 1;
-        let currentPOSPage = 1;
-        const limit = 10;
+        var activeTab = 'tab-inbox';
+        var currentHistoryPage = 1;
+        var currentPOSPage = 1;
+        var limit = 10;
 
         function switchPageTab(tabId) {
             document.querySelectorAll('.page-tab-btn').forEach(b => b.classList.remove('active'));
@@ -391,7 +391,7 @@
                 event.currentTarget.classList.add('active');
             } else {
                 // fallback if called programmatically
-                const buttons = document.querySelectorAll('.page-tab-btn');
+                var buttons = document.querySelectorAll('.page-tab-btn');
                 if (tabId === 'tab-inbox') buttons[0].classList.add('active');
                 if (tabId === 'tab-history') buttons[1].classList.add('active');
                 if (tabId === 'tab-offline') buttons[2].classList.add('active');
@@ -419,20 +419,20 @@
 
         // Format Date
         function formatDateTime(dateStr) {
-            const d = new Date(dateStr);
-            const date = d.toLocaleDateString('vi-VN');
-            const time = d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            var d = new Date(dateStr);
+            var date = d.toLocaleDateString('vi-VN');
+            var time = d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
             return { date, time };
         }
 
         // Fetch Top Stats
         async function loadStats() {
             try {
-                const res = await fetch(`${API_BASE}/stats`, { headers: getAuthHeader() });
-                const json = await res.json();
+                var res = await fetch(`${API_BASE}/stats`, { headers: getAuthHeader() });
+                var json = await res.json();
                 if (json.success) {
-                    const stats = json.data;
-                    const statPills = document.querySelectorAll('.stat-pill-info h3');
+                    var stats = json.data;
+                    var statPills = document.querySelectorAll('.stat-pill-info h3');
                     if (statPills.length >= 4) {
                         statPills[0].innerText = `${stats.pending_count || 0} đơn`;
                         statPills[1].innerText = stats.today_approved_count || 0;
@@ -441,7 +441,7 @@
                     }
 
                     // Update Tab 1 badge
-                    const badge = document.querySelector('.page-tab-btn span');
+                    var badge = document.querySelector('.page-tab-btn span');
                     if (badge) {
                         badge.innerText = `${stats.pending_count || 0} MỚI`;
                         badge.style.display = stats.pending_count > 0 ? '' : 'none';
@@ -455,13 +455,13 @@
         // Fetch Tab 1: Inbox (pending_approval orders)
         async function loadInbox(isBackground = false) {
             try {
-                const tbody = document.querySelector('#tab-inbox tbody');
+                var tbody = document.querySelector('#tab-inbox tbody');
                 if (!isBackground) {
                     tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:#6b7280;"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>`;
                 }
 
-                const res = await fetch(`${API_BASE}?status=pending_approval&limit=100`, { headers: getAuthHeader() });
-                const json = await res.json();
+                var res = await fetch(`${API_BASE}?status=pending_approval&limit=100`, { headers: getAuthHeader() });
+                var json = await res.json();
 
                 if (!json.success || !json.data || json.data.length === 0) {
                     window.knownPendingOrderIds.clear();
@@ -480,8 +480,8 @@
                 }
 
                 // Check for NEW pending orders to trigger alert
-                let hasNewOrder = false;
-                const pendingOrders = json.data || [];
+                var hasNewOrder = false;
+                var pendingOrders = json.data || [];
                 for (const o of pendingOrders) {
                     if (!window.knownPendingOrderIds.has(o.id)) {
                         window.knownPendingOrderIds.add(o.id);
@@ -492,7 +492,7 @@
                 }
                 
                 // Remove resolved orders from cache
-                const pendingIds = new Set(pendingOrders.map(o => o.id));
+                var pendingIds = new Set(pendingOrders.map(o => o.id));
                 for (const id of window.knownPendingOrderIds) {
                     if (!pendingIds.has(id)) {
                         window.knownPendingOrderIds.delete(id);
@@ -510,17 +510,17 @@
                 tbody.innerHTML = '';
                 // Since microservice order-items details need another call, we load list and fetch details concurrently if needed or display placeholders
                 for (const order of json.data) {
-                    const { date, time } = formatDateTime(order.created_at);
-                    const timeDiffMins = Math.floor((Date.now() - new Date(order.created_at).getTime()) / 60000);
-                    const isNew = timeDiffMins <= 10;
+                    var { date, time } = formatDateTime(order.created_at);
+                    var timeDiffMins = Math.floor((Date.now() - new Date(order.created_at).getTime()) / 60000);
+                    var isNew = timeDiffMins <= 10;
                     
-                    const tr = document.createElement('tr');
+                    var tr = document.createElement('tr');
                     tr.className = 'new-order-row';
                     tr.style.cursor = 'pointer';
                     tr.onclick = () => openOrderModal(order.order_code || order.id, 'pending');
 
                     // Label sub-text
-                    let subLabelHtml = '';
+                    var subLabelHtml = '';
                     if (isNew) {
                         subLabelHtml = `<div style="font-size:10px;font-weight:700;color:#d97706;margin-top:2px;">⚡ VỪA VÀO</div>`;
                     } else if (order.requires_vat_invoice) {
@@ -528,8 +528,8 @@
                     }
 
                     // Payment Method styles
-                    let payBadgeStyle = 'background:#fef3c7;color:#92400e;';
-                    let payBadgeIcon = 'fa-money-bill-wave';
+                    var payBadgeStyle = 'background:#fef3c7;color:#92400e;';
+                    var payBadgeIcon = 'fa-money-bill-wave';
                     if (order.payment_method !== 'cod' && order.payment_method !== 'cash') {
                         payBadgeStyle = 'background:#d1fae5;color:#065f46;';
                         payBadgeIcon = 'fa-circle-check';
@@ -579,12 +579,12 @@
 
         async function fetchOrderItemsCell(orderId) {
             try {
-                const res = await fetch(`${API_BASE}/${orderId}`, { headers: getAuthHeader() });
-                const json = await res.json();
-                const cell = document.getElementById(`items-cell-${orderId}`);
+                var res = await fetch(`${API_BASE}/${orderId}`, { headers: getAuthHeader() });
+                var json = await res.json();
+                var cell = document.getElementById(`items-cell-${orderId}`);
                 if (cell && json.success && json.data.items) {
-                    const items = json.data.items;
-                    const names = items.map(i => i.product_name).join(', ');
+                    var items = json.data.items;
+                    var names = items.map(i => i.product_name).join(', ');
                     cell.innerHTML = `
                         <div style="font-size:12px;font-weight:600;color:#1e293b;">${items.length} sản phẩm</div>
                         <div style="font-size:11px;color:#9ca3af;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;" title="${names}">${names}</div>
@@ -599,21 +599,21 @@
         async function loadHistory(page = 1) {
             currentHistoryPage = page;
             try {
-                const tbody = document.querySelector('#tab-history tbody');
+                var tbody = document.querySelector('#tab-history tbody');
                 tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:#6b7280;"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>`;
 
-                const searchVal = document.querySelector('#tab-history input').value;
-                const statusVal = document.querySelector('#tab-history select').value;
+                var searchVal = document.querySelector('#tab-history input').value;
+                var statusVal = document.querySelector('#tab-history select').value;
                 
-                let url = `${API_BASE}?channel=web&page=${page}&limit=${limit}`;
+                var url = `${API_BASE}?channel=web&page=${page}&limit=${limit}`;
                 if (searchVal) url += `&search=${encodeURIComponent(searchVal)}`;
                 
                 // Status mapping from select Option text
                 if (statusVal === 'Hoàn tất') url += '&status=completed';
                 if (statusVal === 'Đã huỷ') url += '&status=cancelled';
 
-                const res = await fetch(url, { headers: getAuthHeader() });
-                const json = await res.json();
+                var res = await fetch(url, { headers: getAuthHeader() });
+                var json = await res.json();
 
                 if (!json.success || !json.data || json.data.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:#9ca3af;">Không tìm thấy đơn hàng nào</td></tr>`;
@@ -623,11 +623,11 @@
 
                 tbody.innerHTML = '';
                 for (const order of json.data) {
-                    const { date, time } = formatDateTime(order.created_at);
+                    var { date, time } = formatDateTime(order.created_at);
 
                     // Style for status badge
-                    let badgeStyle = 'background:#fef3c7;color:#92400e;';
-                    let badgeLabel = 'Chờ xử lý';
+                    var badgeStyle = 'background:#fef3c7;color:#92400e;';
+                    var badgeLabel = 'Chờ xử lý';
                     if (order.order_status === 'completed') {
                         badgeStyle = 'background:#d1fae5;color:#065f46;';
                         badgeLabel = 'Hoàn tất';
@@ -639,12 +639,12 @@
                         badgeLabel = 'Đang xử lý';
                     }
 
-                    const isCancelled = order.order_status === 'cancelled';
-                    const totalFormatted = isCancelled 
+                    var isCancelled = order.order_status === 'cancelled';
+                    var totalFormatted = isCancelled 
                         ? `<span class="inv-price" style="color:#9ca3af;text-decoration:line-through;">${formatVND(order.total_amount)}</span>`
                         : `<span class="inv-price">${formatVND(order.total_amount)}</span>`;
 
-                    const tr = document.createElement('tr');
+                    var tr = document.createElement('tr');
                     tr.style.cursor = 'pointer';
                     tr.onclick = () => openOrderModal(order.order_code || order.id, isCancelled ? 'cancelled' : 'done');
                     tr.innerHTML = `
@@ -679,16 +679,16 @@
         async function loadPOS(page = 1) {
             currentPOSPage = page;
             try {
-                const tbody = document.querySelector('#tab-offline tbody');
+                var tbody = document.querySelector('#tab-offline tbody');
                 tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:#6b7280;"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>`;
 
-                const searchVal = document.querySelector('#tab-offline input').value;
+                var searchVal = document.querySelector('#tab-offline input').value;
                 
-                let url = `${API_BASE}?channel=pos&page=${page}&limit=${limit}`;
+                var url = `${API_BASE}?channel=pos&page=${page}&limit=${limit}`;
                 if (searchVal) url += `&search=${encodeURIComponent(searchVal)}`;
 
-                const res = await fetch(url, { headers: getAuthHeader() });
-                const json = await res.json();
+                var res = await fetch(url, { headers: getAuthHeader() });
+                var json = await res.json();
 
                 if (!json.success || !json.data || json.data.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:#9ca3af;">Không tìm thấy hoá đơn POS nào</td></tr>`;
@@ -698,12 +698,12 @@
 
                 tbody.innerHTML = '';
                 for (const order of json.data) {
-                    const { date, time } = formatDateTime(order.created_at);
+                    var { date, time } = formatDateTime(order.created_at);
 
                     // Payment Badge details
-                    let payBadgeStyle = 'background:#dbeafe;color:#1e40af;';
-                    let payBadgeIcon = 'fa-wallet';
-                    let payBadgeLabel = 'Tiền mặt';
+                    var payBadgeStyle = 'background:#dbeafe;color:#1e40af;';
+                    var payBadgeIcon = 'fa-wallet';
+                    var payBadgeLabel = 'Tiền mặt';
                     if (order.payment_method === 'qr_transfer') {
                         payBadgeStyle = 'background:#d1fae5;color:#047857;';
                         payBadgeIcon = 'fa-qrcode';
@@ -714,7 +714,7 @@
                         payBadgeLabel = 'Thẻ Visa';
                     }
 
-                    const tr = document.createElement('tr');
+                    var tr = document.createElement('tr');
                     tr.style.cursor = 'pointer';
                     tr.onclick = () => openOrderModal(order.order_code || order.id, 'offline');
                     tr.innerHTML = `
@@ -731,7 +731,7 @@
                         <td><span class="pay-badge" style="${payBadgeStyle}"><i class="fa-solid ${payBadgeIcon}"></i> ${payBadgeLabel}</span></td>
                         <td>
                             <div class="action-btns" style="justify-content:flex-end;">
-                                <button class="btn-icon" onclick="event.stopPropagation(); alert('Đang in...');"><i class="fa-solid fa-print"></i></button>
+                                <button class="btn-icon" onclick="event.stopPropagation(); showToast('Đang in hoá đơn...', 'info');"><i class="fa-solid fa-print"></i></button>
                             </div>
                         </td>
                     `;
@@ -746,7 +746,7 @@
 
         // Render standard dynamic Pagination Controls
         function updatePagination(tabId, total, currentPage) {
-            const container = document.querySelector(`#${tabId} .pagination`);
+            var container = document.querySelector(`#${tabId} .pagination`);
             if (!container) return;
 
             if (total === 0) {
@@ -755,19 +755,19 @@
             }
             container.style.display = '';
 
-            const totalPages = Math.ceil(total / limit);
-            const startIdx = (currentPage - 1) * limit + 1;
-            const endIdx = Math.min(currentPage * limit, total);
+            var totalPages = Math.ceil(total / limit);
+            var startIdx = (currentPage - 1) * limit + 1;
+            var endIdx = Math.min(currentPage * limit, total);
 
-            const infoSpan = container.querySelector('.page-info');
-            const labelStr = tabId === 'tab-history' ? 'đơn Online' : 'hoá đơn POS hôm nay';
+            var infoSpan = container.querySelector('.page-info');
+            var labelStr = tabId === 'tab-history' ? 'đơn Online' : 'hoá đơn POS hôm nay';
             infoSpan.innerText = `Hiển thị ${startIdx} – ${endIdx} trên ${total} ${labelStr}`;
 
-            const controls = container.querySelector('.page-controls');
+            var controls = container.querySelector('.page-controls');
             controls.innerHTML = '';
 
             // Left arrow
-            const prevBtn = document.createElement('button');
+            var prevBtn = document.createElement('button');
             prevBtn.className = 'btn-page';
             prevBtn.disabled = currentPage === 1;
             prevBtn.innerHTML = `<i class="fa-solid fa-chevron-left"></i>`;
@@ -780,7 +780,7 @@
             // Pages numbers
             for (let p = 1; p <= totalPages; p++) {
                 if (p === 1 || p === totalPages || (p >= currentPage - 1 && p <= currentPage + 1)) {
-                    const btn = document.createElement('button');
+                    var btn = document.createElement('button');
                     btn.className = `btn-page ${p === currentPage ? 'active' : ''}`;
                     btn.innerText = p;
                     btn.onclick = () => {
@@ -789,7 +789,7 @@
                     };
                     controls.appendChild(btn);
                 } else if (p === 2 || p === totalPages - 1) {
-                    const span = document.createElement('span');
+                    var span = document.createElement('span');
                     span.innerText = '...';
                     span.style.padding = '0 5px';
                     controls.appendChild(span);
@@ -797,7 +797,7 @@
             }
 
             // Right arrow
-            const nextBtn = document.createElement('button');
+            var nextBtn = document.createElement('button');
             nextBtn.className = 'btn-page';
             nextBtn.disabled = currentPage === totalPages;
             nextBtn.innerHTML = `<i class="fa-solid fa-chevron-right"></i>`;
@@ -812,18 +812,18 @@
         async function approveAndSend(btn, orderId) {
             if (btn) btn.disabled = true;
             try {
-                const res = await fetch(`${API_BASE}/${orderId}/status`, {
+                var res = await fetch(`${API_BASE}/${orderId}/status`, {
                     method: 'PUT',
                     headers: getAuthHeader(),
                     body: JSON.stringify({ status: 'confirmed' })
                 });
-                const json = await res.json();
+                var json = await res.json();
                 if (json.success) {
-                    showApprovedToast(orderId);
+                    showToast(`Đơn <strong>#${orderId}</strong> đã duyệt — Chuyển sang <a href="order-fulfillment.html" style="color:#3b82f6;text-decoration:underline;font-weight:700;">Pick & Pack →</a>`, 'success');
                     loadStats();
                     loadTabData();
                 } else {
-                    alert('Lỗi: ' + json.message);
+                    showToast('Lỗi: ' + json.message, 'error');
                     if (btn) btn.disabled = false;
                 }
             } catch (err) {
@@ -832,31 +832,22 @@
             }
         }
 
-        function showApprovedToast(orderId) {
-            const toast = document.createElement('div');
-            toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:14px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2);display:flex;align-items:center;gap:10px;';
-            toast.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#10b981;font-size:16px;"></i>
-                <span>Đơn <strong>#${orderId}</strong> đã duyệt — Chuyển sang <a href="order-fulfillment.html" style="color:#60a5fa;text-decoration:underline;">Pick & Pack →</a></span>`;
-            document.body.appendChild(toast);
-            setTimeout(() => { toast.style.transition = 'opacity .4s'; toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 3500);
-        }
-
         // Action handlers: Cancel
         async function cancelOrder(btn, orderId) {
             if (confirm('Huỷ đơn hàng này?')) {
                 if (btn) btn.disabled = true;
                 try {
-                    const res = await fetch(`${API_BASE}/${orderId}/status`, {
+                    var res = await fetch(`${API_BASE}/${orderId}/status`, {
                         method: 'PUT',
                         headers: getAuthHeader(),
                         body: JSON.stringify({ status: 'cancelled' })
                     });
-                    const json = await res.json();
+                    var json = await res.json();
                     if (json.success) {
                         loadStats();
                         loadTabData();
                     } else {
-                        alert('Lỗi: ' + json.message);
+                        showToast('Lỗi: ' + json.message, 'error');
                         if (btn) btn.disabled = false;
                     }
                 } catch (err) {
@@ -882,8 +873,8 @@
             document.getElementById('orderModalActions').innerHTML = '';
 
             try {
-                const res = await fetch(`${API_BASE}/${orderId}`, { headers: getAuthHeader() });
-                const json = await res.json();
+                var res = await fetch(`${API_BASE}/${orderId}`, { headers: getAuthHeader() });
+                var json = await res.json();
 
                 if (!json.success || !json.data) {
                     document.getElementById('orderModalTitle').innerText = `Lỗi tải chi tiết`;
@@ -896,8 +887,8 @@
                     return;
                 }
 
-                const order = json.data;
-                const { date, time } = formatDateTime(order.created_at);
+                var order = json.data;
+                var { date, time } = formatDateTime(order.created_at);
 
                 // Set up the layout template in standard-modal-body before rendering contents
                 document.querySelector('#orderModal .standard-modal-body').innerHTML = `
@@ -925,7 +916,7 @@
                 document.getElementById('orderModalTitle').innerText = `Chi tiết đơn — #${order.order_code}`;
 
                 // Status mapping inside modal
-                const subLabels = {
+                var subLabels = {
                     pending_approval: '⏳ Chờ duyệt',
                     confirmed: '📦 Đã duyệt - Chờ lấy hàng',
                     picking: '🟡 Đang lấy hàng',
@@ -936,16 +927,16 @@
                 document.getElementById('orderModalSub').innerText = subLabels[order.order_status] || order.order_status;
 
                 // Render products table inside modal
-                const itemsTbody = document.querySelector('#orderModal tbody');
+                var itemsTbody = document.querySelector('#orderModal tbody');
                 itemsTbody.innerHTML = '';
-                let itemsSubtotal = 0;
+                var itemsSubtotal = 0;
 
                 if (order.items && order.items.length > 0) {
                     order.items.forEach(item => {
-                        const rowTotal = item.quantity * item.unit_price;
+                        var rowTotal = item.quantity * item.unit_price;
                         itemsSubtotal += rowTotal;
 
-                        const tr = document.createElement('tr');
+                        var tr = document.createElement('tr');
                         tr.innerHTML = `
                             <td style="padding:8px;">
                                 <div style="font-size:13px;font-weight:600;color:#1e293b;">${item.product_name}</div>
@@ -961,7 +952,7 @@
                 }
 
                 // Update pricing sums
-                const priceSummaryDiv = document.querySelector('#orderModal tbody').closest('table').nextElementSibling;
+                var priceSummaryDiv = document.querySelector('#orderModal tbody').closest('table').nextElementSibling;
                 priceSummaryDiv.innerHTML = `
                     <div style="font-size:12px;color:#6b7280;margin-bottom:3px;">Tiêu tổng: <span style="font-weight:600;color:#1e293b;">${formatVND(order.subtotal || itemsSubtotal)}</span></div>
                     <div style="font-size:12px;color:#6b7280;margin-bottom:3px;">Phí giao hàng: <span style="font-weight:600;color:#1e293b;">${formatVND(order.shipping_fee || 0)}</span></div>
@@ -970,8 +961,8 @@
                 `;
 
                 // Update Customer panel info
-                const customerDiv = document.querySelector('#orderModal .standard-modal-body > div > div:last-child');
-                let payBadgeStyle = 'background:#fef3c7;color:#92400e;';
+                var customerDiv = document.querySelector('#orderModal .standard-modal-body > div > div:last-child');
+                var payBadgeStyle = 'background:#fef3c7;color:#92400e;';
                 if (order.payment_method !== 'cod' && order.payment_method !== 'cash') {
                     payBadgeStyle = 'background:#d1fae5;color:#065f46;';
                 }
@@ -1007,7 +998,7 @@
                 `;
 
                 // Render action buttons inside modal based on status/type
-                const actionsDiv = document.getElementById('orderModalActions');
+                var actionsDiv = document.getElementById('orderModalActions');
                 if (order.order_status === 'pending_approval') {
                     actionsDiv.innerHTML = `
                         <button class="btn-cancel" onclick="closeOrderModal(); cancelOrder(null, '${order.order_code}')" style="width:160px;justify-content:center;height:40px;"><i class="fa-solid fa-xmark"></i> Huỷ Đơn</button>
@@ -1015,7 +1006,7 @@
                 } else if (order.order_channel === 'pos' || order.order_status === 'completed') {
                     actionsDiv.innerHTML = `
                         <button class="btn-secondary" onclick="closeOrderModal()">Đóng</button>
-                        <button class="btn-primary" onclick="alert('Đang in...');" style="width:180px;justify-content:center;"><i class="fa-solid fa-print"></i> In Hoá Đơn</button>`;
+                        <button class="btn-primary" onclick="showToast('Đang in hoá đơn...', 'info');" style="width:180px;justify-content:center;"><i class="fa-solid fa-print"></i> In Hoá Đơn</button>`;
                 } else {
                     actionsDiv.innerHTML = `<button class="btn-secondary" onclick="closeOrderModal()">Đóng</button>`;
                 }
@@ -1034,17 +1025,17 @@
         // Attach event listeners to filters for dynamic search/change reloading
         document.addEventListener('DOMContentLoaded', () => {
             // Tab 2 Filters
-            const t2Search = document.querySelector('#tab-history input');
-            const t2Status = document.querySelector('#tab-history select');
-            const t2Date = document.querySelectorAll('#tab-history select')[1];
+            var t2Search = document.querySelector('#tab-history input');
+            var t2Status = document.querySelector('#tab-history select');
+            var t2Date = document.querySelectorAll('#tab-history select')[1];
 
             if (t2Search) t2Search.addEventListener('keyup', (e) => { if (e.key === 'Enter' || t2Search.value === '') loadHistory(1); });
             if (t2Status) t2Status.addEventListener('change', () => loadHistory(1));
             if (t2Date) t2Date.addEventListener('change', () => loadHistory(1));
 
             // Tab 3 Filters
-            const t3Search = document.querySelector('#tab-offline input');
-            const t3Date = document.querySelector('#tab-offline select');
+            var t3Search = document.querySelector('#tab-offline input');
+            var t3Date = document.querySelector('#tab-offline select');
 
             if (t3Search) t3Search.addEventListener('keyup', (e) => { if (e.key === 'Enter' || t3Search.value === '') loadPOS(1); });
             if (t3Date) t3Date.addEventListener('change', () => loadPOS(1));

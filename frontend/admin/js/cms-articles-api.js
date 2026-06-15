@@ -5,7 +5,7 @@
  * related products autocomplete, and standard rich-text articles editor.
  */
 
-const API_BASE = localStorage.getItem('MG_API_BASE') || (
+var API_BASE = localStorage.getItem('MG_API_BASE') || (
     (window.location.origin.includes('localhost:5500') ||
      window.location.origin.includes('localhost:5501') ||
      window.location.origin.includes('127.0.0.1:5500') ||
@@ -15,20 +15,20 @@ const API_BASE = localStorage.getItem('MG_API_BASE') || (
 );
 
 // State Management
-let currentPage = 1;
-let currentLimit = 10;
-let currentCategoryId = 'all';
-let currentCategoryType = 'all'; // 'all', 'article', 'disease'
-let searchQuery = '';
-let statusFilter = 'all';
-let sortFilter = 'newest';
+var currentPage = 1;
+var currentLimit = 10;
+var currentCategoryId = 'all';
+var currentCategoryType = 'all'; // 'all', 'article', 'disease'
+var searchQuery = '';
+var statusFilter = 'all';
+var sortFilter = 'newest';
 
-let activeArticleId = null; // null for 'new'
-let articleTags = [];
-let coverImageUrl = '';
-let selectedProducts = []; // items linked { id, name }
-let productCache = [];
-let relatedArticles = []; // bài viết liên quan cùng danh mục
+var activeArticleId = null; // null for 'new'
+var articleTags = [];
+var coverImageUrl = '';
+var selectedProducts = []; // items linked { id, name }
+var productCache = [];
+var relatedArticles = []; // bài viết liên quan cùng danh mục
 
 // On DOM Loaded
 document.addEventListener('DOMContentLoaded', () => {
@@ -49,8 +49,8 @@ async function initCmsPage() {
 // ──────────────────────────────────────────────
 
 function getHeaders() {
-    const authRaw = localStorage.getItem('MG_ADMIN_AUTH');
-    let token = '';
+    var authRaw = localStorage.getItem('MG_ADMIN_AUTH');
+    var token = '';
     if (authRaw) {
         try {
             token = JSON.parse(authRaw).accessToken || '';
@@ -62,45 +62,9 @@ function getHeaders() {
     };
 }
 
-function showToast(message, type = 'success') {
-    let container = document.getElementById('toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'toast-container';
-        container.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;';
-        document.body.appendChild(container);
-    }
-    
-    const toast = document.createElement('div');
-    toast.style.cssText = `
-        padding: 12px 24px;
-        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
-        color: white;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        font-size: 14px;
-        font-weight: 600;
-        opacity: 0;
-        transform: translateY(20px);
-        transition: all 0.3s ease;
-    `;
-    toast.innerText = message;
-    container.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.opacity = '1';
-        toast.style.transform = 'translateY(0)';
-    }, 10);
-    
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(20px)';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
 
 function debounce(func, wait) {
-    let timeout;
+    var timeout;
     return function (...args) {
         clearTimeout(timeout);
         timeout = setTimeout(() => func.apply(this, args), wait);
@@ -126,8 +90,8 @@ function resolveImageUrl(url) {
     if (url.startsWith('..') || url.startsWith('assets/')) {
         return url;
     }
-    const base = API_BASE.replace(/\/api\/?$/, '');
-    const separator = url.startsWith('/') ? '' : '/';
+    var base = API_BASE.replace(/\/api\/?$/, '');
+    var separator = url.startsWith('/') ? '' : '/';
     return base + separator + url;
 }
 
@@ -164,11 +128,11 @@ function setupEventListeners() {
     }, 300));
 
     // Cover image uploader in Editor Modal
-    const fileInputCover = document.getElementById('article-cover-file-input');
+    var fileInputCover = document.getElementById('article-cover-file-input');
     fileInputCover?.addEventListener('change', handleCoverUpload);
 
     // Related products input autocomplete
-    const prodInput = document.getElementById('article-product-search');
+    var prodInput = document.getElementById('article-product-search');
     prodInput?.addEventListener('input', debounce(handleProductSearch, 300));
     prodInput?.addEventListener('focus', handleProductSearch);
     
@@ -180,24 +144,24 @@ function setupEventListeners() {
     });
 
     // Related articles input autocomplete
-    const artInput = document.getElementById('article-article-search');
+    var artInput = document.getElementById('article-article-search');
     artInput?.addEventListener('input', debounce(handleArticleSearch, 300));
     artInput?.addEventListener('focus', handleArticleSearch);
     
     // Hide article dropdown when click outside
     document.addEventListener('click', (e) => {
         if (!e.target.closest('#article-article-search') && !e.target.closest('#article-article-dropdown')) {
-            const dropdown = document.getElementById('article-article-dropdown');
+            var dropdown = document.getElementById('article-article-dropdown');
             if (dropdown) dropdown.style.display = 'none';
         }
     });
 
     // Tags input
-    const tagInput = document.getElementById('article-tag-input');
+    var tagInput = document.getElementById('article-tag-input');
     tagInput?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            const val = tagInput.value.trim();
+            var val = tagInput.value.trim();
             if (val && !articleTags.includes(val)) {
                 articleTags.push(val);
                 renderTagsChips();
@@ -208,11 +172,11 @@ function setupEventListeners() {
     });
 
     // Media file input click
-    const mediaInput = document.getElementById('media-file-input');
+    var mediaInput = document.getElementById('media-file-input');
     mediaInput?.addEventListener('change', handleMediaUpload);
 
     // Media drag & drop
-    const dropzone = document.getElementById('media-dropzone');
+    var dropzone = document.getElementById('media-dropzone');
     if (dropzone) {
         dropzone.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -228,7 +192,7 @@ function setupEventListeners() {
             dropzone.style.background = '#f8fafc';
             dropzone.style.borderColor = '#cbd5e1';
             
-            const files = e.dataTransfer.files;
+            var files = e.dataTransfer.files;
             if (files.length > 0) {
                 uploadImageFile(files[0]);
             }
@@ -239,29 +203,29 @@ function setupEventListeners() {
     }
 
     // Auto suggest inputs for new categories
-    const catNameInput = document.getElementById('cat-name-input');
+    var catNameInput = document.getElementById('cat-name-input');
     catNameInput?.addEventListener('input', (e) => {
-        const val = e.target.value.trim();
-        const slugInput = document.getElementById('cat-slug-input');
+        var val = e.target.value.trim();
+        var slugInput = document.getElementById('cat-slug-input');
         if (slugInput) slugInput.value = toSlug(val);
         suggestIconAndColor(val);
     });
 
-    const picker = document.getElementById('cat-color-picker');
-    const colorInp = document.getElementById('cat-color-input');
+    var picker = document.getElementById('cat-color-picker');
+    var colorInp = document.getElementById('cat-color-input');
     picker?.addEventListener('input', (e) => {
         if (colorInp) colorInp.value = e.target.value;
     });
     colorInp?.addEventListener('input', (e) => {
-        const val = e.target.value.trim();
+        var val = e.target.value.trim();
         if (/^#[0-9a-fA-F]{6}$/.test(val) && picker) {
             picker.value = val;
         }
     });
 
     // Category icon upload button trigger click
-    const btnUploadCatIcon = document.getElementById('btn-upload-cat-icon');
-    const catIconFileInput = document.getElementById('cat-icon-file-input');
+    var btnUploadCatIcon = document.getElementById('btn-upload-cat-icon');
+    var catIconFileInput = document.getElementById('cat-icon-file-input');
     
     btnUploadCatIcon?.addEventListener('click', () => {
         catIconFileInput?.click();
@@ -278,10 +242,10 @@ function setupEventListeners() {
 // ──────────────────────────────────────────────
 async function loadStats() {
     try {
-        const res = await fetch(`${API_BASE}/cms/articles/admin/stats`, { headers: getHeaders() });
-        const result = await res.json();
+        var res = await fetch(`${API_BASE}/cms/articles/admin/stats`, { headers: getHeaders() });
+        var result = await res.json();
         if (result.success && result.data) {
-            const stats = result.data;
+            var stats = result.data;
             document.getElementById('stat-total-articles').innerText = stats.total_articles || 0;
             document.getElementById('stat-published-articles').innerText = stats.published_articles || 0;
             document.getElementById('stat-draft-articles').innerText = stats.draft_articles || 0;
@@ -295,12 +259,12 @@ async function loadStats() {
 // ──────────────────────────────────────────────
 // CATEGORIES & SIDEBAR
 // ──────────────────────────────────────────────
-let globalCategories = [];
+var globalCategories = [];
 
 async function loadCategories() {
     try {
-        const res = await fetch(`${API_BASE}/cms/categories`, { headers: getHeaders() });
-        const result = await res.json();
+        var res = await fetch(`${API_BASE}/cms/categories`, { headers: getHeaders() });
+        var result = await res.json();
         if (result.success && Array.isArray(result.data)) {
             globalCategories = result.data;
             renderSidebarCategories();
@@ -313,18 +277,18 @@ async function loadCategories() {
 }
 
 function populateParentCategorySelect() {
-    const parentSelect = document.getElementById('cat-parent-select');
+    var parentSelect = document.getElementById('cat-parent-select');
     if (!parentSelect) return;
     
-    const currentVal = parentSelect.value;
+    var currentVal = parentSelect.value;
     
     parentSelect.innerHTML = '<option value="">(Không có - Danh mục gốc)</option>';
     
     // Sort categories alphabetically
-    const sortedCats = [...globalCategories].sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+    var sortedCats = [...globalCategories].sort((a, b) => a.name.localeCompare(b.name, 'vi'));
     
     sortedCats.forEach(cat => {
-        const typeText = cat.type === 'article' ? 'Chủ đề' : cat.type === 'disease' ? 'Bệnh lý' : 'Khuyến mãi';
+        var typeText = cat.type === 'article' ? 'Chủ đề' : cat.type === 'disease' ? 'Bệnh lý' : 'Khuyến mãi';
         parentSelect.innerHTML += `<option value="${cat.id}">${cat.name} (${typeText})</option>`;
     });
     
@@ -334,32 +298,32 @@ function populateParentCategorySelect() {
 }
 
 function renderSidebarCategories() {
-    const list = document.getElementById('sidebar-category-list');
+    var list = document.getElementById('sidebar-category-list');
     if (!list) return;
 
     // Reset list keeping the 'All' item
-    const allItem = list.querySelector('[data-id="all"]');
+    var allItem = list.querySelector('[data-id="all"]');
     list.innerHTML = '';
     if (allItem) list.appendChild(allItem);
 
     // Group categories to show in sidebar:
     // 1. type = 'article' (General topics)
     // 2. type = 'disease' and parent_id = 2 (Pathology level-2 parent groups)
-    const rootArticles = globalCategories.filter(cat => cat.type === 'article');
-    const rootDiseases = globalCategories.filter(cat => cat.type === 'disease' && cat.parent_id === 2);
+    var rootArticles = globalCategories.filter(cat => cat.type === 'article');
+    var rootDiseases = globalCategories.filter(cat => cat.type === 'disease' && cat.parent_id === 2);
 
     // Render General flat article topics
     rootArticles.forEach(cat => {
-        const item = document.createElement('div');
+        var item = document.createElement('div');
         item.className = 'category-tree-item';
         item.setAttribute('data-id', cat.id);
         item.setAttribute('data-type', 'article');
         
-        let iconHtml = '';
+        var iconHtml = '';
         if (cat.image_url && (cat.image_url.includes('/') || cat.image_url.includes('.'))) {
             iconHtml = `<img src="${resolveImageUrl(cat.image_url)}" style="width:16px;height:16px;object-fit:contain;">`;
         } else {
-            const iconClass = cat.image_url || 'fa-regular fa-newspaper';
+            var iconClass = cat.image_url || 'fa-regular fa-newspaper';
             iconHtml = `<i class="${iconClass}"></i>`;
         }
         item.innerHTML = `
@@ -377,19 +341,19 @@ function renderSidebarCategories() {
 
     // Render Disease categories (collapsible tree)
     rootDiseases.forEach(parent => {
-        const groupContainer = document.createElement('div');
+        var groupContainer = document.createElement('div');
         groupContainer.className = 'category-group-container';
         groupContainer.style.borderBottom = '1px solid var(--admin-border)';
 
-        const parentItem = document.createElement('div');
+        var parentItem = document.createElement('div');
         parentItem.className = 'category-tree-item parent-item';
         parentItem.setAttribute('data-id', parent.id);
         parentItem.setAttribute('data-type', 'disease');
         parentItem.style.borderBottom = 'none';
 
-        const children = globalCategories.filter(cat => cat.parent_id === parent.id);
-        const hasChildren = children.length > 0;
-        const parentIcon = parent.image_url || 'fa-solid fa-notes-medical';
+        var children = globalCategories.filter(cat => cat.parent_id === parent.id);
+        var hasChildren = children.length > 0;
+        var parentIcon = parent.image_url || 'fa-solid fa-notes-medical';
 
         parentItem.innerHTML = `
             ${hasChildren ? `<span class="expand-toggle" style="padding: 4px 8px; cursor: pointer; color: #94a3b8; font-size: 11px; transition: transform 0.2s; display: inline-block;"><i class="fa-solid fa-chevron-right"></i></span>` : `<span style="width: 25px;"></span>`}
@@ -402,15 +366,15 @@ function renderSidebarCategories() {
             </div>
         `;
 
-        const childrenPanel = document.createElement('div');
+        var childrenPanel = document.createElement('div');
         childrenPanel.className = 'category-children-panel';
         childrenPanel.style.cssText = 'display: none; padding-left: 20px; background: #fafafa; border-top: 1px dashed #e2e8f0;';
 
         if (hasChildren) {
-            const toggleBtn = parentItem.querySelector('.expand-toggle');
+            var toggleBtn = parentItem.querySelector('.expand-toggle');
             toggleBtn.onclick = (e) => {
                 e.stopPropagation();
-                const isCollapsed = childrenPanel.style.display === 'none';
+                var isCollapsed = childrenPanel.style.display === 'none';
                 childrenPanel.style.display = isCollapsed ? 'block' : 'none';
                 toggleBtn.style.transform = isCollapsed ? 'rotate(90deg)' : 'rotate(0deg)';
             };
@@ -425,18 +389,18 @@ function renderSidebarCategories() {
 
         if (hasChildren) {
             children.forEach(child => {
-                const childItem = document.createElement('div');
+                var childItem = document.createElement('div');
                 childItem.className = 'category-tree-item child-item';
                 childItem.setAttribute('data-id', child.id);
                 childItem.setAttribute('data-type', 'child');
                 childItem.style.padding = '8px 12px 8px 30px';
                 childItem.style.borderBottom = 'none';
 
-                let iconHtml = '';
+                var iconHtml = '';
                 if (child.image_url && (child.image_url.includes('/') || child.image_url.includes('.'))) {
                     iconHtml = `<img src="${resolveImageUrl(child.image_url)}" style="width:16px;height:16px;object-fit:contain;">`;
                 } else {
-                    const childIcon = child.image_url || 'fa-solid fa-circle-notch';
+                    var childIcon = child.image_url || 'fa-solid fa-circle-notch';
                     iconHtml = `<i class="${childIcon}" style="font-size:12px;"></i>`;
                 }
 
@@ -465,18 +429,18 @@ function renderSidebarCategories() {
         .then(r => r.json())
         .then(res => {
             if (res.success && res.pagination) {
-                const totalCountEl = document.getElementById('sidebar-all-count');
+                var totalCountEl = document.getElementById('sidebar-all-count');
                 if (totalCountEl) totalCountEl.innerText = res.pagination.total || 0;
             }
         }).catch(err => console.error(err));
 }
 
 function populateCategorySelect() {
-    const select = document.getElementById('article-category-select');
+    var select = document.getElementById('article-category-select');
     if (!select) return;
     
     // We populate with sub-categories or any category that makes sense to categorize articles.
-    const options = globalCategories.filter(cat => 
+    var options = globalCategories.filter(cat => 
         cat.type === 'article' || (cat.type === 'disease' && cat.parent_id !== null && cat.parent_id !== 2)
     );
     
@@ -500,12 +464,12 @@ window.filterByCategory = function(el, catId, catType = 'all') {
 // ──────────────────────────────────────────────
 async function loadArticles() {
     try {
-        const container = document.getElementById('articles-list-container');
+        var container = document.getElementById('articles-list-container');
         if (!container) return;
         
         container.innerHTML = '<div style="text-align:center;padding:40px;color:#6b7280;"><i class="fa-solid fa-spinner fa-spin" style="font-size:24px;margin-bottom:10px;display:block;"></i>Đang tải danh sách bài viết...</div>';
 
-        const params = new URLSearchParams({
+        var params = new URLSearchParams({
             page: currentPage,
             limit: currentLimit
         });
@@ -526,17 +490,17 @@ async function loadArticles() {
             params.set('q', searchQuery.trim());
         }
 
-        const res = await fetch(`${API_BASE}/cms/articles/admin?${params.toString()}`, {
+        var res = await fetch(`${API_BASE}/cms/articles/admin?${params.toString()}`, {
             headers: getHeaders()
         });
-        const result = await res.json();
+        var result = await res.json();
         
         if (!result.success || !Array.isArray(result.data)) {
             container.innerHTML = `<div style="text-align:center;padding:40px;color:#ef4444;">Không tải được dữ liệu: ${result.message || 'Lỗi không xác định'}</div>`;
             return;
         }
 
-        let articles = result.data;
+        var articles = result.data;
         
         // Client-side popular sorting
         if (sortFilter === 'popular') {
@@ -551,12 +515,12 @@ async function loadArticles() {
 
         container.innerHTML = '';
         articles.forEach(art => {
-            const card = document.createElement('div');
+            var card = document.createElement('div');
             card.className = 'article-card';
             
             // Format status badge
-            let statusText = 'Bản nháp';
-            let statusClass = 'draft';
+            var statusText = 'Bản nháp';
+            var statusClass = 'draft';
             if (art.status === 'published') {
                 statusText = 'Đã xuất bản';
                 statusClass = 'published';
@@ -566,8 +530,8 @@ async function loadArticles() {
             }
 
             // Thumbnail url or placeholder
-            let thumb = art.thumbnail_url;
-            let thumbHtml = '';
+            var thumb = art.thumbnail_url;
+            var thumbHtml = '';
             if (thumb) {
                 thumbHtml = `<img src="${resolveImageUrl(thumb)}" class="article-thumbnail" alt="${art.title}">`;
             } else {
@@ -575,7 +539,7 @@ async function loadArticles() {
             }
 
             // Format date
-            const dateStr = art.published_at 
+            var dateStr = art.published_at 
                 ? new Date(art.published_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
                 : new Date(art.created_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
@@ -600,10 +564,10 @@ async function loadArticles() {
         });
 
         // Update Pagination
-        const pag = result.pagination || { total: articles.length, page: 1, limit: currentLimit };
-        const total = pag.total || 0;
-        const from = total > 0 ? (currentPage - 1) * currentLimit + 1 : 0;
-        const to = Math.min(currentPage * currentLimit, total);
+        var pag = result.pagination || { total: articles.length, page: 1, limit: currentLimit };
+        var total = pag.total || 0;
+        var from = total > 0 ? (currentPage - 1) * currentLimit + 1 : 0;
+        var to = Math.min(currentPage * currentLimit, total);
         updatePagination(total, from, to);
 
     } catch (e) {
@@ -612,21 +576,21 @@ async function loadArticles() {
 }
 
 function updatePagination(total, from, to) {
-    const info = document.querySelector('.pagination .page-info');
+    var info = document.querySelector('.pagination .page-info');
     if (info) {
         info.innerText = `Hiển thị ${from} – ${to} trên ${total} bài viết`;
     }
 
-    const controls = document.querySelector('.pagination .page-controls');
+    var controls = document.querySelector('.pagination .page-controls');
     if (!controls) return;
 
     controls.innerHTML = '';
-    const totalPages = Math.ceil(total / currentLimit);
+    var totalPages = Math.ceil(total / currentLimit);
 
     if (totalPages <= 1) return;
 
     // Prev Button
-    const prev = document.createElement('button');
+    var prev = document.createElement('button');
     prev.disabled = currentPage === 1;
     prev.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
     prev.onclick = () => { if (currentPage > 1) { currentPage--; loadArticles(); } };
@@ -634,7 +598,7 @@ function updatePagination(total, from, to) {
 
     // Number Buttons
     for (let i = 1; i <= totalPages; i++) {
-        const btn = document.createElement('button');
+        var btn = document.createElement('button');
         btn.className = currentPage === i ? 'active' : '';
         btn.innerText = i;
         btn.onclick = () => { currentPage = i; loadArticles(); };
@@ -642,7 +606,7 @@ function updatePagination(total, from, to) {
     }
 
     // Next Button
-    const next = document.createElement('button');
+    var next = document.createElement('button');
     next.disabled = currentPage === totalPages;
     next.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
     next.onclick = () => { if (currentPage < totalPages) { currentPage++; loadArticles(); } };
@@ -653,7 +617,7 @@ function updatePagination(total, from, to) {
 // EDITOR MODAL LOGIC
 // ──────────────────────────────────────────────
 window.openArticleEditor = async function(modeOrId) {
-    const modal = document.getElementById('articleEditorModal');
+    var modal = document.getElementById('articleEditorModal');
     if (!modal) return;
 
     // Render preview ngay (preview luôn hiển thị)
@@ -693,11 +657,11 @@ window.openArticleEditor = async function(modeOrId) {
 
             // Gọi trực tiếp GET /cms/articles/:id kèm token admin
             // để backend nhận diện quyền admin → cho phép xem bài draft/archived
-            const detailRes = await fetch(`${API_BASE}/cms/articles/${modeOrId}`, { headers: getHeaders() });
-            const detailResult = await detailRes.json();
+            var detailRes = await fetch(`${API_BASE}/cms/articles/${modeOrId}`, { headers: getHeaders() });
+            var detailResult = await detailRes.json();
 
             if (detailResult.success && detailResult.data) {
-                    const detail = detailResult.data;
+                    var detail = detailResult.data;
                     document.getElementById('article-title-input').value = detail.title || '';
                     document.getElementById('article-excerpt-input').value = detail.excerpt || '';
                     document.getElementById('article-content-body').innerHTML = detail.content || '';
@@ -761,22 +725,22 @@ window.openArticleEditor = async function(modeOrId) {
 };
 
 window.closeArticleEditor = function() {
-    const modal = document.getElementById('articleEditorModal');
+    var modal = document.getElementById('articleEditorModal');
     if (modal) modal.classList.remove('open');
     document.body.style.overflow = '';
 };
 
 // Tags render
 function renderTagsChips() {
-    const container = document.getElementById('article-tags-container');
+    var container = document.getElementById('article-tags-container');
     if (!container) return;
     
     // Clear and keep input
-    const input = document.getElementById('article-tag-input');
+    var input = document.getElementById('article-tag-input');
     container.innerHTML = '';
     
     articleTags.forEach((tag, idx) => {
-        const chip = document.createElement('span');
+        var chip = document.createElement('span');
         chip.className = 'tag-chip';
         chip.innerHTML = `
             ${tag}
@@ -802,14 +766,14 @@ window.execCmd = function(command, value = null) {
 
 window.insertImagePrompt = function() {
     // Tạo input file ẩn để chọn ảnh từ máy tính
-    const fileInput = document.createElement('input');
+    var fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.accept = 'image/jpeg,image/png,image/webp,image/gif,image/svg+xml';
     fileInput.style.display = 'none';
     document.body.appendChild(fileInput);
 
     fileInput.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
+        var file = e.target.files[0];
         if (!file) { fileInput.remove(); return; }
 
         // Kiểm tra kích thước (max 50MB)
@@ -822,12 +786,12 @@ window.insertImagePrompt = function() {
         showToast('Đang tải ảnh lên...', 'info');
 
         try {
-            const reader = new FileReader();
+            var reader = new FileReader();
             reader.onloadend = async () => {
-                const base64String = reader.result;
+                var base64String = reader.result;
 
                 // Upload lên CMS media service
-                const uploadRes = await fetch(`${API_BASE}/cms/media`, {
+                var uploadRes = await fetch(`${API_BASE}/cms/media`, {
                     method: 'POST',
                     headers: getHeaders(),
                     body: JSON.stringify({
@@ -837,14 +801,14 @@ window.insertImagePrompt = function() {
                         data_base64: base64String
                     })
                 });
-                const uploadResult = await uploadRes.json();
+                var uploadResult = await uploadRes.json();
 
                 if (uploadResult.success && uploadResult.data && uploadResult.data.file_url) {
-                    const imgUrl = uploadResult.data.file_url;
-                    const resolvedImgUrl = resolveImageUrl(imgUrl);
+                    var imgUrl = uploadResult.data.file_url;
+                    var resolvedImgUrl = resolveImageUrl(imgUrl);
 
                     // Chèn ảnh vào editor với style responsive + center
-                    const imgHtml = `
+                    var imgHtml = `
                         <div style="text-align:center;margin:16px 0;">
                             <img src="${resolvedImgUrl}" alt="${file.name}" 
                                  style="max-width:100%;height:auto;border-radius:8px;cursor:pointer;"
@@ -855,7 +819,7 @@ window.insertImagePrompt = function() {
                     `;
 
                     // Focus editor và chèn
-                    const editorBody = document.getElementById('article-content-body');
+                    var editorBody = document.getElementById('article-content-body');
                     editorBody.focus();
                     document.execCommand('insertHTML', false, imgHtml);
 
@@ -877,15 +841,15 @@ window.insertImagePrompt = function() {
 };
 
 window.insertLinkPrompt = function() {
-    const url = prompt("Nhập URL liên kết:");
+    var url = prompt("Nhập URL liên kết:");
     if (url) document.execCommand("createLink", false, url);
 };
 
 window.insertTablePrompt = function() {
-    const rows = prompt("Nhập số hàng:", "3");
-    const cols = prompt("Nhập số cột:", "3");
+    var rows = prompt("Nhập số hàng:", "3");
+    var cols = prompt("Nhập số cột:", "3");
     if (rows && cols) {
-        let html = '<table style="width:100%; border-collapse: collapse; margin: 10px 0;">';
+        var html = '<table style="width:100%; border-collapse: collapse; margin: 10px 0;">';
         for (let r = 0; r < rows; r++) {
             html += '<tr>';
             for (let c = 0; c < cols; c++) {
@@ -899,13 +863,13 @@ window.insertTablePrompt = function() {
 };
 
 window.insertCallout = function(type) {
-    const text = prompt("Nhập nội dung lưu ý/cảnh báo:");
+    var text = prompt("Nhập nội dung lưu ý/cảnh báo:");
     if (text) {
-        const bgColor = type === 'info' ? '#eff6ff' : '#fef2f2';
-        const borderColor = type === 'info' ? '#3b82f6' : '#ef4444';
-        const textColor = type === 'info' ? '#1d4ed8' : '#991b1b';
-        const icon = type === 'info' ? 'fa-circle-info' : 'fa-triangle-exclamation';
-        const html = `
+        var bgColor = type === 'info' ? '#eff6ff' : '#fef2f2';
+        var borderColor = type === 'info' ? '#3b82f6' : '#ef4444';
+        var textColor = type === 'info' ? '#1d4ed8' : '#991b1b';
+        var icon = type === 'info' ? 'fa-circle-info' : 'fa-triangle-exclamation';
+        var html = `
             <div style="background: ${bgColor}; border-left: 4px solid ${borderColor}; padding: 12px 16px; border-radius: 6px; color: ${textColor}; margin: 12px 0; display: flex; gap: 10px; align-items: flex-start;">
                 <i class="fa-solid ${icon}" style="margin-top: 3px;"></i>
                 <div>${text}</div>
@@ -917,10 +881,10 @@ window.insertCallout = function(type) {
 };
 
 window.insertIntroBox = function() {
-    const text = prompt("Nhập nội dung đoạn tóm tắt mở đầu (hoặc nhấn OK để chèn mẫu):", "Nhập đoạn tóm tắt mở đầu hoặc lời khuyên của bác sĩ tại đây...");
+    var text = prompt("Nhập nội dung đoạn tóm tắt mở đầu (hoặc nhấn OK để chèn mẫu):", "Nhập đoạn tóm tắt mở đầu hoặc lời khuyên của bác sĩ tại đây...");
     if (text === null) return; // cancel
     
-    const html = `
+    var html = `
         <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; position: relative; margin: 18px 0; font-family: inherit;">
             <div style="color: #10b981; font-size: 54px; line-height: 1; font-family: Georgia, serif; position: absolute; top: -10px; left: 16px; font-weight: bold; user-select: none;">“</div>
             <div style="margin-top: 14px; font-size: 14px; color: #374151; line-height: 1.6; font-style: italic;">
@@ -933,7 +897,7 @@ window.insertIntroBox = function() {
 };
 
 window.insertTocBox = function() {
-    const html = `
+    var html = `
         <div style="border: 1px solid #005824; border-radius: 12px; padding: 18px 20px; margin: 18px 0; background: #fff; font-family: inherit;">
             <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 12px; cursor: pointer;" 
                  onclick="const content = this.nextElementSibling; content.style.display = content.style.display === 'none' ? 'block' : 'none'; const icon = this.querySelector('i'); icon.className = content.style.display === 'none' ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-up';">
@@ -959,17 +923,17 @@ window.triggerCoverUpload = function() {
 };
 
 async function handleCoverUpload(e) {
-    const file = e.target.files[0];
+    var file = e.target.files[0];
     if (!file) return;
 
     showToast('Đang tải ảnh đại diện lên...', 'info');
     
     try {
-        const reader = new FileReader();
+        var reader = new FileReader();
         reader.onloadend = async () => {
-            const base64String = reader.result;
+            var base64String = reader.result;
             
-            const uploadRes = await fetch(`${API_BASE}/cms/media`, {
+            var uploadRes = await fetch(`${API_BASE}/cms/media`, {
                 method: 'POST',
                 headers: getHeaders(),
                 body: JSON.stringify({
@@ -979,7 +943,7 @@ async function handleCoverUpload(e) {
                     data_base64: base64String
                 })
             });
-            const uploadResult = await uploadRes.json();
+            var uploadResult = await uploadRes.json();
             
             if (uploadResult.success && uploadResult.data) {
                 coverImageUrl = uploadResult.data.file_url;
@@ -998,10 +962,10 @@ async function handleCoverUpload(e) {
 }
 
 function updateCoverUploaderUI(url) {
-    const uploader = document.getElementById('article-cover-uploader');
+    var uploader = document.getElementById('article-cover-uploader');
     if (!uploader) return;
     
-    const resolvedUrl = resolveImageUrl(url);
+    var resolvedUrl = resolveImageUrl(url);
     
     uploader.innerHTML = `
         <img src="${resolvedUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;max-height:100px;">
@@ -1013,7 +977,7 @@ function updateCoverUploaderUI(url) {
 
 function resetCoverUploaderUI(clearUrl = false) {
     if (clearUrl) coverImageUrl = '';
-    const uploader = document.getElementById('article-cover-uploader');
+    var uploader = document.getElementById('article-cover-uploader');
     if (!uploader) return;
 
     uploader.innerHTML = `
@@ -1026,19 +990,19 @@ function resetCoverUploaderUI(clearUrl = false) {
 
 // Autocomplete Medicines logic
 async function handleProductSearch() {
-    const term = document.getElementById('article-product-search').value.trim();
-    const dropdown = document.getElementById('article-product-dropdown');
+    var term = document.getElementById('article-product-search').value.trim();
+    var dropdown = document.getElementById('article-product-dropdown');
     if (!dropdown) return;
 
     try {
-        const queryParams = new URLSearchParams({ limit: '10', status: 'active' });
+        var queryParams = new URLSearchParams({ limit: '10', status: 'active' });
         if (term) {
             queryParams.set('q', term);
         }
-        const res = await fetch(`${API_BASE}/catalog/products?${queryParams.toString()}`, { headers: getHeaders() });
-        const result = await res.json();
+        var res = await fetch(`${API_BASE}/catalog/products?${queryParams.toString()}`, { headers: getHeaders() });
+        var result = await res.json();
         
-        let products = [];
+        var products = [];
         if (result.success && Array.isArray(result.data)) {
             products = result.data;
         } else if (result.success && result.data && Array.isArray(result.data.data)) {
@@ -1053,7 +1017,7 @@ async function handleProductSearch() {
         });
         
         // Filter: Keep active/in-stock products
-        const inStockProducts = products.filter(prod => prod.in_stock === true || Number(prod.total_stock) > 0);
+        var inStockProducts = products.filter(prod => prod.in_stock === true || Number(prod.total_stock) > 0);
         
         if (inStockProducts.length === 0) {
             dropdown.innerHTML = '<div style="padding: 8px 12px; font-size: 12px; color: #9ca3af; text-align: center;">Không có sản phẩm nào.</div>';
@@ -1091,19 +1055,19 @@ window.removeProductChip = function(id) {
 
 // Autocomplete Articles logic
 async function handleArticleSearch() {
-    const term = document.getElementById('article-article-search').value.trim();
-    const dropdown = document.getElementById('article-article-dropdown');
+    var term = document.getElementById('article-article-search').value.trim();
+    var dropdown = document.getElementById('article-article-dropdown');
     if (!dropdown) return;
 
     try {
-        const queryParams = new URLSearchParams({ limit: '10' });
+        var queryParams = new URLSearchParams({ limit: '10' });
         if (term) {
             queryParams.set('q', term);
         }
-        const res = await fetch(`${API_BASE}/cms/articles/admin?${queryParams.toString()}`, { headers: getHeaders() });
-        const result = await res.json();
+        var res = await fetch(`${API_BASE}/cms/articles/admin?${queryParams.toString()}`, { headers: getHeaders() });
+        var result = await res.json();
         
-        let articles = [];
+        var articles = [];
         if (result.success && Array.isArray(result.data)) {
             articles = result.data;
         }
@@ -1148,7 +1112,7 @@ window.removeArticleChip = function(id) {
 };
 
 function renderRelatedArticlesSettings() {
-    const list = document.getElementById('article-related-articles-list');
+    var list = document.getElementById('article-related-articles-list');
     if (!list) return;
 
     list.innerHTML = '';
@@ -1158,7 +1122,7 @@ function renderRelatedArticlesSettings() {
     }
 
     relatedArticles.forEach(art => {
-        const chip = document.createElement('div');
+        var chip = document.createElement('div');
         chip.style.cssText = 'display:flex;align-items:center;justify-content:space-between;background:#f1f5f9;border:1px solid #cbd5e1;padding:4px 8px;border-radius:6px;font-size:11px;margin-bottom:6px;';
         chip.innerHTML = `
             <span style="font-weight:500;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;">${art.title}</span>
@@ -1169,7 +1133,7 @@ function renderRelatedArticlesSettings() {
 }
 
 function renderRelatedProducts() {
-    const list = document.getElementById('article-related-products-list');
+    var list = document.getElementById('article-related-products-list');
     if (!list) return;
 
     list.innerHTML = '';
@@ -1179,7 +1143,7 @@ function renderRelatedProducts() {
     }
 
     selectedProducts.forEach(prod => {
-        const chip = document.createElement('div');
+        var chip = document.createElement('div');
         chip.style.cssText = 'display:flex;align-items:center;justify-content:space-between;background:#f1f5f9;border:1px solid #cbd5e1;padding:4px 8px;border-radius:6px;font-size:11px;margin-bottom:6px;';
         chip.innerHTML = `
             <span style="font-weight:500;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;">${prod.name}</span>
@@ -1194,7 +1158,7 @@ async function autoSuggestProducts(title) {
     if (!title) return;
 
     // Trích xuất từ khóa y khoa từ tiêu đề bài viết
-    const medKeywords = {
+    var medKeywords = {
         'gout': 'gout', 'gut': 'gout', 'gút': 'gout',
         'da dày': 'dạ dày', 'dạ dày': 'dạ dày', 'tiêu hóa': 'tiêu hóa', 'đại tràng': 'đại tràng',
         'tim': 'tim mạch', 'huyết áp': 'huyết áp', 'tim mạch': 'tim mạch',
@@ -1207,8 +1171,8 @@ async function autoSuggestProducts(title) {
         'trẻ em': 'trẻ em', 'trẻ': 'trẻ em', 'sốt': 'hạ sốt',
     };
 
-    const titleLower = title.toLowerCase();
-    let searchTerm = '';
+    var titleLower = title.toLowerCase();
+    var searchTerm = '';
 
     // Tìm từ khóa phù hợp nhất trong tiêu đề
     for (const [keyword, query] of Object.entries(medKeywords)) {
@@ -1220,18 +1184,18 @@ async function autoSuggestProducts(title) {
 
     // Nếu không tìm thấy từ khóa chuyên khoa → dùng 2 từ đầu của tiêu đề
     if (!searchTerm) {
-        const words = title.split(/\s+/).filter(w => w.length > 2);
+        var words = title.split(/\s+/).filter(w => w.length > 2);
         searchTerm = words.slice(0, 2).join(' ');
     }
 
     if (!searchTerm) return;
 
     try {
-        const queryParams = new URLSearchParams({ limit: '5', q: searchTerm });
-        const res = await fetch(`${API_BASE}/catalog/products?${queryParams.toString()}`, { headers: getHeaders() });
-        const result = await res.json();
+        var queryParams = new URLSearchParams({ limit: '5', q: searchTerm });
+        var res = await fetch(`${API_BASE}/catalog/products?${queryParams.toString()}`, { headers: getHeaders() });
+        var result = await res.json();
 
-        let products = [];
+        var products = [];
         if (result.success && Array.isArray(result.data)) {
             products = result.data;
         } else if (result.success && result.data && Array.isArray(result.data.data)) {
@@ -1249,9 +1213,9 @@ async function autoSuggestProducts(title) {
             selectedProducts = products.slice(0, 3).map(p => ({ id: p.id, name: p.name }));
         } else {
             // Fallback: thử search generic "vitamin" hoặc "thuốc"
-            const fallbackRes = await fetch(`${API_BASE}/catalog/products?limit=3&q=vitamin`, { headers: getHeaders() });
-            const fallbackResult = await fallbackRes.json();
-            let fallbackProducts = [];
+            var fallbackRes = await fetch(`${API_BASE}/catalog/products?limit=3&q=vitamin`, { headers: getHeaders() });
+            var fallbackResult = await fallbackRes.json();
+            var fallbackProducts = [];
             if (fallbackResult.success && Array.isArray(fallbackResult.data)) {
                 fallbackProducts = fallbackResult.data;
             } else if (fallbackResult.success && fallbackResult.data && Array.isArray(fallbackResult.data.data)) {
@@ -1275,11 +1239,11 @@ async function autoSuggestProducts(title) {
 
 // SAVE Article Form
 window.saveArticle = async function(status) {
-    const title = document.getElementById('article-title-input').value.trim();
-    const excerpt = document.getElementById('article-excerpt-input').value.trim();
-    const content = document.getElementById('article-content-body').innerHTML.trim();
-    const category_id = document.getElementById('article-category-select').value;
-    const author_id = document.getElementById('article-author-select').value;
+    var title = document.getElementById('article-title-input').value.trim();
+    var excerpt = document.getElementById('article-excerpt-input').value.trim();
+    var content = document.getElementById('article-content-body').innerHTML.trim();
+    var category_id = document.getElementById('article-category-select').value;
+    var author_id = document.getElementById('article-author-select').value;
 
     if (!title) {
         showToast('Vui lòng nhập tiêu đề bài viết!', 'error');
@@ -1290,7 +1254,7 @@ window.saveArticle = async function(status) {
         return;
     }
 
-    const payload = {
+    var payload = {
         title,
         excerpt,
         content,
@@ -1306,7 +1270,7 @@ window.saveArticle = async function(status) {
     showToast('Đang lưu bài viết...', 'info');
 
     try {
-        let res, result;
+        var res, result;
         if (activeArticleId === null) {
             // New Article
             res = await fetch(`${API_BASE}/cms/articles`, {
@@ -1344,11 +1308,11 @@ window.deleteArticle = async function(id) {
     
     showToast('Đang xử lý...', 'info');
     try {
-        const res = await fetch(`${API_BASE}/cms/articles/${id}`, {
+        var res = await fetch(`${API_BASE}/cms/articles/${id}`, {
             method: 'DELETE',
             headers: getHeaders()
         });
-        const result = await res.json();
+        var result = await res.json();
         
         if (result.success) {
             showToast('Đã chuyển bài viết vào mục lưu trữ (Soft Deleted).');
@@ -1368,8 +1332,8 @@ window.deleteArticle = async function(id) {
 // ──────────────────────────────────────────────
 // Build a tree of category nodes from flat list
 function buildCategoryTree(categories) {
-    const map = {};
-    const roots = [];
+    var map = {};
+    var roots = [];
     
     // Initialize map
     categories.forEach(cat => {
@@ -1378,7 +1342,7 @@ function buildCategoryTree(categories) {
     
     // Link parents and children
     categories.forEach(cat => {
-        const node = map[cat.id];
+        var node = map[cat.id];
         if (cat.parent_id && map[cat.parent_id]) {
             map[cat.parent_id].children.push(node);
         } else {
@@ -1387,9 +1351,9 @@ function buildCategoryTree(categories) {
     });
     
     // Sort roots & children by sort_order first, then by name alphabetically
-    const sortFn = (a, b) => {
-        const orderA = a.sort_order || 0;
-        const orderB = b.sort_order || 0;
+    var sortFn = (a, b) => {
+        var orderA = a.sort_order || 0;
+        var orderB = b.sort_order || 0;
         if (orderA !== orderB) return orderA - orderB;
         return a.name.localeCompare(b.name, 'vi');
     };
@@ -1404,23 +1368,23 @@ function buildCategoryTree(categories) {
 
 // Generate category tree table rows HTML
 function generateTreeRows(nodes, depth = 0, parentPath = []) {
-    let html = '';
+    var html = '';
     
     nodes.forEach(node => {
-        const hasChildren = node.children && node.children.length > 0;
-        const indent = depth * 24; // 24px indent per depth level
+        var hasChildren = node.children && node.children.length > 0;
+        var indent = depth * 24; // 24px indent per depth level
         
         // Dot color based on type
-        let dotColor = '#3b82f6'; // blue for article
+        var dotColor = '#3b82f6'; // blue for article
         if (node.type === 'disease') dotColor = '#ef4444'; // red for disease
         if (node.type === 'promotion') dotColor = '#10b981'; // green for promotion
         
         // CSS classes to handle show/hide
-        const pathClass = parentPath.map(id => `parent-${id}`).join(' ');
-        const isHiddenStyle = depth > 0 ? 'style="display: none;"' : '';
+        var pathClass = parentPath.map(id => `parent-${id}`).join(' ');
+        var isHiddenStyle = depth > 0 ? 'style="display: none;"' : '';
         
         // Chevron caret if it has children
-        let toggleCaret = '';
+        var toggleCaret = '';
         if (hasChildren) {
             toggleCaret = `<span class="cat-tree-toggle" style="display:inline-block; width:16px; text-align:center; margin-right:6px; cursor:pointer; color:#94a3b8; transition:transform 0.2s;"><i class="fa-solid fa-chevron-right"></i></span>`;
         } else {
@@ -1428,10 +1392,10 @@ function generateTreeRows(nodes, depth = 0, parentPath = []) {
         }
         
         // Render icon
-        let iconHtml = '';
+        var iconHtml = '';
         if (node.image_url) {
             if (node.image_url.includes('/') || node.image_url.includes('.')) {
-                const resolvedUrl = resolveImageUrl(node.image_url);
+                var resolvedUrl = resolveImageUrl(node.image_url);
                 iconHtml = `<img src="${resolvedUrl}" style="width:20px;height:20px;object-fit:contain;margin-right:8px;border-radius:4px;vertical-align:middle;">`;
             } else {
                 iconHtml = `<i class="${node.image_url}" style="font-size:14px;color:#64748b;margin-right:8px;vertical-align:middle;width:20px;text-align:center;"></i>`;
@@ -1440,7 +1404,7 @@ function generateTreeRows(nodes, depth = 0, parentPath = []) {
             iconHtml = `<i class="fa-solid fa-folder" style="font-size:14px;color:#94a3b8;margin-right:8px;vertical-align:middle;width:20px;text-align:center;"></i>`;
         }
         
-        const clickHandler = hasChildren ? `onclick="event.stopPropagation(); toggleCategoryRow(${node.id}, this)"` : '';
+        var clickHandler = hasChildren ? `onclick="event.stopPropagation(); toggleCategoryRow(${node.id}, this)"` : '';
         
         html += `
             <tr class="cat-row ${pathClass}" data-id="${node.id}" data-parent-id="${node.parent_id || ''}" data-depth="${depth}" ${isHiddenStyle}>
@@ -1471,12 +1435,12 @@ function generateTreeRows(nodes, depth = 0, parentPath = []) {
 
 // Collapsible category tree toggling
 window.toggleCategoryRow = function(catId, element) {
-    const caretSpan = element.querySelector('.cat-tree-toggle');
+    var caretSpan = element.querySelector('.cat-tree-toggle');
     if (!caretSpan) return;
-    const icon = caretSpan.querySelector('i');
+    var icon = caretSpan.querySelector('i');
     if (!icon) return;
     
-    const isExpanded = icon.classList.contains('fa-chevron-down');
+    var isExpanded = icon.classList.contains('fa-chevron-down');
     
     if (isExpanded) {
         icon.className = 'fa-solid fa-chevron-right';
@@ -1488,26 +1452,26 @@ window.toggleCategoryRow = function(catId, element) {
 };
 
 function collapseDescendants(catId) {
-    const descendants = document.querySelectorAll(`.cat-row.parent-${catId}`);
+    var descendants = document.querySelectorAll(`.cat-row.parent-${catId}`);
     descendants.forEach(row => {
         row.style.display = 'none';
-        const caretSpan = row.querySelector('.cat-tree-toggle');
+        var caretSpan = row.querySelector('.cat-tree-toggle');
         if (caretSpan) {
-            const icon = caretSpan.querySelector('i');
+            var icon = caretSpan.querySelector('i');
             if (icon) icon.className = 'fa-solid fa-chevron-right';
         }
     });
 }
 
 function expandDirectChildren(catId) {
-    const children = document.querySelectorAll(`.cat-row[data-parent-id="${catId}"]`);
+    var children = document.querySelectorAll(`.cat-row[data-parent-id="${catId}"]`);
     children.forEach(row => {
         row.style.display = '';
     });
 }
 
 // Icon Picker Popover suggestions
-const iconSuggestions = {
+var iconSuggestions = {
     medicine: [
         'fa-solid fa-pills',
         'fa-solid fa-capsules',
@@ -1550,16 +1514,16 @@ const iconSuggestions = {
 };
 
 function initIconPicker() {
-    const popover = document.getElementById('icon-picker-popover');
-    const toggleBtn = document.getElementById('btn-show-icon-picker');
-    const iconInput = document.getElementById('cat-icon-input');
-    const iconPreview = document.getElementById('cat-icon-preview');
+    var popover = document.getElementById('icon-picker-popover');
+    var toggleBtn = document.getElementById('btn-show-icon-picker');
+    var iconInput = document.getElementById('cat-icon-input');
+    var iconPreview = document.getElementById('cat-icon-preview');
     
     if (!popover || !toggleBtn || !iconInput) return;
     
     // Populate grids
     for (const [category, icons] of Object.entries(iconSuggestions)) {
-        const grid = popover.querySelector(`.icon-grid[data-category="${category}"]`);
+        var grid = popover.querySelector(`.icon-grid[data-category="${category}"]`);
         if (grid) {
             grid.innerHTML = icons.map(iconClass => `
                 <button type="button" class="icon-pick-btn" data-icon="${iconClass}" style="width:34px;height:34px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:#475569;transition:all 0.15s;padding:0;" title="${iconClass}">
@@ -1572,7 +1536,7 @@ function initIconPicker() {
     // Toggle popover
     toggleBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const isVisible = popover.style.display === 'block';
+        var isVisible = popover.style.display === 'block';
         popover.style.display = isVisible ? 'none' : 'block';
     });
     
@@ -1585,9 +1549,9 @@ function initIconPicker() {
     
     // Icon click
     popover.addEventListener('click', (e) => {
-        const btn = e.target.closest('.icon-pick-btn');
+        var btn = e.target.closest('.icon-pick-btn');
         if (btn) {
-            const iconClass = btn.getAttribute('data-icon');
+            var iconClass = btn.getAttribute('data-icon');
             iconInput.value = iconClass;
             updateIconPreview(iconClass);
             popover.style.display = 'none';
@@ -1601,7 +1565,7 @@ function initIconPicker() {
 }
 
 function updateIconPreview(val) {
-    const preview = document.getElementById('cat-icon-preview');
+    var preview = document.getElementById('cat-icon-preview');
     if (!preview) return;
     
     if (!val) {
@@ -1610,7 +1574,7 @@ function updateIconPreview(val) {
     }
     
     if (val.includes('/') || val.includes('.')) {
-        const resolvedUrl = resolveImageUrl(val);
+        var resolvedUrl = resolveImageUrl(val);
         preview.innerHTML = `<img src="${resolvedUrl}" style="width:100%;height:100%;object-fit:contain;">`;
     } else {
         preview.innerHTML = `<i class="${val}"></i>`;
@@ -1619,7 +1583,7 @@ function updateIconPreview(val) {
 
 // Upload category image icon
 async function handleCatIconUpload(e) {
-    const file = e.target.files[0];
+    var file = e.target.files[0];
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
@@ -1635,11 +1599,11 @@ async function handleCatIconUpload(e) {
     showToast('Đang tải ảnh icon lên...', 'info');
 
     try {
-        const reader = new FileReader();
+        var reader = new FileReader();
         reader.onloadend = async () => {
-            const base64String = reader.result;
+            var base64String = reader.result;
 
-            const res = await fetch(`${API_BASE}/cms/media`, {
+            var res = await fetch(`${API_BASE}/cms/media`, {
                 method: 'POST',
                 headers: getHeaders(),
                 body: JSON.stringify({
@@ -1650,10 +1614,10 @@ async function handleCatIconUpload(e) {
                 })
             });
 
-            const result = await res.json();
+            var result = await res.json();
             if (result.success && result.data && result.data.file_url) {
-                const imgUrl = result.data.file_url;
-                const input = document.getElementById('cat-icon-input');
+                var imgUrl = result.data.file_url;
+                var input = document.getElementById('cat-icon-input');
                 if (input) {
                     input.value = imgUrl;
                     updateIconPreview(imgUrl);
@@ -1670,22 +1634,22 @@ async function handleCatIconUpload(e) {
 }
 
 async function loadCategoriesList() {
-    const tbody = document.getElementById('categories-table-body');
+    var tbody = document.getElementById('categories-table-body');
     if (!tbody) return;
 
     tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#6b7280;padding:20px;">Đang tải danh sách chuyên mục...</td></tr>';
     
     try {
-        const res = await fetch(`${API_BASE}/cms/categories`, { headers: getHeaders() });
-        const result = await res.json();
+        var res = await fetch(`${API_BASE}/cms/categories`, { headers: getHeaders() });
+        var result = await res.json();
         if (result.success && Array.isArray(result.data)) {
-            const categories = result.data;
+            var categories = result.data;
             if (categories.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#6b7280;padding:20px;">Không có chuyên mục nào.</td></tr>';
                 return;
             }
 
-            const tree = buildCategoryTree(categories);
+            var tree = buildCategoryTree(categories);
             tbody.innerHTML = generateTreeRows(tree);
         } else {
             tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#ef4444;padding:20px;">Lỗi: ${result.message || 'Không thể tải'}</td></tr>`;
@@ -1698,16 +1662,16 @@ async function loadCategoriesList() {
 
 async function handleCategoryAdd(e) {
     e.preventDefault();
-    const name = document.getElementById('cat-name-input').value.trim();
-    const slug = document.getElementById('cat-slug-input').value.trim();
-    const type = document.getElementById('cat-type-select').value;
-    const parent_id_val = document.getElementById('cat-parent-select').value;
-    const icon = document.getElementById('cat-icon-input').value.trim();
-    const desc = document.getElementById('cat-desc-input').value.trim();
+    var name = document.getElementById('cat-name-input').value.trim();
+    var slug = document.getElementById('cat-slug-input').value.trim();
+    var type = document.getElementById('cat-type-select').value;
+    var parent_id_val = document.getElementById('cat-parent-select').value;
+    var icon = document.getElementById('cat-icon-input').value.trim();
+    var desc = document.getElementById('cat-desc-input').value.trim();
 
     if (!name) return;
 
-    const payload = {
+    var payload = {
         name,
         type: type,
         slug: slug || toSlug(name),
@@ -1719,16 +1683,16 @@ async function handleCategoryAdd(e) {
     showToast('Đang tạo chuyên mục...', 'info');
 
     try {
-        const res = await fetch(`${API_BASE}/cms/categories`, {
+        var res = await fetch(`${API_BASE}/cms/categories`, {
             method: 'POST',
             headers: getHeaders(),
             body: JSON.stringify(payload)
         });
-        const result = await res.json();
+        var result = await res.json();
         if (result.success) {
             showToast('Đã tạo chuyên mục mới thành công!');
             document.getElementById('category-add-form').reset();
-            const preview = document.getElementById('cat-icon-preview');
+            var preview = document.getElementById('cat-icon-preview');
             if (preview) preview.innerHTML = '<i class="fa-solid fa-folder"></i>';
             loadCategories(); // Refresh Sidebar
             loadCategoriesList(); // Refresh Tab 2 table
@@ -1745,11 +1709,11 @@ window.deleteCategory = async function(id) {
     
     showToast('Đang xóa...', 'info');
     try {
-        const res = await fetch(`${API_BASE}/cms/categories/${id}`, {
+        var res = await fetch(`${API_BASE}/cms/categories/${id}`, {
             method: 'DELETE',
             headers: getHeaders()
         });
-        const result = await res.json();
+        var result = await res.json();
         if (result.success) {
             showToast('Xóa chuyên mục thành công!');
             loadCategories(); // Refresh sidebar
@@ -1767,32 +1731,32 @@ window.deleteCategory = async function(id) {
 // TAB 3: MEDIA LIBRARY (Gallery & Base64 Uploads)
 // ──────────────────────────────────────────────
 async function loadMediaLibrary() {
-    const grid = document.getElementById('media-grid');
+    var grid = document.getElementById('media-grid');
     if (!grid) return;
 
     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#6b7280;padding:40px;"><i class="fa-solid fa-spinner fa-spin" style="font-size:24px;margin-bottom:10px;display:block;"></i>Đang tải hình ảnh...</div>';
 
-    const search = document.getElementById('media-search-input')?.value.trim();
-    const params = new URLSearchParams({
+    var search = document.getElementById('media-search-input')?.value.trim();
+    var params = new URLSearchParams({
         media_type: 'image',
         limit: '30'
     });
     if (search) params.set('q', search);
 
     try {
-        const res = await fetch(`${API_BASE}/cms/media?${params.toString()}`, { headers: getHeaders() });
-        const result = await res.json();
+        var res = await fetch(`${API_BASE}/cms/media?${params.toString()}`, { headers: getHeaders() });
+        var result = await res.json();
         
         if (result.success && Array.isArray(result.data)) {
-            const mediaList = result.data;
+            var mediaList = result.data;
             if (mediaList.length === 0) {
                 grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#6b7280;padding:20px;border:1px dashed var(--admin-border);border-radius:10px;">Thư viện trống. Hãy kéo thả ảnh để tải lên!</div>';
                 return;
             }
 
             grid.innerHTML = mediaList.map(img => {
-                const url = img.file_url;
-                const resolvedUrl = resolveImageUrl(url);
+                var url = img.file_url;
+                var resolvedUrl = resolveImageUrl(url);
                 
                 return `
                     <div style="background:#fff;border:1px solid var(--admin-border);border-radius:8px;padding:8px;position:relative;display:flex;flex-direction:column;align-items:center;transition:box-shadow 0.2s;" class="media-card-item">
@@ -1819,7 +1783,7 @@ window.triggerMediaUpload = function() {
 };
 
 function handleMediaUpload(e) {
-    const file = e.target.files[0];
+    var file = e.target.files[0];
     if (file) {
         uploadImageFile(file);
     }
@@ -1834,11 +1798,11 @@ async function uploadImageFile(file) {
     showToast('Đang tải file lên...', 'info');
 
     try {
-        const reader = new FileReader();
+        var reader = new FileReader();
         reader.onloadend = async () => {
-            const base64String = reader.result;
+            var base64String = reader.result;
 
-            const res = await fetch(`${API_BASE}/cms/media`, {
+            var res = await fetch(`${API_BASE}/cms/media`, {
                 method: 'POST',
                 headers: getHeaders(),
                 body: JSON.stringify({
@@ -1849,7 +1813,7 @@ async function uploadImageFile(file) {
                 })
             });
 
-            const result = await res.json();
+            var result = await res.json();
             if (result.success) {
                 showToast('Đã tải hình ảnh lên thư viện thành công!');
                 loadMediaLibrary(); // Refresh grid
@@ -1868,11 +1832,11 @@ window.deleteMedia = async function(id) {
 
     showToast('Đang xóa...', 'info');
     try {
-        const res = await fetch(`${API_BASE}/cms/media/${id}`, {
+        var res = await fetch(`${API_BASE}/cms/media/${id}`, {
             method: 'DELETE',
             headers: getHeaders()
         });
-        const result = await res.json();
+        var result = await res.json();
         if (result.success) {
             showToast('Đã xóa ảnh thành công!');
             loadMediaLibrary(); // Refresh grid
@@ -1899,7 +1863,7 @@ window.copyToClipboard = function(text) {
 // LIVE PREVIEW — Auto-render khi soạn thảo
 // ──────────────────────────────────────────────
 
-let _previewTimer = null;
+var _previewTimer = null;
 
 /** Debounced live preview: gọi renderLivePreview sau 300ms idle */
 function schedulePreviewUpdate() {
@@ -1909,18 +1873,18 @@ function schedulePreviewUpdate() {
 
 /** Gắn event listeners lên các trường soạn thảo để tự động cập nhật preview */
 function setupLivePreviewListeners() {
-    const titleInput = document.getElementById('article-title-input');
-    const excerptInput = document.getElementById('article-excerpt-input');
-    const contentBody = document.getElementById('article-content-body');
-    const catSelect = document.getElementById('article-category-select');
-    const authorSelect = document.getElementById('article-author-select');
+    var titleInput = document.getElementById('article-title-input');
+    var excerptInput = document.getElementById('article-excerpt-input');
+    var contentBody = document.getElementById('article-content-body');
+    var catSelect = document.getElementById('article-category-select');
+    var authorSelect = document.getElementById('article-author-select');
 
     if (titleInput) titleInput.addEventListener('input', schedulePreviewUpdate);
     if (excerptInput) excerptInput.addEventListener('input', schedulePreviewUpdate);
     if (contentBody) {
         contentBody.addEventListener('input', schedulePreviewUpdate);
         // MutationObserver cho trường hợp toolbar thay đổi nội dung (bold, heading...)
-        const observer = new MutationObserver(schedulePreviewUpdate);
+        var observer = new MutationObserver(schedulePreviewUpdate);
         observer.observe(contentBody, { childList: true, subtree: true, characterData: true });
     }
     if (catSelect) catSelect.addEventListener('change', schedulePreviewUpdate);
@@ -1938,30 +1902,30 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function renderLivePreview() {
-    const previewWrapper = document.getElementById('editor-preview-wrapper');
+    var previewWrapper = document.getElementById('editor-preview-wrapper');
     if (!previewWrapper) return;
 
-    const title = document.getElementById('article-title-input').value.trim() || 'Tiêu đề bài viết';
-    const excerpt = document.getElementById('article-excerpt-input').value.trim() || 'Tóm tắt bài viết sẽ hiển thị ở đây...';
-    let content = document.getElementById('article-content-body').innerHTML.trim();
+    var title = document.getElementById('article-title-input').value.trim() || 'Tiêu đề bài viết';
+    var excerpt = document.getElementById('article-excerpt-input').value.trim() || 'Tóm tắt bài viết sẽ hiển thị ở đây...';
+    var content = document.getElementById('article-content-body').innerHTML.trim();
     if (content.includes('Nhập nội dung bài viết tại đây') || !content) {
         content = '<p style="color:#9ca3af;font-style:italic;">Nội dung bài viết chưa được soạn thảo...</p>';
     }
 
-    const catSelect = document.getElementById('article-category-select');
-    const catName = catSelect.options[catSelect.selectedIndex]?.text || 'Chưa phân loại';
+    var catSelect = document.getElementById('article-category-select');
+    var catName = catSelect.options[catSelect.selectedIndex]?.text || 'Chưa phân loại';
 
-    const authorSelect = document.getElementById('article-author-select');
-    const authorName = authorSelect.options[authorSelect.selectedIndex]?.text || 'Dược sĩ Minh Giang';
-    const todayStr = new Date().toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    var authorSelect = document.getElementById('article-author-select');
+    var authorName = authorSelect.options[authorSelect.selectedIndex]?.text || 'Dược sĩ Minh Giang';
+    var todayStr = new Date().toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
-    let coverHtml = '';
+    var coverHtml = '';
     if (coverImageUrl) {
-        const resolvedCover = resolveImageUrl(coverImageUrl);
+        var resolvedCover = resolveImageUrl(coverImageUrl);
         coverHtml = `<img src="${resolvedCover}" style="width: 100%; max-height: 360px; object-fit: cover; border-radius: 12px; margin-bottom: 24px;" alt="Cover">`;
     }
 
-    let tagsHtml = '';
+    var tagsHtml = '';
     if (articleTags.length > 0) {
         tagsHtml = `
             <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 24px; margin-bottom: 24px; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px;">
@@ -1970,7 +1934,7 @@ function renderLivePreview() {
         `;
     }
 
-    let productsHtml = '';
+    var productsHtml = '';
     if (selectedProducts.length > 0) {
         productsHtml = `
             <div style="margin-top: 40px; border-top: 2px solid #eff6ff; padding-top: 24px;">
@@ -1979,9 +1943,9 @@ function renderLivePreview() {
                 </h3>
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
                     ${selectedProducts.map(prod => {
-                        const cached = productCache.find(p => p.id === prod.id) || {};
-                        const price = cached.price ? Number(cached.price).toLocaleString('vi-VN') + 'đ' : 'Liên hệ';
-                        const thumb = cached.thumbnail_url || '../assets/images/placeholder-product.png';
+                        var cached = productCache.find(p => p.id === prod.id) || {};
+                        var price = cached.price ? Number(cached.price).toLocaleString('vi-VN') + 'đ' : 'Liên hệ';
+                        var thumb = cached.thumbnail_url || '../assets/images/placeholder-product.png';
                         return `
                             <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; background: #fff; transition: box-shadow 0.2s;">
                                 <img src="${thumb}" style="width: 100%; height: 120px; object-fit: contain; margin-bottom: 8px; background: #f8fafc; border-radius: 6px;" alt="${prod.name}">
@@ -2028,13 +1992,13 @@ function renderLivePreview() {
 function buildRelatedArticlesHtml(catName) {
     if (!relatedArticles || relatedArticles.length === 0) return '';
 
-    const sliderArticles = relatedArticles.slice(0, 8);
-    const listArticles = relatedArticles.slice(0, 6);
-    const catSlug = document.getElementById('article-category-select')?.value || '';
+    var sliderArticles = relatedArticles.slice(0, 8);
+    var listArticles = relatedArticles.slice(0, 6);
+    var catSlug = document.getElementById('article-category-select')?.value || '';
 
     // Slider cards
-    const sliderCards = sliderArticles.map(art => {
-        const thumb = art.thumbnail || '/uploads/cms/articles/placeholder.webp';
+    var sliderCards = sliderArticles.map(art => {
+        var thumb = art.thumbnail || '/uploads/cms/articles/placeholder.webp';
         return `
             <div style="min-width:160px;max-width:160px;flex-shrink:0;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;background:#fff;cursor:pointer;">
                 <div style="width:160px;height:100px;background:#f1f5f9;overflow:hidden;">
@@ -2048,14 +2012,14 @@ function buildRelatedArticlesHtml(catName) {
     }).join('');
 
     // List items
-    const listItems = listArticles.map(art => `
+    var listItems = listArticles.map(art => `
         <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid #f1f5f9;cursor:pointer;">
             <div style="width:6px;height:6px;background:#3b82f6;border-radius:50%;flex-shrink:0;margin-top:6px;"></div>
             <div style="font-size:12px;color:#334155;line-height:1.5;font-weight:500;">${art.title}</div>
         </div>
     `).join('');
 
-    const showViewAll = relatedArticles.length > 6;
+    var showViewAll = relatedArticles.length > 6;
 
     return `
         <!-- Section: Bài viết liên quan -->
@@ -2101,11 +2065,11 @@ function buildRelatedArticlesHtml(catName) {
 
 /** Khởi tạo auto-scroll cho slider trong preview */
 function initPreviewSlider() {
-    const slider = document.getElementById('preview-article-slider');
+    var slider = document.getElementById('preview-article-slider');
     if (!slider || slider.children.length <= 3) return;
 
-    let scrollInterval;
-    const startAutoScroll = () => {
+    var scrollInterval;
+    var startAutoScroll = () => {
         scrollInterval = setInterval(() => {
             if (slider.scrollLeft + slider.clientWidth >= slider.scrollWidth - 10) {
                 slider.scrollTo({ left: 0, behavior: 'smooth' });
@@ -2125,10 +2089,10 @@ function initPreviewSlider() {
 // ──────────────────────────────────────────────
 function suggestIconAndColor(name) {
     if (!name) return;
-    const nameLower = name.toLowerCase();
+    var nameLower = name.toLowerCase();
 
-    let icon = 'fa-solid fa-notes-medical';
-    let color = '#3b82f6'; // Mặc định xanh dương
+    var icon = 'fa-solid fa-notes-medical';
+    var color = '#3b82f6'; // Mặc định xanh dương
 
     if (nameLower.includes('tim') || nameLower.includes('huyet ap') || nameLower.includes('huyết áp')) {
         icon = 'fa-solid fa-heart-pulse';
@@ -2171,15 +2135,15 @@ function suggestIconAndColor(name) {
         color = '#4b5563'; // Xám tối
     }
 
-    const iconInput = document.getElementById('cat-icon-input');
+    var iconInput = document.getElementById('cat-icon-input');
     if (iconInput) {
         iconInput.value = icon;
         updateIconPreview(icon);
     }
 
-    const colorPicker = document.getElementById('cat-color-picker');
+    var colorPicker = document.getElementById('cat-color-picker');
     if (colorPicker) colorPicker.value = color;
 
-    const colorInput = document.getElementById('cat-color-input');
+    var colorInput = document.getElementById('cat-color-input');
     if (colorInput) colorInput.value = color;
 }

@@ -513,39 +513,7 @@
             margin-bottom: 16px;
         }
 
-        /* Toast notification */
-        .toast {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            background: #0f172a;
-            color: #fff;
-            padding: 14px 24px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            font-size: 13px;
-            font-weight: 600;
-            z-index: 999999;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transform: translateY(100px);
-            opacity: 0;
-            transition: var(--transition);
-        }
 
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .toast.success {
-            border-left: 4px solid #10b981;
-        }
-
-        .toast.error {
-            border-left: 4px solid #ef4444;
-        }
 
         @keyframes spin {
             to {
@@ -1068,11 +1036,7 @@
         <p style="font-weight: 700; font-size: 15px;" id="loadingText">Đang lưu thay đổi...</p>
     </div>
 
-    <!-- TOAST NOTIFICATION -->
-    <div class="toast success" id="toastNotification">
-        <i class="fa-solid fa-circle-check" style="color:#10b981; font-size:16px;"></i>
-        <span id="toastText">Đã lưu thay đổi thành công!</span>
-    </div>
+
 
     <!-- MODAL: BANNER EDITOR -->
     <div class="standard-modal-overlay" id="bannerModal">
@@ -1318,7 +1282,7 @@
     <script src="js/admin-components.js"></script>
     <script>
         // API Base configuration
-        const resolvedApiBase = localStorage.getItem('MG_API_BASE') || (
+        var resolvedApiBase = localStorage.getItem('MG_API_BASE') || (
             (window.location.origin.includes('localhost:5500') ||
              window.location.origin.includes('localhost:5501') ||
              window.location.origin.includes('127.0.0.1:5500') ||
@@ -1326,14 +1290,14 @@
             ? 'http://localhost:8000/api'
             : window.location.origin.replace(/\/+$/, '') + '/api'
         );
-        const CMS_API = resolvedApiBase + '/cms';
+        var CMS_API = resolvedApiBase + '/cms';
 
         function resolveImageUrl(url) {
             if (!url) return 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="10" fill="%2394a3b8">No Image</text></svg>';
             if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
                 return url;
             }
-            const gateway = resolvedApiBase.replace(/\/api$/, '');
+            var gateway = resolvedApiBase.replace(/\/api$/, '');
             if (url.startsWith('/uploads/')) {
                 return gateway + url;
             }
@@ -1341,13 +1305,13 @@
         }
 
         // Global State
-        let loadedConfigs = {}; 
-        let currentBanners = [];
-        let deletedBannerIds = [];
-        let configKeysFromDB = new Set();
+        var loadedConfigs = {}; 
+        var currentBanners = [];
+        var deletedBannerIds = [];
+        var configKeysFromDB = new Set();
 
         // Time slot definitions
-        const DEFAULT_TIME_SLOTS = [
+        var DEFAULT_TIME_SLOTS = [
             { id: 'early', label: 'Sáng sớm', slot: '07:00 – 10:00', enabled: true },
             { id: 'noon', label: 'Buổi trưa', slot: '10:00 – 14:00', enabled: true },
             { id: 'afternoon', label: 'Chiều sớm', slot: '14:00 – 17:00', enabled: true },
@@ -1357,14 +1321,14 @@
         ];
 
         // Delivery staff default
-        const DEFAULT_STAFF = [
+        var DEFAULT_STAFF = [
             { id: 1, name: 'Trần Minh Giang', relation: 'Chủ nhà thuốc', phone: '0912 345 678', vehicle: 'Xe máy', status: 'available' },
             { id: 2, name: 'Lê Thị Hoa', relation: 'Vợ', phone: '0988 765 432', vehicle: 'Xe máy', status: 'available' },
             { id: 3, name: 'Trần Anh Nguyên', relation: 'Con trai', phone: '0977 111 222', vehicle: 'Xe máy', status: 'busy' }
         ];
 
         // Fallback store config options
-        const DEFAULT_CONFIGS = {
+        var DEFAULT_CONFIGS = {
             store_name: 'Nhà Thuốc Minh Giang',
             store_address: '123 Nguyễn Thị Minh Khai, Phường Đa Kao, Quận 1, TP. Hồ Chí Minh',
             store_license: '4101234567890',
@@ -1461,8 +1425,8 @@
 
         // Auth Fetch Helper
         async function fetchAdmin(url, options = {}) {
-            const auth = JSON.parse(localStorage.getItem('MG_ADMIN_AUTH') || '{}');
-            const token = auth.accessToken;
+            var auth = JSON.parse(localStorage.getItem('MG_ADMIN_AUTH') || '{}');
+            var token = auth.accessToken;
             options.headers = options.headers || {};
             if (token) {
                 options.headers['Authorization'] = `Bearer ${token}`;
@@ -1470,21 +1434,21 @@
             if (!(options.body instanceof FormData)) {
                 options.headers['Content-Type'] = 'application/json';
             }
-            const response = await fetch(url, options);
+            var response = await fetch(url, options);
             if (response.status === 401) {
                 localStorage.removeItem('MG_ADMIN_AUTH');
                 window.location.href = 'login.html';
                 return;
             }
             if (!response.ok) {
-                const err = await response.json().catch(() => ({}));
+                var err = await response.json().catch(() => ({}));
                 throw new Error(err.message || `HTTP error ${response.status}`);
             }
             return response.json();
         }
 
         async function seedDefaultBanners() {
-            const defaults = [
+            var defaults = [
                 { title: 'Slide 1', image_url: '../assets/images/banner_slide_1.png', link_url: '#', position: 'hero', sort_order: 0, is_active: 1 },
                 { title: 'Slide 2', image_url: '../assets/images/banner_slide_2.png', link_url: '#', position: 'hero', sort_order: 1, is_active: 1 },
                 { title: 'Slide 3', image_url: '../assets/images/banner_slide_3.png', link_url: '#', position: 'hero', sort_order: 2, is_active: 1 },
@@ -1513,11 +1477,11 @@
             showLoading('Đang tải cấu hình...');
             try {
                 // 1. Fetch configs
-                const configsRes = await fetchAdmin(`${CMS_API}/store-config`);
+                var configsRes = await fetchAdmin(`${CMS_API}/store-config`);
                 configKeysFromDB.clear();
                 if (configsRes.success && Array.isArray(configsRes.data)) {
                     configsRes.data.forEach(item => {
-                        let parsedVal = item.config_value;
+                        var parsedVal = item.config_value;
                         if (item.value_type === 'integer') parsedVal = parseInt(parsedVal, 10);
                         else if (item.value_type === 'decimal') parsedVal = parseFloat(parsedVal);
                         else if (item.value_type === 'boolean') parsedVal = (parsedVal === 'true' || parsedVal === '1');
@@ -1530,12 +1494,12 @@
                 }
 
                 // 2. Fetch banners
-                const bannersRes = await fetchAdmin(`${CMS_API}/banners/admin`);
+                var bannersRes = await fetchAdmin(`${CMS_API}/banners/admin`);
                 if (bannersRes.success && Array.isArray(bannersRes.data)) {
                     if (bannersRes.data.length === 0) {
                         showLoading('Đang cài đặt các banner mặc định...');
                         await seedDefaultBanners();
-                        const refetched = await fetchAdmin(`${CMS_API}/banners/admin`);
+                        var refetched = await fetchAdmin(`${CMS_API}/banners/admin`);
                         if (refetched.success && Array.isArray(refetched.data)) {
                             currentBanners = refetched.data;
                         }
@@ -1558,10 +1522,10 @@
         // Populate forms from loaded configs or fallbacks
         function populateConfigs() {
             Object.keys(DEFAULT_CONFIGS).forEach(key => {
-                const element = document.getElementById(`cfg-${key}`);
+                var element = document.getElementById(`cfg-${key}`);
                 if (!element) return;
 
-                const dbValue = loadedConfigs[key] !== undefined ? loadedConfigs[key] : DEFAULT_CONFIGS[key];
+                var dbValue = loadedConfigs[key] !== undefined ? loadedConfigs[key] : DEFAULT_CONFIGS[key];
 
                 if (element.classList.contains('toggle-switch')) {
                     element.classList.toggle('on', dbValue === true);
@@ -1573,22 +1537,22 @@
             });
 
             // Populate time slots
-            const timeSlots = loadedConfigs['delivery_time_slots'] || DEFAULT_CONFIGS['delivery_time_slots'];
+            var timeSlots = loadedConfigs['delivery_time_slots'] || DEFAULT_CONFIGS['delivery_time_slots'];
             renderTimeSlots(timeSlots);
 
             // Populate staff table
-            const staffList = loadedConfigs['delivery_staff'] || DEFAULT_CONFIGS['delivery_staff'];
+            var staffList = loadedConfigs['delivery_staff'] || DEFAULT_CONFIGS['delivery_staff'];
             renderStaffTable(staffList);
 
             // Populate layout top banner & link
-            const topBannerImg = loadedConfigs['layout_home_top_banner_img'] || DEFAULT_CONFIGS['layout_home_top_banner_img'];
+            var topBannerImg = loadedConfigs['layout_home_top_banner_img'] || DEFAULT_CONFIGS['layout_home_top_banner_img'];
             document.getElementById('preview-top-banner').src = resolveImageUrl(topBannerImg);
             
-            const topBannerLink = loadedConfigs['layout_home_top_banner_link'] || DEFAULT_CONFIGS['layout_home_top_banner_link'];
+            var topBannerLink = loadedConfigs['layout_home_top_banner_link'] || DEFAULT_CONFIGS['layout_home_top_banner_link'];
             document.getElementById('input-layout_home_top_banner_link').value = topBannerLink;
 
             // Populate layout headers
-            const headerKeys = [
+            var headerKeys = [
                 { key: 'layout_home_header_flash_sale', id: 'preview-header-flash' },
                 { key: 'layout_home_header_deal', id: 'preview-header-deal' },
                 { key: 'layout_home_header_best_seller', id: 'preview-header-best' },
@@ -1597,27 +1561,27 @@
                 { key: 'layout_home_header_imported', id: 'preview-header-imported' }
             ];
             headerKeys.forEach(item => {
-                const imgUrl = loadedConfigs[item.key] || DEFAULT_CONFIGS[item.key];
+                var imgUrl = loadedConfigs[item.key] || DEFAULT_CONFIGS[item.key];
                 document.getElementById(item.id).src = resolveImageUrl(imgUrl);
             });
 
             // Populate brands grid
-            const brands = loadedConfigs['layout_home_brands'] || DEFAULT_CONFIGS['layout_home_brands'];
+            var brands = loadedConfigs['layout_home_brands'] || DEFAULT_CONFIGS['layout_home_brands'];
             renderBrandsConfigGrid(brands);
         }
 
         // Render Banners according to positions
         function renderBanners() {
-            const positions = ['hero', 'sidebar', 'popup'];
+            var positions = ['hero', 'sidebar', 'popup'];
             positions.forEach(pos => {
-                const container = document.getElementById(`grid-banners-${pos}`);
+                var container = document.getElementById(`grid-banners-${pos}`);
                 if (!container) return;
 
-                const filtered = currentBanners.filter(b => b.position === pos && b.is_active !== 0);
+                var filtered = currentBanners.filter(b => b.position === pos && b.is_active !== 0);
                 
-                let html = filtered.map((b, idx) => {
-                    const isHero = pos === 'hero';
-                    const actionsHtml = isHero ? `
+                var html = filtered.map((b, idx) => {
+                    var isHero = pos === 'hero';
+                    var actionsHtml = isHero ? `
                         <button class="btn-icon" title="Sửa" onclick="openBannerModal('${pos}', ${b.id})"><i class="fa-solid fa-pencil"></i></button>
                         <button class="btn-icon" title="Lên" onclick="moveBannerOrder(${b.id}, -1)"><i class="fa-solid fa-arrow-up"></i></button>
                         <button class="btn-icon" title="Xuống" onclick="moveBannerOrder(${b.id}, 1)"><i class="fa-solid fa-arrow-down"></i></button>
@@ -1660,7 +1624,7 @@
 
         // Render time slots checks
         function renderTimeSlots(slots) {
-            const container = document.getElementById('grid-time-slots');
+            var container = document.getElementById('grid-time-slots');
             if (!container) return;
 
             container.innerHTML = slots.map((s, idx) => `
@@ -1672,7 +1636,7 @@
         }
 
         function toggleTimeSlot(idx, el) {
-            const slots = loadedConfigs['delivery_time_slots'] || DEFAULT_CONFIGS['delivery_time_slots'];
+            var slots = loadedConfigs['delivery_time_slots'] || DEFAULT_CONFIGS['delivery_time_slots'];
             slots[idx].enabled = !slots[idx].enabled;
             el.classList.toggle('active', slots[idx].enabled);
             loadedConfigs['delivery_time_slots'] = slots;
@@ -1681,7 +1645,7 @@
 
         // Render Shippers
         function renderStaffTable(staff) {
-            const container = document.getElementById('table-staff-rows');
+            var container = document.getElementById('table-staff-rows');
             if (!container) return;
 
             container.innerHTML = staff.map((s, idx) => `
@@ -1703,7 +1667,7 @@
         }
 
         function toggleStaffStatus(idx) {
-            const staff = loadedConfigs['delivery_staff'] || DEFAULT_CONFIGS['delivery_staff'];
+            var staff = loadedConfigs['delivery_staff'] || DEFAULT_CONFIGS['delivery_staff'];
             staff[idx].status = staff[idx].status === 'available' ? 'busy' : 'available';
             loadedConfigs['delivery_staff'] = staff;
             renderStaffTable(staff);
@@ -1711,7 +1675,7 @@
         }
 
         function removeStaffRow(idx) {
-            const staff = loadedConfigs['delivery_staff'] || DEFAULT_CONFIGS['delivery_staff'];
+            var staff = loadedConfigs['delivery_staff'] || DEFAULT_CONFIGS['delivery_staff'];
             staff.splice(idx, 1);
             loadedConfigs['delivery_staff'] = staff;
             renderStaffTable(staff);
@@ -1719,13 +1683,13 @@
         }
 
         function openAddStaffRow() {
-            const name = prompt('Nhập họ tên người giao:');
+            var name = prompt('Nhập họ tên người giao:');
             if (!name) return;
-            const relation = prompt('Nhập quan hệ / chức vụ:');
-            const phone = prompt('Nhập số điện thoại:');
-            const vehicle = prompt('Nhập phương tiện di chuyển (VD: Xe máy):', 'Xe máy');
+            var relation = prompt('Nhập quan hệ / chức vụ:');
+            var phone = prompt('Nhập số điện thoại:');
+            var vehicle = prompt('Nhập phương tiện di chuyển (VD: Xe máy):', 'Xe máy');
             
-            const staff = loadedConfigs['delivery_staff'] || DEFAULT_CONFIGS['delivery_staff'];
+            var staff = loadedConfigs['delivery_staff'] || DEFAULT_CONFIGS['delivery_staff'];
             staff.push({
                 id: Date.now(),
                 name,
@@ -1742,58 +1706,58 @@
         // Update settings tiles badges dynamically
         function updateSettingsBadges() {
             // Toggles
-            const toggleKeys = ['settings_show_prices', 'settings_allow_orders', 'settings_show_stock', 'settings_allow_reviews', 'settings_loyalty_enabled', 'settings_zalo_chat', 'settings_zalo_notifications', 'settings_maintenance_mode'];
-            let enabledToggles = 0;
+            var toggleKeys = ['settings_show_prices', 'settings_allow_orders', 'settings_show_stock', 'settings_allow_reviews', 'settings_loyalty_enabled', 'settings_zalo_chat', 'settings_zalo_notifications', 'settings_maintenance_mode'];
+            var enabledToggles = 0;
             toggleKeys.forEach(k => {
-                const switchEl = document.getElementById(`cfg-${k}`);
-                const isEnabled = switchEl ? switchEl.classList.contains('on') : (loadedConfigs[k] !== undefined ? loadedConfigs[k] : DEFAULT_CONFIGS[k]);
+                var switchEl = document.getElementById(`cfg-${k}`);
+                var isEnabled = switchEl ? switchEl.classList.contains('on') : (loadedConfigs[k] !== undefined ? loadedConfigs[k] : DEFAULT_CONFIGS[k]);
                 if (isEnabled) enabledToggles++;
             });
             document.getElementById('badge-toggles').textContent = `${enabledToggles}/8 Bật`;
 
             // Scope
-            const rEl = document.getElementById('cfg-delivery_max_radius');
-            const radius = rEl ? rEl.value : (loadedConfigs['delivery_max_radius'] || DEFAULT_CONFIGS['delivery_max_radius']);
-            const codEl = document.getElementById('cfg-delivery_cod_enabled');
-            const codOn = codEl ? codEl.classList.contains('on') : (loadedConfigs['delivery_cod_enabled'] !== undefined ? loadedConfigs['delivery_cod_enabled'] : DEFAULT_CONFIGS['delivery_cod_enabled']);
+            var rEl = document.getElementById('cfg-delivery_max_radius');
+            var radius = rEl ? rEl.value : (loadedConfigs['delivery_max_radius'] || DEFAULT_CONFIGS['delivery_max_radius']);
+            var codEl = document.getElementById('cfg-delivery_cod_enabled');
+            var codOn = codEl ? codEl.classList.contains('on') : (loadedConfigs['delivery_cod_enabled'] !== undefined ? loadedConfigs['delivery_cod_enabled'] : DEFAULT_CONFIGS['delivery_cod_enabled']);
             document.getElementById('badge-delivery-scope').textContent = `Bán kính: ${radius}km, COD: ${codOn ? 'Bật' : 'Tắt'}`;
 
             // Time Slots
-            const slots = loadedConfigs['delivery_time_slots'] || DEFAULT_CONFIGS['delivery_time_slots'];
-            const activeSlots = slots.filter(s => s.enabled).length;
+            var slots = loadedConfigs['delivery_time_slots'] || DEFAULT_CONFIGS['delivery_time_slots'];
+            var activeSlots = slots.filter(s => s.enabled).length;
             document.getElementById('badge-delivery-hours').textContent = `${activeSlots}/${slots.length} Khung giờ`;
 
             // Staff
-            const staff = loadedConfigs['delivery_staff'] || DEFAULT_CONFIGS['delivery_staff'];
-            const activeStaff = staff.filter(s => s.status === 'available').length;
+            var staff = loadedConfigs['delivery_staff'] || DEFAULT_CONFIGS['delivery_staff'];
+            var activeStaff = staff.filter(s => s.status === 'available').length;
             document.getElementById('badge-delivery-staff').textContent = `${activeStaff}/${staff.length} Shipper sẵn sàng`;
 
             // Payments
-            const payKeys = ['settings_payment_cod', 'settings_payment_vnpay', 'settings_payment_momo', 'settings_payment_zalopay'];
-            let enabledPay = 0;
+            var payKeys = ['settings_payment_cod', 'settings_payment_vnpay', 'settings_payment_momo', 'settings_payment_zalopay'];
+            var enabledPay = 0;
             payKeys.forEach(k => {
-                const switchEl = document.getElementById(`cfg-${k}`);
-                const isEnabled = switchEl ? switchEl.classList.contains('on') : (loadedConfigs[k] !== undefined ? loadedConfigs[k] : DEFAULT_CONFIGS[k]);
+                var switchEl = document.getElementById(`cfg-${k}`);
+                var isEnabled = switchEl ? switchEl.classList.contains('on') : (loadedConfigs[k] !== undefined ? loadedConfigs[k] : DEFAULT_CONFIGS[k]);
                 if (isEnabled) enabledPay++;
             });
             document.getElementById('badge-payment-gateways').textContent = `${enabledPay} Cổng khả dụng`;
 
             // Notifications
-            const mailEl = document.getElementById('cfg-settings_notify_email');
-            const email = mailEl ? mailEl.value : (loadedConfigs['settings_notify_email'] || DEFAULT_CONFIGS['settings_notify_email']);
+            var mailEl = document.getElementById('cfg-settings_notify_email');
+            var email = mailEl ? mailEl.value : (loadedConfigs['settings_notify_email'] || DEFAULT_CONFIGS['settings_notify_email']);
             document.getElementById('badge-notifications').textContent = email ? email.substring(0, 16) + '...' : 'Chưa cài';
         }
 
         // Banner actions
         function moveBannerOrder(bannerId, direction) {
-            const index = currentBanners.findIndex(b => b.id === bannerId);
+            var index = currentBanners.findIndex(b => b.id === bannerId);
             if (index === -1) return;
 
-            const targetIndex = index + direction;
+            var targetIndex = index + direction;
             if (targetIndex < 0 || targetIndex >= currentBanners.length) return;
 
             // Swap orders
-            const temp = currentBanners[index];
+            var temp = currentBanners[index];
             currentBanners[index] = currentBanners[targetIndex];
             currentBanners[targetIndex] = temp;
 
@@ -1803,7 +1767,7 @@
         }
 
         function hideBanner(bannerId) {
-            const banner = currentBanners.find(b => b.id === bannerId);
+            var banner = currentBanners.find(b => b.id === bannerId);
             if (!banner) return;
             banner.is_active = 0;
             deletedBannerIds.push(bannerId);
@@ -1823,14 +1787,14 @@
             document.getElementById('banner-end-date').value = '';
             document.getElementById('banner-image-file').value = '';
 
-            const placeholder = document.getElementById('banner-upload-placeholder');
-            const preview = document.getElementById('banner-image-preview');
+            var placeholder = document.getElementById('banner-upload-placeholder');
+            var preview = document.getElementById('banner-image-preview');
             placeholder.style.display = 'block';
             preview.style.display = 'none';
             preview.src = '';
 
             if (id) {
-                const banner = currentBanners.find(b => b.id === id);
+                var banner = currentBanners.find(b => b.id === id);
                 if (banner) {
                     document.getElementById('bannerModalTitle').textContent = 'Chỉnh sửa Banner';
                     document.getElementById('banner-title').value = banner.title;
@@ -1856,11 +1820,11 @@
             document.getElementById('banner-image-file').click();
         }
 
-        let uploadedImageBase64 = null;
-        let uploadedImageMeta = {};
+        var uploadedImageBase64 = null;
+        var uploadedImageMeta = {};
 
         function previewBannerImage(input) {
-            const file = input.files[0];
+            var file = input.files[0];
             if (!file) return;
 
             uploadedImageMeta = {
@@ -1869,11 +1833,11 @@
                 file_size: file.size
             };
 
-            const reader = new FileReader();
+            var reader = new FileReader();
             reader.onload = (e) => {
                 uploadedImageBase64 = e.target.result;
                 document.getElementById('banner-upload-placeholder').style.display = 'none';
-                const img = document.getElementById('banner-image-preview');
+                var img = document.getElementById('banner-image-preview');
                 img.style.display = 'block';
                 img.src = e.target.result;
             };
@@ -1881,34 +1845,34 @@
         }
 
         async function submitBannerForm() {
-            const id = document.getElementById('banner-id').value;
-            const pos = document.getElementById('banner-position').value;
-            const title = document.getElementById('banner-title').value;
-            const link = document.getElementById('banner-link').value;
-            const startDate = document.getElementById('banner-start-date').value;
-            const endDate = document.getElementById('banner-end-date').value;
-            const preview = document.getElementById('banner-image-preview');
+            var id = document.getElementById('banner-id').value;
+            var pos = document.getElementById('banner-position').value;
+            var title = document.getElementById('banner-title').value;
+            var link = document.getElementById('banner-link').value;
+            var startDate = document.getElementById('banner-start-date').value;
+            var endDate = document.getElementById('banner-end-date').value;
+            var preview = document.getElementById('banner-image-preview');
 
             if (!title) {
-                alert('Vui lòng nhập tiêu đề banner.');
+                showToast('Vui lòng nhập tiêu đề banner.', 'warning');
                 return;
             }
 
             showLoading('Đang xử lý ảnh & lưu banner...');
 
             try {
-                let imageUrl = preview.src;
+                var imageUrl = preview.src;
 
                 // Handle file upload via Base64 to backend
                 if (uploadedImageBase64) {
-                    const uploadPayload = {
+                    var uploadPayload = {
                         original_name: uploadedImageMeta.original_name,
                         mime_type: uploadedImageMeta.mime_type,
                         file_size: uploadedImageMeta.file_size,
                         media_type: 'image',
                         data_base64: uploadedImageBase64
                     };
-                    const res = await fetchAdmin(`${CMS_API}/media`, {
+                    var res = await fetchAdmin(`${CMS_API}/media`, {
                         method: 'POST',
                         body: JSON.stringify(uploadPayload)
                     });
@@ -1920,11 +1884,11 @@
 
                 if (!imageUrl || imageUrl.includes('placeholder.png')) {
                     hideLoading();
-                    alert('Vui lòng tải lên hình ảnh cho banner.');
+                    showToast('Vui lòng tải lên hình ảnh cho banner.', 'warning');
                     return;
                 }
 
-                const bannerPayload = {
+                var bannerPayload = {
                     title,
                     image_url: imageUrl,
                     link_url: link || null,
@@ -1936,7 +1900,7 @@
 
                 if (id) {
                     // Update locally
-                    const index = currentBanners.findIndex(b => b.id === Number(id));
+                    var index = currentBanners.findIndex(b => b.id === Number(id));
                     if (index !== -1) {
                         currentBanners[index] = { ...currentBanners[index], ...bannerPayload };
                         // Trigger PUT request immediately to reflect in DB
@@ -1947,7 +1911,7 @@
                     }
                 } else {
                     // Create in backend to get auto-incremented ID
-                    const createRes = await fetchAdmin(`${CMS_API}/banners`, {
+                    var createRes = await fetchAdmin(`${CMS_API}/banners`, {
                         method: 'POST',
                         body: JSON.stringify(bannerPayload)
                     });
@@ -1960,7 +1924,7 @@
                 closeBannerModal();
                 showToast('Đã lưu banner thành công!');
             } catch (err) {
-                alert(err.message || 'Lỗi khi lưu banner.');
+                showToast(err.message || 'Lỗi khi lưu banner.', 'error');
             } finally {
                 hideLoading();
             }
@@ -1978,14 +1942,14 @@
         // Save All Configurations & Banners (Bulk Upsert)
         async function saveAllSettings() {
             showLoading('Đang lưu cấu hình...');
-            const errors = [];
+            var errors = [];
             try {
                 // 1. Harvest configurations
-                const configValues = {};
-                const keys = Object.keys(DEFAULT_CONFIGS);
+                var configValues = {};
+                var keys = Object.keys(DEFAULT_CONFIGS);
 
                 keys.forEach(k => {
-                    const el = document.getElementById(`cfg-${k}`);
+                    var el = document.getElementById(`cfg-${k}`);
                     if (!el) {
                         // For fields like staff & slots, gather from memory state
                         configValues[k] = loadedConfigs[k] !== undefined ? loadedConfigs[k] : DEFAULT_CONFIGS[k];
@@ -2002,14 +1966,14 @@
                 });
 
                 // 2. Batch configurations: Loop and POST or PUT
-                const configKeys = Object.keys(configValues);
+                var configKeys = Object.keys(configValues);
                 for (const key of configKeys) {
-                    const value = configValues[key];
-                    const valueType = Array.isArray(value) || typeof value === 'object' ? 'json' : (typeof value === 'boolean' ? 'boolean' : (typeof value === 'number' ? 'integer' : 'string'));
-                    const stringVal = valueType === 'json' ? JSON.stringify(value) : String(value);
+                    var value = configValues[key];
+                    var valueType = Array.isArray(value) || typeof value === 'object' ? 'json' : (typeof value === 'boolean' ? 'boolean' : (typeof value === 'number' ? 'integer' : 'string'));
+                    var stringVal = valueType === 'json' ? JSON.stringify(value) : String(value);
 
-                    const isKeyPublic = key.startsWith('store_') || key.startsWith('layout_') || key === 'settings_show_prices' || key.startsWith('settings_payment_');
-                    const payload = {
+                    var isKeyPublic = key.startsWith('store_') || key.startsWith('layout_') || key === 'settings_show_prices' || key.startsWith('settings_payment_');
+                    var payload = {
                         config_value: stringVal,
                         display_name: DEFAULT_CONFIGS[key].display_name || key,
                         value_type: valueType,
@@ -2029,7 +1993,7 @@
                             });
                         } else {
                             // POST (Seeding new keys in empty table)
-                            const postPayload = {
+                            var postPayload = {
                                 config_key: key,
                                 display_name: payload.display_name,
                                 config_value: stringVal,
@@ -2037,7 +2001,7 @@
                                 group_name: payload.group_name,
                                 is_public: isKeyPublic ? 1 : 0
                             };
-                            const res = await fetchAdmin(`${CMS_API}/store-config`, {
+                            var res = await fetchAdmin(`${CMS_API}/store-config`, {
                                 method: 'POST',
                                 body: JSON.stringify(postPayload)
                             });
@@ -2098,11 +2062,11 @@
 
         // Layout Image Upload & Brand Config Helpers
         async function uploadFileImmediately(file) {
-            const reader = new FileReader();
+            var reader = new FileReader();
             return new Promise((resolve, reject) => {
                 reader.onload = async (e) => {
-                    const base64 = e.target.result;
-                    const uploadPayload = {
+                    var base64 = e.target.result;
+                    var uploadPayload = {
                         original_name: file.name,
                         mime_type: file.type,
                         file_size: file.size,
@@ -2110,7 +2074,7 @@
                         data_base64: base64
                     };
                     try {
-                        const res = await fetchAdmin(`${CMS_API}/media`, {
+                        var res = await fetchAdmin(`${CMS_API}/media`, {
                             method: 'POST',
                             body: JSON.stringify(uploadPayload)
                         });
@@ -2133,29 +2097,29 @@
         }
 
         async function handleLayoutImageChange(input, configKey, previewId) {
-            const file = input.files[0];
+            var file = input.files[0];
             if (!file) return;
             
             showLoading('Đang tải lên hình ảnh...');
             try {
-                const url = await uploadFileImmediately(file);
+                var url = await uploadFileImmediately(file);
                 loadedConfigs[configKey] = url;
                 document.getElementById(previewId).src = resolveImageUrl(url);
                 showToast('Đã tải lên ảnh thành công!');
             } catch(e) {
-                alert('Lỗi tải ảnh lên: ' + e.message);
+                showToast('Lỗi tải ảnh lên: ' + e.message, 'error');
             } finally {
                 hideLoading();
             }
         }
 
         function renderBrandsConfigGrid(brands) {
-            const gridContainer = document.getElementById('grid-brands-config');
-            const bottomContainer = document.getElementById('bottom-brand-config');
+            var gridContainer = document.getElementById('grid-brands-config');
+            var bottomContainer = document.getElementById('bottom-brand-config');
             if (!gridContainer || !bottomContainer) return;
 
-            const gridItems = brands.filter(b => b.id !== 'bottom');
-            const bottomItem = brands.find(b => b.id === 'bottom') || { id: 'bottom', image_url: '', link_url: '#' };
+            var gridItems = brands.filter(b => b.id !== 'bottom');
+            var bottomItem = brands.find(b => b.id === 'bottom') || { id: 'bottom', image_url: '', link_url: '#' };
 
             gridContainer.innerHTML = gridItems.map((b, idx) => `
                 <div class="brand-config-card" style="border:1px solid #e2e8f0; border-radius:12px; padding:16px; background:#fff;">
@@ -2195,14 +2159,14 @@
         }
 
         async function handleBrandImageChange(input, brandId) {
-            const file = input.files[0];
+            var file = input.files[0];
             if (!file) return;
 
             showLoading('Đang tải lên hình ảnh...');
             try {
-                const url = await uploadFileImmediately(file);
-                const brands = loadedConfigs['layout_home_brands'] || DEFAULT_CONFIGS['layout_home_brands'];
-                const item = brands.find(b => b.id === brandId);
+                var url = await uploadFileImmediately(file);
+                var brands = loadedConfigs['layout_home_brands'] || DEFAULT_CONFIGS['layout_home_brands'];
+                var item = brands.find(b => b.id === brandId);
                 if (item) {
                     item.image_url = url;
                 } else {
@@ -2212,15 +2176,15 @@
                 document.getElementById(`preview-brand-${brandId}`).src = resolveImageUrl(url);
                 showToast('Đã tải lên hình ảnh thương hiệu!');
             } catch(e) {
-                alert('Lỗi tải ảnh lên: ' + e.message);
+                showToast('Lỗi tải ảnh lên: ' + e.message, 'error');
             } finally {
                 hideLoading();
             }
         }
 
         function updateBrandLink(brandId, linkUrl) {
-            const brands = loadedConfigs['layout_home_brands'] || DEFAULT_CONFIGS['layout_home_brands'];
-            const item = brands.find(b => b.id === brandId);
+            var brands = loadedConfigs['layout_home_brands'] || DEFAULT_CONFIGS['layout_home_brands'];
+            var item = brands.find(b => b.id === brandId);
             if (item) {
                 item.link_url = linkUrl;
             } else {
@@ -2267,17 +2231,7 @@
             document.getElementById('loadingOverlay').classList.remove('active');
         }
 
-        // Toast helpers
-        function showToast(text, type = 'success') {
-            const toast = document.getElementById('toastNotification');
-            const toastText = document.getElementById('toastText');
-            toast.className = `toast ${type}`;
-            toastText.textContent = text;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
+
     </script>
 </body>
 

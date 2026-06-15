@@ -177,11 +177,11 @@
 
     <!-- ============ SCRIPTS ============ -->
     <script>
-        let suppliersData = [];
-        let filteredSuppliers = [];
-        let currentPage = 1;
-        const itemsPerPage = 8;
-        const API_BASE = (localStorage.getItem('MG_API_BASE') || (
+        var suppliersData = [];
+        var filteredSuppliers = [];
+        var currentPage = 1;
+        var itemsPerPage = 8;
+        var API_BASE = (localStorage.getItem('MG_API_BASE') || (
             (window.location.origin.includes('localhost:5500') ||
              window.location.origin.includes('localhost:5501') ||
              window.location.origin.includes('127.0.0.1:5500') ||
@@ -193,8 +193,8 @@
         // Load active suppliers from API
         async function loadSuppliers() {
             try {
-                const response = await fetch(`${API_BASE}/suppliers?limit=100`);
-                const result = await response.json();
+                var response = await fetch(`${API_BASE}/suppliers?limit=100`);
+                var result = await response.json();
                 if (result.success) {
                     suppliersData = result.data || [];
                     applyFiltersAndRender();
@@ -209,11 +209,11 @@
 
         // Apply filters and search
         function applyFiltersAndRender() {
-            const debtFilter = document.getElementById('debtFilter').value;
-            const statusFilter = document.getElementById('statusFilter').value;
+            var debtFilter = document.getElementById('debtFilter').value;
+            var statusFilter = document.getElementById('statusFilter').value;
             
-            const searchInput = document.querySelector('.header-search input');
-            const searchQuery = searchInput ? searchInput.value.trim().toLowerCase() : '';
+            var searchInput = document.querySelector('.header-search input');
+            var searchQuery = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
             filteredSuppliers = suppliersData.filter(sup => {
                 // Status Filter
@@ -222,7 +222,7 @@
                 }
 
                 // Debt Filter
-                const debt = parseFloat(sup.current_debt) || 0;
+                var debt = parseFloat(sup.current_debt) || 0;
                 if (debtFilter === 'has-debt' && debt <= 0) {
                     return false;
                 }
@@ -232,10 +232,10 @@
 
                 // Search query
                 if (searchQuery) {
-                    const code = (sup.code || '').toLowerCase();
-                    const name = (sup.name || '').toLowerCase();
-                    const contact = (sup.contact_name || '').toLowerCase();
-                    const phone = (sup.phone || '').toLowerCase();
+                    var code = (sup.code || '').toLowerCase();
+                    var name = (sup.name || '').toLowerCase();
+                    var contact = (sup.contact_name || '').toLowerCase();
+                    var phone = (sup.phone || '').toLowerCase();
                     if (!code.includes(searchQuery) && !name.includes(searchQuery) && !contact.includes(searchQuery) && !phone.includes(searchQuery)) {
                         return false;
                     }
@@ -255,7 +255,7 @@
 
         // Render Table Rows
         function renderSuppliersTable() {
-            const tbody = document.getElementById('supplierTableBody');
+            var tbody = document.getElementById('supplierTableBody');
             tbody.innerHTML = '';
 
             if (filteredSuppliers.length === 0) {
@@ -272,20 +272,20 @@
                 return;
             }
 
-            const totalItems = filteredSuppliers.length;
-            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            var totalItems = filteredSuppliers.length;
+            var totalPages = Math.ceil(totalItems / itemsPerPage);
             if (currentPage > totalPages) currentPage = totalPages;
             if (currentPage < 1) currentPage = 1;
 
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
-            const paginatedItems = filteredSuppliers.slice(startIndex, startIndex + itemsPerPage);
+            var startIndex = (currentPage - 1) * itemsPerPage;
+            var endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+            var paginatedItems = filteredSuppliers.slice(startIndex, startIndex + itemsPerPage);
 
             paginatedItems.forEach(sup => {
-                const debt = parseFloat(sup.current_debt) || 0;
-                const totalPurchase = parseFloat(sup.total_purchase_value) || 0;
+                var debt = parseFloat(sup.current_debt) || 0;
+                var totalPurchase = parseFloat(sup.total_purchase_value) || 0;
 
-                const mainRow = document.createElement('tr');
+                var mainRow = document.createElement('tr');
                 mainRow.style.cursor = 'pointer';
                 mainRow.setAttribute('onclick', `toggleExpand('supp-${sup.id}', this, ${sup.id}, '${escapeHtml(sup.name)}')`);
 
@@ -319,7 +319,7 @@
                     </td>
                 `;
 
-                const detailRow = document.createElement('tr');
+                var detailRow = document.createElement('tr');
                 detailRow.className = 'expandable-row-content';
                 detailRow.id = `supp-${sup.id}`;
                 detailRow.innerHTML = `
@@ -366,10 +366,10 @@
 
         // Render Pagination Controls
         function renderPaginationControls(totalPages) {
-            const controls = document.getElementById('paginationControls');
+            var controls = document.getElementById('paginationControls');
             controls.innerHTML = '';
 
-            const prevBtn = document.createElement('button');
+            var prevBtn = document.createElement('button');
             prevBtn.className = 'btn-page';
             prevBtn.disabled = currentPage === 1;
             prevBtn.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
@@ -377,14 +377,14 @@
             controls.appendChild(prevBtn);
 
             for (let i = 1; i <= totalPages; i++) {
-                const pageBtn = document.createElement('button');
+                var pageBtn = document.createElement('button');
                 pageBtn.className = `btn-page ${i === currentPage ? 'active' : ''}`;
                 pageBtn.textContent = i;
                 pageBtn.onclick = () => { currentPage = i; renderSuppliersTable(); };
                 controls.appendChild(pageBtn);
             }
 
-            const nextBtn = document.createElement('button');
+            var nextBtn = document.createElement('button');
             nextBtn.className = 'btn-page';
             nextBtn.disabled = currentPage === totalPages || totalPages === 0;
             nextBtn.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
@@ -406,7 +406,7 @@
         document.getElementById('addSupplierForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const payload = {
+            var payload = {
                 code: document.getElementById('supCode').value.trim(),
                 name: document.getElementById('supName').value.trim(),
                 contact_name: document.getElementById('supContactName').value.trim() || null,
@@ -418,13 +418,13 @@
             };
 
             try {
-                const response = await fetch(`${API_BASE}/suppliers`, {
+                var response = await fetch(`${API_BASE}/suppliers`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
                 
-                const result = await response.json();
+                var result = await response.json();
                 if (result.success) {
                     showToast('Thêm nhà cung cấp mới thành công!', 'success');
                     closeAddSupplierModal();
@@ -439,24 +439,24 @@
         });
 
         // Load batches (Purchase Orders) dynamically on expansion
-        const loadedBatches = {};
+        var loadedBatches = {};
         async function loadSupplierBatches(supplierId, supplierName) {
             if (loadedBatches[supplierId]) return;
 
-            const loader = document.getElementById(`batches-loader-${supplierId}`);
-            const table = document.getElementById(`batches-table-${supplierId}`);
-            const tbody = document.getElementById(`batches-tbody-${supplierId}`);
-            const meta = document.getElementById(`batches-meta-${supplierId}`);
+            var loader = document.getElementById(`batches-loader-${supplierId}`);
+            var table = document.getElementById(`batches-table-${supplierId}`);
+            var tbody = document.getElementById(`batches-tbody-${supplierId}`);
+            var meta = document.getElementById(`batches-meta-${supplierId}`);
 
             try {
-                const response = await fetch(`${API_BASE}/batches?q=${encodeURIComponent(supplierName)}`);
-                const result = await response.json();
+                var response = await fetch(`${API_BASE}/batches?q=${encodeURIComponent(supplierName)}`);
+                var result = await response.json();
                 
                 loader.style.display = 'none';
                 table.style.display = 'table';
 
                 if (result.success) {
-                    const supplierBatches = (result.data || []).filter(b => b.supplier_name === supplierName);
+                    var supplierBatches = (result.data || []).filter(b => b.supplier_name === supplierName);
                     tbody.innerHTML = '';
                     
                     if (supplierBatches.length === 0) {
@@ -465,11 +465,11 @@
                     } else {
                         meta.textContent = `${supplierBatches.length} đơn hàng`;
                         supplierBatches.forEach(b => {
-                            const total = parseFloat(b.total_amount) || 0;
-                            const paid = parseFloat(b.paid_amount) || 0;
-                            const due = Math.max(0, total - paid);
+                            var total = parseFloat(b.total_amount) || 0;
+                            var paid = parseFloat(b.paid_amount) || 0;
+                            var due = Math.max(0, total - paid);
 
-                            const row = document.createElement('tr');
+                            var row = document.createElement('tr');
                             row.innerHTML = `
                                 <td style="font-weight:600;">${escapeHtml(b.batch_code)}</td>
                                 <td>${new Date(b.received_date).toLocaleDateString('vi-VN')}</td>
@@ -501,7 +501,7 @@
 
         // Toggle Expand Wrapper
         function toggleExpand(id, rowElement, supplierId, supplierName) {
-            const contentRow = document.getElementById(id);
+            var contentRow = document.getElementById(id);
 
             if (contentRow.classList.contains('open')) {
                 contentRow.classList.remove('open');
@@ -531,11 +531,11 @@
                 return;
             }
 
-            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+            var csvContent = "data:text/csv;charset=utf-8,\uFEFF";
             csvContent += "Mã,Tên Nhà Cung Cấp,Người Liên Xe,Số Điện Thoại,Email,Tổng Giá Trị Nhập Hàng (VND),Công Nợ Hiện Tại (VND),Trạng Thái\n";
 
             filteredSuppliers.forEach(sup => {
-                const row = [
+                var row = [
                     sup.code || '',
                     `"${(sup.name || '').replace(/"/g, '""')}"`,
                     `"${(sup.contact_name || '').replace(/"/g, '""')}"`,
@@ -548,8 +548,8 @@
                 csvContent += row.join(",") + "\n";
             });
 
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
+            var encodedUri = encodeURI(csvContent);
+            var link = document.createElement("a");
             link.setAttribute("href", encodedUri);
             link.setAttribute("download", `MG_NhaCungCap_CongNo_${new Date().toISOString().slice(0, 10)}.csv`);
             document.body.appendChild(link);
@@ -559,7 +559,7 @@
         }
 
         // Pay Debt Logic
-        let currentPayDebtState = { supplierId: null, supplierName: '', totalDebt: 0 };
+        var currentPayDebtState = { supplierId: null, supplierName: '', totalDebt: 0 };
         function openPayDebtModal(supplierId, supplierName, totalDebt) {
             currentPayDebtState = { supplierId, supplierName, totalDebt };
             document.getElementById('payDebtSupplierName').textContent = supplierName;
@@ -574,20 +574,20 @@
 
         document.getElementById('payDebtForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const payAmount = parseFloat(document.getElementById('payAmount').value) || 0;
+            var payAmount = parseFloat(document.getElementById('payAmount').value) || 0;
             if (payAmount <= 0) {
                 showToast('Số tiền thanh toán phải lớn hơn 0.', 'error');
                 return;
             }
 
             try {
-                const response = await fetch(`${API_BASE}/suppliers/${currentPayDebtState.supplierId}/pay-debt`, {
+                var response = await fetch(`${API_BASE}/suppliers/${currentPayDebtState.supplierId}/pay-debt`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ amount: payAmount })
                 });
 
-                const result = await response.json();
+                var result = await response.json();
                 if (result.success) {
                     showToast(`Ghi nhận thanh toán ${formatVND(payAmount)} cho ${currentPayDebtState.supplierName} thành công!`, 'success');
                     closePayDebtModal();
@@ -604,7 +604,7 @@
         // Link search input from Header
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
-                const searchInput = document.querySelector('.header-search input');
+                var searchInput = document.querySelector('.header-search input');
                 if (searchInput) {
                     searchInput.addEventListener('input', applyFiltersAndRender);
                     searchInput.placeholder = "Tìm kiếm nhà cung cấp theo tên, mã, SĐT...";
@@ -625,44 +625,6 @@
                 .replace(/'/g, "&#039;");
         }
 
-        // Show Toast Function
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            toast.style.cssText = `
-                position: fixed;
-                bottom: 24px;
-                right: 24px;
-                background: ${type === 'success' ? '#10b981' : '#ef4444'};
-                color: white;
-                padding: 12px 24px;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-                font-family: 'Inter', sans-serif;
-                font-size: 14px;
-                font-weight: 600;
-                z-index: 9999;
-                opacity: 0;
-                transform: translateY(20px);
-                transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            `;
-            const icon = type === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-xmark"></i>';
-            toast.innerHTML = `${icon} <span>${message}</span>`;
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.style.opacity = '1';
-                toast.style.transform = 'translateY(0)';
-            }, 50);
-
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateY(20px)';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
 
         // Redirect/History stub
         function showSupplierHistory(name) {

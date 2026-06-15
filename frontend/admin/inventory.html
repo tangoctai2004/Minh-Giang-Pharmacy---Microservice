@@ -997,7 +997,7 @@
     <!-- ============ SCRIPTS ============ -->
     <script>
         // Set active sidebar link safely without erroring if missing
-        const activeLink = document.querySelector('.sidebar-link[href="inventory.html"]');
+        var activeLink = document.querySelector('.sidebar-link[href="inventory.html"]');
         if (activeLink) {
             document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
             activeLink.classList.add('active');
@@ -1075,7 +1075,7 @@
                 content.classList.remove('active');
             });
             // Show new tab
-            const target = document.getElementById(tabId);
+            var target = document.getElementById(tabId);
             target.style.display = 'block';
             setTimeout(() => target.classList.add('active'), 10);
 
@@ -1099,7 +1099,7 @@
 
             try {
                 setSaveLoading(true, 'Đang tải...');
-                const result = await window.MGAdminCatalogApi.get(`/products/${encodeURIComponent(productId)}`);
+                var result = await window.MGAdminCatalogApi.get(`/products/${encodeURIComponent(productId)}`);
                 fillMedicineForm(result.data || {});
                 await loadProductAudit(productId);
             } catch (err) {
@@ -1111,7 +1111,7 @@
         }
 
         async function saveMedicine() {
-            let payload;
+            var payload;
             try {
                 payload = collectMedicinePayload();
             } catch (err) {
@@ -1122,9 +1122,9 @@
 
             try {
                 setSaveLoading(true);
-                let productId = catalogState.editingProductId;
-                const requestedStatus = payload.status;
-                const shouldPublishAfterUpload = !catalogState.editingProductId
+                var productId = catalogState.editingProductId;
+                var requestedStatus = payload.status;
+                var shouldPublishAfterUpload = !catalogState.editingProductId
                     && requestedStatus === 'active'
                     && catalogState.pendingImages.length > 0
                     && !payload.image_url;
@@ -1133,7 +1133,7 @@
                     await window.MGAdminCatalogApi.put(`/products/${encodeURIComponent(catalogState.editingProductId)}`, payload);
                     showAdminCatalogToast('Đã cập nhật thông tin thuốc');
                 } else {
-                    const result = await window.MGAdminCatalogApi.post('/products', payload);
+                    var result = await window.MGAdminCatalogApi.post('/products', payload);
                     productId = Number(result.data?.id || 0);
                     showAdminCatalogToast('Đã thêm thuốc mới vào catalog');
                 }
@@ -1166,7 +1166,7 @@
             initAdminCatalogInventory();
         });
 
-        const catalogState = {
+        var catalogState = {
             activeTab: 'tab-stock',
             stockPage: 1,
             masterPage: 1,
@@ -1185,19 +1185,19 @@
             currentAudit: []
         };
 
-        const imageFallback = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23f3f4f6%22/%3E%3Ctext x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-size=%2212%22 text-anchor=%22middle%22 fill=%22%239ca3af%22%3EImage%3C/text%3E%3C/svg%3E';
+        var imageFallback = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23f3f4f6%22/%3E%3Ctext x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-size=%2212%22 text-anchor=%22middle%22 fill=%22%239ca3af%22%3EImage%3C/text%3E%3C/svg%3E';
 
         function initAdminCatalogInventory() {
-            const searchInput = document.getElementById('catalogSearchInput');
-            const categoryFilter = document.getElementById('catalogCategoryFilter');
-            const statusFilter = document.getElementById('catalogStatusFilter');
-            const qualityFilter = document.getElementById('catalogQualityFilter');
-            const stockRiskFilter = document.getElementById('stockRiskFilter');
-            const baseUnitInput = document.getElementById('medicineBaseUnit');
-            const prescriptionCheckbox = document.getElementById('requirePre');
-            const imageInput = document.getElementById('medicineImageFiles');
-            const specialControlSelect = document.getElementById('medicineSpecialControlGroup');
-            const categorySelect = document.getElementById('medicineCategory');
+            var searchInput = document.getElementById('catalogSearchInput');
+            var categoryFilter = document.getElementById('catalogCategoryFilter');
+            var statusFilter = document.getElementById('catalogStatusFilter');
+            var qualityFilter = document.getElementById('catalogQualityFilter');
+            var stockRiskFilter = document.getElementById('stockRiskFilter');
+            var baseUnitInput = document.getElementById('medicineBaseUnit');
+            var prescriptionCheckbox = document.getElementById('requirePre');
+            var imageInput = document.getElementById('medicineImageFiles');
+            var specialControlSelect = document.getElementById('medicineSpecialControlGroup');
+            var categorySelect = document.getElementById('medicineCategory');
 
             searchInput?.addEventListener('input', debounce(() => {
                 catalogState.stockPage = 1;
@@ -1266,8 +1266,8 @@
         }
 
         async function loadCatalogStats() {
-            const result = await window.MGAdminCatalogApi.get('/inventory/stats');
-            const stats = result.data || {};
+            var result = await window.MGAdminCatalogApi.get('/inventory/stats');
+            var stats = result.data || {};
             document.getElementById('totalProductCount').textContent = formatNumber(stats.total_products || 0);
             document.getElementById('totalUnitsCount').textContent = formatNumber(stats.total_units_in_stock || 0);
             document.getElementById('lowStockCount').textContent = formatNumber(stats.low_stock_products || 0);
@@ -1278,15 +1278,15 @@
         }
 
         async function loadCategories() {
-            const result = await window.MGAdminCatalogApi.get('/categories');
+            var result = await window.MGAdminCatalogApi.get('/categories');
             catalogState.categories = Array.isArray(result.data) ? result.data : [];
-            const select = document.getElementById('catalogCategoryFilter');
+            var select = document.getElementById('catalogCategoryFilter');
             if (select) {
                 select.innerHTML = '<option value="">Tất cả danh mục</option>' + catalogState.categories
                     .map((category) => `<option value="${escapeHtml(category.id)}" data-name="${escapeHtml(category.name)}">${escapeHtml(category.name)}</option>`)
                     .join('');
             }
-            const formSelect = document.getElementById('medicineCategory');
+            var formSelect = document.getElementById('medicineCategory');
             if (formSelect) {
                 formSelect.innerHTML = '<option value="">--- Chọn danh mục ---</option>' + catalogState.categories
                     .map((category) => `<option value="${escapeHtml(category.id)}">${escapeHtml(category.name)}</option>`)
@@ -1296,7 +1296,7 @@
         }
 
         async function loadInventory() {
-            const result = await window.MGAdminCatalogApi.get('/inventory');
+            var result = await window.MGAdminCatalogApi.get('/inventory');
             catalogState.inventory = Array.isArray(result.data)
                 ? result.data.map((item) => ({
                     ...item,
@@ -1307,11 +1307,11 @@
         }
 
         async function loadProductMetaForInventory() {
-            const ids = catalogState.inventory.map((item) => item.product_id).filter(Boolean);
-            const chunks = chunkArray(ids, 80);
-            const products = [];
+            var ids = catalogState.inventory.map((item) => item.product_id).filter(Boolean);
+            var chunks = chunkArray(ids, 80);
+            var products = [];
             for (const chunk of chunks) {
-                const result = await window.MGAdminCatalogApi.get('/products', {
+                var result = await window.MGAdminCatalogApi.get('/products', {
                     ids: chunk.join(','),
                     status: 'active',
                     limit: chunk.length || 1
@@ -1323,16 +1323,16 @@
         }
 
         function updateInventoryValue() {
-            const totalValue = catalogState.inventory.reduce((sum, item) => {
-                const product = catalogState.productMeta.get(Number(item.product_id)) || {};
+            var totalValue = catalogState.inventory.reduce((sum, item) => {
+                var product = catalogState.productMeta.get(Number(item.product_id)) || {};
                 return sum + Number(item.stock_total || 0) * Number(product.retail_price || product.price || 0);
             }, 0);
             document.getElementById('inventoryValue').textContent = formatCompactVnd(totalValue);
         }
 
         function getFilters() {
-            const categorySelect = document.getElementById('catalogCategoryFilter');
-            const selectedCategory = categorySelect?.selectedOptions?.[0];
+            var categorySelect = document.getElementById('catalogCategoryFilter');
+            var selectedCategory = categorySelect?.selectedOptions?.[0];
             return {
                 q: document.getElementById('catalogSearchInput')?.value.trim() || '',
                 categoryId: categorySelect?.value || '',
@@ -1344,35 +1344,35 @@
         }
 
         function filterInventoryRows() {
-            const filters = getFilters();
-            const keyword = normalizeText(filters.q);
+            var filters = getFilters();
+            var keyword = normalizeText(filters.q);
             return catalogState.inventory.filter((item) => {
-                const product = catalogState.productMeta.get(Number(item.product_id)) || {};
-                const haystack = normalizeText(`${item.name || ''} ${item.sku || ''} ${product.active_ingredient || ''}`);
-                const matchesKeyword = !keyword || haystack.includes(keyword);
-                const matchesCategory = !filters.categoryName || product.category_name === filters.categoryName;
-                const matchesStatus = !filters.status || filters.status === 'active';
-                const risk = getInventoryRisk(item, product);
-                const matchesRisk = !filters.stockRisk
+                var product = catalogState.productMeta.get(Number(item.product_id)) || {};
+                var haystack = normalizeText(`${item.name || ''} ${item.sku || ''} ${product.active_ingredient || ''}`);
+                var matchesKeyword = !keyword || haystack.includes(keyword);
+                var matchesCategory = !filters.categoryName || product.category_name === filters.categoryName;
+                var matchesStatus = !filters.status || filters.status === 'active';
+                var risk = getInventoryRisk(item, product);
+                var matchesRisk = !filters.stockRisk
                     || (filters.stockRisk === 'risk' && risk.priority <= 2)
                     || (filters.stockRisk === 'near_expiry' && risk.type === 'near_expiry')
                     || (filters.stockRisk === 'out' && risk.type === 'out')
                     || (filters.stockRisk === 'in_stock' && Number(item.stock_total || 0) > 0);
                 return matchesKeyword && matchesCategory && matchesStatus && matchesRisk;
             }).sort((a, b) => {
-                const productA = catalogState.productMeta.get(Number(a.product_id)) || {};
-                const productB = catalogState.productMeta.get(Number(b.product_id)) || {};
-                const riskA = getInventoryRisk(a, productA);
-                const riskB = getInventoryRisk(b, productB);
+                var productA = catalogState.productMeta.get(Number(a.product_id)) || {};
+                var productB = catalogState.productMeta.get(Number(b.product_id)) || {};
+                var riskA = getInventoryRisk(a, productA);
+                var riskB = getInventoryRisk(b, productB);
                 if (riskA.priority !== riskB.priority) return riskA.priority - riskB.priority;
                 return String(a.name || productA.name || '').localeCompare(String(b.name || productB.name || ''), 'vi');
             });
         }
 
         function getInventoryRisk(item, product = {}) {
-            const stock = Number(item.stock_total || 0);
-            const minStock = Number(product.min_stock_alert || 10);
-            const days = daysUntil(item.nearest_expiry);
+            var stock = Number(item.stock_total || 0);
+            var minStock = Number(product.min_stock_alert || 10);
+            var days = daysUntil(item.nearest_expiry);
             if (days !== null && days <= 90 && stock > 0) return { type: 'near_expiry', priority: 1, label: 'Cận hạn FEFO' };
             if (stock <= 0) return { type: 'out', priority: 2, label: 'Hết hàng' };
             if (stock <= minStock) return { type: 'low', priority: 2, label: `Sắp hết <= ${formatNumber(minStock)}` };
@@ -1380,14 +1380,14 @@
         }
 
         async function renderStockTable() {
-            const body = document.getElementById('stockTableBody');
+            var body = document.getElementById('stockTableBody');
             if (!body) return;
             body.innerHTML = loadingRow(7, 'Đang tải tồn kho theo lô...');
 
-            const filtered = filterInventoryRows();
-            const total = filtered.length;
-            const start = (catalogState.stockPage - 1) * catalogState.stockPageSize;
-            const visibleProducts = filtered.slice(start, start + catalogState.stockPageSize);
+            var filtered = filterInventoryRows();
+            var total = filtered.length;
+            var start = (catalogState.stockPage - 1) * catalogState.stockPageSize;
+            var visibleProducts = filtered.slice(start, start + catalogState.stockPageSize);
 
             if (!visibleProducts.length) {
                 body.innerHTML = emptyRow(7, 'Không có sản phẩm tồn kho phù hợp bộ lọc.');
@@ -1395,10 +1395,10 @@
                 return;
             }
 
-            const rows = [];
+            var rows = [];
             for (const item of visibleProducts) {
-                const batches = await getProductBatches(item.product_id);
-                const product = catalogState.productMeta.get(Number(item.product_id)) || {};
+                var batches = await getProductBatches(item.product_id);
+                var product = catalogState.productMeta.get(Number(item.product_id)) || {};
                 if (!batches.length || Number(item.stock_total || 0) <= 0) {
                     rows.push(renderStockRow(item, product, null));
                     continue;
@@ -1411,12 +1411,12 @@
         }
 
         async function getProductBatches(productId) {
-            const id = Number(productId);
+            var id = Number(productId);
             if (!id) return [];
             if (catalogState.batchCache.has(id)) return catalogState.batchCache.get(id);
             try {
-                const result = await window.MGAdminCatalogApi.get(`/inventory/${encodeURIComponent(id)}`);
-                const batches = Array.isArray(result.data) ? result.data : [];
+                var result = await window.MGAdminCatalogApi.get(`/inventory/${encodeURIComponent(id)}`);
+                var batches = Array.isArray(result.data) ? result.data : [];
                 catalogState.batchCache.set(id, batches);
                 return batches;
             } catch (_err) {
@@ -1426,17 +1426,17 @@
         }
 
         function renderStockRow(item, product, batch) {
-            const quantity = batch ? Number(batch.quantity_remaining || 0) : Number(item.stock_total || 0);
-            const status = getBatchStatus(batch, quantity);
-            const risk = getInventoryRisk(item, product);
-            const minStock = Number(product.min_stock_alert || 10);
-            const batchValue = batch
+            var quantity = batch ? Number(batch.quantity_remaining || 0) : Number(item.stock_total || 0);
+            var status = getBatchStatus(batch, quantity);
+            var risk = getInventoryRisk(item, product);
+            var minStock = Number(product.min_stock_alert || 10);
+            var batchValue = batch
                 ? quantity * Number(batch.cost_price || 0)
                 : Number(item.stock_total || 0) * Number(product.retail_price || product.price || 0);
-            const rowClass = status.type === 'near_expiry' || risk.type === 'low' ? 'stock-risk-row' : quantity <= 0 ? 'stock-empty-row' : '';
-            const qtyClass = quantity <= 0 ? 'zero' : quantity <= minStock ? 'low' : '';
-            const expiryDays = batch?.expiry_date ? daysUntil(batch.expiry_date) : null;
-            const expiryText = batch?.expiry_date
+            var rowClass = status.type === 'near_expiry' || risk.type === 'low' ? 'stock-risk-row' : quantity <= 0 ? 'stock-empty-row' : '';
+            var qtyClass = quantity <= 0 ? 'zero' : quantity <= minStock ? 'low' : '';
+            var expiryDays = batch?.expiry_date ? daysUntil(batch.expiry_date) : null;
+            var expiryText = batch?.expiry_date
                 ? `${formatDate(batch.expiry_date)}${expiryDays !== null ? ` • còn ${formatNumber(expiryDays)} ngày` : ''}`
                 : '--';
             return `
@@ -1474,7 +1474,7 @@
             if (!batch || quantity <= 0) {
                 return { label: 'Hết hàng', type: 'out', icon: 'fa-circle-minus', className: 'inactive', style: '', expiryColor: '#9ca3af' };
             }
-            const daysLeft = daysUntil(batch.expiry_date);
+            var daysLeft = daysUntil(batch.expiry_date);
             if (batch.status === 'near_expiry' || (daysLeft !== null && daysLeft <= 90)) {
                 return {
                     label: 'Cận hạn',
@@ -1489,14 +1489,14 @@
         }
 
         async function renderMasterTable() {
-            const body = document.getElementById('masterTableBody');
+            var body = document.getElementById('masterTableBody');
             if (!body) return;
             body.innerHTML = loadingRow(8, 'Đang tải danh mục thuốc...');
-            const filters = getFilters();
+            var filters = getFilters();
 
             try {
-                const result = await fetchMasterProducts(filters, catalogState.masterPage, catalogState.pageSize);
-                const products = Array.isArray(result.data) ? result.data : [];
+                var result = await fetchMasterProducts(filters, catalogState.masterPage, catalogState.pageSize);
+                var products = Array.isArray(result.data) ? result.data : [];
                 if (!products.length) {
                     body.innerHTML = emptyRow(8, 'Không có thuốc phù hợp bộ lọc.');
                 } else {
@@ -1521,11 +1521,11 @@
         }
 
         function renderMasterRow(product) {
-            const totalStock = Number(product.total_stock || 0);
-            const statusMeta = getProductStatusMeta(product.status);
-            const qualityIssues = Array.isArray(product.quality_issues) ? product.quality_issues : [];
-            const qualityReady = Boolean(product.is_publish_ready) && qualityIssues.length === 0;
-            const qualityTitle = qualityIssues.length ? qualityIssues.join(', ') : 'Đủ dữ liệu catalog';
+            var totalStock = Number(product.total_stock || 0);
+            var statusMeta = getProductStatusMeta(product.status);
+            var qualityIssues = Array.isArray(product.quality_issues) ? product.quality_issues : [];
+            var qualityReady = Boolean(product.is_publish_ready) && qualityIssues.length === 0;
+            var qualityTitle = qualityIssues.length ? qualityIssues.join(', ') : 'Đủ dữ liệu catalog';
             return `
                 <tr>
                     <td><img src="${escapeHtml(product.image_url || product.thumbnail || imageFallback)}" alt="${escapeHtml(product.name || 'Product')}" class="inv-img" onerror="this.onerror=null;this.src='${imageFallback}'"></td>
@@ -1553,14 +1553,14 @@
         }
 
         function renderCatalogWorkflowActions(product, qualityReady) {
-            const id = Number(product.id);
-            const status = product.status || 'draft';
+            var id = Number(product.id);
+            var status = product.status || 'draft';
             if (status === 'draft') {
                 return `<button class="btn-icon" title="Gửi duyệt dữ liệu" onclick="changeMedicineStatus(${id}, 'pending_review')"><i class="fa-solid fa-paper-plane"></i></button>`;
             }
             if (status === 'pending_review') {
-                const approveDisabled = qualityReady ? '' : 'disabled';
-                const approveTitle = qualityReady ? 'Duyệt và public bán hàng' : 'Chưa đủ dữ liệu để public';
+                var approveDisabled = qualityReady ? '' : 'disabled';
+                var approveTitle = qualityReady ? 'Duyệt và public bán hàng' : 'Chưa đủ dữ liệu để public';
                 return `
                     <button class="btn-icon" title="${approveTitle}" ${approveDisabled} onclick="changeMedicineStatus(${id}, 'active')"><i class="fa-solid fa-check"></i></button>
                     <button class="btn-icon danger" title="Từ chối public" onclick="changeMedicineStatus(${id}, 'rejected')"><i class="fa-solid fa-ban"></i></button>
@@ -1576,8 +1576,8 @@
         }
 
         function getProductStatusMeta(status) {
-            const value = status || 'draft';
-            const map = {
+            var value = status || 'draft';
+            var map = {
                 draft: {
                     label: 'Bản nháp',
                     className: '',
@@ -1608,14 +1608,14 @@
         }
 
         async function loadProductAudit(productId) {
-            const id = Number(productId || 0);
+            var id = Number(productId || 0);
             if (!id) {
                 catalogState.currentAudit = [];
                 renderProductAudit();
                 return;
             }
             try {
-                const result = await window.MGAdminCatalogApi.get(`/products/${encodeURIComponent(id)}/audit`, { limit: 30 });
+                var result = await window.MGAdminCatalogApi.get(`/products/${encodeURIComponent(id)}/audit`, { limit: 30 });
                 catalogState.currentAudit = Array.isArray(result.data) ? result.data : [];
             } catch (_err) {
                 catalogState.currentAudit = [];
@@ -1624,8 +1624,8 @@
         }
 
         function renderProductAudit() {
-            const panel = document.getElementById('productAuditPanel');
-            const list = document.getElementById('productAuditList');
+            var panel = document.getElementById('productAuditPanel');
+            var list = document.getElementById('productAuditList');
             if (!panel || !list) return;
             if (!catalogState.editingProductId) {
                 panel.style.display = 'none';
@@ -1633,15 +1633,15 @@
                 return;
             }
             panel.style.display = 'block';
-            const audits = Array.isArray(catalogState.currentAudit) ? catalogState.currentAudit : [];
+            var audits = Array.isArray(catalogState.currentAudit) ? catalogState.currentAudit : [];
             if (!audits.length) {
                 list.innerHTML = '<div class="audit-item"><div class="audit-item-meta">Chưa có lịch sử thay đổi cho thuốc này.</div></div>';
                 return;
             }
             list.innerHTML = audits.map((audit) => {
-                const metadata = audit.metadata || {};
-                const changedFields = metadata.changed_fields ? Object.keys(metadata.changed_fields) : [];
-                const detail = changedFields.length
+                var metadata = audit.metadata || {};
+                var changedFields = metadata.changed_fields ? Object.keys(metadata.changed_fields) : [];
+                var detail = changedFields.length
                     ? `Trường thay đổi: ${changedFields.join(', ')}`
                     : getAuditSummary(audit);
                 return `
@@ -1660,7 +1660,7 @@
         }
 
         function getAuditActionLabel(action) {
-            const labels = {
+            var labels = {
                 product_create: 'Tạo thuốc mới',
                 product_update: 'Cập nhật thuốc',
                 product_status_update: 'Đổi trạng thái thuốc',
@@ -1674,7 +1674,7 @@
         }
 
         function getAuditSummary(audit) {
-            const metadata = audit.metadata || {};
+            var metadata = audit.metadata || {};
             if (metadata.product_id && audit.entity_type === 'product_image') return `Ảnh sản phẩm #${audit.entity_id}`;
             if (metadata.unit_conversions_count !== undefined) return `${metadata.unit_conversions_count} quy đổi đơn vị`;
             if (metadata.reason === 'soft_delete') return 'Ngừng kinh doanh sản phẩm';
@@ -1682,7 +1682,7 @@
         }
 
         function fillMedicineForm(product) {
-            const specs = specificationsToMap(product.specifications);
+            var specs = specificationsToMap(product.specifications);
             catalogState.currentSpecifications = Array.isArray(product.specifications) ? product.specifications : [];
             catalogState.currentImages = Array.isArray(product.images) ? product.images : [];
             catalogState.pendingImages = [];
@@ -1711,24 +1711,24 @@
         }
 
         function collectMedicinePayload() {
-            const name = getInputValue('medicineName');
-            const strength = getInputValue('medicineStrength');
-            const route = getInputValue('medicineRoute');
-            const categoryId = Number(getInputValue('medicineCategory'));
-            const baseUnit = getInputValue('medicineBaseUnit');
-            const retailPrice = Number(getInputValue('medicineRetailPrice'));
-            const costPrice = Number(getInputValue('medicineCostPrice') || 0);
-            const minStockAlert = Number(getInputValue('medicineMinStock') || 0);
-            const barcode = getInputValue('medicineBarcode');
-            const requiresPrescription = document.getElementById('requirePre').checked;
-            const specialControlGroup = getInputValue('medicineSpecialControlGroup');
-            const storageCondition = getInputValue('medicineStorageCondition') || 'Điều kiện thường';
-            const activeIngredient = getInputValue('medicineActiveIngredient');
-            const registrationNumber = getInputValue('medicineRegistration');
-            const manufacturer = getInputValue('medicineManufacturer');
-            const isMedicine = isMedicineCategory(categoryId) || requiresPrescription;
-            const status = getInputValue('medicineStatus') || 'draft';
-            const hasAnyImage = Boolean(getInputValue('medicineImageUrl'))
+            var name = getInputValue('medicineName');
+            var strength = getInputValue('medicineStrength');
+            var route = getInputValue('medicineRoute');
+            var categoryId = Number(getInputValue('medicineCategory'));
+            var baseUnit = getInputValue('medicineBaseUnit');
+            var retailPrice = Number(getInputValue('medicineRetailPrice'));
+            var costPrice = Number(getInputValue('medicineCostPrice') || 0);
+            var minStockAlert = Number(getInputValue('medicineMinStock') || 0);
+            var barcode = getInputValue('medicineBarcode');
+            var requiresPrescription = document.getElementById('requirePre').checked;
+            var specialControlGroup = getInputValue('medicineSpecialControlGroup');
+            var storageCondition = getInputValue('medicineStorageCondition') || 'Điều kiện thường';
+            var activeIngredient = getInputValue('medicineActiveIngredient');
+            var registrationNumber = getInputValue('medicineRegistration');
+            var manufacturer = getInputValue('medicineManufacturer');
+            var isMedicine = isMedicineCategory(categoryId) || requiresPrescription;
+            var status = getInputValue('medicineStatus') || 'draft';
+            var hasAnyImage = Boolean(getInputValue('medicineImageUrl'))
                 || catalogState.currentImages.length > 0
                 || catalogState.pendingImages.length > 0;
 
@@ -1788,21 +1788,21 @@
         }
 
         function collectUnitConversions(baseUnit, baseBarcode = '') {
-            const rows = [...document.querySelectorAll('#unitConversionRows tr')];
-            const units = [];
-            const seenNames = new Set([normalizeText(baseUnit)]);
-            const seenBarcodes = new Set(baseBarcode ? [baseBarcode] : []);
-            let previousUnitName = baseUnit;
+            var rows = [...document.querySelectorAll('#unitConversionRows tr')];
+            var units = [];
+            var seenNames = new Set([normalizeText(baseUnit)]);
+            var seenBarcodes = new Set(baseBarcode ? [baseBarcode] : []);
+            var previousUnitName = baseUnit;
 
             rows.forEach((row, index) => {
-                const rowNumber = index + 1;
-                const unitName = getUnitFieldValue(row, 'unit_name');
-                const qtyRaw = getUnitFieldValue(row, 'conversion_qty') || getUnitFieldValue(row, 'qty');
-                const qty = parseFormNumber(qtyRaw);
-                const ofUnit = previousUnitName;
-                const retailPriceRaw = getUnitFieldValue(row, 'retail_price');
-                const retailPrice = parseFormNumber(retailPriceRaw);
-                const barcode = getUnitFieldValue(row, 'barcode');
+                var rowNumber = index + 1;
+                var unitName = getUnitFieldValue(row, 'unit_name');
+                var qtyRaw = getUnitFieldValue(row, 'conversion_qty') || getUnitFieldValue(row, 'qty');
+                var qty = parseFormNumber(qtyRaw);
+                var ofUnit = previousUnitName;
+                var retailPriceRaw = getUnitFieldValue(row, 'retail_price');
+                var retailPrice = parseFormNumber(retailPriceRaw);
+                var barcode = getUnitFieldValue(row, 'barcode');
 
                 if (!unitName && !barcode && !retailPriceRaw && !qtyRaw) return;
                 if (!unitName) throw validationError(`Dòng quy đổi ${rowNumber}: thiếu tên đơn vị`, 'tab-units');
@@ -1836,15 +1836,15 @@
         }
 
         function parseFormNumber(value) {
-            const normalized = String(value || '').replace(/\s/g, '').replace(/,/g, '');
+            var normalized = String(value || '').replace(/\s/g, '').replace(/,/g, '');
             if (!normalized) return NaN;
             return Number(normalized);
         }
 
         function buildMedicineSpecifications({ strength, route, specialControlGroup, storageCondition }) {
-            const managedKeys = new Set(['strength', 'route_of_administration', 'special_control_group', 'storage_condition']);
-            const preservedSpecs = catalogState.currentSpecifications.filter((item) => !managedKeys.has(item.spec_key));
-            const managedSpecs = [
+            var managedKeys = new Set(['strength', 'route_of_administration', 'special_control_group', 'storage_condition']);
+            var preservedSpecs = catalogState.currentSpecifications.filter((item) => !managedKeys.has(item.spec_key));
+            var managedSpecs = [
                 { spec_key: 'strength', spec_value: strength },
                 { spec_key: 'route_of_administration', spec_value: route },
                 { spec_key: 'special_control_group', spec_value: specialControlGroup },
@@ -1861,8 +1861,8 @@
         }
 
         function toggleSpecialControlGroup() {
-            const checked = document.getElementById('requirePre')?.checked;
-            const wrapper = document.getElementById('specialControlGroupWrapper');
+            var checked = document.getElementById('requirePre')?.checked;
+            var wrapper = document.getElementById('specialControlGroupWrapper');
             if (!wrapper) return;
             wrapper.style.display = checked ? 'block' : 'none';
             if (!checked) setInputValue('medicineSpecialControlGroup', '');
@@ -1870,8 +1870,8 @@
         }
 
         function applySpecialControlStorageRule() {
-            const specialControlGroup = getInputValue('medicineSpecialControlGroup');
-            const storageSelect = document.getElementById('medicineStorageCondition');
+            var specialControlGroup = getInputValue('medicineSpecialControlGroup');
+            var storageSelect = document.getElementById('medicineStorageCondition');
             if (!storageSelect) return;
             if (isControlledSpecialGroup(specialControlGroup)) {
                 storageSelect.value = 'Tủ khóa kiểm soát đặc biệt';
@@ -1879,7 +1879,7 @@
         }
 
         function applyCategoryBusinessHints() {
-            const categoryId = Number(getInputValue('medicineCategory'));
+            var categoryId = Number(getInputValue('medicineCategory'));
             if (isMedicineCategory(categoryId)) {
                 document.getElementById('medicineRoute')?.setAttribute('required', 'required');
                 document.getElementById('medicineStrength')?.setAttribute('required', 'required');
@@ -1894,18 +1894,18 @@
         }
 
         function isMedicineCategory(categoryId) {
-            const lineage = getCategoryLineage(categoryId);
+            var lineage = getCategoryLineage(categoryId);
             return lineage.some((category) => Number(category.id) === 1000)
                 || lineage.some((category) => normalizeText(category.name).includes('thuoc'));
         }
 
         function getCategoryLineage(categoryId) {
-            const lineage = [];
-            let currentId = Number(categoryId);
-            const visited = new Set();
+            var lineage = [];
+            var currentId = Number(categoryId);
+            var visited = new Set();
             while (Number.isInteger(currentId) && currentId > 0 && !visited.has(currentId)) {
                 visited.add(currentId);
-                const category = catalogState.categories.find((item) => Number(item.id) === currentId);
+                var category = catalogState.categories.find((item) => Number(item.id) === currentId);
                 if (!category) break;
                 lineage.push(category);
                 currentId = Number(category.parent_id || 0);
@@ -1914,16 +1914,16 @@
         }
 
         function renderUnitRows(units = []) {
-            const body = document.getElementById('unitConversionRows');
+            var body = document.getElementById('unitConversionRows');
             if (!body) return;
             body.innerHTML = '';
             units.forEach((unit) => addUnitRow(unit));
         }
 
         function addUnitRow(unit = {}) {
-            const body = document.getElementById('unitConversionRows');
+            var body = document.getElementById('unitConversionRows');
             if (!body) return;
-            const tr = document.createElement('tr');
+            var tr = document.createElement('tr');
             tr.innerHTML = `
                 <td style="padding:12px;"><input type="text" class="form-input" data-unit-field="unit_name" value="${escapeHtml(unit.unit_name || '')}" placeholder="VD: Vỉ, Hộp" style="height:34px;"></td>
                 <td style="padding:12px;"><input type="number" class="form-input" data-unit-field="conversion_qty" value="${escapeHtml(unit.conversion_qty || '')}" min="2" placeholder="10" style="height:34px;"></td>
@@ -1941,9 +1941,9 @@
         }
 
         function handleProductImageFiles(event) {
-            const files = Array.from(event.target.files || []);
-            const allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
-            const hasPrimary = catalogState.currentImages.some((image) => Number(image.is_primary) === 1)
+            var files = Array.from(event.target.files || []);
+            var allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+            var hasPrimary = catalogState.currentImages.some((image) => Number(image.is_primary) === 1)
                 || catalogState.pendingImages.some((image) => image.isPrimary);
 
             files.forEach((file, index) => {
@@ -1968,10 +1968,10 @@
         }
 
         function renderProductImageManager() {
-            const grid = document.getElementById('medicineImageGrid');
+            var grid = document.getElementById('medicineImageGrid');
             if (!grid) return;
 
-            const currentCards = catalogState.currentImages.map((image) => `
+            var currentCards = catalogState.currentImages.map((image) => `
                 <div class="product-image-card" draggable="true" data-image-id="${Number(image.id)}" ondragstart="onProductImageDragStart(event)" ondragover="onProductImageDragOver(event)" ondrop="onProductImageDrop(event)" ondragend="onProductImageDragEnd(event)">
                     <span class="product-image-drag" title="Kéo để sắp xếp"><i class="fa-solid fa-grip-vertical"></i></span>
                     ${Number(image.is_primary) === 1 ? '<span class="product-image-badge">Ảnh chính</span>' : ''}
@@ -1990,7 +1990,7 @@
                 </div>
             `);
 
-            const pendingCards = catalogState.pendingImages.map((image) => `
+            var pendingCards = catalogState.pendingImages.map((image) => `
                 <div class="product-image-card">
                     ${image.isPrimary ? '<span class="product-image-badge">Ảnh chính</span>' : ''}
                     <img src="${escapeHtml(image.previewUrl)}" alt="${escapeHtml(image.file.name)}">
@@ -2007,7 +2007,7 @@
         }
 
         function renderImageRoleOptions(selectedRole = 'gallery') {
-            const roles = [
+            var roles = [
                 ['main', 'Ảnh chính'],
                 ['gallery', 'Ảnh phụ'],
                 ['packaging', 'Bao bì'],
@@ -2027,7 +2027,7 @@
         }
 
         function removePendingProductImage(tempId) {
-            const removed = catalogState.pendingImages.find((image) => image.tempId === tempId);
+            var removed = catalogState.pendingImages.find((image) => image.tempId === tempId);
             if (removed?.previewUrl) URL.revokeObjectURL(removed.previewUrl);
             catalogState.pendingImages = catalogState.pendingImages.filter((image) => image.tempId !== tempId);
             ensureOnePrimaryImage();
@@ -2067,7 +2067,7 @@
 
         async function updateProductImageMeta(imageId, changes) {
             if (!catalogState.editingProductId || !imageId) return;
-            const image = catalogState.currentImages.find((item) => Number(item.id) === Number(imageId));
+            var image = catalogState.currentImages.find((item) => Number(item.id) === Number(imageId));
             if (!image) return;
             if (Number(image.is_primary) === 1 && changes.image_role && changes.image_role !== 'main') {
                 showAdminCatalogToast('Ảnh chính phải giữ vai trò Ảnh chính', 'error');
@@ -2075,11 +2075,11 @@
                 return;
             }
             try {
-                const result = await window.MGAdminCatalogApi.put(
+                var result = await window.MGAdminCatalogApi.put(
                     `/products/${encodeURIComponent(catalogState.editingProductId)}/images/${encodeURIComponent(imageId)}`,
                     changes
                 );
-                const updated = result.data || {};
+                var updated = result.data || {};
                 catalogState.currentImages = catalogState.currentImages.map((item) => (
                     Number(item.id) === Number(imageId) ? { ...item, ...updated } : item
                 ));
@@ -2092,7 +2092,7 @@
         }
 
         function onProductImageDragStart(event) {
-            const card = event.currentTarget;
+            var card = event.currentTarget;
             catalogState.draggingImageId = Number(card.dataset.imageId || 0);
             card.classList.add('dragging');
             event.dataTransfer.effectAllowed = 'move';
@@ -2106,16 +2106,16 @@
 
         async function onProductImageDrop(event) {
             event.preventDefault();
-            const fromId = Number(catalogState.draggingImageId || event.dataTransfer.getData('text/plain') || 0);
-            const toId = Number(event.currentTarget.dataset.imageId || 0);
+            var fromId = Number(catalogState.draggingImageId || event.dataTransfer.getData('text/plain') || 0);
+            var toId = Number(event.currentTarget.dataset.imageId || 0);
             if (!fromId || !toId || fromId === toId) return;
 
-            const fromIndex = catalogState.currentImages.findIndex((image) => Number(image.id) === fromId);
-            const toIndex = catalogState.currentImages.findIndex((image) => Number(image.id) === toId);
+            var fromIndex = catalogState.currentImages.findIndex((image) => Number(image.id) === fromId);
+            var toIndex = catalogState.currentImages.findIndex((image) => Number(image.id) === toId);
             if (fromIndex < 0 || toIndex < 0) return;
 
-            const reordered = [...catalogState.currentImages];
-            const [moved] = reordered.splice(fromIndex, 1);
+            var reordered = [...catalogState.currentImages];
+            var [moved] = reordered.splice(fromIndex, 1);
             reordered.splice(toIndex, 0, moved);
             catalogState.currentImages = reordered.map((image, index) => ({ ...image, sort_order: index }));
             renderProductImageManager();
@@ -2130,8 +2130,8 @@
         async function saveProductImageOrder() {
             if (!catalogState.editingProductId || catalogState.currentImages.length < 2) return;
             try {
-                const imageIds = catalogState.currentImages.map((image) => Number(image.id)).filter(Boolean);
-                const result = await window.MGAdminCatalogApi.put(
+                var imageIds = catalogState.currentImages.map((image) => Number(image.id)).filter(Boolean);
+                var result = await window.MGAdminCatalogApi.put(
                     `/products/${encodeURIComponent(catalogState.editingProductId)}/images/reorder`,
                     { image_ids: imageIds }
                 );
@@ -2144,7 +2144,7 @@
         }
 
         function ensureOnePrimaryImage() {
-            const hasPrimary = catalogState.currentImages.some((image) => Number(image.is_primary) === 1)
+            var hasPrimary = catalogState.currentImages.some((image) => Number(image.is_primary) === 1)
                 || catalogState.pendingImages.some((image) => image.isPrimary);
             if (hasPrimary) return;
             if (catalogState.currentImages.length) {
@@ -2157,8 +2157,8 @@
         async function uploadPendingProductImages(productId) {
             if (!Number(productId)) throw new Error('Không xác định được thuốc để tải ảnh');
             for (let index = 0; index < catalogState.pendingImages.length; index += 1) {
-                const image = catalogState.pendingImages[index];
-                const dataBase64 = await fileToBase64(image.file);
+                var image = catalogState.pendingImages[index];
+                var dataBase64 = await fileToBase64(image.file);
                 await window.MGAdminCatalogApi.post(`/products/${encodeURIComponent(productId)}/images`, {
                     original_name: image.file.name,
                     mime_type: image.file.type,
@@ -2174,7 +2174,7 @@
 
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
-                const reader = new FileReader();
+                var reader = new FileReader();
                 reader.onload = () => resolve(reader.result);
                 reader.onerror = () => reject(new Error(`Không đọc được file ảnh "${file.name}"`));
                 reader.readAsDataURL(file);
@@ -2182,8 +2182,8 @@
         }
 
         async function deactivateMedicine(productId) {
-            const productName = document.querySelector(`[data-product-name="${Number(productId)}"]`)?.textContent.trim();
-            const confirmed = confirm(`Ngừng kinh doanh thuốc "${productName || productId}"?\n\nThao tác này chỉ ẩn sản phẩm khỏi bán mới, không xóa lô hàng và lịch sử tồn kho.`);
+            var productName = document.querySelector(`[data-product-name="${Number(productId)}"]`)?.textContent.trim();
+            var confirmed = confirm(`Ngừng kinh doanh thuốc "${productName || productId}"?\n\nThao tác này chỉ ẩn sản phẩm khỏi bán mới, không xóa lô hàng và lịch sử tồn kho.`);
             if (!confirmed) return;
             try {
                 await window.MGAdminCatalogApi.put(`/products/${encodeURIComponent(productId)}`, { status: 'inactive' });
@@ -2197,11 +2197,11 @@
         }
 
         async function changeMedicineStatus(productId, nextStatus) {
-            const id = Number(productId);
+            var id = Number(productId);
             if (!id) return;
-            const statusMeta = getProductStatusMeta(nextStatus);
-            const productName = document.querySelector(`[data-product-name="${id}"]`)?.textContent.trim() || `#${id}`;
-            const messageMap = {
+            var statusMeta = getProductStatusMeta(nextStatus);
+            var productName = document.querySelector(`[data-product-name="${id}"]`)?.textContent.trim() || `#${id}`;
+            var messageMap = {
                 pending_review: `Chuyển thuốc "${productName}" sang trạng thái chờ duyệt?`,
                 active: `Duyệt và public thuốc "${productName}" ra client/POS?`,
                 rejected: `Từ chối public thuốc "${productName}"?`,
@@ -2221,7 +2221,7 @@
         }
 
         function setInputValue(id, value) {
-            const el = document.getElementById(id);
+            var el = document.getElementById(id);
             if (el) el.value = value ?? '';
         }
 
@@ -2230,13 +2230,13 @@
         }
 
         function validationError(message, tab) {
-            const err = new Error(message);
+            var err = new Error(message);
             err.tab = tab;
             return err;
         }
 
         function setSaveLoading(isLoading, label = 'Đang lưu...') {
-            const btn = document.getElementById('saveMedicineBtn');
+            var btn = document.getElementById('saveMedicineBtn');
             if (!btn) return;
             btn.disabled = isLoading;
             btn.innerHTML = isLoading
@@ -2245,7 +2245,7 @@
         }
 
         function showAdminCatalogToast(message, type = 'success') {
-            const toast = document.createElement('div');
+            var toast = document.createElement('div');
             toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:14px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2);display:flex;align-items:center;gap:10px;max-width:420px;';
             toast.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check'}" style="color:${type === 'error' ? '#ef4444' : '#10b981'};font-size:16px;"></i><span>${escapeHtml(message)}</span>`;
             document.body.appendChild(toast);
@@ -2258,11 +2258,11 @@
         }
 
         function renderPagination(type, total, page, limit) {
-            const info = document.getElementById(type === 'stock' ? 'stockPageInfo' : 'masterPageInfo');
-            const controls = document.getElementById(type === 'stock' ? 'stockPageControls' : 'masterPageControls');
-            const totalPages = Math.max(1, Math.ceil(Number(total || 0) / limit));
-            const from = total ? ((page - 1) * limit) + 1 : 0;
-            const to = Math.min(page * limit, total);
+            var info = document.getElementById(type === 'stock' ? 'stockPageInfo' : 'masterPageInfo');
+            var controls = document.getElementById(type === 'stock' ? 'stockPageControls' : 'masterPageControls');
+            var totalPages = Math.max(1, Math.ceil(Number(total || 0) / limit));
+            var from = total ? ((page - 1) * limit) + 1 : 0;
+            var to = Math.min(page * limit, total);
             if (info) info.textContent = type === 'stock'
                 ? `Hiển thị ${from} - ${to} trên ${formatNumber(total)} sản phẩm tồn kho`
                 : `Hiển thị ${from} - ${to} trên ${formatNumber(total)} sản phẩm`;
@@ -2275,12 +2275,12 @@
         }
 
         function renderPageButtons(type, page, totalPages) {
-            const pages = new Set([1, totalPages, page - 1, page, page + 1]);
+            var pages = new Set([1, totalPages, page - 1, page, page + 1]);
             return [...pages]
                 .filter((item) => item >= 1 && item <= totalPages)
                 .sort((a, b) => a - b)
                 .map((item, index, list) => {
-                    const gap = index > 0 && item - list[index - 1] > 1 ? '<button class="btn-page" disabled>...</button>' : '';
+                    var gap = index > 0 && item - list[index - 1] > 1 ? '<button class="btn-page" disabled>...</button>' : '';
                     return `${gap}<button class="btn-page ${item === page ? 'active' : ''}" onclick="changeCatalogPage('${type}', ${item})">${item}</button>`;
                 })
                 .join('');
@@ -2296,7 +2296,7 @@
             }
         }
 
-        const originalSwitchMainTab = window.switchMainTab;
+        var originalSwitchMainTab = window.switchMainTab;
         window.switchMainTab = function (tabId) {
             catalogState.activeTab = tabId;
             originalSwitchMainTab(tabId);
@@ -2320,12 +2320,12 @@
         }
 
         function renderTableError(tbodyId, colspan, message) {
-            const body = document.getElementById(tbodyId);
+            var body = document.getElementById(tbodyId);
             if (body) body.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center;color:#ef4444;padding:32px;">${escapeHtml(message)}</td></tr>`;
         }
 
         function debounce(fn, wait) {
-            let timer = null;
+            var timer = null;
             return (...args) => {
                 clearTimeout(timer);
                 timer = setTimeout(() => fn(...args), wait);
@@ -2333,7 +2333,7 @@
         }
 
         function chunkArray(items, size) {
-            const chunks = [];
+            var chunks = [];
             for (let i = 0; i < items.length; i += size) chunks.push(items.slice(i, i + size));
             return chunks;
         }
@@ -2371,7 +2371,7 @@
         }
 
         function formatCompactVnd(value) {
-            const amount = Number(value || 0);
+            var amount = Number(value || 0);
             if (amount >= 1000000000) return `${(amount / 1000000000).toFixed(1).replace('.0', '')}B`;
             if (amount >= 1000000) return `${(amount / 1000000).toFixed(1).replace('.0', '')}M`;
             return formatNumber(amount);
@@ -2379,21 +2379,21 @@
 
         function formatDate(value) {
             if (!value) return '--';
-            const date = new Date(value);
+            var date = new Date(value);
             if (Number.isNaN(date.getTime())) return '--';
             return date.toLocaleDateString('vi-VN');
         }
 
         function formatDateTime(value) {
             if (!value) return '--';
-            const date = new Date(value);
+            var date = new Date(value);
             if (Number.isNaN(date.getTime())) return '--';
             return date.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
         }
 
         function daysUntil(value) {
             if (!value) return null;
-            const date = new Date(value);
+            var date = new Date(value);
             if (Number.isNaN(date.getTime())) return null;
             return Math.ceil((date.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
         }
@@ -2484,7 +2484,7 @@
             </div>
             <div class="standard-modal-footer">
                 <button class="btn-secondary" onclick="closePrintBarcodeModal()">Hủy Quay Lại</button>
-                <button class="btn-primary" onclick="alert('Đang gửi lệnh in 50 tem tới máy in nhiệt...')"><i
+                <button class="btn-primary" onclick="showToast('Đang gửi lệnh in 50 tem tới máy in nhiệt...', 'info')"><i
                         class="fa-solid fa-print"></i> Gửi Lệnh In (Send to Printer)</button>
             </div>
         </div>

@@ -30,6 +30,30 @@ function requireAdmin(req, res) {
   return true;
 }
 
+// Helper to generate unique employee code (NV-XXX)
+async function generateUserCode() {
+  let nextId = 1;
+  const [[result]] = await pool.query('SELECT MAX(id) AS maxId FROM users');
+  if (result && result.maxId) {
+    nextId = Number(result.maxId) + 1;
+  }
+  
+  let code = `NV-${String(nextId).padStart(3, '0')}`;
+  let isUnique = false;
+  let attempts = 0;
+  while (!isUnique && attempts < 10) {
+    const [[existing]] = await pool.query('SELECT id FROM users WHERE code = ? LIMIT 1', [code]);
+    if (!existing) {
+      isUnique = true;
+    } else {
+      nextId++;
+      code = `NV-${String(nextId).padStart(3, '0')}`;
+      attempts++;
+    }
+  }
+  return code;
+}
+
 // GET /users — Lấy danh sách nhân viên
 router.get('/', async (req, res) => {
   if (!requireAdmin(req, res)) return;
@@ -37,7 +61,8 @@ router.get('/', async (req, res) => {
   try {
     const [rows] = await pool.query(
       `SELECT u.id, u.username, u.full_name, u.email, u.phone,
-              r.name AS role_name, u.is_active, u.created_at
+              r.name AS role_name, u.role_id, u.is_active, u.created_at,
+              u.avatar_url, u.code, u.last_login_at
        FROM users u
        LEFT JOIN roles r ON r.id = u.role_id
        ORDER BY u.id DESC`
@@ -55,7 +80,8 @@ router.get('/:id', async (req, res) => {
   try {
     const [rows] = await pool.query(
       `SELECT u.id, u.username, u.full_name, u.email, u.phone,
-              r.name AS role_name, u.is_active, u.created_at
+              r.name AS role_name, u.role_id, u.is_active, u.created_at,
+              u.avatar_url, u.code, u.last_login_at
        FROM users u
        LEFT JOIN roles r ON r.id = u.role_id
        WHERE u.id = ?`,
@@ -73,7 +99,7 @@ router.post('/', async (req, res) => {
   if (!requireAdmin(req, res)) return;
 
   try {
-    const { username, full_name, email, phone, password, role_id } = req.body;
+    let { username, full_name, email, phone, password, role_id, avatar_url, code } = req.body;
 
     // 1. Validate input
     if (!username || !full_name || !email || !password || !role_id) {
@@ -95,6 +121,23 @@ router.post('/', async (req, res) => {
       });
     }
 
+    // 2.5 Kiểm tra code đã tồn tại chưa (nếu có truyền vào)
+    if (code && code.trim()) {
+      const [[existingCode]] = await pool.query(
+        'SELECT id FROM users WHERE code = ? LIMIT 1',
+        [code.trim()]
+      );
+      if (existingCode) {
+        return res.status(409).json({
+          success: false,
+          message: 'Mã nhân viên đã tồn tại',
+        });
+      }
+    } else {
+      // Tự động sinh mã nhân viên
+      code = await generateUserCode();
+    }
+
     // 3. Kiểm tra role_id hợp lệ
     const [[role]] = await pool.query('SELECT id, name FROM roles WHERE id = ?', [role_id]);
     if (!role) {
@@ -109,9 +152,9 @@ router.post('/', async (req, res) => {
 
     // 5. Insert user mới
     const [result] = await pool.query(
-      `INSERT INTO users (username, full_name, email, phone, password_hash, role_id)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [username, full_name, email, phone || null, passwordHash, role_id]
+      `INSERT INTO users (username, full_name, email, phone, password_hash, role_id, avatar_url, code)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [username, full_name, email, phone || null, passwordHash, role_id, avatar_url || null, code]
     );
 
     // 6. Trả kết quả
@@ -124,7 +167,10 @@ router.post('/', async (req, res) => {
         email,
         phone:     phone || null,
         role_name: role.name,
+        role_id,
         is_active: 1,
+        avatar_url: avatar_url || null,
+        code,
       },
     });
   } catch (err) {
@@ -137,7 +183,7 @@ router.put('/:id', async (req, res) => {
   if (!requireAdmin(req, res)) return;
 
   try {
-    const { username, full_name, email, phone, password, role_id, is_active } = req.body;
+    const { username, full_name, email, phone, password, role_id, is_active, avatar_url, code } = req.body;
 
     // 1. Validate input
     if (!username || !full_name || !email || !role_id) {
@@ -151,6 +197,20 @@ router.put('/:id', async (req, res) => {
     const [[existingUser]] = await pool.query('SELECT id FROM users WHERE id = ?', [req.params.id]);
     if (!existingUser) {
       return res.status(404).json({ success: false, message: 'Không tìm thấy nhân viên' });
+    }
+
+    // 2.5 Kiểm tra trùng mã code nếu thay đổi code
+    if (code && code.trim()) {
+      const [[existingCode]] = await pool.query(
+        'SELECT id FROM users WHERE code = ? AND id != ? LIMIT 1',
+        [code.trim(), req.params.id]
+      );
+      if (existingCode) {
+        return res.status(409).json({
+          success: false,
+          message: 'Mã nhân viên đã tồn tại ở tài khoản khác',
+        });
+      }
     }
 
     // 3. Kiểm tra role_id hợp lệ
@@ -171,9 +231,9 @@ router.put('/:id', async (req, res) => {
     // 5. Update user
     await pool.query(
       `UPDATE users
-       SET username = ?, full_name = ?, email = ?, phone = ?, password_hash = COALESCE(?, password_hash), role_id = ?, is_active = ?
+       SET username = ?, full_name = ?, email = ?, phone = ?, password_hash = COALESCE(?, password_hash), role_id = ?, is_active = ?, avatar_url = ?, code = ?
        WHERE id = ?`,
-      [username, full_name, email, phone || null, passwordHash, role_id, is_active !== undefined ? is_active : 1, req.params.id]
+      [username, full_name, email, phone || null, passwordHash, role_id, is_active !== undefined ? is_active : 1, avatar_url || null, code || null, req.params.id]
     );
 
     // 6. Trả kết quả
@@ -186,7 +246,10 @@ router.put('/:id', async (req, res) => {
         email,
         phone:     phone || null,
         role_name: role.name,
+        role_id,
         is_active: is_active !== undefined ? is_active : 1,
+        avatar_url: avatar_url || null,
+        code: code || null,
       },
     });
   } catch (err) {

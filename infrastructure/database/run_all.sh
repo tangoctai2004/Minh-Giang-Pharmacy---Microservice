@@ -19,6 +19,7 @@ DB_DIR="$(dirname "$0")"
 FILES=(
   "01_mg_identity.sql"
   "migrations/20260615_add_customer_verification_columns.sql"
+  "migrations/20260615_add_customer_notes.sql"
   "02_mg_catalog.sql"
   "06_mg_catalog_product_media_gpp.sql"
   "07_mg_catalog_quality_workflow.sql"

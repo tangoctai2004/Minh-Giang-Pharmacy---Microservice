@@ -31,18 +31,81 @@ router.get('/', async (req, res) => {
   }
 
   try {
-    const [rows] = await pool.query(
-      `SELECT s.id, s.kiosk_id, s.status,
-              u.full_name AS opened_by_name,
-              s.opening_cash, s.closing_cash,
-              s.expected_closing_cash, s.cash_difference, s.reconciliation_status,
-              s.shift_start, s.shift_end
-       FROM shifts s
-       LEFT JOIN users u ON u.id = s.user_id
-       ORDER BY s.shift_start DESC
-       LIMIT 50`
-    );
-    res.json({ success: true, data: rows });
+    let { page, limit, startDate, endDate, search, status } = req.query;
+    
+    // Normalize page and limit
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 10;
+    const offset = (page - 1) * limit;
+
+    let whereClauses = [];
+    let queryParams = [];
+
+    if (startDate) {
+      whereClauses.push("s.shift_start >= ?");
+      queryParams.push(`${startDate} 00:00:00`);
+    }
+    if (endDate) {
+      whereClauses.push("s.shift_start <= ?");
+      queryParams.push(`${endDate} 23:59:59`);
+    }
+    if (search) {
+      whereClauses.push("(u.full_name LIKE ? OR s.kiosk_id LIKE ?)");
+      queryParams.push(`%${search}%`, `%${search}%`);
+    }
+    if (status) {
+      if (status === 'open') {
+        whereClauses.push("s.status = 'open'");
+      } else if (status === 'matched') {
+        whereClauses.push("s.status = 'closed' AND s.cash_difference = 0");
+      } else if (status === 'reconcile_pending') {
+        whereClauses.push("s.status = 'closed' AND s.cash_difference != 0 AND s.reconciliation_status != 'approved'");
+      } else if (status === 'approved') {
+        whereClauses.push("s.reconciliation_status = 'approved'");
+      }
+    }
+
+    const whereSql = whereClauses.length > 0 ? "WHERE " + whereClauses.join(" AND ") : "";
+
+    // 1. Get total count for pagination
+    const countQuery = `
+      SELECT COUNT(*) as total 
+      FROM shifts s
+      LEFT JOIN users u ON u.id = s.user_id
+      ${whereSql}
+    `;
+    const [[{ total }]] = await pool.query(countQuery, queryParams);
+
+    // 2. Fetch data page
+    const dataQuery = `
+      SELECT s.id, s.kiosk_id, s.status,
+             u.full_name AS opened_by_name,
+             s.opening_cash, s.closing_cash,
+             s.total_cash_sales, s.total_card_sales, s.total_qr_sales,
+             s.expected_closing_cash, s.cash_difference, s.reconciliation_status,
+             s.shift_start, s.shift_end, s.notes, s.approved_at, s.approval_note,
+             u2.full_name AS approved_by_name
+      FROM shifts s
+      LEFT JOIN users u ON u.id = s.user_id
+      LEFT JOIN users u2 ON u2.id = s.approved_by
+      ${whereSql}
+      ORDER BY s.shift_start DESC
+      LIMIT ? OFFSET ?
+    `;
+
+    const [rows] = await pool.query(dataQuery, [...queryParams, limit, offset]);
+    const totalPages = Math.ceil(total / limit);
+
+    res.json({
+      success: true,
+      data: rows,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages
+      }
+    });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -55,7 +118,16 @@ router.get('/:id', async (req, res) => {
   }
 
   try {
-    const [rows] = await pool.query('SELECT * FROM shifts WHERE id = ?', [req.params.id]);
+    const [rows] = await pool.query(
+      `SELECT s.*, 
+              u.full_name AS opened_by_name,
+              u2.full_name AS approved_by_name
+       FROM shifts s
+       LEFT JOIN users u ON u.id = s.user_id
+       LEFT JOIN users u2 ON u2.id = s.approved_by
+       WHERE s.id = ?`,
+      [req.params.id]
+    );
     if (!rows.length) return res.status(404).json({ success: false, message: 'Không tìm thấy ca làm việc' });
     res.json({ success: true, data: rows[0] });
   } catch (err) {

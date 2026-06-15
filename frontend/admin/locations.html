@@ -227,7 +227,7 @@
     <script src="js/admin-catalog-api.js"></script>
     <script src="js/admin-components.js"></script>
     <script>
-        const locationState = {
+        var locationState = {
             locations: [],
             selectedZone: '',
             selectedCabinet: '',
@@ -244,13 +244,7 @@
             }[char]));
         }
 
-        function toast(message, type = 'success') {
-            const el = document.createElement('div');
-            el.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:14px 18px;border-radius:10px;font-size:13px;font-weight:700;z-index:9999;box-shadow:0 8px 24px rgba(15,23,42,.24);display:flex;align-items:center;gap:10px;max-width:420px;';
-            el.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check'}" style="color:${type === 'error' ? '#ef4444' : '#10b981'}"></i><span>${escapeHtml(message)}</span>`;
-            document.body.appendChild(el);
-            setTimeout(() => { el.style.transition = 'opacity .25s, transform .25s'; el.style.opacity = '0'; el.style.transform = 'translateY(8px)'; setTimeout(() => el.remove(), 260); }, 3000);
-        }
+
 
         function storageTypeLabel(type) {
             if (type === 'cold') return 'Kho lạnh 2-8°C';
@@ -266,7 +260,7 @@
 
         function groupBy(items, key) {
             return items.reduce((acc, item) => {
-                const value = item[key] || 'Chưa phân loại';
+                var value = item[key] || 'Chưa phân loại';
                 if (!acc[value]) acc[value] = [];
                 acc[value].push(item);
                 return acc;
@@ -279,7 +273,7 @@
         }
 
         function renderDatalist(id, values) {
-            const datalist = document.getElementById(id);
+            var datalist = document.getElementById(id);
             if (!datalist) return;
             datalist.innerHTML = uniqueSorted(values)
                 .map((value) => `<option value="${escapeHtml(value)}"></option>`)
@@ -287,17 +281,17 @@
         }
 
         function updateLocationSuggestions() {
-            const zone = document.getElementById('locationZone')?.value.trim() || '';
-            const cabinet = document.getElementById('locationCabinet')?.value.trim() || '';
+            var zone = document.getElementById('locationZone')?.value.trim() || '';
+            var cabinet = document.getElementById('locationCabinet')?.value.trim() || '';
 
             renderDatalist('zoneOptions', locationState.locations.map((item) => item.zone));
 
-            const cabinetSource = zone
+            var cabinetSource = zone
                 ? locationState.locations.filter((item) => item.zone === zone)
                 : locationState.locations;
             renderDatalist('cabinetOptions', cabinetSource.map((item) => item.cabinet));
 
-            const shelfSource = locationState.locations.filter((item) => {
+            var shelfSource = locationState.locations.filter((item) => {
                 if (zone && item.zone !== zone) return false;
                 if (cabinet && item.cabinet !== cabinet) return false;
                 return true;
@@ -306,30 +300,30 @@
         }
 
         async function loadLocations() {
-            const q = document.getElementById('locationSearch').value.trim();
+            var q = document.getElementById('locationSearch').value.trim();
             try {
-                const result = await window.MGAdminCatalogApi.get('/locations', { limit: 100, q });
+                var result = await window.MGAdminCatalogApi.get('/locations', { limit: 100, q });
                 locationState.locations = result.data || [];
                 updateLocationSuggestions();
-                const zones = Object.keys(groupBy(locationState.locations, 'zone'));
+                var zones = Object.keys(groupBy(locationState.locations, 'zone'));
                 if (!zones.includes(locationState.selectedZone)) {
                     locationState.selectedZone = zones[0] || '';
                     locationState.selectedCabinet = '';
                 }
                 renderLocations();
             } catch (error) {
-                toast(error.message || 'Không tải được vị trí lưu trữ', 'error');
+                showToast(error.message || 'Không tải được vị trí lưu trữ', 'error');
             }
         }
 
         function renderLocations() {
-            const zones = groupBy(locationState.locations, 'zone');
-            const zoneNames = Object.keys(zones);
+            var zones = groupBy(locationState.locations, 'zone');
+            var zoneNames = Object.keys(zones);
             document.getElementById('zoneCount').textContent = zoneNames.length;
             document.getElementById('zonesList').innerHTML = zoneNames.length ? zoneNames.map((zone) => {
-                const items = zones[zone];
-                const stock = items.reduce((sum, item) => sum + Number(item.total_stock || 0), 0);
-                const type = items.find((item) => item.storage_type !== 'normal')?.storage_type || 'normal';
+                var items = zones[zone];
+                var stock = items.reduce((sum, item) => sum + Number(item.total_stock || 0), 0);
+                var type = items.find((item) => item.storage_type !== 'normal')?.storage_type || 'normal';
                 return `
                     <div class="storage-item ${zone === locationState.selectedZone ? 'active' : ''}" onclick="selectZone('${encodeURIComponent(zone)}')">
                         <div class="item-info">
@@ -353,17 +347,17 @@
         }
 
         function renderCabinets() {
-            const zoneItems = locationState.locations.filter((item) => item.zone === locationState.selectedZone);
-            const cabinets = groupBy(zoneItems, 'cabinet');
-            const cabinetNames = Object.keys(cabinets);
+            var zoneItems = locationState.locations.filter((item) => item.zone === locationState.selectedZone);
+            var cabinets = groupBy(zoneItems, 'cabinet');
+            var cabinetNames = Object.keys(cabinets);
             if (!cabinetNames.includes(locationState.selectedCabinet)) {
                 locationState.selectedCabinet = cabinetNames[0] || '';
             }
             document.getElementById('cabinetCount').textContent = cabinetNames.length;
             document.getElementById('cabinetsList').innerHTML = cabinetNames.length ? cabinetNames.map((cabinet) => {
-                const items = cabinets[cabinet];
-                const stock = items.reduce((sum, item) => sum + Number(item.total_stock || 0), 0);
-                const type = items.find((item) => item.storage_type !== 'normal')?.storage_type || 'normal';
+                var items = cabinets[cabinet];
+                var stock = items.reduce((sum, item) => sum + Number(item.total_stock || 0), 0);
+                var type = items.find((item) => item.storage_type !== 'normal')?.storage_type || 'normal';
                 return `
                     <div class="storage-item ${cabinet === locationState.selectedCabinet ? 'active' : ''}" onclick="selectCabinet('${encodeURIComponent(cabinet)}')">
                         <div class="item-info">
@@ -385,7 +379,7 @@
         }
 
         function renderShelves() {
-            const shelves = locationState.locations.filter((item) => item.zone === locationState.selectedZone && item.cabinet === locationState.selectedCabinet);
+            var shelves = locationState.locations.filter((item) => item.zone === locationState.selectedZone && item.cabinet === locationState.selectedCabinet);
             document.getElementById('shelfCount').textContent = shelves.length;
             document.getElementById('shelvesList').innerHTML = shelves.length ? shelves.map((item) => `
                 <div class="storage-item">
@@ -408,12 +402,12 @@
         }
 
         function syncLabel() {
-            const zone = document.getElementById('locationZone').value.trim();
-            const cabinet = document.getElementById('locationCabinet').value.trim();
-            const shelf = document.getElementById('locationShelf').value.trim();
-            const type = document.getElementById('locationStorageType').value;
-            const suffix = type === 'cold' ? 'Kho lạnh 2-8°C' : type === 'controlled' ? 'Tủ khóa kiểm soát đặc biệt' : '';
-            const label = [zone, cabinet, shelf, suffix].filter(Boolean).join(' / ');
+            var zone = document.getElementById('locationZone').value.trim();
+            var cabinet = document.getElementById('locationCabinet').value.trim();
+            var shelf = document.getElementById('locationShelf').value.trim();
+            var type = document.getElementById('locationStorageType').value;
+            var suffix = type === 'cold' ? 'Kho lạnh 2-8°C' : type === 'controlled' ? 'Tủ khóa kiểm soát đặc biệt' : '';
+            var label = [zone, cabinet, shelf, suffix].filter(Boolean).join(' / ');
             document.getElementById('locationLabel').value = label;
             updateLocationSuggestions();
         }
@@ -421,7 +415,7 @@
         function openLocationModal(id = null) {
             locationState.editingId = id;
             document.getElementById('locationModalTitle').textContent = id ? 'Cập nhật vị trí lưu trữ' : 'Thêm vị trí lưu trữ';
-            const item = id ? locationState.locations.find((location) => Number(location.id) === Number(id)) : null;
+            var item = id ? locationState.locations.find((location) => Number(location.id) === Number(id)) : null;
             document.getElementById('locationZone').value = item?.zone || '';
             document.getElementById('locationCabinet').value = item?.cabinet || '';
             document.getElementById('locationShelf').value = item?.shelf || '';
@@ -439,45 +433,45 @@
 
         async function saveLocation(event) {
             event.preventDefault();
-            const payload = {
+            var payload = {
                 zone: document.getElementById('locationZone').value.trim(),
                 cabinet: document.getElementById('locationCabinet').value.trim(),
                 shelf: document.getElementById('locationShelf').value.trim(),
                 label: document.getElementById('locationLabel').value.trim()
             };
             if (!payload.zone || !payload.cabinet || !payload.shelf || !payload.label) {
-                toast('Vui lòng nhập đủ khu vực, tủ, kệ và nhãn vị trí', 'error');
+                showToast('Vui lòng nhập đủ khu vực, tủ, kệ và nhãn vị trí', 'error');
                 return;
             }
             try {
                 if (locationState.editingId) {
                     await window.MGAdminCatalogApi.put(`/locations/${encodeURIComponent(locationState.editingId)}`, payload);
-                    toast('Đã cập nhật vị trí lưu trữ');
+                    showToast('Đã cập nhật vị trí lưu trữ');
                 } else {
                     await window.MGAdminCatalogApi.post('/locations', payload);
-                    toast('Đã thêm vị trí lưu trữ');
+                    showToast('Đã thêm vị trí lưu trữ');
                 }
                 closeLocationModal();
                 await loadLocations();
             } catch (error) {
-                toast(error.message || 'Không lưu được vị trí', 'error');
+                showToast(error.message || 'Không lưu được vị trí', 'error');
             }
         }
 
         async function deactivateLocation(id) {
-            const item = locationState.locations.find((location) => Number(location.id) === Number(id));
+            var item = locationState.locations.find((location) => Number(location.id) === Number(id));
             if (!item) return;
             if (Number(item.total_stock || 0) > 0) {
-                toast('Không thể ngừng dùng vị trí đang còn tồn kho', 'error');
+                showToast('Không thể ngừng dùng vị trí đang còn tồn kho', 'error');
                 return;
             }
             if (!confirm(`Ngừng dùng vị trí "${item.label}"?`)) return;
             try {
                 await window.MGAdminCatalogApi.delete(`/locations/${encodeURIComponent(id)}`);
-                toast('Đã ngừng dùng vị trí');
+                showToast('Đã ngừng dùng vị trí');
                 await loadLocations();
             } catch (error) {
-                toast(error.message || 'Không thể ngừng dùng vị trí', 'error');
+                showToast(error.message || 'Không thể ngừng dùng vị trí', 'error');
             }
         }
 

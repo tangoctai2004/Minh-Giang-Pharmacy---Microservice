@@ -202,7 +202,7 @@
     <script src="js/admin-catalog-api.js"></script>
     <script src="js/admin-components.js"></script>
     <script>
-        const auditState = {
+        var auditState = {
             audits: [],
             locations: [],
             activeAudit: null
@@ -232,13 +232,7 @@
             return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(Number(value || 0));
         }
 
-        function toast(message, type = 'success') {
-            const el = document.createElement('div');
-            el.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:14px 18px;border-radius:10px;font-size:13px;font-weight:700;z-index:9999;box-shadow:0 8px 24px rgba(15,23,42,.24);display:flex;align-items:center;gap:10px;max-width:460px;';
-            el.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check'}" style="color:${type === 'error' ? '#ef4444' : '#10b981'}"></i><span>${escapeHtml(message)}</span>`;
-            document.body.appendChild(el);
-            setTimeout(() => { el.style.transition = 'opacity .25s, transform .25s'; el.style.opacity = '0'; el.style.transform = 'translateY(8px)'; setTimeout(() => el.remove(), 260); }, 3600);
-        }
+
 
         function statusBadge(status) {
             if (status === 'reconciled') return '<span class="audit-status reconciled"><i class="fa-solid fa-check"></i>Đã đối soát</span>';
@@ -246,9 +240,9 @@
         }
 
         async function loadLocations() {
-            const result = await window.MGAdminCatalogApi.get('/locations', { limit: 100 });
+            var result = await window.MGAdminCatalogApi.get('/locations', { limit: 100 });
             auditState.locations = result.data || [];
-            const options = '<option value="">Toàn bộ kho</option>' + auditState.locations.map((location) => `
+            var options = '<option value="">Toàn bộ kho</option>' + auditState.locations.map((location) => `
                 <option value="${Number(location.id)}">${escapeHtml(location.label)}</option>
             `).join('');
             document.getElementById('auditLocationFilter').innerHTML = options;
@@ -256,25 +250,25 @@
         }
 
         async function loadAudits() {
-            const locationId = document.getElementById('auditLocationFilter')?.value || '';
-            const status = document.getElementById('auditStatusFilter')?.value || '';
+            var locationId = document.getElementById('auditLocationFilter')?.value || '';
+            var status = document.getElementById('auditStatusFilter')?.value || '';
             try {
-                const result = await window.MGAdminCatalogApi.get('/inventory/audits', { location_id: locationId, status });
+                var result = await window.MGAdminCatalogApi.get('/inventory/audits', { location_id: locationId, status });
                 auditState.audits = result.data || [];
                 renderAudits();
             } catch (error) {
-                toast(error.message || 'Không tải được phiếu kiểm kê', 'error');
+                showToast(error.message || 'Không tải được phiếu kiểm kê', 'error');
             }
         }
 
         function renderAudits() {
-            const body = document.getElementById('auditsTableBody');
+            var body = document.getElementById('auditsTableBody');
             if (!auditState.audits.length) {
                 body.innerHTML = '<tr><td colspan="7" class="audit-empty">Chưa có phiếu kiểm kê phù hợp</td></tr>';
                 return;
             }
             body.innerHTML = auditState.audits.map((audit) => {
-                const diffText = `${Number(audit.total_missing || 0) ? `-${Number(audit.total_missing || 0)} thiếu` : '0 thiếu'} / ${Number(audit.total_surplus || 0) ? `+${Number(audit.total_surplus || 0)} thừa` : '0 thừa'}`;
+                var diffText = `${Number(audit.total_missing || 0) ? `-${Number(audit.total_missing || 0)} thiếu` : '0 thiếu'} / ${Number(audit.total_surplus || 0) ? `+${Number(audit.total_surplus || 0)} thừa` : '0 thừa'}`;
                 return `
                     <tr style="cursor:pointer;" onclick="openExistingAudit(${Number(audit.id)})">
                         <td><span class="table-sku" style="font-size:14px;font-weight:800;color:#1e293b;">${escapeHtml(audit.audit_code)}</span></td>
@@ -310,21 +304,21 @@
 
         async function openExistingAudit(id) {
             try {
-                const result = await window.MGAdminCatalogApi.get(`/inventory/audits/${encodeURIComponent(id)}`);
+                var result = await window.MGAdminCatalogApi.get(`/inventory/audits/${encodeURIComponent(id)}`);
                 auditState.activeAudit = result.data;
                 document.getElementById('auditModalTitle').textContent = `Phiếu kiểm kê ${auditState.activeAudit.audit_code}`;
                 document.getElementById('auditScopeLabel').textContent = auditState.activeAudit.location_name || 'Toàn bộ kho';
                 document.getElementById('auditLocationSelect').value = auditState.activeAudit.location_id || '';
                 document.getElementById('auditLocationSelect').disabled = true;
                 document.getElementById('createAuditBtn').style.display = 'none';
-                const isDraft = auditState.activeAudit.status === 'draft';
+                var isDraft = auditState.activeAudit.status === 'draft';
                 document.getElementById('saveAuditBtn').disabled = !isDraft;
                 document.getElementById('reconcileAuditBtn').disabled = !isDraft;
                 renderAuditItems();
                 document.getElementById('auditModal').classList.add('open');
                 document.body.style.overflow = 'hidden';
             } catch (error) {
-                toast(error.message || 'Không mở được phiếu kiểm kê', 'error');
+                showToast(error.message || 'Không mở được phiếu kiểm kê', 'error');
             }
         }
 
@@ -335,25 +329,25 @@
 
         async function createAudit() {
             try {
-                const locationId = document.getElementById('auditLocationSelect').value || null;
-                const result = await window.MGAdminCatalogApi.post('/inventory/audits', {
+                var locationId = document.getElementById('auditLocationSelect').value || null;
+                var result = await window.MGAdminCatalogApi.post('/inventory/audits', {
                     location_id: locationId ? Number(locationId) : null,
                     notes: locationId ? 'Kiểm kê theo vị trí lưu trữ' : 'Kiểm kê toàn bộ kho'
                 });
-                toast('Đã tạo snapshot kiểm kê');
+                showToast('Đã tạo snapshot kiểm kê');
                 await loadAudits();
                 await openExistingAudit(result.data.id);
             } catch (error) {
-                toast(error.message || 'Không tạo được phiếu kiểm kê', 'error');
+                showToast(error.message || 'Không tạo được phiếu kiểm kê', 'error');
             }
         }
 
         function renderAuditItems() {
-            const audit = auditState.activeAudit;
-            const readonly = audit.status !== 'draft';
+            var audit = auditState.activeAudit;
+            var readonly = audit.status !== 'draft';
             document.getElementById('auditTableBody').innerHTML = (audit.items || []).map((item, index) => {
-                const actual = item.actual_quantity === null || item.actual_quantity === undefined ? '' : Number(item.actual_quantity);
-                const diff = actual === '' ? null : Number(actual) - Number(item.system_quantity || 0);
+                var actual = item.actual_quantity === null || item.actual_quantity === undefined ? '' : Number(item.actual_quantity);
+                var diff = actual === '' ? null : Number(actual) - Number(item.system_quantity || 0);
                 return `
                     <tr data-index="${index}">
                         <td style="font-size:13px;font-weight:700;color:#64748b;">${escapeHtml(item.sku)}</td>
@@ -384,12 +378,12 @@
         }
 
         function updateAuditItem(index, key, value) {
-            const item = auditState.activeAudit.items[index];
+            var item = auditState.activeAudit.items[index];
             if (!item) return;
             if (key === 'actual_quantity') {
                 item.actual_quantity = value === '' ? null : Number(value);
                 item.difference_quantity = item.actual_quantity === null ? null : item.actual_quantity - Number(item.system_quantity || 0);
-                const row = document.querySelector(`#auditTableBody tr[data-index="${index}"]`);
+                var row = document.querySelector(`#auditTableBody tr[data-index="${index}"]`);
                 if (row) row.querySelector('.discrepancy-cell').innerHTML = renderDiff(item.difference_quantity);
             } else {
                 item.notes = value;
@@ -398,13 +392,13 @@
         }
 
         function updateTotals() {
-            const items = auditState.activeAudit?.items || [];
-            let missing = 0;
-            let surplus = 0;
-            let valueDiff = 0;
+            var items = auditState.activeAudit?.items || [];
+            var missing = 0;
+            var surplus = 0;
+            var valueDiff = 0;
             items.forEach((item) => {
                 if (item.actual_quantity === null || item.actual_quantity === undefined || item.actual_quantity === '') return;
-                const diff = Number(item.actual_quantity) - Number(item.system_quantity || 0);
+                var diff = Number(item.actual_quantity) - Number(item.system_quantity || 0);
                 if (diff < 0) missing += Math.abs(diff);
                 if (diff > 0) surplus += diff;
                 valueDiff += diff * Number(item.cost_price || 0);
@@ -415,7 +409,7 @@
         }
 
         function collectAuditPayload(requireComplete = false) {
-            const items = auditState.activeAudit?.items || [];
+            var items = auditState.activeAudit?.items || [];
             for (const item of items) {
                 if (requireComplete && (item.actual_quantity === null || item.actual_quantity === undefined || item.actual_quantity === '')) {
                     return { error: `Dòng ${item.product_name} - lô ${item.lot_number} chưa nhập số lượng thực tế` };
@@ -423,7 +417,7 @@
                 if (item.actual_quantity !== null && item.actual_quantity !== undefined && Number(item.actual_quantity) < 0) {
                     return { error: 'Số lượng thực tế không được âm' };
                 }
-                const diff = item.actual_quantity === null || item.actual_quantity === undefined
+                var diff = item.actual_quantity === null || item.actual_quantity === undefined
                     ? 0
                     : Number(item.actual_quantity) - Number(item.system_quantity || 0);
                 if (requireComplete && diff !== 0 && !String(item.notes || '').trim()) {
@@ -441,35 +435,35 @@
 
         async function saveAuditDraft() {
             if (!auditState.activeAudit) return;
-            const payload = collectAuditPayload(false);
+            var payload = collectAuditPayload(false);
             if (payload.error) {
-                toast(payload.error, 'error');
+                showToast(payload.error, 'error');
                 return;
             }
             try {
                 await window.MGAdminCatalogApi.put(`/inventory/audits/${encodeURIComponent(auditState.activeAudit.id)}/items`, payload);
-                toast('Đã lưu nháp số lượng kiểm kê');
+                showToast('Đã lưu nháp số lượng kiểm kê');
                 await openExistingAudit(auditState.activeAudit.id);
             } catch (error) {
-                toast(error.message || 'Không lưu được phiếu kiểm kê', 'error');
+                showToast(error.message || 'Không lưu được phiếu kiểm kê', 'error');
             }
         }
 
         async function reconcileAudit() {
             if (!auditState.activeAudit) return;
-            const payload = collectAuditPayload(true);
+            var payload = collectAuditPayload(true);
             if (payload.error) {
-                toast(payload.error, 'error');
+                showToast(payload.error, 'error');
                 return;
             }
             if (!confirm('Hoàn tất đối soát sẽ cập nhật tồn kho theo số lượng thực tế và khoá phiếu kiểm kê. Tiếp tục?')) return;
             try {
                 await window.MGAdminCatalogApi.post(`/inventory/audits/${encodeURIComponent(auditState.activeAudit.id)}/reconcile`, payload);
-                toast('Đã hoàn tất đối soát và cập nhật tồn kho');
+                showToast('Đã hoàn tất đối soát và cập nhật tồn kho');
                 await loadAudits();
                 await openExistingAudit(auditState.activeAudit.id);
             } catch (error) {
-                toast(error.message || 'Không hoàn tất được phiếu kiểm kê', 'error');
+                showToast(error.message || 'Không hoàn tất được phiếu kiểm kê', 'error');
             }
         }
 
@@ -480,7 +474,7 @@
             try {
                 await loadLocations();
             } catch (error) {
-                toast(error.message || 'Không tải được vị trí lưu trữ', 'error');
+                showToast(error.message || 'Không tải được vị trí lưu trữ', 'error');
             }
             await loadAudits();
         });

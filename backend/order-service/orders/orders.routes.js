@@ -365,7 +365,7 @@ router.get('/stats', async (req, res) => {
  */
 router.get('/', async (req, res) => {
     try {
-        const { status, channel, search, date_from, date_to, page = 1, limit = 10 } = req.query;
+        const { status, channel, search, customer_id, customer_phone, date_from, date_to, page = 1, limit = 10 } = req.query;
         const offset = (page - 1) * limit;
         const userId = req.userId;
         const userRole = req.userRole;
@@ -388,6 +388,16 @@ router.get('/', async (req, res) => {
         if (channel) {
             query += ' AND order_channel = ?';
             params.push(channel);
+        }
+
+        if (customer_id && isStaffOrAdmin) {
+            if (customer_phone) {
+                query += ' AND (customer_id = ? OR customer_phone = ?)';
+                params.push(customer_id, customer_phone);
+            } else {
+                query += ' AND customer_id = ?';
+                params.push(customer_id);
+            }
         }
 
         if (search) {

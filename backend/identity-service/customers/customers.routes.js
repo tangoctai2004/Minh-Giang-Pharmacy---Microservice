@@ -137,23 +137,40 @@ router.get('/', async (req, res) => {
 
   try {
     const { q } = req.query;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(500, Math.max(1, parseInt(req.query.limit, 10) || 100));
+    const offset = (page - 1) * limit;
     const fields = await customerSelect([
       'id', 'code', 'full_name', 'phone', 'email', 'loyalty_points',
-      'loyalty_tier', 'avatar_url', 'is_active', 'created_at',
+      'loyalty_tier', 'avatar_url', 'date_of_birth', 'is_active', 'created_at', 'notes',
     ]);
     
     let query = `SELECT ${fields} FROM customers WHERE deleted_at IS NULL`;
+    let countQuery = `SELECT COUNT(*) AS total FROM customers WHERE deleted_at IS NULL`;
     const params = [];
+    const countParams = [];
     
     if (q) {
       query += ` AND (full_name LIKE ? OR phone LIKE ? OR code LIKE ?)`;
+      countQuery += ` AND (full_name LIKE ? OR phone LIKE ? OR code LIKE ?)`;
       params.push(`%${q}%`, `%${q}%`, `%${q}%`);
+      countParams.push(`%${q}%`, `%${q}%`, `%${q}%`);
     }
     
-    query += ` ORDER BY id DESC LIMIT 100`;
+    query += ` ORDER BY id DESC LIMIT ? OFFSET ?`;
+    params.push(limit, offset);
 
+    const [[countRow]] = await pool.query(countQuery, countParams);
     const [rows] = await pool.query(query, params);
-    res.json({ success: true, data: rows });
+    res.json({
+      success: true,
+      data: rows,
+      pagination: {
+        page,
+        limit,
+        total: Number(countRow?.total || rows.length),
+      },
+    });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -317,7 +334,7 @@ router.get('/:id', async (req, res) => {
     const fields = await customerSelect([
       'id', 'code', 'full_name', 'phone', 'email', 'date_of_birth',
       'gender', 'loyalty_points', 'loyalty_tier', 'avatar_url',
-      'is_active', 'created_at',
+      'is_active', 'created_at', 'zalo_id', 'notes',
     ]);
     const [rows] = await pool.query(
       `SELECT ${fields}
@@ -350,14 +367,16 @@ router.get('/:id/loyalty', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Không tìm thấy khách hàng' });
     }
 
-    // 2. Query bảng loyalty_points_transactions lấy 10 lịch sử giao dịch mới nhất
+    const limit = Math.min(1000, Math.max(1, parseInt(req.query.limit, 10) || 1000));
+
+    // 2. Query bảng loyalty_points_transactions theo giới hạn yêu cầu
     const [transactions] = await pool.query(
       `SELECT id, transaction_type, points_change, description, created_at 
        FROM loyalty_points_transactions 
        WHERE customer_id = ? 
        ORDER BY created_at DESC 
-       LIMIT 10`,
-      [id]
+       LIMIT ?`,
+      [id, limit]
     );
 
     // 3. Ghép thành object data và trả về
@@ -592,7 +611,7 @@ router.post('/', async (req, res) => {
 
   const bcrypt = require('bcryptjs');
   try {
-    const { full_name, email, phone, password, date_of_birth, gender } = req.body;
+    const { full_name, email, phone, password, date_of_birth, gender, notes } = req.body;
 
     // 1. Validate input
     if (!full_name || !email || !phone || !password) {
@@ -620,18 +639,23 @@ router.post('/', async (req, res) => {
     // 3. Hash password
     const passwordHash = await bcrypt.hash(password, 10);
 
+    // Generate unique code KH-XXXX
+    const [[maxResult]] = await pool.query('SELECT MAX(id) AS maxId FROM customers');
+    const nextId = (maxResult && maxResult.maxId ? maxResult.maxId : 0) + 1;
+    const customerCode = `KH-${String(nextId).padStart(4, '0')}`;
+
     // 4. INSERT customer
     const [result] = await pool.query(
       `INSERT INTO customers 
-       (full_name, email, phone, password_hash, date_of_birth, gender)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [full_name, email, phone, passwordHash, date_of_birth || null, gender || null]
+       (code, full_name, email, phone, password_hash, date_of_birth, gender, notes)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [customerCode, full_name, email, phone, passwordHash, date_of_birth || null, gender || null, notes || null]
     );
 
     // 5. Fetch and return created customer
     const [[customer]] = await pool.query(
-      `SELECT id, full_name, email, phone, date_of_birth, gender, 
-              loyalty_points, loyalty_tier, is_active, created_at
+      `SELECT id, code, full_name, email, phone, date_of_birth, gender, 
+              loyalty_points, loyalty_tier, is_active, created_at, notes
        FROM customers WHERE id = ?`,
       [result.insertId]
     );
@@ -652,10 +676,10 @@ router.put('/:id', async (req, res) => {
 
   try {
     const { id } = req.params;
-    const { full_name, email, phone, date_of_birth, gender } = req.body;
+    const { full_name, email, phone, date_of_birth, gender, is_active, notes } = req.body;
 
     // 1. Validate input
-    if (!full_name && !email && !phone && !date_of_birth && !gender) {
+    if (!full_name && !email && !phone && !date_of_birth && !gender && is_active === undefined && notes === undefined) {
       return res.status(400).json({
         success: false,
         message: 'Vui lòng cung cấp ít nhất 1 trường cần cập nhật',
@@ -715,6 +739,14 @@ router.put('/:id', async (req, res) => {
       updateFields.push('gender = ?');
       updateValues.push(gender);
     }
+    if (is_active !== undefined) {
+      updateFields.push('is_active = ?');
+      updateValues.push(is_active ? 1 : 0);
+    }
+    if (notes !== undefined) {
+      updateFields.push('notes = ?');
+      updateValues.push(notes);
+    }
     updateValues.push(id);
 
     const query = `UPDATE customers SET ${updateFields.join(', ')} WHERE id = ?`;
@@ -723,7 +755,7 @@ router.put('/:id', async (req, res) => {
     // 5. Trả lại dữ liệu cập nhật
     const [[updated]] = await pool.query(
       `SELECT id, code, full_name, phone, email, date_of_birth,
-              gender, loyalty_points, loyalty_tier, is_active, created_at, updated_at
+              gender, loyalty_points, loyalty_tier, is_active, created_at, updated_at, notes
        FROM customers WHERE id = ?`,
       [id]
     );

@@ -32,7 +32,8 @@ R=$(curl -s $BASE/auth/login-pos -H 'Content-Type: application/json' -d '{"usern
 chk "POST /auth/login-pos (legacy)" "False" "$R"
 
 RANDOM_EMAIL="regtest_${RANDOM}@test.com"
-R=$(curl -s $BASE/auth/register -H 'Content-Type: application/json' -d '{"full_name":"RegTest","email":"'$RANDOM_EMAIL'","phone":"09'$RANDOM'55","password":"Test@123"}')
+RANDOM_PHONE="09$(python3 -c "import random; print(''.join([str(random.randint(0,9)) for _ in range(8)]))")"
+R=$(curl -s $BASE/auth/register -H 'Content-Type: application/json' -d '{"full_name":"RegTest","email":"'$RANDOM_EMAIL'","phone":"'$RANDOM_PHONE'","password":"Test@123"}')
 chk "POST /auth/register" "True" "$R"
 
 R=$(curl -s $BASE/auth/login -H 'Content-Type: application/json' -d '{"email_or_phone":"'$RANDOM_EMAIL'","password":"Test@123"}')
@@ -82,12 +83,12 @@ echo "═══════ 5. SHIFTS + USERS + ROLES ═══════"
 R=$(curl -s $BASE/shifts -H "Authorization: Bearer $ADMIN_TOKEN")
 chk "GET /shifts" "True" "$R"
 
-R=$(curl -s $BASE/shifts/1 -H "Authorization: Bearer $ADMIN_TOKEN")
-chk "GET /shifts/:id" "True" "$R"
-
 R=$(curl -s -X POST $BASE/shifts/open -H "Authorization: Bearer $ADMIN_TOKEN" -H 'Content-Type: application/json' -d "{\"kiosk_id\":\"TEST-$RANDOM\",\"opening_cash\":100000}")
 chk "POST /shifts/open (new alias)" "True" "$R"
 NEW_SHIFT=$(echo "$R" | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['id'])" 2>/dev/null)
+
+R=$(curl -s $BASE/shifts/$NEW_SHIFT -H "Authorization: Bearer $ADMIN_TOKEN")
+chk "GET /shifts/:id" "True" "$R"
 
 R=$(curl -s -X PUT $BASE/shifts/$NEW_SHIFT/close -H "Authorization: Bearer $ADMIN_TOKEN" -H 'Content-Type: application/json' -d '{"closing_cash":150000}')
 chk "PUT /shifts/:id/close" "True" "$R"

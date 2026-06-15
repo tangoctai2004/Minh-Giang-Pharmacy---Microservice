@@ -255,7 +255,7 @@
     <script src="js/admin-catalog-api.js"></script>
     <script src="js/admin-components.js"></script>
     <script>
-        const batchState = {
+        var batchState = {
             batches: [],
             suppliers: [],
             products: [],
@@ -284,7 +284,7 @@
         }
 
         function csvCell(value) {
-            const text = String(value ?? '');
+            var text = String(value ?? '');
             return `"${text.replace(/"/g, '""')}"`;
         }
 
@@ -293,18 +293,12 @@
         }
 
         function oneYearLater() {
-            const date = new Date();
+            var date = new Date();
             date.setFullYear(date.getFullYear() + 1);
             return date.toISOString().slice(0, 10);
         }
 
-        function toast(message, type = 'success') {
-            const el = document.createElement('div');
-            el.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:14px 18px;border-radius:10px;font-size:13px;font-weight:700;z-index:9999;box-shadow:0 8px 24px rgba(15,23,42,.24);display:flex;align-items:center;gap:10px;max-width:460px;';
-            el.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check'}" style="color:${type === 'error' ? '#ef4444' : '#10b981'}"></i><span>${escapeHtml(message)}</span>`;
-            document.body.appendChild(el);
-            setTimeout(() => { el.style.transition = 'opacity .25s, transform .25s'; el.style.opacity = '0'; el.style.transform = 'translateY(8px)'; setTimeout(() => el.remove(), 260); }, 3600);
-        }
+
 
         function switchMainTab(event, tabId) {
             document.querySelectorAll('.main-tab-content').forEach((el) => el.style.display = 'none');
@@ -314,7 +308,7 @@
         }
 
         async function loadReferenceData() {
-            const [suppliers, products, locations] = await Promise.all([
+            var [suppliers, products, locations] = await Promise.all([
                 window.MGAdminCatalogApi.get('/suppliers', { limit: 100 }),
                 window.MGAdminCatalogApi.get('/products', { status: 'active', limit: 100, sort: 'newest' }),
                 window.MGAdminCatalogApi.get('/locations', { limit: 100 })
@@ -325,14 +319,14 @@
         }
 
         async function loadBatches() {
-            const q = document.getElementById('batchSearch')?.value.trim() || '';
-            const status = document.getElementById('batchStatusFilter')?.value || '';
+            var q = document.getElementById('batchSearch')?.value.trim() || '';
+            var status = document.getElementById('batchStatusFilter')?.value || '';
             try {
-                const result = await window.MGAdminCatalogApi.get('/batches', { q, status });
+                var result = await window.MGAdminCatalogApi.get('/batches', { q, status });
                 batchState.batches = result.data || [];
                 renderBatches();
             } catch (error) {
-                toast(error.message || 'Không tải được phiếu nhập', 'error');
+                showToast(error.message || 'Không tải được phiếu nhập', 'error');
             }
         }
 
@@ -342,7 +336,7 @@
         }
 
         function renderBatches() {
-            const body = document.getElementById('batchesTableBody');
+            var body = document.getElementById('batchesTableBody');
             if (!batchState.batches.length) {
                 body.innerHTML = '<tr><td colspan="7" class="batch-empty">Chưa có phiếu nhập phù hợp</td></tr>';
                 return;
@@ -372,11 +366,11 @@
 
         function exportBatchesCsv() {
             if (!batchState.batches.length) {
-                toast('Không có phiếu nhập để xuất theo bộ lọc hiện tại', 'error');
+                showToast('Không có phiếu nhập để xuất theo bộ lọc hiện tại', 'error');
                 return;
             }
-            const headers = ['Mã phiếu', 'Nhà cung cấp', 'Ngày nhập', 'Số dòng lô', 'Tổng số lượng', 'Tổng tiền', 'Trạng thái'];
-            const rows = batchState.batches.map((batch) => [
+            var headers = ['Mã phiếu', 'Nhà cung cấp', 'Ngày nhập', 'Số dòng lô', 'Tổng số lượng', 'Tổng tiền', 'Trạng thái'];
+            var rows = batchState.batches.map((batch) => [
                 batch.batch_code,
                 batch.supplier_name || '',
                 formatDate(batch.received_date),
@@ -385,25 +379,25 @@
                 Number(batch.total_amount || 0),
                 batch.status === 'completed' ? 'Hoàn tất' : 'Nháp'
             ]);
-            const csv = [headers, ...rows].map((row) => row.map(csvCell).join(',')).join('\n');
-            const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
+            var csv = [headers, ...rows].map((row) => row.map(csvCell).join(',')).join('\n');
+            var blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
+            var url = URL.createObjectURL(blob);
+            var link = document.createElement('a');
             link.href = url;
             link.download = `phieu-nhap-kho-${todayDate()}.csv`;
             document.body.appendChild(link);
             link.click();
             link.remove();
             URL.revokeObjectURL(url);
-            toast('Đã xuất CSV phiếu nhập kho');
+            showToast('Đã xuất CSV phiếu nhập kho');
         }
 
         async function toggleBatchDetail(id, rowElement) {
-            const contentRow = document.getElementById(`batch-detail-${id}`);
-            const isOpening = !contentRow.classList.contains('open');
+            var contentRow = document.getElementById(`batch-detail-${id}`);
+            var isOpening = !contentRow.classList.contains('open');
             document.querySelectorAll('.expandable-row-content.open').forEach((el) => {
                 el.classList.remove('open');
-                const icon = el.previousElementSibling?.querySelector('.expand-icon');
+                var icon = el.previousElementSibling?.querySelector('.expand-icon');
                 if (icon) {
                     icon.classList.remove('fa-chevron-up');
                     icon.classList.add('fa-chevron-down');
@@ -411,14 +405,14 @@
             });
             if (!isOpening) return;
             contentRow.classList.add('open');
-            const icon = rowElement.querySelector('.expand-icon');
+            var icon = rowElement.querySelector('.expand-icon');
             if (icon) {
                 icon.classList.remove('fa-chevron-down');
                 icon.classList.add('fa-chevron-up');
             }
             if (!batchState.details[id]) {
                 try {
-                    const result = await window.MGAdminCatalogApi.get(`/batches/${encodeURIComponent(id)}`);
+                    var result = await window.MGAdminCatalogApi.get(`/batches/${encodeURIComponent(id)}`);
                     batchState.details[id] = result.data;
                 } catch (error) {
                     contentRow.querySelector('.expanded-content-wrapper').innerHTML = `<div class="batch-empty">${escapeHtml(error.message || 'Không tải được chi tiết')}</div>`;
@@ -429,8 +423,8 @@
         }
 
         function renderBatchDetail(id) {
-            const batch = batchState.details[id];
-            const rows = (batch.items || []).map((item) => `
+            var batch = batchState.details[id];
+            var rows = (batch.items || []).map((item) => `
                 <tr>
                     <td style="padding:10px 16px;font-size:13px;font-weight:700;color:#1e293b;">${escapeHtml(item.product_name || `#${item.product_id}`)}</td>
                     <td style="padding:10px 16px;font-size:12px;color:#475569;font-family:monospace;font-weight:700;">${escapeHtml(item.lot_number)}</td>
@@ -523,23 +517,23 @@
         }
 
         function renderPoTotals() {
-            const lineCount = batchState.poRows.length;
-            const quantityTotal = batchState.poRows.reduce((sum, row) => sum + Number(row.quantity_received || 0), 0);
-            const amountTotal = batchState.poRows.reduce((sum, row) => sum + Number(row.quantity_received || 0) * Number(row.cost_price || 0), 0);
+            var lineCount = batchState.poRows.length;
+            var quantityTotal = batchState.poRows.reduce((sum, row) => sum + Number(row.quantity_received || 0), 0);
+            var amountTotal = batchState.poRows.reduce((sum, row) => sum + Number(row.quantity_received || 0) * Number(row.cost_price || 0), 0);
             document.getElementById('poLineCount').textContent = lineCount;
             document.getElementById('poQuantityTotal').textContent = quantityTotal;
             document.getElementById('poAmountTotal').textContent = formatCurrency(amountTotal);
         }
 
         function validatePoPayload(status) {
-            const supplierId = Number(document.getElementById('poSupplier').value);
-            const receivedDate = document.getElementById('poReceivedDate').value;
+            var supplierId = Number(document.getElementById('poSupplier').value);
+            var receivedDate = document.getElementById('poReceivedDate').value;
             if (!supplierId) return 'Vui lòng chọn nhà cung cấp';
             if (!receivedDate) return 'Vui lòng chọn ngày nhập kho';
             if (!batchState.poRows.length) return 'Phiếu nhập phải có ít nhất một dòng lô';
             for (let index = 0; index < batchState.poRows.length; index += 1) {
-                const row = batchState.poRows[index];
-                const line = index + 1;
+                var row = batchState.poRows[index];
+                var line = index + 1;
                 if (!Number(row.product_id)) return `Dòng ${line}: chưa chọn thuốc`;
                 if (!String(row.lot_number || '').trim()) return `Dòng ${line}: chưa nhập số lô`;
                 if (!row.expiry_date) return `Dòng ${line}: chưa nhập hạn sử dụng`;
@@ -587,7 +581,7 @@
                 document.getElementById('poModal').classList.add('open');
                 document.body.style.overflow = 'hidden';
             } catch (error) {
-                toast(error.message || 'Không tải được dữ liệu tạo phiếu nhập', 'error');
+                showToast(error.message || 'Không tải được dữ liệu tạo phiếu nhập', 'error');
             }
         }
 
@@ -597,19 +591,19 @@
         }
 
         async function submitPo(status) {
-            const warning = document.getElementById('poLineWarning');
-            const validationError = validatePoPayload(status);
+            var warning = document.getElementById('poLineWarning');
+            var validationError = validatePoPayload(status);
             if (validationError) {
                 warning.textContent = validationError;
                 warning.style.display = 'block';
                 return;
             }
             warning.style.display = 'none';
-            const buttons = document.querySelectorAll('.wide-modal-footer button');
+            var buttons = document.querySelectorAll('.wide-modal-footer button');
             buttons.forEach((button) => { button.disabled = true; });
             try {
-                const result = await window.MGAdminCatalogApi.post('/batches', buildPoPayload(status));
-                toast(status === 'completed'
+                var result = await window.MGAdminCatalogApi.post('/batches', buildPoPayload(status));
+                showToast(status === 'completed'
                     ? `Đã hoàn tất nhập kho ${result.data?.batch_code || ''}`
                     : `Đã lưu nháp phiếu nhập ${result.data?.batch_code || ''}`);
                 closePoModal();
@@ -617,7 +611,7 @@
             } catch (error) {
                 warning.textContent = error.message || 'Không lưu được phiếu nhập';
                 warning.style.display = 'block';
-                toast(error.message || 'Không lưu được phiếu nhập', 'error');
+                showToast(error.message || 'Không lưu được phiếu nhập', 'error');
             } finally {
                 buttons.forEach((button) => { button.disabled = false; });
             }
@@ -633,7 +627,7 @@
             try {
                 await loadReferenceData();
             } catch (error) {
-                toast(error.message || 'Không tải được dữ liệu tham chiếu', 'error');
+                showToast(error.message || 'Không tải được dữ liệu tham chiếu', 'error');
             }
             await loadBatches();
         });

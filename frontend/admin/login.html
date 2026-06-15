@@ -304,6 +304,7 @@
         </div>
     </div>
 
+    <script src="js/admin-components.js"></script>
     <script>
         function getAdminApiBase() {
             return localStorage.getItem('MG_API_BASE') || (
@@ -319,14 +320,14 @@
         // Nếu đã đăng nhập rồi thì vào thẳng index
         (function checkAuth() {
             try {
-                const auth = JSON.parse(localStorage.getItem('MG_ADMIN_AUTH') || '{}');
+                var auth = JSON.parse(localStorage.getItem('MG_ADMIN_AUTH') || '{}');
                 if (auth.accessToken) window.location.href = 'index.html';
             } catch (e) {}
         })();
 
         function togglePassword() {
-            const pwdInput = document.getElementById('password');
-            const icon = document.getElementById('toggleIcon');
+            var pwdInput = document.getElementById('password');
+            var icon = document.getElementById('toggleIcon');
 
             if (pwdInput.type === 'password') {
                 pwdInput.type = 'text';
@@ -341,15 +342,15 @@
 
         function handleLogin(e) {
             e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            const errorBox = document.getElementById('authError');
-            const u = document.getElementById('username').value.trim();
-            const p = document.getElementById('password').value;
+            var btn = document.getElementById('submitBtn');
+            var errorBox = document.getElementById('authError');
+            var u = document.getElementById('username').value.trim();
+            var p = document.getElementById('password').value;
 
             btn.classList.add('loading');
             errorBox.classList.remove('show');
 
-            const API_BASE = getAdminApiBase();
+            var API_BASE = getAdminApiBase();
 
             fetch(API_BASE + '/identity/auth/admin/login', {
                 method: 'POST',
@@ -366,7 +367,7 @@
                     return;
                 }
 
-                const user = data.data && data.data.user;
+                var user = data.data && data.data.user;
                 if (!user || (user.role !== 'admin' && user.role !== 'manager')) {
                     document.getElementById('errorMessage').textContent = 'Tài khoản không có quyền truy cập hệ thống quản trị.';
                     errorBox.classList.add('show');
@@ -389,11 +390,11 @@
         }
 
         async function handleForgotPwd() {
-            const target = prompt('Nhập email hoặc số điện thoại nhân viên để nhận OTP:');
+            var target = prompt('Nhập email hoặc số điện thoại nhân viên để nhận OTP:');
             if (!target) return;
 
-            const API_BASE = getAdminApiBase();
-            const sendRes = await fetch(API_BASE + '/identity/auth/send-otp', {
+            var API_BASE = getAdminApiBase();
+            var sendRes = await fetch(API_BASE + '/identity/auth/send-otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -402,20 +403,20 @@
                     account_type: 'staff'
                 })
             });
-            const sendData = await sendRes.json().catch(() => ({}));
+            var sendData = await sendRes.json().catch(() => ({}));
             if (!sendRes.ok || !sendData.success) {
-                alert(sendData.message || 'Không gửi được OTP.');
+                showToast(sendData.message || 'Không gửi được OTP.', 'error');
                 return;
             }
 
-            const otp = prompt('Nhập mã OTP 6 số:');
+            var otp = prompt('Nhập mã OTP 6 số:');
             if (!otp) return;
-            const newPassword = prompt('Nhập mật khẩu mới (ít nhất 8 ký tự, có chữ hoa và số):');
+            var newPassword = prompt('Nhập mật khẩu mới (ít nhất 8 ký tự, có chữ hoa và số):');
             if (!newPassword) return;
-            const confirmPassword = prompt('Nhập lại mật khẩu mới:');
+            var confirmPassword = prompt('Nhập lại mật khẩu mới:');
             if (!confirmPassword) return;
 
-            const resetRes = await fetch(API_BASE + '/identity/auth/reset-password', {
+            var resetRes = await fetch(API_BASE + '/identity/auth/reset-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -427,8 +428,8 @@
                     confirm_password: confirmPassword
                 })
             });
-            const resetData = await resetRes.json().catch(() => ({}));
-            alert(resetData.message || (resetRes.ok ? 'Đã đặt lại mật khẩu.' : 'Không đặt lại được mật khẩu.'));
+            var resetData = await resetRes.json().catch(() => ({}));
+            showToast(resetData.message || (resetRes.ok ? 'Đã đặt lại mật khẩu.' : 'Không đặt lại được mật khẩu.'), resetRes.ok ? 'success' : 'error');
         }
     </script>
 </body>

@@ -4,7 +4,7 @@
  * Handles fetching, filtering, CRUD operations for vouchers, gift campaigns, and loyalty tiers.
  */
 
-const API_BASE = localStorage.getItem('MG_API_BASE') || (
+var API_BASE = localStorage.getItem('MG_API_BASE') || (
     (window.location.origin.includes('localhost:5500') ||
      window.location.origin.includes('localhost:5501') ||
      window.location.origin.includes('127.0.0.1:5500') ||
@@ -14,10 +14,10 @@ const API_BASE = localStorage.getItem('MG_API_BASE') || (
 );
 
 // State Management
-let currentVouchersPage = 1;
-let currentVouchersLimit = 10;
-let activeVoucherId = null; // null for 'new'
-let activeGiftId = null;
+var currentVouchersPage = 1;
+var currentVouchersLimit = 10;
+var activeVoucherId = null; // null for 'new'
+var activeGiftId = null;
 
 // On DOM Loaded
 document.addEventListener('DOMContentLoaded', () => {
@@ -62,8 +62,8 @@ async function initPromotionsPage() {
 
 // Helper: Get Request Headers
 function getHeaders() {
-    const authRaw = localStorage.getItem('MG_ADMIN_AUTH');
-    let token = '';
+    var authRaw = localStorage.getItem('MG_ADMIN_AUTH');
+    var token = '';
     if (authRaw) {
         try {
             token = JSON.parse(authRaw).accessToken || '';
@@ -75,50 +75,11 @@ function getHeaders() {
     };
 }
 
-// Helper: Toast Message
-function showToast(message, type = 'success') {
-    // Check if toast container exists
-    let container = document.getElementById('toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'toast-container';
-        container.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;';
-        document.body.appendChild(container);
-    }
-    
-    const toast = document.createElement('div');
-    toast.style.cssText = `
-        padding: 12px 24px;
-        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
-        color: white;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        font-size: 14px;
-        font-weight: 600;
-        opacity: 0;
-        transform: translateY(20px);
-        transition: all 0.3s ease;
-    `;
-    toast.innerText = message;
-    container.appendChild(toast);
-    
-    // Animate in
-    setTimeout(() => {
-        toast.style.opacity = '1';
-        toast.style.transform = 'translateY(0)';
-    }, 10);
-    
-    // Animate out & remove
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(20px)';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
+
 
 // Helper: Debounce
 function debounce(func, wait) {
-    let timeout;
+    var timeout;
     return function (...args) {
         clearTimeout(timeout);
         timeout = setTimeout(() => func.apply(this, args), wait);
@@ -128,11 +89,11 @@ function debounce(func, wait) {
 // ─── SECTION 1: STATS & DASHBOARD ─────────────────────────────────────────────
 async function loadStats() {
     try {
-        const res = await fetch(`${API_BASE}/cms/promotions/stats`, { headers: getHeaders() });
-        const result = await res.json();
+        var res = await fetch(`${API_BASE}/cms/promotions/stats`, { headers: getHeaders() });
+        var result = await res.json();
         
         if (result.success && result.data) {
-            const stats = result.data;
+            var stats = result.data;
             document.getElementById('stat-active-vouchers').textContent = stats.active_vouchers || 0;
             document.getElementById('stat-active-vouchers-sub').textContent = `Tổng: ${stats.total_promotions || 0} chương trình`;
 
@@ -153,18 +114,18 @@ async function loadStats() {
 // ─── SECTION 2: VOUCHERS (TAB 1) ─────────────────────────────────────────────
 async function loadVouchers(page = 1) {
     currentVouchersPage = page;
-    const tbody = document.getElementById('vouchers-table-body');
+    var tbody = document.getElementById('vouchers-table-body');
     if (!tbody) return;
 
     tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>`;
 
     try {
-        const search = document.getElementById('voucher-search')?.value || '';
-        const type = document.getElementById('voucher-filter-type')?.value || '';
-        const status = document.getElementById('voucher-filter-status')?.value || '';
+        var search = document.getElementById('voucher-search')?.value || '';
+        var type = document.getElementById('voucher-filter-type')?.value || '';
+        var status = document.getElementById('voucher-filter-status')?.value || '';
 
         // API supports type filter and search keyword
-        let url = `${API_BASE}/cms/promotions?page=${currentVouchersPage}&limit=${currentVouchersLimit}&search=${encodeURIComponent(search)}`;
+        var url = `${API_BASE}/cms/promotions?page=${currentVouchersPage}&limit=${currentVouchersLimit}&search=${encodeURIComponent(search)}`;
         
         if (type) {
             url += `&type=${type}`;
@@ -177,12 +138,12 @@ async function loadVouchers(page = 1) {
             url += `&status=${status}`;
         }
 
-        const res = await fetch(url, { headers: getHeaders() });
-        const result = await res.json();
+        var res = await fetch(url, { headers: getHeaders() });
+        var result = await res.json();
 
         if (result.success && result.data) {
-            const list = result.data;
-            const pagination = result.pagination || result.meta || {};
+            var list = result.data;
+            var pagination = result.pagination || result.meta || {};
 
             if (list.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:#6b7280;">Không tìm thấy voucher nào.</td></tr>`;
@@ -191,7 +152,7 @@ async function loadVouchers(page = 1) {
             }
 
             tbody.innerHTML = list.map(item => {
-                let typeBadge = '';
+                var typeBadge = '';
                 if (item.type === 'percent_discount') {
                     typeBadge = `<span class="discount-type percent"><i class="fa-solid fa-percent fa-xs"></i> Giảm ${item.discount_value}%${item.max_discount_amount ? ` (tối đa ${formatVND(item.max_discount_amount)})` : ''}</span>`;
                 } else if (item.type === 'fixed_discount') {
@@ -201,11 +162,11 @@ async function loadVouchers(page = 1) {
                 }
 
                 // Progress usage
-                const limit = item.usage_limit;
-                const count = item.usage_count || 0;
-                let usageProgress = 0;
-                let usageText = `${count}`;
-                let progressColor = '#10b981';
+                var limit = item.usage_limit;
+                var count = item.usage_count || 0;
+                var usageProgress = 0;
+                var usageText = `${count}`;
+                var progressColor = '#10b981';
 
                 if (limit) {
                     usageProgress = Math.min(100, (count / limit) * 100);
@@ -218,17 +179,17 @@ async function loadVouchers(page = 1) {
                 }
 
                 // Time remaining
-                const now = new Date();
-                const end = new Date(item.end_date);
-                const start = new Date(item.start_date);
-                let dateBadge = '';
+                var now = new Date();
+                var end = new Date(item.end_date);
+                var start = new Date(item.start_date);
+                var dateBadge = '';
                 
                 if (end < now) {
                     dateBadge = `<div style="font-size:13px;font-weight:600;color:#9ca3af;">${formatDate(end)}</div><div style="font-size:11px;color:#ef4444;">Đã hết hạn</div>`;
                 } else if (start > now) {
                     dateBadge = `<div style="font-size:13px;font-weight:600;color:#1d4ed8;">${formatDate(start)}</div><div style="font-size:11px;color:#1d4ed8;">Chưa bắt đầu</div>`;
                 } else {
-                    const diffDays = Math.ceil((end - now) / 86400000);
+                    var diffDays = Math.ceil((end - now) / 86400000);
                     dateBadge = `<div style="font-size:13px;font-weight:600;color:#1e293b;">${formatDate(end)}</div>
                                  <div style="font-size:11px;color:${diffDays <= 7 ? '#ef4444' : '#6b7280'};font-weight:${diffDays <= 7 ? '600' : '400'};">
                                     Còn ${diffDays} ngày
@@ -236,7 +197,7 @@ async function loadVouchers(page = 1) {
                 }
 
                 // Status Badge
-                let statusBadge = '';
+                var statusBadge = '';
                 if (!item.is_active) {
                     statusBadge = `<span class="status-badge" style="background:#f1f5f9;color:#94a3b8;">Dừng</span>`;
                 } else if (end < now) {
@@ -294,18 +255,18 @@ async function loadVouchers(page = 1) {
 }
 
 function renderVouchersPagination(total, totalPages) {
-    const pageInfo = document.querySelector('.pagination .page-info');
-    const controls = document.querySelector('.pagination .page-controls');
+    var pageInfo = document.querySelector('.pagination .page-info');
+    var controls = document.querySelector('.pagination .page-controls');
     if (!controls) return;
 
-    const startIdx = (currentVouchersPage - 1) * currentVouchersLimit + 1;
-    const endIdx = Math.min(currentVouchersPage * currentVouchersLimit, total);
+    var startIdx = (currentVouchersPage - 1) * currentVouchersLimit + 1;
+    var endIdx = Math.min(currentVouchersPage * currentVouchersLimit, total);
     
     if (pageInfo) {
         pageInfo.textContent = total > 0 ? `Hiển thị ${startIdx} – ${endIdx} trên ${total} voucher` : 'Hiển thị 0 trên 0 voucher';
     }
 
-    let buttonsHTML = '';
+    var buttonsHTML = '';
     // Previous button
     buttonsHTML += `<button class="btn-page" ${currentVouchersPage === 1 ? 'disabled' : ''} onclick="loadVouchers(${currentVouchersPage - 1})"><i class="fa-solid fa-chevron-left"></i></button>`;
     
@@ -329,12 +290,12 @@ function openVoucherNewModal() {
     // Defaults
     document.getElementById('voucher-code-input').disabled = false;
     document.getElementById('voucher-start-input').value = new Date().toISOString().slice(0, 10);
-    const in30Days = new Date();
+    var in30Days = new Date();
     in30Days.setDate(in30Days.getDate() + 30);
     document.getElementById('voucher-end-input').value = in30Days.toISOString().slice(0, 10);
     
     // Toggle active switch
-    const toggle = document.getElementById('voucher-active-toggle');
+    var toggle = document.getElementById('voucher-active-toggle');
     if (toggle) {
         toggle.classList.add('on');
         toggle.dataset.active = "true";
@@ -349,11 +310,11 @@ async function openVoucherEditModal(id) {
     document.getElementById('voucherModalTitle').innerText = 'Chỉnh sửa Voucher';
     
     try {
-        const res = await fetch(`${API_BASE}/cms/promotions/${id}`, { headers: getHeaders() });
-        const result = await res.json();
+        var res = await fetch(`${API_BASE}/cms/promotions/${id}`, { headers: getHeaders() });
+        var result = await res.json();
         
         if (result.success && result.data) {
-            const item = result.data;
+            var item = result.data;
             document.getElementById('voucher-code-input').value = item.code || '';
             document.getElementById('voucher-code-input').disabled = true; // Code can't be changed after creation
             document.getElementById('voucher-name-input').value = item.name || '';
@@ -372,13 +333,13 @@ async function openVoucherEditModal(id) {
             }
             
             // Channels
-            const isWeb = item.applicable_channel === 'all' || item.applicable_channel === 'web';
-            const isPos = item.applicable_channel === 'all' || item.applicable_channel === 'pos';
+            var isWeb = item.applicable_channel === 'all' || item.applicable_channel === 'web';
+            var isPos = item.applicable_channel === 'all' || item.applicable_channel === 'pos';
             document.getElementById('voucher-channel-web').checked = isWeb;
             document.getElementById('voucher-channel-pos').checked = isPos;
 
             // Active toggle
-            const toggle = document.getElementById('voucher-active-toggle');
+            var toggle = document.getElementById('voucher-active-toggle');
             if (toggle) {
                 if (item.is_active) {
                     toggle.classList.add('on');
@@ -407,20 +368,20 @@ function closeVoucherModal() {
 async function handleVoucherSubmit(e) {
     e.preventDefault();
 
-    const code = document.getElementById('voucher-code-input').value.trim();
-    const name = document.getElementById('voucher-name-input').value.trim();
-    const campaign_name = document.getElementById('voucher-campaign-input').value.trim() || null;
-    const rawType = document.getElementById('voucher-type-input').value;
-    const discount_value = Number(document.getElementById('voucher-value-input').value) || 0;
-    const max_discount_amount = document.getElementById('voucher-max-discount-input').value ? Number(document.getElementById('voucher-max-discount-input').value) : null;
-    const min_order_value = Number(document.getElementById('voucher-min-order-input').value) || 0;
-    const usage_limit = document.getElementById('voucher-limit-input').value ? Number(document.getElementById('voucher-limit-input').value) : null;
-    const start_date = document.getElementById('voucher-start-input').value;
-    const end_date = document.getElementById('voucher-end-input').value;
+    var code = document.getElementById('voucher-code-input').value.trim();
+    var name = document.getElementById('voucher-name-input').value.trim();
+    var campaign_name = document.getElementById('voucher-campaign-input').value.trim() || null;
+    var rawType = document.getElementById('voucher-type-input').value;
+    var discount_value = Number(document.getElementById('voucher-value-input').value) || 0;
+    var max_discount_amount = document.getElementById('voucher-max-discount-input').value ? Number(document.getElementById('voucher-max-discount-input').value) : null;
+    var min_order_value = Number(document.getElementById('voucher-min-order-input').value) || 0;
+    var usage_limit = document.getElementById('voucher-limit-input').value ? Number(document.getElementById('voucher-limit-input').value) : null;
+    var start_date = document.getElementById('voucher-start-input').value;
+    var end_date = document.getElementById('voucher-end-input').value;
 
-    const isWeb = document.getElementById('voucher-channel-web').checked;
-    const isPos = document.getElementById('voucher-channel-pos').checked;
-    let applicable_channel = 'all';
+    var isWeb = document.getElementById('voucher-channel-web').checked;
+    var isPos = document.getElementById('voucher-channel-pos').checked;
+    var applicable_channel = 'all';
     if (isWeb && !isPos) applicable_channel = 'web';
     if (!isWeb && isPos) applicable_channel = 'pos';
     if (!isWeb && !isPos) {
@@ -429,13 +390,13 @@ async function handleVoucherSubmit(e) {
     }
 
     // Map UI types to Backend enum
-    let type = 'percent_discount';
+    var type = 'percent_discount';
     if (rawType === 'fixed') type = 'fixed_discount';
     if (rawType === 'freeship') type = 'free_shipping';
 
-    const is_active = document.getElementById('voucher-active-toggle').dataset.active === "true" ? 1 : 0;
+    var is_active = document.getElementById('voucher-active-toggle').dataset.active === "true" ? 1 : 0;
 
-    const payload = {
+    var payload = {
         name,
         campaign_name,
         code,
@@ -452,7 +413,7 @@ async function handleVoucherSubmit(e) {
     };
 
     try {
-        let res;
+        var res;
         if (activeVoucherId) {
             // Update
             res = await fetch(`${API_BASE}/cms/promotions/${activeVoucherId}`, {
@@ -469,7 +430,7 @@ async function handleVoucherSubmit(e) {
             });
         }
 
-        const result = await res.json();
+        var result = await res.json();
         if (result.success) {
             showToast(result.message || 'Lưu voucher thành công');
             closeVoucherModal();
@@ -485,11 +446,11 @@ async function handleVoucherSubmit(e) {
 
 async function toggleVoucherStatus(id, currentStatus) {
     try {
-        const res = await fetch(`${API_BASE}/cms/promotions/${id}/toggle`, {
+        var res = await fetch(`${API_BASE}/cms/promotions/${id}/toggle`, {
             method: 'PUT',
             headers: getHeaders()
         });
-        const result = await res.json();
+        var result = await res.json();
         if (result.success) {
             showToast(result.message || 'Đổi trạng thái thành công');
             loadVouchers(currentVouchersPage);
@@ -505,11 +466,11 @@ async function toggleVoucherStatus(id, currentStatus) {
 async function cloneVoucher(id) {
     if (!confirm('Bạn có muốn nhân bản voucher này không?')) return;
     try {
-        const res = await fetch(`${API_BASE}/cms/promotions/${id}/clone`, {
+        var res = await fetch(`${API_BASE}/cms/promotions/${id}/clone`, {
             method: 'POST',
             headers: getHeaders()
         });
-        const result = await res.json();
+        var result = await res.json();
         if (result.success) {
             showToast(result.message || 'Nhân bản thành công');
             loadVouchers();
@@ -524,13 +485,13 @@ async function cloneVoucher(id) {
 
 async function exportPromotionsReport() {
     try {
-        const res = await fetch(`${API_BASE}/cms/promotions/export`, { headers: getHeaders() });
+        var res = await fetch(`${API_BASE}/cms/promotions/export`, { headers: getHeaders() });
         if (!res.ok) {
             throw new Error('Không thể xuất file báo cáo');
         }
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        var blob = await res.blob();
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
         a.download = `Promotions_Report_${new Date().toISOString().slice(0, 10)}.csv`;
@@ -545,29 +506,29 @@ async function exportPromotionsReport() {
 
 // ─── SECTION 3: GIFT CAMPAIGNS (TAB 2) ─────────────────────────────────────────
 async function loadGiftCampaigns() {
-    const container = document.getElementById('gifts-list-container');
+    var container = document.getElementById('gifts-list-container');
     if (!container) return;
 
     container.innerHTML = `<div style="text-align:center;padding:30px;"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải chiến dịch quà tặng...</div>`;
 
     try {
-        const res = await fetch(`${API_BASE}/cms/promotions?type=buy_x_get_y`, { headers: getHeaders() });
-        const result = await res.json();
+        var res = await fetch(`${API_BASE}/cms/promotions?type=buy_x_get_y`, { headers: getHeaders() });
+        var result = await res.json();
 
         if (result.success && result.data) {
-            const list = result.data;
+            var list = result.data;
             if (list.length === 0) {
                 container.innerHTML = `<div style="text-align:center;padding:30px;color:#6b7280;background:#fff;border-radius:8px;border:1px solid #e2e8f0;">Chưa có chiến dịch quà tặng nào.</div>`;
                 return;
             }
 
             container.innerHTML = list.map(item => {
-                const now = new Date();
-                const end = new Date(item.end_date);
-                const start = new Date(item.start_date);
+                var now = new Date();
+                var end = new Date(item.end_date);
+                var start = new Date(item.start_date);
                 
-                let statusBadge = '';
-                let opacity = '';
+                var statusBadge = '';
+                var opacity = '';
                 
                 if (!item.is_active) {
                     statusBadge = `<span class="status-badge" style="background:#f1f5f9;color:#94a3b8;font-size:11px;">Tắt</span>`;
@@ -581,7 +542,7 @@ async function loadGiftCampaigns() {
                     statusBadge = `<span class="status-badge active" style="font-size:11px;">Đang chạy</span>`;
                 }
 
-                const channelStr = item.applicable_channel === 'all' ? 'Web & POS' : item.applicable_channel === 'web' ? 'Chỉ Website' : 'Chỉ POS';
+                var channelStr = item.applicable_channel === 'all' ? 'Web & POS' : item.applicable_channel === 'web' ? 'Chỉ Website' : 'Chỉ POS';
 
                 return `
                     <div class="gift-rule-card" ${opacity}>
@@ -601,14 +562,14 @@ async function loadGiftCampaigns() {
             }).join('');
 
             // Also load/enrich Tab 2 Quick Stats based on loaded gifts
-            const activeGifts = list.filter(g => g.is_active && new Date(g.end_date) >= new Date() && new Date(g.start_date) <= new Date());
-            const totalGiftsSent = list.reduce((sum, g) => sum + (g.usage_count || 0), 0);
+            var activeGifts = list.filter(g => g.is_active && new Date(g.end_date) >= new Date() && new Date(g.start_date) <= new Date());
+            var totalGiftsSent = list.reduce((sum, g) => sum + (g.usage_count || 0), 0);
             
             document.getElementById('gift-total-sent').textContent = totalGiftsSent;
             
             if (list.length > 0) {
                 // Find top campaign (highest usage)
-                const topCampaign = [...list].sort((a,b) => b.usage_count - a.usage_count)[0];
+                var topCampaign = [...list].sort((a,b) => b.usage_count - a.usage_count)[0];
                 document.getElementById('gift-top-campaign').textContent = topCampaign.name.replace('Gift:', '').trim();
                 document.getElementById('gift-top-campaign-usage').textContent = `${topCampaign.usage_count} lần đã áp dụng`;
                 
@@ -623,16 +584,16 @@ async function loadGiftCampaigns() {
 }
 
 function initGiftProductAutocomplete() {
-    const input = document.getElementById('gift-product-input');
-    const dropdown = document.getElementById('gift-products-dropdown');
+    var input = document.getElementById('gift-product-input');
+    var dropdown = document.getElementById('gift-products-dropdown');
     if (!input || !dropdown) return;
     
-    let debounceTimer = null;
+    var debounceTimer = null;
     
-    const fetchAndRender = async () => {
-        const term = input.value.trim();
+    var fetchAndRender = async () => {
+        var term = input.value.trim();
         try {
-            const queryParams = new URLSearchParams({
+            var queryParams = new URLSearchParams({
                 limit: '50',
                 status: 'active'
             });
@@ -640,12 +601,12 @@ function initGiftProductAutocomplete() {
                 queryParams.set('q', term);
             }
             
-            const res = await fetch(`${API_BASE}/catalog/products?${queryParams.toString()}`, {
+            var res = await fetch(`${API_BASE}/catalog/products?${queryParams.toString()}`, {
                 headers: getHeaders()
             });
-            const result = await res.json();
+            var result = await res.json();
             
-            let products = [];
+            var products = [];
             if (result.success && Array.isArray(result.data)) {
                 products = result.data;
             } else if (result.success && result.data && Array.isArray(result.data.data)) {
@@ -653,7 +614,7 @@ function initGiftProductAutocomplete() {
             }
             
             // FILTER: Chỉ giữ các sản phẩm thực tế còn tồn kho (total_stock > 0 hoặc in_stock là true)
-            const inStockProducts = products.filter(prod => prod.in_stock === true || Number(prod.total_stock) > 0);
+            var inStockProducts = products.filter(prod => prod.in_stock === true || Number(prod.total_stock) > 0);
             
             if (inStockProducts.length === 0) {
                 dropdown.innerHTML = '<div style="padding: 10px 12px; font-size: 13px; color: #9ca3af; text-align: center;">Không tìm thấy sản phẩm còn hàng.</div>';
@@ -661,7 +622,7 @@ function initGiftProductAutocomplete() {
                 return;
             }
             
-            let html = '';
+            var html = '';
             inStockProducts.forEach(prod => {
                 html += `<div class="custom-autocomplete-dropdown-item" data-name="${prod.name}">${prod.name} (Tồn: ${prod.total_stock || 0})</div>`;
             });
@@ -707,12 +668,12 @@ function openGiftNewModal() {
     
     // Defaults
     document.getElementById('gift-start-input').value = new Date().toISOString().slice(0, 10);
-    const in30Days = new Date();
+    var in30Days = new Date();
     in30Days.setDate(in30Days.getDate() + 30);
     document.getElementById('gift-end-input').value = in30Days.toISOString().slice(0, 10);
 
     // Reset dropdown state
-    const dropdown = document.getElementById('gift-products-dropdown');
+    var dropdown = document.getElementById('gift-products-dropdown');
     if (dropdown) dropdown.style.display = 'none';
 
     document.getElementById('giftModal').classList.add('open');
@@ -724,15 +685,15 @@ async function openGiftEditModal(id) {
     document.getElementById('giftModalTitle').innerText = 'Chỉnh sửa Chiến Dịch Quà Tặng';
     
     // Reset dropdown state
-    const dropdown = document.getElementById('gift-products-dropdown');
+    var dropdown = document.getElementById('gift-products-dropdown');
     if (dropdown) dropdown.style.display = 'none';
 
     try {
-        const res = await fetch(`${API_BASE}/cms/promotions/${id}`, { headers: getHeaders() });
-        const result = await res.json();
+        var res = await fetch(`${API_BASE}/cms/promotions/${id}`, { headers: getHeaders() });
+        var result = await res.json();
         
         if (result.success && result.data) {
-            const item = result.data;
+            var item = result.data;
             document.getElementById('gift-name-input').value = item.name || '';
             document.getElementById('gift-min-order-input').value = item.min_order_value || 0;
             document.getElementById('gift-product-input').value = item.gift_product_name || '';
@@ -763,20 +724,20 @@ function closeGiftModal() {
 async function handleGiftSubmit(e) {
     e.preventDefault();
 
-    const name = document.getElementById('gift-name-input').value.trim();
-    const min_order_value = Number(document.getElementById('gift-min-order-input').value) || 0;
-    const gift_product_name = document.getElementById('gift-product-input').value.trim();
-    const gift_product_qty = Number(document.getElementById('gift-qty-input').value) || 1;
-    const start_date = document.getElementById('gift-start-input').value;
-    const end_date = document.getElementById('gift-end-input').value;
-    const applicable_channel = document.getElementById('gift-channel-select').value;
+    var name = document.getElementById('gift-name-input').value.trim();
+    var min_order_value = Number(document.getElementById('gift-min-order-input').value) || 0;
+    var gift_product_name = document.getElementById('gift-product-input').value.trim();
+    var gift_product_qty = Number(document.getElementById('gift-qty-input').value) || 1;
+    var start_date = document.getElementById('gift-start-input').value;
+    var end_date = document.getElementById('gift-end-input').value;
+    var applicable_channel = document.getElementById('gift-channel-select').value;
 
     if (!name || !gift_product_name) {
         showToast('Vui lòng nhập đầy đủ Tên chiến dịch và Sản phẩm quà', 'error');
         return;
     }
 
-    const payload = {
+    var payload = {
         name,
         type: 'buy_x_get_y',
         discount_value: 0,
@@ -791,7 +752,7 @@ async function handleGiftSubmit(e) {
     };
 
     try {
-        let res;
+        var res;
         if (activeGiftId) {
             res = await fetch(`${API_BASE}/cms/promotions/${activeGiftId}`, {
                 method: 'PUT',
@@ -806,7 +767,7 @@ async function handleGiftSubmit(e) {
             });
         }
 
-        const result = await res.json();
+        var result = await res.json();
         if (result.success) {
             showToast(result.message || 'Lưu chiến dịch quà tặng thành công');
             closeGiftModal();
@@ -823,17 +784,17 @@ async function handleGiftSubmit(e) {
 // ─── SECTION 4: LOYALTY PROGRAM (TAB 3) ────────────────────────────────────────
 async function loadLoyaltyTiers() {
     try {
-        const res = await fetch(`${API_BASE}/cms/loyalty/tiers`, { headers: getHeaders() });
-        const result = await res.json();
+        var res = await fetch(`${API_BASE}/cms/loyalty/tiers`, { headers: getHeaders() });
+        var result = await res.json();
 
         if (result.success && result.data) {
-            const tiers = result.data;
+            var tiers = result.data;
             
             // Map tiers dynamically
             tiers.forEach(tier => {
-                const prefix = `tier-${tier.tier_code}`;
-                const rateInput = document.getElementById(`${prefix}-rate`);
-                const spendingDesc = document.getElementById(`${prefix}-spending-desc`);
+                var prefix = `tier-${tier.tier_code}`;
+                var rateInput = document.getElementById(`${prefix}-rate`);
+                var spendingDesc = document.getElementById(`${prefix}-spending-desc`);
                 
                 if (rateInput) {
                     rateInput.value = tier.points_rate || 0;
@@ -850,11 +811,11 @@ async function loadLoyaltyTiers() {
 }
 
 async function saveLoyaltyTiers() {
-    const tiers = [];
-    const inputs = ['tier-member', 'tier-silver', 'tier-gold', 'tier-vip'];
+    var tiers = [];
+    var inputs = ['tier-member', 'tier-silver', 'tier-gold', 'tier-vip'];
     
     inputs.forEach(id => {
-        const el = document.getElementById(`${id}-rate`);
+        var el = document.getElementById(`${id}-rate`);
         if (el) {
             tiers.push({
                 tier_code: el.dataset.code,
@@ -864,12 +825,12 @@ async function saveLoyaltyTiers() {
     });
 
     try {
-        const res = await fetch(`${API_BASE}/cms/loyalty/tiers`, {
+        var res = await fetch(`${API_BASE}/cms/loyalty/tiers`, {
             method: 'PUT',
             headers: getHeaders(),
             body: JSON.stringify({ tiers })
         });
-        const result = await res.json();
+        var result = await res.json();
         
         if (result.success) {
             showToast('Lưu cấu hình hạng thành viên thành công');
@@ -884,11 +845,11 @@ async function saveLoyaltyTiers() {
 
 async function loadLoyaltyConfig() {
     try {
-        const res = await fetch(`${API_BASE}/cms/loyalty/config`, { headers: getHeaders() });
-        const result = await res.json();
+        var res = await fetch(`${API_BASE}/cms/loyalty/config`, { headers: getHeaders() });
+        var result = await res.json();
 
         if (result.success && result.data) {
-            const config = result.data;
+            var config = result.data;
             
             // Set inputs
             if (document.getElementById('loyalty-rate')) {
@@ -911,14 +872,14 @@ async function loadLoyaltyConfig() {
 }
 
 async function saveLoyaltyConfig() {
-    const loyalty_points_per_vnd = Number(document.getElementById('loyalty-rate').value) || 100;
-    const loyalty_min_redeem = Number(document.getElementById('loyalty-min').value) || 500;
-    const loyalty_max_redeem_per_order = Number(document.getElementById('loyalty-max').value) || 200000;
+    var loyalty_points_per_vnd = Number(document.getElementById('loyalty-rate').value) || 100;
+    var loyalty_min_redeem = Number(document.getElementById('loyalty-min').value) || 500;
+    var loyalty_max_redeem_per_order = Number(document.getElementById('loyalty-max').value) || 200000;
     
-    const loyalty_allow_web = document.getElementById('loyalty-allow-web-toggle').classList.contains('on');
-    const loyalty_allow_pos = document.getElementById('loyalty-allow-pos-toggle').classList.contains('on');
+    var loyalty_allow_web = document.getElementById('loyalty-allow-web-toggle').classList.contains('on');
+    var loyalty_allow_pos = document.getElementById('loyalty-allow-pos-toggle').classList.contains('on');
 
-    const payload = {
+    var payload = {
         loyalty_points_per_vnd,
         loyalty_min_redeem,
         loyalty_max_redeem_per_order,
@@ -927,12 +888,12 @@ async function saveLoyaltyConfig() {
     };
 
     try {
-        const res = await fetch(`${API_BASE}/cms/loyalty/config`, {
+        var res = await fetch(`${API_BASE}/cms/loyalty/config`, {
             method: 'PUT',
             headers: getHeaders(),
             body: JSON.stringify(payload)
         });
-        const result = await res.json();
+        var result = await res.json();
         
         if (result.success) {
             showToast('Lưu quy tắc đổi điểm thành công');
@@ -947,20 +908,20 @@ async function saveLoyaltyConfig() {
 
 async function loadLoyaltyStats() {
     try {
-        const res = await fetch(`${API_BASE}/cms/loyalty/stats`, { headers: getHeaders() });
-        const result = await res.json();
+        var res = await fetch(`${API_BASE}/cms/loyalty/stats`, { headers: getHeaders() });
+        var result = await res.json();
 
         if (result.success && result.data) {
-            const stats = result.data;
+            var stats = result.data;
             
             // Total customers and points system
             document.getElementById('loyalty-total-members').textContent = new Intl.NumberFormat('vi-VN').format(stats.total_customers);
             
-            const totalPoints = stats.total_points_system;
+            var totalPoints = stats.total_points_system;
             document.getElementById('loyalty-total-points').textContent = totalPoints >= 1000000 ? (totalPoints / 1000000).toFixed(1) + 'M' : new Intl.NumberFormat('vi-VN').format(totalPoints);
 
             // Distribution bars
-            const codes = {
+            var codes = {
                 member: 'bronze',
                 silver: 'silver',
                 gold: 'gold',
@@ -974,7 +935,7 @@ async function loadLoyaltyStats() {
             });
 
             stats.breakdown.forEach(row => {
-                const suffix = codes[row.loyalty_tier];
+                var suffix = codes[row.loyalty_tier];
                 if (suffix) {
                     document.getElementById(`loyalty-${suffix}-count`).textContent = `${new Intl.NumberFormat('vi-VN').format(row.customer_count)} KH`;
                     document.getElementById(`loyalty-${suffix}-bar`).style.width = `${row.percentage}%`;
@@ -988,7 +949,7 @@ async function loadLoyaltyStats() {
 
 // Switch helper
 function setToggleSwitch(elementId, isOn) {
-    const el = document.getElementById(elementId);
+    var el = document.getElementById(elementId);
     if (!el) return;
     if (isOn) {
         el.classList.add('on');
@@ -1010,10 +971,10 @@ function formatVND(value) {
 }
 
 function formatDate(dateObj) {
-    const d = new Date(dateObj);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
+    var d = new Date(dateObj);
+    var day = String(d.getDate()).padStart(2, '0');
+    var month = String(d.getMonth() + 1).padStart(2, '0');
+    var year = d.getFullYear();
     return `${day}/${month}/${year}`;
 }
 
@@ -1027,8 +988,8 @@ window.openGiftModal = openGiftNewModal;
 window.openGiftEditModal = openGiftEditModal;
 window.closeGiftModal = closeGiftModal;
 window.toggleDiscountFields = function(val) {
-    const group = document.getElementById('discount-value-group');
-    const input = document.getElementById('voucher-value-input');
+    var group = document.getElementById('discount-value-group');
+    var input = document.getElementById('voucher-value-input');
     if (group) {
         if (val === 'freeship') {
             group.style.display = 'none';

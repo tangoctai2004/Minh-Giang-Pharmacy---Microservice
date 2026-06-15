@@ -612,6 +612,7 @@ router.get('/', async (req, res) => {
     const status = req.query.status || 'active';
     const quality = req.query.quality || '';
     const sort = req.query.sort || 'newest';
+    const lowStockOnly = req.query.low_stock === '1' || req.query.low_stock === 'true';
 
     if (status !== 'all' && !PRODUCT_STATUSES.includes(status)) {
       return res.status(400).json({ success: false, message: 'Trạng thái sản phẩm không hợp lệ' });
@@ -718,6 +719,18 @@ router.get('/', async (req, res) => {
       where += ` AND NOT ${qualityMissingSql}`;
     } else if (quality && quality !== 'all') {
       return res.status(400).json({ success: false, message: 'Bộ lọc chất lượng dữ liệu không hợp lệ' });
+    }
+
+    if (lowStockOnly) {
+      where += ` AND (
+        SELECT COALESCE(SUM(quantity_remaining), 0)
+        FROM batch_items
+        WHERE product_id = p.id AND status IN ('available', 'near_expiry')
+      ) > 0 AND (
+        SELECT COALESCE(SUM(quantity_remaining), 0)
+        FROM batch_items
+        WHERE product_id = p.id AND status IN ('available', 'near_expiry')
+      ) <= p.min_stock_alert`;
     }
 
     // Sort mapping

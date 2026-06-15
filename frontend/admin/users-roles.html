@@ -8,6 +8,531 @@
     <link rel="stylesheet" href="css/admin-style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        /* Stats Summary Container */
+        .stats-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border: 1px solid var(--admin-border);
+            border-radius: var(--admin-radius-lg);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .stat-card-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-card-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .stat-card-label {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        /* Color variations for icons */
+        .icon-primary { background: #e0f2fe; color: #0284c7; }
+        .icon-success { background: #d1fae5; color: #059669; }
+        .icon-danger { background: #fee2e2; color: #dc2626; }
+        .icon-warning { background: #f3e8ff; color: #7e22ce; }
+
+        /* Grid vs List View for Users */
+        .view-toggle-container {
+            display: flex;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: var(--admin-radius);
+            margin-left: 12px;
+        }
+
+        .view-toggle-btn {
+            border: none;
+            background: transparent;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+
+        .view-toggle-btn.active {
+            background: #fff;
+            color: var(--admin-primary);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* Users Grid View */
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 16px;
+        }
+
+        .user-card {
+            background: #fff;
+            border: 1px solid var(--admin-border);
+            border-radius: var(--admin-radius-lg);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .user-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        .user-card-avatar {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            border: 3px solid #fff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .user-card-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .user-card-username {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 2px;
+            font-family: monospace;
+        }
+
+        .user-card-role {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 12px;
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* User Card Contacts */
+        .user-card-contacts {
+            width: 100%;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            text-align: left;
+            font-size: 13px;
+            color: #475569;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .contact-item i {
+            color: #94a3b8;
+            width: 16px;
+        }
+
+        /* Card Actions */
+        .user-card-actions {
+            margin-top: 20px;
+            display: flex;
+            width: 100%;
+            gap: 10px;
+        }
+
+        .user-card-btn {
+            flex: 1;
+            height: 36px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .user-card-btn.edit {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            color: #334155;
+        }
+
+        .user-card-btn.edit:hover {
+            background: #e2e8f0;
+        }
+
+        .user-card-btn.lock {
+            background: #fff;
+            border: 1px solid #fecaca;
+            color: #ef4444;
+        }
+
+        .user-card-btn.lock:hover {
+            background: #fef2f2;
+        }
+
+        /* Roles Grid */
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            margin-top: 16px;
+        }
+
+        .role-card {
+            background: #fff;
+            border: 1px solid var(--admin-border);
+            border-radius: var(--admin-radius-lg);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .role-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        .role-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .role-card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .role-card-icon {
+            color: #8b5cf6;
+            font-size: 18px;
+        }
+
+        .role-card-count {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            background: #f3e8ff;
+            color: #7e22ce;
+            border-radius: 10px;
+        }
+
+        .role-card-desc {
+            font-size: 13px;
+            color: #475569;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            min-height: 40px;
+        }
+
+        .role-card-perms-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .role-card-perms-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            max-height: 120px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding-right: 4px;
+        }
+
+        .perm-tag {
+            font-size: 11px;
+            font-weight: 600;
+            color: #334155;
+            background: #f1f5f9;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .role-card-actions {
+            margin-top: auto;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 16px;
+        }
+
+        /* Permission selector item in Modal */
+        .perm-check-card {
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .perm-check-card:hover {
+            border-color: #94a3b8;
+            background: #f8fafc;
+        }
+
+        .perm-check-card.checked {
+            border-color: #8b5cf6;
+            background: #f5f3ff;
+        }
+
+        /* Two-Column Modal Layout */
+        .modal-grid {
+            display: flex;
+            gap: 24px;
+        }
+
+        .modal-col-left {
+            width: 220px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-right: 1px solid #e2e8f0;
+            padding-right: 24px;
+        }
+
+        .modal-col-right {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Avatar Picker Styles */
+        .avatar-preview-container {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .avatar-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: 800;
+            background: #e0e7ff;
+            color: #4338ca;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .avatar-picker-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #64748b;
+            margin-bottom: 8px;
+            align-self: flex-start;
+            letter-spacing: 0.05em;
+        }
+
+        .avatar-options-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+            width: 100%;
+        }
+
+        .avatar-option-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 2px solid #e2e8f0;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0;
+        }
+
+        .avatar-option-btn:hover {
+            transform: scale(1.1);
+            border-color: #cbd5e1;
+        }
+
+        .avatar-option-btn.active {
+            border-color: #8b5cf6;
+            background: #f5f3ff;
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+            transform: scale(1.08);
+        }
+
+        .avatar-option-btn.initials-btn {
+            font-size: 11px;
+            font-weight: 700;
+            color: #4338ca;
+            background: #e0e7ff;
+            border-color: #c7d2fe;
+        }
+
+        .avatar-custom-input-container {
+            width: 100%;
+            margin-top: 4px;
+        }
+
+        /* Metadata summary card */
+        .meta-summary-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            width: 100%;
+            margin-top: 16px;
+            font-size: 11px;
+            color: #475569;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .meta-summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .meta-summary-label {
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .meta-summary-value {
+            color: #0f172a;
+            font-family: monospace;
+        }
+
+        /* Switch styling for account status */
+        .switch-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+            cursor: pointer;
+            user-select: none;
+            width: 100%;
+        }
+
+        /* Form Row alignments */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+        }
+
+        @media (max-width: 640px) {
+            .modal-grid {
+                flex-direction: column;
+                gap: 16px;
+            }
+            .modal-col-left {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
+                padding-right: 0;
+                padding-bottom: 16px;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -15,6 +540,7 @@
     <header class="admin-header"></header>
 
     <main class="admin-main">
+        <!-- Page Header -->
         <div class="page-header">
             <div>
                 <h1 class="page-title">Quản Lý Nhân Sự & Quyền</h1>
@@ -26,6 +552,38 @@
             </div>
         </div>
 
+        <!-- Statistics Section -->
+        <div class="stats-summary-grid">
+            <div class="stat-card">
+                <div class="stat-card-icon icon-primary"><i class="fa-solid fa-users-gear"></i></div>
+                <div class="stat-card-info">
+                    <span class="stat-card-value" id="statTotalStaff">0</span>
+                    <span class="stat-card-label">Tổng Nhân Sự</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-icon icon-success"><i class="fa-solid fa-user-check"></i></div>
+                <div class="stat-card-info">
+                    <span class="stat-card-value" id="statActiveStaff">0</span>
+                    <span class="stat-card-label">Tài Khoản Hoạt Động</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-icon icon-danger"><i class="fa-solid fa-user-lock"></i></div>
+                <div class="stat-card-info">
+                    <span class="stat-card-value" id="statLockedStaff">0</span>
+                    <span class="stat-card-label">Tài Khoản Bị Khóa</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-icon icon-warning"><i class="fa-solid fa-shield-halved"></i></div>
+                <div class="stat-card-info">
+                    <span class="stat-card-value" id="statTotalRoles">0</span>
+                    <span class="stat-card-label">Vai Trò Hệ Thống</span>
+                </div>
+            </div>
+        </div>
+
         <!-- TABS -->
         <div class="page-tabs" style="margin-bottom: 20px;">
             <button class="page-tab-btn active" onclick="switchPageTab('tab-users', event)"><i class="fa-solid fa-user-tie"></i> Danh Sách Nhân Viên</button>
@@ -34,7 +592,40 @@
 
         <!-- ===== TAB 1: USERS ===== -->
         <div id="tab-users" class="page-tab-content active">
-            <div class="inventory-table-container">
+            <!-- Search & Filters -->
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:16px;flex-wrap:wrap;background:#fff;padding:12px 16px;border-radius:6px;border:1px solid #cbd5e1;">
+                <div style="position:relative;flex:1;max-width:300px;">
+                    <input type="text" id="userSearchInput" placeholder="Tìm tên, SĐT, email, mã NV..." style="width:100%;height:38px;padding-left:36px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;" oninput="filterUserTable()">
+                    <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:12px;top:12px;color:#94a3b8;font-size:13px;"></i>
+                </div>
+                <div style="display:flex;gap:12px;align-items:center;">
+                    <select id="userRoleFilter" style="height:38px;padding:0 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;background:#fff;font-weight:600;min-width:145px;" onchange="filterUserTable()">
+                        <option value="">Tất cả vai trò</option>
+                    </select>
+                    <select id="userStatusFilter" style="height:38px;padding:0 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;background:#fff;font-weight:600;min-width:145px;" onchange="filterUserTable()">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="active">Active</option>
+                        <option value="locked">Locked</option>
+                    </select>
+                    
+                    <div class="view-toggle-container">
+                        <button class="view-toggle-btn active" id="btnViewGrid" onclick="switchUserView('grid')" title="Dạng thẻ trực quan">
+                            <i class="fa-solid fa-table-cells-large"></i>
+                        </button>
+                        <button class="view-toggle-btn" id="btnViewList" onclick="switchUserView('list')" title="Dạng danh sách chi tiết">
+                            <i class="fa-solid fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid View for Users -->
+            <div id="userGridView" class="users-grid">
+                <!-- Dynamic cards render here -->
+            </div>
+
+            <!-- Table/List View for Users (Hidden by default) -->
+            <div id="userListView" class="inventory-table-container" style="display:none;">
                 <table class="inventory-table">
                     <thead>
                         <tr>
@@ -55,67 +646,117 @@
 
         <!-- ===== TAB 2: ROLES ===== -->
         <div id="tab-roles" class="page-tab-content">
-            <div class="inventory-table-container">
-                <table class="inventory-table">
-                    <thead>
-                        <tr>
-                            <th style="width:25%">Vai Trò</th>
-                            <th style="width:30%">Mô tả nhiệm vụ</th>
-                            <th style="width:30%">Quyền hạn cấu hình</th>
-                            <th style="text-align:right;width:15%">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody id="roleTableBody">
-                        <tr><td colspan="4" style="text-align:center;padding:20px;">Đang tải dữ liệu...</td></tr>
-                    </tbody>
-                </table>
+            <div id="roleGridView" class="roles-grid">
+                <!-- Dynamic role cards render here -->
             </div>
         </div>
     </main>
 
     <!-- ===== USER MODAL ===== -->
     <div class="standard-modal-overlay" id="userModal">
-        <div class="standard-modal-container" style="max-width:500px;">
-            <div class="standard-modal-header">
+        <div class="standard-modal-container" style="max-width:750px;">
+            <div class="standard-modal-header" style="background:#f8fafc;border-bottom:1px solid var(--admin-border);">
                 <div>
-                    <h2 class="slide-title" id="userModalTitle">Thêm Nhân Viên Mới</h2>
+                    <h2 class="slide-title" id="userModalTitle" style="font-size:16px;font-weight:700;color:#0f172a;margin:0;">Thêm Nhân Viên Mới</h2>
                 </div>
-                <button class="slide-close" onclick="closeUserModal()"><i class="fa-solid fa-xmark"></i></button>
+                <button class="slide-close" onclick="closeUserModal()" style="border:none;background:transparent;cursor:pointer;font-size:16px;color:#6b7280;"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="standard-modal-body">
+            <div class="standard-modal-body" style="padding:24px;">
                 <form id="userForm" onsubmit="saveUser(event)">
                     <input type="hidden" id="editUserId">
-                    <div style="margin-bottom:12px;">
-                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Tên đầy đủ *</label>
-                        <input type="text" id="iptFullName" required style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;">
+                    <input type="hidden" id="iptAvatarUrl">
+                    
+                    <div class="modal-grid">
+                        <!-- Cột Trái: Avatar và Trạng thái -->
+                        <div class="modal-col-left">
+                            <div class="avatar-preview-container">
+                                <div class="avatar-preview" id="avatarPreview">NV</div>
+                            </div>
+                            
+                            <div class="avatar-picker-label">Ảnh đại diện</div>
+                            <div class="avatar-options-grid" id="avatarOptionsGrid">
+                                <button type="button" class="avatar-option-btn initials-btn active" id="btnAvatarInitials" onclick="selectAvatarPreset('')" title="Chữ đầu">NV</button>
+                                <button type="button" class="avatar-option-btn" onclick="selectAvatarPreset('👨‍⚕️')" title="Dược sĩ Nam">👨‍⚕️</button>
+                                <button type="button" class="avatar-option-btn" onclick="selectAvatarPreset('👩‍⚕️')" title="Dược sĩ Nữ">👩‍⚕️</button>
+                                <button type="button" class="avatar-option-btn" onclick="selectAvatarPreset('👨‍💼')" title="Quản lý Nam">👨‍💼</button>
+                                <button type="button" class="avatar-option-btn" onclick="selectAvatarPreset('👩‍💼')" title="Quản lý Nữ">👩‍💼</button>
+                                <button type="button" class="avatar-option-btn" onclick="selectAvatarPreset('👨‍💻')" title="Kỹ thuật Nam">👨‍💻</button>
+                                <button type="button" class="avatar-option-btn" onclick="selectAvatarPreset('👩‍💻')" title="Kỹ thuật Nữ">👩‍💻</button>
+                                <button type="button" class="avatar-option-btn" onclick="selectAvatarPreset('🧑‍💼')" title="Nhân viên">🧑‍💼</button>
+                            </div>
+                            
+                            <div class="avatar-custom-input-container">
+                                <label style="display:block;font-size:10px;font-weight:600;margin-bottom:4px;color:#64748b;">Hoặc URL ảnh tùy chọn</label>
+                                <input type="text" id="iptCustomAvatarUrl" placeholder="https://example.com/avatar.jpg" oninput="selectAvatarCustom(this.value)" style="width:100%;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;outline:none;font-size:11px;">
+                            </div>
+
+                            <div class="switch-container" style="margin-top:16px;">
+                                <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;color:#475569;font-weight:600;">
+                                    <input type="checkbox" id="iptIsActive" checked style="accent-color: var(--admin-primary); width: 16px; height: 16px;">
+                                    Tài khoản đang hoạt động
+                                </label>
+                            </div>
+
+                            <!-- Metadata block (only visible in edit mode) -->
+                            <div class="meta-summary-card" id="userMetaCard" style="display:none;">
+                                <div class="meta-summary-item">
+                                    <span class="meta-summary-label">Ngày tạo:</span>
+                                    <span class="meta-summary-value" id="lblCreatedAt">-</span>
+                                </div>
+                                <div class="meta-summary-item">
+                                    <span class="meta-summary-label">Hoạt động cuối:</span>
+                                    <span class="meta-summary-value" id="lblLastLoginAt">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cột Phải: Thông tin chi tiết -->
+                        <div class="modal-col-right">
+                            <div class="form-row">
+                                <div>
+                                    <label style="display:block;font-size:11px;font-weight:600;margin-bottom:4px;color:#475569;">Mã nhân viên (Staff Code)</label>
+                                    <input type="text" id="iptUserCode" placeholder="Tự sinh (NV-XXX)" style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;font-size:13px;font-weight:600;font-family:monospace;color:#1e293b;">
+                                </div>
+                                <div>
+                                    <label style="display:block;font-size:11px;font-weight:600;margin-bottom:4px;color:#475569;">Tên đăng nhập *</label>
+                                    <input type="text" id="iptUsername" required placeholder="Ví dụ: thugan_duyen" style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;font-size:13px;">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div>
+                                    <label style="display:block;font-size:11px;font-weight:600;margin-bottom:4px;color:#475569;">Tên đầy đủ *</label>
+                                    <input type="text" id="iptFullName" required placeholder="Ví dụ: Nguyễn Thị Duyên" oninput="updateInitialsAvatarPreview(this.value)" style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;font-size:13px;">
+                                </div>
+                                <div>
+                                    <label style="display:block;font-size:11px;font-weight:600;margin-bottom:4px;color:#475569;">Số điện thoại *</label>
+                                    <input type="tel" id="iptPhone" required placeholder="09xxxxxxxx" style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;font-size:13px;">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div>
+                                    <label style="display:block;font-size:11px;font-weight:600;margin-bottom:4px;color:#475569;">Email *</label>
+                                    <input type="email" id="iptEmail" required placeholder="name@minhgiangpharma.vn" style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;font-size:13px;">
+                                </div>
+                                <div>
+                                    <label style="display:block;font-size:11px;font-weight:600;margin-bottom:4px;color:#475569;">Vai trò *</label>
+                                    <select id="iptRole" required style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;background:#fff;font-size:13px;">
+                                        <!-- Option gen by JS -->
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label style="display:block;font-size:11px;font-weight:600;margin-bottom:4px;color:#475569;">Mật khẩu *</label>
+                                <input type="password" id="iptPassword" required style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;font-size:13px;">
+                            </div>
+                        </div>
                     </div>
-                    <div style="margin-bottom:12px;">
-                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Email</label>
-                        <input type="email" id="iptEmail" style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;">
-                    </div>
-                    <div style="margin-bottom:12px;">
-                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">SĐT *</label>
-                        <input type="tel" id="iptPhone" required style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;">
-                    </div>
-                    <div style="margin-bottom:12px;">
-                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Mật khẩu *</label>
-                        <input type="password" id="iptPassword" required style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;">
-                    </div>
-                    <div style="margin-bottom:12px;">
-                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Vai trò *</label>
-                        <select id="iptRole" required style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;background:#fff;">
-                            <!-- Option gen by JS -->
-                        </select>
-                    </div>
-                    <div style="margin-bottom:12px;">
-                        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
-                            <input type="checkbox" id="iptIsActive" checked>
-                            Tài khoản đang hoạt động
-                        </label>
-                    </div>
-                    <div style="text-align:right;margin-top:20px;">
-                        <button type="button" class="btn-secondary" onclick="closeUserModal()">Huỷ</button>
-                        <button type="submit" class="btn-primary" id="btnSaveUser">Lưu Thông Tin</button>
+
+                    <div style="text-align:right;margin-top:20px;border-top:1px solid #f1f5f9;padding-top:16px;">
+                        <button type="button" class="btn-secondary" onclick="closeUserModal()" style="height:36px;">Huỷ</button>
+                        <button type="submit" class="btn-primary" id="btnSaveUser" style="height:36px;">Lưu Thông Tin</button>
                     </div>
                 </form>
             </div>
@@ -124,33 +765,33 @@
 
     <!-- ===== ROLE MODAL ===== -->
     <div class="standard-modal-overlay" id="roleModal">
-        <div class="standard-modal-container" style="max-width:600px;">
-            <div class="standard-modal-header">
+        <div class="standard-modal-container" style="max-width:650px;">
+            <div class="standard-modal-header" style="background:#f8fafc;border-bottom:1px solid var(--admin-border);">
                 <div>
-                    <h2 class="slide-title" id="roleModalTitle">Thêm Vai Trò Mới</h2>
+                    <h2 class="slide-title" id="roleModalTitle" style="font-size:16px;font-weight:700;color:#0f172a;margin:0;">Thêm Vai Trò Mới</h2>
                 </div>
-                <button class="slide-close" onclick="closeRoleModal()"><i class="fa-solid fa-xmark"></i></button>
+                <button class="slide-close" onclick="closeRoleModal()" style="border:none;background:transparent;cursor:pointer;font-size:16px;color:#6b7280;"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="standard-modal-body">
+            <div class="standard-modal-body" style="padding:24px;">
                 <form id="roleForm" onsubmit="saveRole(event)">
                     <input type="hidden" id="editRoleId">
                     <div style="margin-bottom:12px;">
-                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Tên Vai Trò *</label>
-                        <input type="text" id="iptRoleName" required style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;">
+                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:#475569;">Tên Vai Trò *</label>
+                        <input type="text" id="iptRoleName" required style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;font-size:13px;">
                     </div>
                     <div style="margin-bottom:12px;">
-                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Mô tả</label>
-                        <input type="text" id="iptRoleDesc" style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;">
+                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:#475569;">Mô tả</label>
+                        <input type="text" id="iptRoleDesc" style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;font-size:13px;">
                     </div>
                     <div style="margin-bottom:12px;">
-                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:8px;">Quyền hạn truy cập</label>
+                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:8px;color:#475569;">Quyền hạn truy cập</label>
                         <div id="permissionsGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#f8fafc;padding:12px;border-radius:6px;border:1px solid #e2e8f0;max-height:250px;overflow-y:auto;">
                             <!-- Generate by JS -->
                         </div>
                     </div>
-                    <div style="text-align:right;margin-top:20px;">
-                        <button type="button" class="btn-secondary" onclick="closeRoleModal()">Huỷ</button>
-                        <button type="submit" class="btn-primary" id="btnSaveRole">Lưu Vai Trò</button>
+                    <div style="text-align:right;margin-top:20px;border-top:1px solid #f1f5f9;padding-top:16px;">
+                        <button type="button" class="btn-secondary" onclick="closeRoleModal()" style="height:36px;">Huỷ</button>
+                        <button type="submit" class="btn-primary" id="btnSaveRole" style="height:36px;">Lưu Vai Trò</button>
                     </div>
                 </form>
             </div>
@@ -159,7 +800,7 @@
 
     <!-- ===== JS ===== -->
     <script>
-        const API_BASE = (localStorage.getItem('MG_API_BASE') || (
+        var API_BASE = (localStorage.getItem('MG_API_BASE') || (
             (window.location.origin.includes('localhost:5500') ||
              window.location.origin.includes('localhost:5501') ||
              window.location.origin.includes('127.0.0.1:5500') ||
@@ -167,18 +808,21 @@
             ? 'http://localhost:8000/api'
             : window.location.origin.replace(/\/+$/, '') + '/api'
         )) + '/identity';
-        let allRoles = [];
+        
+        var allRoles = [];
+        var loadedUsers = [];
+        var userViewMode = 'grid'; // Default layout view mode
 
         function getToken() {
-            const authRaw = localStorage.getItem('MG_ADMIN_AUTH');
+            var authRaw = localStorage.getItem('MG_ADMIN_AUTH');
             if (authRaw) {
-                const parsed = JSON.parse(authRaw);
+                var parsed = JSON.parse(authRaw);
                 return parsed.accessToken;
             }
             return '';
         }
 
-        const MASTER_PERMISSIONS = [
+        var MASTER_PERMISSIONS = [
             { id: 'dashboard.view', label: 'Xem Bảng Điều Khiển' },
             { id: 'inventory.view', label: 'Xem Tồn Kho' },
             { id: 'inventory.edit', label: 'Quản Lý Kho' },
@@ -199,15 +843,15 @@
         ];
 
         async function initPage() {
-            const token = getToken();
+            var token = getToken();
             if(!token) return;
 
             initPermissionsGrid();
 
             // Fetch roles first
             try {
-                const resRole = await fetch(API_BASE + '/roles', { headers: { 'Authorization': 'Bearer ' + token }});
-                const roleData = await resRole.json();
+                var resRole = await fetch(API_BASE + '/roles', { headers: { 'Authorization': 'Bearer ' + token }});
+                var roleData = await resRole.json();
                 if (roleData.success) {
                     allRoles = roleData.data;
                     renderRoleTable(allRoles);
@@ -220,41 +864,112 @@
         }
 
         async function fetchAndRenderUsers() {
-            const tbody = document.getElementById('userTableBody');
+            var tbody = document.getElementById('userTableBody');
+            var gridView = document.getElementById('userGridView');
             tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">Đang tải dữ liệu...</td></tr>';
+            gridView.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;"><i class="fa-solid fa-spinner fa-spin" style="font-size:24px;color:var(--admin-primary);"></i> Đang tải nhân sự...</div>';
+            
             try {
-                const token = getToken();
-                const res = await fetch(API_BASE + '/users', { headers: { 'Authorization': 'Bearer ' + token }});
-                const data = await res.json();
+                var token = getToken();
+                var res = await fetch(API_BASE + '/users', { headers: { 'Authorization': 'Bearer ' + token }});
+                var data = await res.json();
                 if (data.success) {
                     renderUserTable(data.data);
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">Không có quyền truy cập.</td></tr>';
+                    var errorMsg = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#ef4444;">Không có quyền truy cập dữ liệu.</td></tr>';
+                    tbody.innerHTML = errorMsg;
+                    gridView.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#ef4444;">Không có quyền truy cập dữ liệu.</div>`;
                 }
             } catch (e) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">Lỗi mạng.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#ef4444;">Lỗi kết nối máy chủ.</td></tr>';
+                gridView.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#ef4444;">Lỗi kết nối máy chủ.</div>`;
             }
         }
 
+        function updateStats(users, roles) {
+            var totalStaff = users.length;
+            var activeStaff = users.filter(u => u.is_active === 1).length;
+            var lockedStaff = users.filter(u => u.is_active === 0).length;
+            var totalRoles = roles.length;
+
+            document.getElementById('statTotalStaff').innerText = totalStaff;
+            document.getElementById('statActiveStaff').innerText = activeStaff;
+            document.getElementById('statLockedStaff').innerText = lockedStaff;
+            document.getElementById('statTotalRoles').innerText = totalRoles;
+        }
+
         function renderUserTable(users) {
-            const tbody = document.getElementById('userTableBody');
-            if(users.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">Không có dữ liệu nhân viên.</td></tr>';
+            loadedUsers = users;
+            filterUserTable();
+        }
+
+        function filterUserTable() {
+            var searchVal = document.getElementById('userSearchInput').value.toLowerCase().trim();
+            var roleVal = document.getElementById('userRoleFilter').value;
+            var statusVal = document.getElementById('userStatusFilter').value;
+            var tbody = document.getElementById('userTableBody');
+            var gridView = document.getElementById('userGridView');
+
+            var filtered = loadedUsers.filter(u => {
+                var matchesSearch = !searchVal || 
+                    (u.full_name && u.full_name.toLowerCase().includes(searchVal)) ||
+                    (u.username && u.username.toLowerCase().includes(searchVal)) ||
+                    (u.email && u.email.toLowerCase().includes(searchVal)) ||
+                    (u.phone && u.phone.includes(searchVal)) ||
+                    (u.code && u.code.toLowerCase().includes(searchVal));
+                
+                var matchesRole = !roleVal || (u.role_name === roleVal);
+                
+                var matchesStatus = !statusVal || 
+                    (statusVal === 'active' && u.is_active === 1) ||
+                    (statusVal === 'locked' && u.is_active === 0);
+
+                return matchesSearch && matchesRole && matchesStatus;
+            });
+
+            updateStats(loadedUsers, allRoles);
+
+            if (filtered.length === 0) {
+                var noDataMsg = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#64748b;"><i class="fa-solid fa-users-slash" style="font-size:24px;margin-bottom:8px;display:block;"></i> Không tìm thấy nhân viên phù hợp.</td></tr>';
+                tbody.innerHTML = noDataMsg;
+                gridView.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;background:#fff;border-radius:8px;border:1px solid #cbd5e1;color:#64748b;"><i class="fa-solid fa-users-slash" style="font-size:32px;margin-bottom:12px;display:block;color:#94a3b8;"></i> Không tìm thấy nhân viên phù hợp.</div>';
                 return;
             }
 
-            tbody.innerHTML = users.map(u => {
-                const initials = u.full_name ? u.full_name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase() : 'NV';
-                const status = u.is_active ? 
+            // 1. Render Table Rows (for List View)
+            tbody.innerHTML = filtered.map(u => {
+                var initials = getInitials(u.full_name);
+                var status = u.is_active ? 
                     '<span style="display:inline-flex;align-items:center;padding:4px 8px;background:#d1fae5;color:#065f46;border-radius:6px;font-size:11px;font-weight:600;"><i class="fa-solid fa-circle-check" style="margin-right:4px;"></i> Active</span>' : 
                     '<span style="display:inline-flex;align-items:center;padding:4px 8px;background:#fee2e2;color:#991b1b;border-radius:6px;font-size:11px;font-weight:600;"><i class="fa-solid fa-lock" style="margin-right:4px;"></i> Locked</span>';
                 
+                var encodedUsername = encodeURIComponent(u.username || '');
+                var encodedFullName = encodeURIComponent(u.full_name || '');
+                var encodedEmail = encodeURIComponent(u.email || '');
+                var encodedPhone = encodeURIComponent(u.phone || '');
+                var encodedAvatar = encodeURIComponent(u.avatar_url || '');
+                var encodedCode = encodeURIComponent(u.code || '');
+                var encodedCreatedAt = encodeURIComponent(u.created_at || '');
+                var encodedLastLoginAt = encodeURIComponent(u.last_login_at || '');
+
+                var avatarDisplay = initials;
+                if (u.avatar_url) {
+                    if (u.avatar_url.startsWith('http') || u.avatar_url.startsWith('/') || u.avatar_url.startsWith('data:')) {
+                        avatarDisplay = `<img src="${u.avatar_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                    } else {
+                        avatarDisplay = u.avatar_url;
+                    }
+                }
+
                 return `
                 <tr>
                     <td>
                         <div style="display:flex;align-items:center;gap:10px;">
-                            <div style="width:34px;height:34px;border-radius:50%;background:#e0e7ff;color:#4338ca;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">${initials}</div>
-                            <div style="font-weight:600;font-size:13px;color:#0f172a;">${u.full_name}</div>
+                            <div style="width:34px;height:34px;border-radius:50%;background:#e0e7ff;color:#4338ca;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;overflow:hidden;">${avatarDisplay}</div>
+                            <div>
+                                <div style="font-weight:600;font-size:13px;color:#0f172a;">${u.full_name}</div>
+                                <div style="font-size:11px;color:#6b7280;margin-top:2px;">@${u.username}</div>
+                            </div>
                         </div>
                     </td>
                     <td><span style="font-size:12px;color:#475569;background:#f1f5f9;padding:3px 6px;border-radius:4px;font-weight:600;font-family:monospace;">${u.code || '-'}</span></td>
@@ -266,37 +981,166 @@
                     <td>${status}</td>
                     <td>
                         <div class="action-btns" style="justify-content:flex-end;">
-                            <button class="btn-icon" title="Sửa" onclick="openEditUser(${u.id}, '${u.full_name}', '${u.email || ''}', '${u.phone || ''}', ${u.role_id}, ${u.is_active})"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn-icon" title="Sửa" onclick="openEditUser(${u.id}, '${encodedUsername}', '${encodedFullName}', '${encodedEmail}', '${encodedPhone}', ${u.role_id}, ${u.is_active}, '${encodedAvatar}', '${encodedCode}', '${encodedCreatedAt}', '${encodedLastLoginAt}')"><i class="fa-solid fa-pen"></i></button>
                             <button class="btn-icon" title="Vô hiệu hoá" onclick="deleteUser(${u.id})" style="color:#ef4444;"><i class="fa-solid fa-ban"></i></button>
                         </div>
                     </td>
                 </tr>
                 `;
             }).join('');
+
+            // 2. Render Cards (for Grid View)
+            gridView.innerHTML = filtered.map(u => {
+                var initials = getInitials(u.full_name);
+                var statusBadge = u.is_active ? 
+                    '<span style="display:inline-flex;align-items:center;padding:3px 8px;background:#d1fae5;color:#065f46;border-radius:6px;font-size:11px;font-weight:600;border:1px solid #a7f3d0;"><i class="fa-solid fa-circle-check" style="margin-right:4px;"></i> Active</span>' : 
+                    '<span style="display:inline-flex;align-items:center;padding:3px 8px;background:#fee2e2;color:#991b1b;border-radius:6px;font-size:11px;font-weight:600;border:1px solid #fecaca;"><i class="fa-solid fa-lock" style="margin-right:4px;"></i> Locked</span>';
+                
+                // Color variations for roles in grid card
+                var roleColor = 'background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;';
+                if (u.role_name === 'admin' || u.role_name === 'Quản trị viên') {
+                    roleColor = 'background:#f5f3ff;color:#6b21a8;border:1px solid #ddd6fe;';
+                } else if (u.role_name === 'pharmacist' || u.role_name === 'Dược sĩ') {
+                    roleColor = 'background:#ecfdf5;color:#166534;border:1px solid #a7f3d0;';
+                } else if (u.role_name === 'cashier' || u.role_name === 'Thu ngân') {
+                    roleColor = 'background:#fffbeb;color:#854d0e;border:1px solid #fde68a;';
+                }
+
+                var encodedUsername = encodeURIComponent(u.username || '');
+                var encodedFullName = encodeURIComponent(u.full_name || '');
+                var encodedEmail = encodeURIComponent(u.email || '');
+                var encodedPhone = encodeURIComponent(u.phone || '');
+                var encodedAvatar = encodeURIComponent(u.avatar_url || '');
+                var encodedCode = encodeURIComponent(u.code || '');
+                var encodedCreatedAt = encodeURIComponent(u.created_at || '');
+                var encodedLastLoginAt = encodeURIComponent(u.last_login_at || '');
+
+                var avatarDisplay = initials;
+                if (u.avatar_url) {
+                    if (u.avatar_url.startsWith('http') || u.avatar_url.startsWith('/') || u.avatar_url.startsWith('data:')) {
+                        avatarDisplay = `<img src="${u.avatar_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                    } else {
+                        avatarDisplay = `<span style="font-size: 32px;">${u.avatar_url}</span>`;
+                    }
+                }
+
+                return `
+                <div class="user-card">
+                    <div style="position:absolute;top:12px;right:12px;">
+                        <span style="font-size:11px;color:#475569;background:#f1f5f9;padding:3px 6px;border-radius:4px;font-weight:600;font-family:monospace;">${u.code || '-'}</span>
+                    </div>
+                    <div class="user-card-avatar" style="background:#e0e7ff;color:#4338ca;overflow:hidden;display:flex;align-items:center;justify-content:center;">${avatarDisplay}</div>
+                    <div class="user-card-name">${u.full_name}</div>
+                    <div class="user-card-username">@${u.username}</div>
+                    <span class="user-card-role" style="${roleColor}">${u.role_name || 'Nhân viên'}</span>
+                    
+                    <div class="user-card-contacts">
+                        <div class="contact-item" title="Số điện thoại">
+                            <i class="fa-solid fa-phone"></i>
+                            <span>${u.phone || '-'}</span>
+                        </div>
+                        <div class="contact-item" title="Email làm việc">
+                            <i class="fa-solid fa-envelope"></i>
+                            <span>${u.email || '-'}</span>
+                        </div>
+                    </div>
+                    
+                    <div style="width:100%;margin-top:16px;text-align:center;">
+                        ${statusBadge}
+                    </div>
+
+                    <div class="user-card-actions">
+                        <button class="user-card-btn edit" onclick="openEditUser(${u.id}, '${encodedUsername}', '${encodedFullName}', '${encodedEmail}', '${encodedPhone}', ${u.role_id}, ${u.is_active}, '${encodedAvatar}', '${encodedCode}', '${encodedCreatedAt}', '${encodedLastLoginAt}')">
+                            <i class="fa-solid fa-pen"></i> Sửa
+                        </button>
+                        <button class="user-card-btn lock" onclick="deleteUser(${u.id})">
+                            <i class="fa-solid fa-ban"></i> Khóa
+                        </button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function switchUserView(mode) {
+            userViewMode = mode;
+            var gridBtn = document.getElementById('btnViewGrid');
+            var listBtn = document.getElementById('btnViewList');
+            var gridView = document.getElementById('userGridView');
+            var listView = document.getElementById('userListView');
+
+            if (mode === 'grid') {
+                gridBtn.classList.add('active');
+                listBtn.classList.remove('active');
+                gridView.style.display = 'grid';
+                listView.style.display = 'none';
+            } else {
+                gridBtn.classList.remove('active');
+                listBtn.classList.add('active');
+                gridView.style.display = 'none';
+                listView.style.display = 'block';
+            }
+            filterUserTable();
         }
 
         function renderRoleTable(roles) {
-            const tbody = document.getElementById('roleTableBody');
-            if(roles.length === 0) return;
-            tbody.innerHTML = roles.map(r => {
-                const encodedRole = encodeURIComponent(JSON.stringify(r));
-                return '<tr>' +
-                    '<td style="font-weight:700;color:#0f172a;font-size:14px;"><i class="fa-solid fa-shield" style="color:#8b5cf6;margin-right:6px;"></i> ' + r.name + '</td>' +
-                    '<td style="font-size:12px;color:#475569;line-height:1.5;">' + (r.description || 'Không có mô tả') + '</td>' +
-                    '<td style="font-size:12px;color:#94a3b8;">' + (r.permissions ? r.permissions.length + ' quyền hạn' : 'Chưa thiết lập') + '</td>' +
-                    '<td>' +
-                        '<div class="action-btns" style="justify-content:flex-end;">' +
-                            '<button class="btn-icon" title="Sửa" onclick="openEditRole(`' + encodedRole + '`)"><i class="fa-solid fa-pen"></i></button>' +
-                            '<button class="btn-icon" title="Xoá" onclick="deleteRole(' + r.id + ')" style="color:#ef4444;"><i class="fa-solid fa-trash"></i></button>' +
-                        '</div>' +
-                    '</td>' +
-                '</tr>';
+            var gridView = document.getElementById('roleGridView');
+            if(!gridView) return;
+            
+            if(roles.length === 0) {
+                gridView.innerHTML = '<div style="text-align:center;padding:40px;color:#64748b;">Không có dữ liệu vai trò.</div>';
+                return;
+            }
+
+            gridView.innerHTML = roles.map(r => {
+                var encodedRole = encodeURIComponent(JSON.stringify(r));
+                
+                var permsHtml = r.permissions && Array.isArray(r.permissions)
+                    ? r.permissions.map(p => {
+                        var permLabel = MASTER_PERMISSIONS.find(mp => mp.id === p)?.label || p;
+                        return `<span class="perm-tag" title="${p}">${permLabel}</span>`;
+                      }).join('')
+                    : '<span style="font-size:12px;color:#94a3b8;font-style:italic;">Không có quyền hạn nào được gán</span>';
+
+                var countBadge = `<span class="role-card-count">${r.permissions ? r.permissions.length : 0} quyền</span>`;
+
+                return `
+                <div class="role-card">
+                    <div class="role-card-header">
+                        <div class="role-card-title">
+                            <i class="fa-solid fa-shield-halved role-card-icon"></i>
+                            <span>${r.name}</span>
+                        </div>
+                        ${countBadge}
+                    </div>
+                    <div class="role-card-desc">${r.description || 'Không có mô tả chi tiết nhiệm vụ.'}</div>
+                    
+                    <div class="role-card-perms-label">Quyền hạn cấu hình</div>
+                    <div class="role-card-perms-list">
+                        ${permsHtml}
+                    </div>
+                    
+                    <div class="role-card-actions">
+                        <button class="btn-secondary" style="height:32px;font-size:12px;padding:0 12px;display:flex;align-items:center;gap:4px;" onclick="openEditRole('${encodedRole}')">
+                            <i class="fa-solid fa-pen-to-square"></i> Cập nhật quyền
+                        </button>
+                        <button class="btn-secondary" style="height:32px;font-size:12px;padding:0 12px;color:#ef4444;border-color:#fca5a5;display:flex;align-items:center;gap:4px;" onclick="deleteRole(${r.id})">
+                            <i class="fa-solid fa-trash-can"></i> Xóa
+                        </button>
+                    </div>
+                </div>
+                `;
             }).join('');
         }
 
         function populateRoleDropdown(roles) {
-            const select = document.getElementById('iptRole');
+            var select = document.getElementById('iptRole');
             select.innerHTML = '<option value="">Chọn một vai trò...</option>' + roles.map(r => '<option value="' + r.id + '">' + r.name + '</option>').join('');
+            
+            var filterSelect = document.getElementById('userRoleFilter');
+            if (filterSelect) {
+                filterSelect.innerHTML = '<option value="">Tất cả vai trò</option>' + roles.map(r => '<option value="' + r.name + '">' + r.name + '</option>').join('');
+            }
         }
 
         /* Tabs Logic */
@@ -315,26 +1159,144 @@
             }
         }
 
-        /* Modal Logic */
+        /* Modal Logic & Avatar Selector Helpers */
+        function selectAvatarPreset(emoji) {
+            document.getElementById('iptAvatarUrl').value = emoji;
+            document.getElementById('iptCustomAvatarUrl').value = '';
+            
+            // Remove active class from all buttons
+            var buttons = document.querySelectorAll('.avatar-option-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            var previewEl = document.getElementById('avatarPreview');
+            if (emoji) {
+                // Find matching button to activate
+                buttons.forEach(btn => {
+                    if (btn.textContent === emoji) {
+                        btn.classList.add('active');
+                    }
+                });
+                previewEl.textContent = emoji;
+                previewEl.style.fontSize = '48px';
+            } else {
+                document.getElementById('btnAvatarInitials').classList.add('active');
+                var fullName = document.getElementById('iptFullName').value;
+                previewEl.textContent = getInitials(fullName);
+                previewEl.style.fontSize = '36px';
+            }
+        }
+
+        function selectAvatarCustom(url) {
+            document.getElementById('iptAvatarUrl').value = url;
+            
+            // Remove active class from all preset buttons
+            var buttons = document.querySelectorAll('.avatar-option-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            var previewEl = document.getElementById('avatarPreview');
+            if (url && url.trim()) {
+                previewEl.innerHTML = `<img src="${url.trim()}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+            } else {
+                document.getElementById('btnAvatarInitials').classList.add('active');
+                var fullName = document.getElementById('iptFullName').value;
+                previewEl.textContent = getInitials(fullName);
+                previewEl.style.fontSize = '36px';
+            }
+        }
+
+        function getInitials(name) {
+            if (!name) return 'NV';
+            var parts = name.trim().split(' ').filter(Boolean);
+            if (parts.length === 0) return 'NV';
+            return parts.map(p => p[0]).join('').substring(0, 2).toUpperCase();
+        }
+
+        function updateInitialsAvatarPreview(name) {
+            // Update the text in the initials preset button too
+            var initials = getInitials(name);
+            document.getElementById('btnAvatarInitials').textContent = initials;
+            
+            // If currently using initials, update preview as well
+            var currentAvatar = document.getElementById('iptAvatarUrl').value;
+            if (!currentAvatar) {
+                var previewEl = document.getElementById('avatarPreview');
+                previewEl.textContent = initials;
+                previewEl.style.fontSize = '36px';
+            }
+        }
+
+        function formatDateTime(dateStr) {
+            if (!dateStr) return '-';
+            var date = new Date(dateStr);
+            if (isNaN(date.getTime())) return '-';
+            var dd = String(date.getDate()).padStart(2, '0');
+            var mm = String(date.getMonth() + 1).padStart(2, '0');
+            var yyyy = date.getFullYear();
+            var hh = String(date.getHours()).padStart(2, '0');
+            var min = String(date.getMinutes()).padStart(2, '0');
+            return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
+        }
+
         function openUserModal() {
             document.getElementById('editUserId').value = '';
             document.getElementById('userForm').reset();
+            document.getElementById('iptUsername').disabled = false;
+            document.getElementById('iptUserCode').value = '';
+            document.getElementById('iptUserCode').disabled = false;
+            
+            // Reset avatar
+            selectAvatarPreset('');
+            
+            // Hide metadata card
+            document.getElementById('userMetaCard').style.display = 'none';
+            
             document.getElementById('userModalTitle').textContent = 'Thêm Nhân Viên Mới';
             document.getElementById('userModal').classList.add('open');
             document.getElementById('iptPassword').required = true;
             document.getElementById('iptPassword').placeholder = 'Bắt buộc nhập';
         }
 
-        function openEditUser(id, name, email, phone, roleId, isActive) {
+        function openEditUser(id, encodedUsername, encodedName, encodedEmail, encodedPhone, roleId, isActive, encodedAvatar, encodedCode, encodedCreatedAt, encodedLastLoginAt) {
+            var username = decodeURIComponent(encodedUsername);
+            var name = decodeURIComponent(encodedName);
+            var email = decodeURIComponent(encodedEmail);
+            var phone = decodeURIComponent(encodedPhone);
+            var avatar = encodedAvatar ? decodeURIComponent(encodedAvatar) : '';
+            var code = encodedCode ? decodeURIComponent(encodedCode) : '';
+            var createdAt = encodedCreatedAt ? decodeURIComponent(encodedCreatedAt) : '';
+            var lastLoginAt = encodedLastLoginAt ? decodeURIComponent(encodedLastLoginAt) : '';
+
             document.getElementById('editUserId').value = id;
+            document.getElementById('iptUsername').value = username;
+            document.getElementById('iptUsername').disabled = true; // Disable editing username for existing accounts
             document.getElementById('iptFullName').value = name;
             document.getElementById('iptEmail').value = email;
             document.getElementById('iptPhone').value = phone;
             document.getElementById('iptRole').value = roleId;
             document.getElementById('iptIsActive').checked = isActive === 1 ? true : false;
+            document.getElementById('iptUserCode').value = code;
+            
+            // Set initials button text
+            var initials = getInitials(name);
+            document.getElementById('btnAvatarInitials').textContent = initials;
+            
+            // Populate avatar
+            if (!avatar) {
+                selectAvatarPreset('');
+            } else if (avatar.startsWith('http') || avatar.startsWith('/') || avatar.startsWith('data:')) {
+                document.getElementById('iptCustomAvatarUrl').value = avatar;
+                selectAvatarCustom(avatar);
+            } else {
+                selectAvatarPreset(avatar);
+            }
+            
+            // Populate metadata
+            document.getElementById('lblCreatedAt').textContent = formatDateTime(createdAt);
+            document.getElementById('lblLastLoginAt').textContent = formatDateTime(lastLoginAt);
+            document.getElementById('userMetaCard').style.display = 'block';
             
             document.getElementById('userModalTitle').textContent = 'Cập Nhật Thông Tin Nhân Viên';
-            document.getElementById('iptPassword').required = false; // Khi edit không bắt buộc đổi pass
+            document.getElementById('iptPassword').required = false; 
             document.getElementById('iptPassword').placeholder = '(Bỏ trống nếu không đổi)';
             document.getElementById('userModal').classList.add('open');
         }
@@ -345,31 +1307,32 @@
 
         async function saveUser(e) {
             e.preventDefault();
-            const token = getToken();
-            const btn = document.getElementById('btnSaveUser');
+            var token = getToken();
+            var btn = document.getElementById('btnSaveUser');
             
-            const id = document.getElementById('editUserId').value;
-            const payload = {
-                full_name: document.getElementById('iptFullName').value,
-                email: document.getElementById('iptEmail').value,
-                phone: document.getElementById('iptPhone').value,
-                role_id: document.getElementById('iptRole').value
+            var id = document.getElementById('editUserId').value;
+            var payload = {
+                username: document.getElementById('iptUsername').value.trim(),
+                full_name: document.getElementById('iptFullName').value.trim(),
+                email: document.getElementById('iptEmail').value.trim(),
+                phone: document.getElementById('iptPhone').value.trim(),
+                role_id: document.getElementById('iptRole').value,
+                is_active: document.getElementById('iptIsActive').checked ? 1 : 0,
+                avatar_url: document.getElementById('iptAvatarUrl').value.trim(),
+                code: document.getElementById('iptUserCode').value.trim()
             };
             
-            const pass = document.getElementById('iptPassword').value;
+            var pass = document.getElementById('iptPassword').value;
             if(pass) payload.password = pass;
 
-            // Hiện tại API PUT users/:id chỉ support edit cơ bản, ta cần kiểm tra backend có support update trạng thái không. 
-            // Nếu createUser thì dùng POST
-            
             btn.disabled = true;
             btn.textContent = 'Đang lưu...';
 
             try {
-                const url = id ? `${API_BASE}/users/${id}` : `${API_BASE}/users`;
-                const method = id ? 'PUT' : 'POST';
+                var url = id ? `${API_BASE}/users/${id}` : `${API_BASE}/users`;
+                var method = id ? 'PUT' : 'POST';
 
-                const res = await fetch(url, {
+                var res = await fetch(url, {
                     method: method,
                     headers: { 
                         'Content-Type': 'application/json',
@@ -378,15 +1341,16 @@
                     body: JSON.stringify(payload)
                 });
                 
-                const data = await res.json();
+                var data = await res.json();
                 if(data.success) {
                     closeUserModal();
+                    showToast(id ? 'Cập nhật nhân viên thành công!' : 'Thêm nhân viên mới thành công!', 'success');
                     fetchAndRenderUsers();
                 } else {
-                    alert('Lỗi: ' + data.message);
+                    showToast('Lỗi: ' + data.message, 'error');
                 }
             } catch(error) {
-                alert('Lỗi mạng!');
+                showToast('Lỗi kết nối máy chủ!', 'error');
             }
             btn.disabled = false;
             btn.textContent = 'Lưu Thông Tin';
@@ -394,52 +1358,90 @@
 
         async function deleteUser(id) {
             if(!confirm('Bạn có chắc chắn muốn vô hiệu hoá nhân viên này? Họ sẽ không thể đăng nhập vào hệ thống nữa.')) return;
-            const token = getToken();
+            var token = getToken();
             try {
-                const res = await fetch(API_BASE + '/users/' + id, {
+                var res = await fetch(API_BASE + '/users/' + id, {
                     method: 'DELETE',
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
-                const data = await res.json();
+                var data = await res.json();
                 if(data.success) {
+                    showToast('Vô hiệu hoá tài khoản nhân viên thành công!', 'success');
                     fetchAndRenderUsers();
                 } else {
-                    alert('Lỗi: ' + data.message);
+                    showToast('Lỗi: ' + data.message, 'error');
                 }
-            } catch(e) { alert('Lỗi mạng!'); }
+            } catch(e) { showToast('Lỗi kết nối máy chủ!', 'error'); }
         }
 
         /* =========== ROLE CRUD =========== */
         function initPermissionsGrid() {
-            const grid = document.getElementById('permissionsGrid');
+            var grid = document.getElementById('permissionsGrid');
             grid.innerHTML = MASTER_PERMISSIONS.map(p => 
-                '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;">' +
-                    '<input type="checkbox" name="permissions" value="' + p.id + '">' +
-                    p.label +
-                '</label>'
+                `<div class="perm-check-card" onclick="togglePermCard(this)">
+                    <input type="checkbox" name="permissions" value="${p.id}" style="cursor:pointer;" onclick="event.stopPropagation(); handlePermCheckboxClick(this)">
+                    <span style="font-size:12px;font-weight:600;color:#334155;">${p.label}</span>
+                </div>`
             ).join('');
+        }
+
+        function togglePermCard(card) {
+            var cb = card.querySelector('input[name="permissions"]');
+            cb.checked = !cb.checked;
+            if (cb.checked) {
+                card.classList.add('checked');
+            } else {
+                card.classList.remove('checked');
+            }
+        }
+
+        function handlePermCheckboxClick(cb) {
+            var card = cb.closest('.perm-check-card');
+            if (cb.checked) {
+                card.classList.add('checked');
+            } else {
+                card.classList.remove('checked');
+            }
         }
 
         function openRoleModal() {
             document.getElementById('editRoleId').value = '';
             document.getElementById('roleForm').reset();
+            
+            // Clean modal check cards
+            var cards = document.querySelectorAll('.perm-check-card');
+            cards.forEach(c => {
+                c.classList.remove('checked');
+                var cb = c.querySelector('input[name="permissions"]');
+                if(cb) cb.checked = false;
+            });
+
             document.getElementById('roleModalTitle').textContent = 'Thêm Vai Trò Mới';
             document.getElementById('roleModal').classList.add('open');
         }
 
         function openEditRole(encodedRole) {
-            const role = JSON.parse(decodeURIComponent(encodedRole));
+            var role = JSON.parse(decodeURIComponent(encodedRole));
             document.getElementById('editRoleId').value = role.id;
             document.getElementById('iptRoleName').value = role.name;
             document.getElementById('iptRoleDesc').value = role.description || '';
             
-            // Render permissions checked
-            const checkboxes = document.querySelectorAll('input[name="permissions"]');
-            checkboxes.forEach(cb => cb.checked = false);
+            // Clean modal check cards first
+            var cards = document.querySelectorAll('.perm-check-card');
+            cards.forEach(c => {
+                c.classList.remove('checked');
+                var cb = c.querySelector('input[name="permissions"]');
+                if(cb) cb.checked = false;
+            });
+
+            // Set checked permissions
             if (role.permissions && Array.isArray(role.permissions)) {
                 role.permissions.forEach(p => {
-                    const cb = document.querySelector('input[name="permissions"][value="' + p + '"]');
-                    if (cb) cb.checked = true;
+                    var cb = document.querySelector(`input[name="permissions"][value="${p}"]`);
+                    if (cb) {
+                        cb.checked = true;
+                        cb.closest('.perm-check-card').classList.add('checked');
+                    }
                 });
             }
 
@@ -453,14 +1455,14 @@
 
         async function saveRole(e) {
             e.preventDefault();
-            const token = getToken();
-            const btn = document.getElementById('btnSaveRole');
-            const id = document.getElementById('editRoleId').value;
+            var token = getToken();
+            var btn = document.getElementById('btnSaveRole');
+            var id = document.getElementById('editRoleId').value;
             
-            const checkboxes = document.querySelectorAll('input[name="permissions"]:checked');
-            const permissions = Array.from(checkboxes).map(cb => cb.value);
+            var checkboxes = document.querySelectorAll('input[name="permissions"]:checked');
+            var permissions = Array.from(checkboxes).map(cb => cb.value);
 
-            const payload = {
+            var payload = {
                 name: document.getElementById('iptRoleName').value,
                 description: document.getElementById('iptRoleDesc').value,
                 permissions: permissions
@@ -470,10 +1472,10 @@
             btn.textContent = id ? 'Đang lưu...' : 'Đang tạo...';
 
             try {
-                const url = id ? API_BASE + '/roles/' + id : API_BASE + '/roles';
-                const method = id ? 'PUT' : 'POST';
+                var url = id ? `${API_BASE}/roles/${id}` : `${API_BASE}/roles`;
+                var method = id ? 'PUT' : 'POST';
 
-                const res = await fetch(url, {
+                var res = await fetch(url, {
                     method: method,
                     headers: { 
                         'Content-Type': 'application/json',
@@ -482,22 +1484,23 @@
                     body: JSON.stringify(payload)
                 });
                 
-                const data = await res.json();
+                var data = await res.json();
                 if(data.success) {
                     closeRoleModal();
+                    showToast(id ? 'Cập nhật vai trò thành công!' : 'Tạo vai trò mới thành công!', 'success');
                     // Refetch
-                    const resRole = await fetch(API_BASE + '/roles', { headers: { 'Authorization': 'Bearer ' + token }});
-                    const roleData = await resRole.json();
+                    var resRole = await fetch(API_BASE + '/roles', { headers: { 'Authorization': 'Bearer ' + token }});
+                    var roleData = await resRole.json();
                     if (roleData.success) {
                         allRoles = roleData.data;
                         renderRoleTable(allRoles);
                         populateRoleDropdown(allRoles);
                     }
                 } else {
-                    alert('Lỗi: ' + data.message);
+                    showToast('Lỗi: ' + data.message, 'error');
                 }
             } catch(error) {
-                alert('Lỗi mạng!');
+                showToast('Lỗi kết nối máy chủ!', 'error');
             }
             btn.disabled = false;
             btn.textContent = 'Lưu Vai Trò';
@@ -505,26 +1508,29 @@
 
         async function deleteRole(id) {
             if(!confirm('Bạn có chắc chắn muốn xoá vai trò này? Cảnh báo: Việc này có thể ảnh hưởng tới các nhân viên đang sở hữu vai trò.')) return;
-            const token = getToken();
+            var token = getToken();
             try {
-                const res = await fetch(API_BASE + '/roles/' + id, {
+                var res = await fetch(API_BASE + '/roles/' + id, {
                     method: 'DELETE',
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
-                const data = await res.json();
+                var data = await res.json();
                 if(data.success) {
-                    const resRole = await fetch(API_BASE + '/roles', { headers: { 'Authorization': 'Bearer ' + token }});
-                    const roleData = await resRole.json();
+                    showToast('Xoá vai trò thành công!', 'success');
+                    var resRole = await fetch(API_BASE + '/roles', { headers: { 'Authorization': 'Bearer ' + token }});
+                    var roleData = await resRole.json();
                     if (roleData.success) {
                         allRoles = roleData.data;
                         renderRoleTable(allRoles);
                         populateRoleDropdown(allRoles);
                     }
                 } else {
-                    alert('Lỗi: ' + data.message);
+                    showToast('Lỗi: ' + data.message, 'error');
                 }
-            } catch(e) { alert('Lỗi mạng!'); }
+            } catch(e) { showToast('Lỗi kết nối máy chủ!', 'error'); }
         }
+
+
 
         document.addEventListener('DOMContentLoaded', initPage);
     </script>

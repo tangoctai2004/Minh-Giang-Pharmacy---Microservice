@@ -484,7 +484,7 @@
     <!-- Scripts -->
     <script src="js/admin-components.js"></script>
     <script>
-        const API_BASE = (localStorage.getItem('MG_API_BASE') || (
+        var API_BASE = (localStorage.getItem('MG_API_BASE') || (
             (window.location.origin.includes('localhost:5500') ||
              window.location.origin.includes('localhost:5501') ||
              window.location.origin.includes('127.0.0.1:5500') ||
@@ -492,7 +492,7 @@
             ? 'http://localhost:8000/api'
             : window.location.origin.replace(/\/+$/, '') + '/api'
         )) + '/order/returns';
-        const ORDERS_API_BASE = (localStorage.getItem('MG_API_BASE') || (
+        var ORDERS_API_BASE = (localStorage.getItem('MG_API_BASE') || (
             (window.location.origin.includes('localhost:5500') ||
              window.location.origin.includes('localhost:5501') ||
              window.location.origin.includes('127.0.0.1:5500') ||
@@ -500,9 +500,9 @@
             ? 'http://localhost:8000/api'
             : window.location.origin.replace(/\/+$/, '') + '/api'
         )) + '/order/orders';
-        let currentPage = { pos: 1, web: 1, supplier: 1 };
-        const itemsPerPage = 10;
-        let activeLookupOrder = null;
+        var currentPage = { pos: 1, web: 1, supplier: 1 };
+        var itemsPerPage = 10;
+        var activeLookupOrder = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             renderAdminLayout('returns');
@@ -511,11 +511,11 @@
 
             // Set up search and status filters for each tab
             ['pos', 'onl', 'ncc'].forEach(prefix => {
-                const channel = prefix === 'pos' ? 'pos' : (prefix === 'onl' ? 'web' : 'supplier');
+                var channel = prefix === 'pos' ? 'pos' : (prefix === 'onl' ? 'web' : 'supplier');
                 
-                const searchInput = document.getElementById(`${prefix}Search`);
+                var searchInput = document.getElementById(`${prefix}Search`);
                 if (searchInput) {
-                    let debounceTimer;
+                    var debounceTimer;
                     searchInput.addEventListener('input', () => {
                         clearTimeout(debounceTimer);
                         debounceTimer = setTimeout(() => {
@@ -524,7 +524,7 @@
                     });
                 }
 
-                const statusFilter = document.getElementById(`${prefix}StatusFilter`);
+                var statusFilter = document.getElementById(`${prefix}StatusFilter`);
                 if (statusFilter) {
                     statusFilter.addEventListener('change', () => {
                         loadReturns(channel, 1);
@@ -534,10 +534,10 @@
         });
 
         function getAuthHeader() {
-            const authRaw = localStorage.getItem('MG_ADMIN_AUTH');
+            var authRaw = localStorage.getItem('MG_ADMIN_AUTH');
             if (!authRaw) return {};
             try {
-                const parsed = JSON.parse(authRaw);
+                var parsed = JSON.parse(authRaw);
                 return {
                     'Authorization': `Bearer ${parsed.accessToken}`,
                     'Content-Type': 'application/json'
@@ -548,26 +548,26 @@
         }
 
         function formatVND(value) {
-            const num = parseFloat(value);
+            var num = parseFloat(value);
             return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(isNaN(num) ? 0 : num);
         }
 
         function formatDate(dateStr) {
             if (!dateStr) return { date: '', time: '' };
-            const d = new Date(dateStr);
-            const date = String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
-            const time = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+            var d = new Date(dateStr);
+            var date = String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+            var time = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
             return { date, time };
         }
 
         async function loadStats() {
             try {
-                const res = await fetch(`${API_BASE}/stats`, {
+                var res = await fetch(`${API_BASE}/stats`, {
                     headers: getAuthHeader()
                 });
-                const response = await res.json();
+                var response = await res.json();
                 if (response.success && response.data) {
-                    const stats = response.data;
+                    var stats = response.data;
                     document.getElementById('statPending').textContent = stats.pending;
                     document.getElementById('statCompleted').textContent = stats.completed;
                     document.getElementById('statRejected').textContent = stats.rejected;
@@ -581,35 +581,35 @@
         async function loadReturns(channel, page = 1) {
             currentPage[channel] = page;
             
-            let prefix = 'pos';
+            var prefix = 'pos';
             if (channel === 'web') prefix = 'onl';
             else if (channel === 'supplier') prefix = 'ncc';
 
-            const tbody = document.getElementById(`${prefix}ReturnsTbody`);
-            const paginationDiv = document.getElementById(`${prefix}Pagination`);
+            var tbody = document.getElementById(`${prefix}ReturnsTbody`);
+            var paginationDiv = document.getElementById(`${prefix}Pagination`);
             if (!tbody) return;
 
             tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 24px; color: #64748b;"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>`;
 
-            const searchInput = document.getElementById(`${prefix}Search`);
-            const statusFilter = document.getElementById(`${prefix}StatusFilter`);
+            var searchInput = document.getElementById(`${prefix}Search`);
+            var statusFilter = document.getElementById(`${prefix}StatusFilter`);
             
-            const searchVal = searchInput ? searchInput.value.trim() : '';
-            const statusVal = statusFilter ? statusFilter.value : 'Tất cả trạng thái';
+            var searchVal = searchInput ? searchInput.value.trim() : '';
+            var statusVal = statusFilter ? statusFilter.value : 'Tất cả trạng thái';
 
-            let url = `${API_BASE}?channel=${channel}&page=${page}&limit=${itemsPerPage}`;
+            var url = `${API_BASE}?channel=${channel}&page=${page}&limit=${itemsPerPage}`;
             if (searchVal) url += `&search=${encodeURIComponent(searchVal)}`;
             if (statusVal && statusVal !== 'Tất cả trạng thái') url += `&status=${encodeURIComponent(statusVal)}`;
 
             try {
-                const res = await fetch(url, {
+                var res = await fetch(url, {
                     headers: getAuthHeader()
                 });
-                const response = await res.json();
+                var response = await res.json();
 
                 if (response.success && response.data) {
-                    const list = response.data;
-                    const pagin = response.pagination;
+                    var list = response.data;
+                    var pagin = response.pagination;
 
                     if (list.length === 0) {
                         tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 24px; color: #94a3b8;"><i class="fa-solid fa-inbox" style="font-size:24px; margin-bottom:8px; display:block;"></i> Không tìm thấy phiếu trả hàng nào.</td></tr>`;
@@ -617,13 +617,13 @@
                         return;
                     }
 
-                    let html = '';
+                    var html = '';
                     list.forEach(item => {
-                        const { date, time } = formatDate(item.created_at);
-                        const refundFormatted = formatVND(item.refund_amount);
+                        var { date, time } = formatDate(item.created_at);
+                        var refundFormatted = formatVND(item.refund_amount);
                         
-                        let statusBadge = '';
-                        let rowStyle = '';
+                        var statusBadge = '';
+                        var rowStyle = '';
                         if (item.status === 'pending') {
                             statusBadge = `<span class="badge" style="background: #fef3c7; color: #d97706;"><i class="fa-solid fa-clock"></i> Chờ duyệt</span>`;
                             rowStyle = `border-left: 3px solid #f59e0b; background: #fffbeb;`;
@@ -633,7 +633,7 @@
                             statusBadge = `<span class="badge" style="background: #dcfce7; color: #15803d;"><i class="fa-solid fa-check"></i> Đã hoàn thành</span>`;
                         }
 
-                        let channelBadge = '';
+                        var channelBadge = '';
                         if (item.order_channel === 'pos') {
                             channelBadge = `<span class="badge" style="background:#f1f5f9; color:#475569;"><i class="fa-solid fa-cash-register"></i> Đơn POS</span>`;
                         } else if (item.order_channel === 'web') {
@@ -642,8 +642,8 @@
                             channelBadge = `<span class="badge" style="background:#f3e8ff; color:#7e22ce;"><i class="fa-solid fa-truck"></i> Trả NCC</span>`;
                         }
 
-                        const custName = item.customer_name || 'Khách vãng lai';
-                        const custPhone = item.customer_phone ? `<div>${item.customer_phone}</div>` : `<div style="font-size: 11px; color: #64748b;">Mua trực tiếp</div>`;
+                        var custName = item.customer_name || 'Khách vãng lai';
+                        var custPhone = item.customer_phone ? `<div>${item.customer_phone}</div>` : `<div style="font-size: 11px; color: #64748b;">Mua trực tiếp</div>`;
 
                         html += `
                             <tr style="${rowStyle}">
@@ -671,11 +671,11 @@
                     tbody.innerHTML = html;
 
                     if (paginationDiv && pagin) {
-                        const totalPages = Math.ceil(pagin.total / itemsPerPage);
-                        const startItem = (page - 1) * itemsPerPage + 1;
-                        const endItem = Math.min(page * itemsPerPage, pagin.total);
+                        var totalPages = Math.ceil(pagin.total / itemsPerPage);
+                        var startItem = (page - 1) * itemsPerPage + 1;
+                        var endItem = Math.min(page * itemsPerPage, pagin.total);
                         
-                        let pageControlsHTML = '';
+                        var pageControlsHTML = '';
                         for (let i = 1; i <= totalPages; i++) {
                             pageControlsHTML += `<button class="btn-page ${i === page ? 'active' : ''}" onclick="loadReturns('${channel}', ${i})">${i}</button>`;
                         }
@@ -701,21 +701,21 @@
             document.getElementById('rmaOverlay').classList.add('active');
             document.getElementById('rmaPanel').classList.add('active');
 
-            const statusBadge = document.getElementById('rmaDetailStatus');
-            const footer = document.getElementById('rmaDetailFooter');
-            const body = document.querySelector('.rma-detail-body');
+            var statusBadge = document.getElementById('rmaDetailStatus');
+            var footer = document.getElementById('rmaDetailFooter');
+            var body = document.querySelector('.rma-detail-body');
             
             body.innerHTML = `<div style="text-align:center; padding: 48px; color: #64748b;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><p style="margin-top:12px;">Đang tải chi tiết...</p></div>`;
             footer.innerHTML = '';
 
             try {
-                const res = await fetch(`${API_BASE}/${returnCode}`, {
+                var res = await fetch(`${API_BASE}/${returnCode}`, {
                     headers: getAuthHeader()
                 });
-                const response = await res.json();
+                var response = await res.json();
 
                 if (response.success && response.data) {
-                    const record = response.data;
+                    var record = response.data;
                     
                     if (record.status === 'pending') {
                         statusBadge.className = 'badge';
@@ -744,13 +744,13 @@
                         `;
                     }
 
-                    const custName = record.customer_name || 'Khách vãng lai';
-                    const custPhone = record.customer_phone ? ` (${record.customer_phone})` : '';
+                    var custName = record.customer_name || 'Khách vãng lai';
+                    var custPhone = record.customer_phone ? ` (${record.customer_phone})` : '';
                     
-                    let itemsHtml = '';
+                    var itemsHtml = '';
                     if (record.items && record.items.length > 0) {
                         record.items.forEach(item => {
-                            const unitNameStr = item.unit_name || 'Hộp';
+                            var unitNameStr = item.unit_name || 'Hộp';
                             itemsHtml += `
                                 <tr>
                                     <td>
@@ -825,50 +825,50 @@
         async function processApproval(returnCode) {
             if (!confirm(`Bạn có chắc chắn muốn DUYỆT phiếu trả hàng ${returnCode}?\nHành động này sẽ cộng lại tồn kho thuốc và xác nhận hoàn tiền.`)) return;
             try {
-                const res = await fetch(`${API_BASE}/${returnCode}/status`, {
+                var res = await fetch(`${API_BASE}/${returnCode}/status`, {
                     method: 'PUT',
                     headers: getAuthHeader(),
                     body: JSON.stringify({ status: 'completed' })
                 });
-                const data = await res.json();
+                var data = await res.json();
                 if (data.success) {
-                    alert(`Phê duyệt phiếu ${returnCode} thành công!`);
+                    showToast(`Phê duyệt phiếu ${returnCode} thành công!`, 'success');
                     closeRMADetail();
                     loadStats();
-                    const activeBtn = document.querySelector('.tab-btn.active');
-                    const activeChannel = activeBtn.id === 'btn-tab-pos' ? 'pos' : (activeBtn.id === 'btn-tab-onl' ? 'web' : 'supplier');
+                    var activeBtn = document.querySelector('.tab-btn.active');
+                    var activeChannel = activeBtn.id === 'btn-tab-pos' ? 'pos' : (activeBtn.id === 'btn-tab-onl' ? 'web' : 'supplier');
                     loadReturns(activeChannel, 1);
                 } else {
-                    alert(`Không thể duyệt: ${data.message}`);
+                    showToast(`Không thể duyệt: ${data.message}`, 'error');
                 }
             } catch (e) {
                 console.error(e);
-                alert('Lỗi khi cập nhật trạng thái phiếu trả.');
+                showToast('Lỗi khi cập nhật trạng thái phiếu trả.', 'error');
             }
         }
 
         async function processReject(returnCode) {
             if (!confirm(`Bạn có chắc chắn muốn TỪ CHỐI phiếu trả hàng ${returnCode}?`)) return;
             try {
-                const res = await fetch(`${API_BASE}/${returnCode}/status`, {
+                var res = await fetch(`${API_BASE}/${returnCode}/status`, {
                     method: 'PUT',
                     headers: getAuthHeader(),
                     body: JSON.stringify({ status: 'rejected' })
                 });
-                const data = await res.json();
+                var data = await res.json();
                 if (data.success) {
-                    alert(`Đã từ chối phiếu ${returnCode}!`);
+                    showToast(`Đã từ chối phiếu ${returnCode}!`, 'success');
                     closeRMADetail();
                     loadStats();
-                    const activeBtn = document.querySelector('.tab-btn.active');
-                    const activeChannel = activeBtn.id === 'btn-tab-pos' ? 'pos' : (activeBtn.id === 'btn-tab-onl' ? 'web' : 'supplier');
+                    var activeBtn = document.querySelector('.tab-btn.active');
+                    var activeChannel = activeBtn.id === 'btn-tab-pos' ? 'pos' : (activeBtn.id === 'btn-tab-onl' ? 'web' : 'supplier');
                     loadReturns(activeChannel, 1);
                 } else {
-                    alert(`Không thể thực hiện: ${data.message}`);
+                    showToast(`Không thể thực hiện: ${data.message}`, 'error');
                 }
             } catch (e) {
                 console.error(e);
-                alert('Lỗi khi cập nhật trạng thái phiếu trả.');
+                showToast('Lỗi khi cập nhật trạng thái phiếu trả.', 'error');
             }
         }
 
@@ -893,10 +893,10 @@
         }
 
         async function lookupOrder() {
-            const codeInput = document.getElementById('orderLookupCode');
-            const errorDiv = document.getElementById('lookupError');
-            const detailsSection = document.getElementById('orderReturnDetailsSection');
-            let code = codeInput.value.trim();
+            var codeInput = document.getElementById('orderLookupCode');
+            var errorDiv = document.getElementById('lookupError');
+            var detailsSection = document.getElementById('orderReturnDetailsSection');
+            var code = codeInput.value.trim();
 
             // Loại bỏ ký tự # ở đầu nếu có
             code = code.replace(/^#+/, '').trim();
@@ -911,10 +911,10 @@
             detailsSection.style.display = 'none';
 
             try {
-                const res = await fetch(`${ORDERS_API_BASE}/${encodeURIComponent(code)}`, {
+                var res = await fetch(`${ORDERS_API_BASE}/${encodeURIComponent(code)}`, {
                     headers: getAuthHeader()
                 });
-                const response = await res.json();
+                var response = await res.json();
 
                 if (response.success && response.data && !Array.isArray(response.data)) {
                     activeLookupOrder = response.data;
@@ -924,7 +924,7 @@
                     document.getElementById('retOrderChannel').textContent = activeLookupOrder.order_channel;
                     document.getElementById('retOrderTotal').textContent = formatVND(activeLookupOrder.total_amount);
 
-                    const tbody = document.getElementById('orderItemsLookupTbody');
+                    var tbody = document.getElementById('orderItemsLookupTbody');
                     tbody.innerHTML = '';
 
                     if (activeLookupOrder.items && activeLookupOrder.items.length > 0) {
@@ -963,8 +963,8 @@
         }
 
         function validateAndRecalculate(itemId, maxQty) {
-            const input = document.getElementById(`qtyToReturn_${itemId}`);
-            let val = parseInt(input.value);
+            var input = document.getElementById(`qtyToReturn_${itemId}`);
+            var val = parseInt(input.value);
             if (isNaN(val) || val < 1) {
                 input.value = 1;
             } else if (val > maxQty) {
@@ -976,17 +976,17 @@
         function recalculateReturnTotal() {
             if (!activeLookupOrder) return;
             
-            let totalRefund = 0;
-            let checkedAny = false;
+            var totalRefund = 0;
+            var checkedAny = false;
 
-            const checkboxes = document.querySelectorAll('input[name="returnItemCheck"]:checked');
+            var checkboxes = document.querySelectorAll('input[name="returnItemCheck"]:checked');
             checkboxes.forEach(cb => {
                 checkedAny = true;
-                const orderItemId = parseInt(cb.value);
-                const item = activeLookupOrder.items.find(i => i.id === orderItemId);
+                var orderItemId = parseInt(cb.value);
+                var item = activeLookupOrder.items.find(i => i.id === orderItemId);
                 if (item) {
-                    const inputQty = document.getElementById(`qtyToReturn_${orderItemId}`);
-                    const qty = parseInt(inputQty.value) || 1;
+                    var inputQty = document.getElementById(`qtyToReturn_${orderItemId}`);
+                    var qty = parseInt(inputQty.value) || 1;
                     totalRefund += qty * item.unit_price;
                 }
             });
@@ -998,23 +998,23 @@
         async function submitReturnRequest() {
             if (!activeLookupOrder) return;
 
-            const btnSubmit = document.getElementById('btnSubmitReturn');
+            var btnSubmit = document.getElementById('btnSubmitReturn');
             btnSubmit.disabled = true;
             btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang gửi...`;
 
-            const reason = document.getElementById('returnReason').value;
-            const refundMethod = document.getElementById('returnRefundMethod').value;
+            var reason = document.getElementById('returnReason').value;
+            var refundMethod = document.getElementById('returnRefundMethod').value;
             
-            let refundAmount = 0;
-            const items = [];
+            var refundAmount = 0;
+            var items = [];
 
-            const checkboxes = document.querySelectorAll('input[name="returnItemCheck"]:checked');
+            var checkboxes = document.querySelectorAll('input[name="returnItemCheck"]:checked');
             checkboxes.forEach(cb => {
-                const orderItemId = parseInt(cb.value);
-                const item = activeLookupOrder.items.find(i => i.id === orderItemId);
+                var orderItemId = parseInt(cb.value);
+                var item = activeLookupOrder.items.find(i => i.id === orderItemId);
                 if (item) {
-                    const inputQty = document.getElementById(`qtyToReturn_${orderItemId}`);
-                    const qty = parseInt(inputQty.value) || 1;
+                    var inputQty = document.getElementById(`qtyToReturn_${orderItemId}`);
+                    var qty = parseInt(inputQty.value) || 1;
                     refundAmount += qty * item.unit_price;
                     items.push({
                         order_item_id: orderItemId,
@@ -1023,7 +1023,7 @@
                 }
             });
 
-            const body = {
+            var body = {
                 order_id: activeLookupOrder.id,
                 order_channel: activeLookupOrder.order_channel,
                 reason,
@@ -1033,28 +1033,28 @@
             };
 
             try {
-                const res = await fetch(API_BASE, {
+                var res = await fetch(API_BASE, {
                     method: 'POST',
                     headers: getAuthHeader(),
                     body: JSON.stringify(body)
                 });
-                const response = await res.json();
+                var response = await res.json();
 
                 if (response.success) {
-                    alert('Tạo phiếu đổi trả thành công!');
+                    showToast('Tạo phiếu đổi trả thành công!', 'success');
                     closeCreateReturnModal();
                     loadStats();
-                    const activeBtn = document.querySelector('.tab-btn.active');
-                    const activeChannel = activeBtn.id === 'btn-tab-pos' ? 'pos' : (activeBtn.id === 'btn-tab-onl' ? 'web' : 'supplier');
+                    var activeBtn = document.querySelector('.tab-btn.active');
+                    var activeChannel = activeBtn.id === 'btn-tab-pos' ? 'pos' : (activeBtn.id === 'btn-tab-onl' ? 'web' : 'supplier');
                     loadReturns(activeChannel, 1);
                 } else {
-                    alert(`Lỗi: ${response.message}`);
+                    showToast(`Lỗi: ${response.message}`, 'error');
                     btnSubmit.disabled = false;
                     btnSubmit.innerHTML = 'Xác nhận tạo phiếu';
                 }
             } catch (e) {
                 console.error(e);
-                alert('Lỗi kết nối khi tạo phiếu đổi trả.');
+                showToast('Lỗi kết nối khi tạo phiếu đổi trả.', 'error');
                 btnSubmit.disabled = false;
                 btnSubmit.innerHTML = 'Xác nhận tạo phiếu';
             }
@@ -1072,7 +1072,7 @@
             });
             document.getElementById('btn-' + tabId).classList.add('active');
 
-            const channel = tabId === 'tab-pos' ? 'pos' : (tabId === 'tab-onl' ? 'web' : 'supplier');
+            var channel = tabId === 'tab-pos' ? 'pos' : (tabId === 'tab-onl' ? 'web' : 'supplier');
             loadReturns(channel, 1);
         }
 

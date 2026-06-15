@@ -8,6 +8,16 @@
     <link rel="stylesheet" href="css/admin-style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    </style>
 </head>
 
 <body>
@@ -33,17 +43,55 @@
             </div>
 
             <div class="page-actions" style="align-items:center;">
-                <!-- Date Range Picker Style Input -->
-                <div
-                    style="background:#fff;border:1.5px solid var(--admin-border);border-radius:var(--admin-radius);height:40px;display:flex;align-items:center;padding:0 14px;gap:12px;cursor:pointer;">
-                    <i class="fa-regular fa-calendar" style="color:#6b7280;font-size:14px;"></i>
-                    <span style="font-size:13px;font-weight:600;color:#374151;">01/03/2026 - 05/03/2026</span>
-                    <i class="fa-solid fa-chevron-down" style="color:#9ca3af;font-size:11px;"></i>
-                </div>
-
-                <button class="btn-primary" style="background:#0f172a;box-shadow:none;">
+                <button class="btn-primary" style="background:#0f172a;box-shadow:none;" onclick="exportExcel()">
                     <i class="fa-solid fa-file-excel"></i> Xuất ra Excel
                 </button>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section" style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:24px;background:#fff;padding:16px;border-radius:var(--admin-radius);border:1px solid var(--admin-border);">
+            <div class="filter-group" style="flex:1;min-width:220px;">
+                <label class="filter-label" style="font-size:12px;font-weight:700;color:#4b5563;margin-bottom:6px;display:block;">Tìm kiếm nhân viên / Kiosk</label>
+                <div style="position:relative;">
+                    <input type="text" id="filterSearch" class="filter-control" placeholder="Tìm theo tên thu ngân, Kiosk ID..." style="width:100%;height:38px;padding-left:36px;border:1px solid var(--admin-border);border-radius:6px;font-size:13px;" oninput="debounceApplyFilters()">
+                    <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:12px;top:12px;color:#9ca3af;font-size:13px;"></i>
+                </div>
+            </div>
+            
+            <div class="filter-group" style="min-width:180px;">
+                <label class="filter-label" style="font-size:12px;font-weight:700;color:#4b5563;margin-bottom:6px;display:block;">Thời gian ca</label>
+                <select id="filterDateRange" class="filter-control" style="width:100%;height:38px;border:1px solid var(--admin-border);border-radius:6px;font-size:13px;font-weight:600;background-color:#fff;" onchange="handleDateRangeChange()">
+                    <option value="all">Tất cả thời gian</option>
+                    <option value="today">Hôm nay</option>
+                    <option value="yesterday">Hôm qua</option>
+                    <option value="7days">7 ngày qua</option>
+                    <option value="30days">30 ngày qua</option>
+                    <option value="custom">Tùy chọn...</option>
+                </select>
+            </div>
+
+            <div id="customDateRangeContainer" class="filter-group" style="display:none;gap:8px;align-items:flex-end;">
+                <div style="display:flex;flex-direction:column;">
+                    <label class="filter-label" style="font-size:12px;font-weight:700;color:#4b5563;margin-bottom:6px;display:block;">Từ ngày</label>
+                    <input type="date" id="filterStartDate" class="filter-control" style="height:38px;border:1px solid var(--admin-border);border-radius:6px;padding:0 8px;font-size:13px;">
+                </div>
+                <div style="display:flex;flex-direction:column;">
+                    <label class="filter-label" style="font-size:12px;font-weight:700;color:#4b5563;margin-bottom:6px;display:block;">Đến ngày</label>
+                    <input type="date" id="filterEndDate" class="filter-control" style="height:38px;border:1px solid var(--admin-border);border-radius:6px;padding:0 8px;font-size:13px;">
+                </div>
+                <button class="btn-primary" style="height:38px;padding:0 16px;background:var(--admin-primary);" onclick="applyFilters()">Lọc</button>
+            </div>
+
+            <div class="filter-group" style="min-width:180px;">
+                <label class="filter-label" style="font-size:12px;font-weight:700;color:#4b5563;margin-bottom:6px;display:block;">Trạng thái đối soát</label>
+                <select id="filterStatus" class="filter-control" style="width:100%;height:38px;border:1px solid var(--admin-border);border-radius:6px;font-size:13px;font-weight:600;background-color:#fff;" onchange="applyFilters()">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="open">Đang mở ca</option>
+                    <option value="matched">Đã khớp ca (0 ₫)</option>
+                    <option value="reconcile_pending">Chờ duyệt lệch ca</option>
+                    <option value="approved">Đã duyệt lệch ca</option>
+                </select>
             </div>
         </div>
 
@@ -67,24 +115,35 @@
             </table>
 
             <!-- Pagination -->
-            <div class="pagination">
-                <span class="page-info">Hiển thị 1 - 4 trên 68 báo cáo giao ca</span>
-                <div class="page-controls">
-                    <button class="btn-page" disabled><i class="fa-solid fa-chevron-left"></i></button>
-                    <button class="btn-page active">1</button>
-                    <button class="btn-page">2</button>
-                    <button class="btn-page">...</button>
-                    <button class="btn-page">17</button>
-                    <button class="btn-page"><i class="fa-solid fa-chevron-right"></i></button>
+            <div class="pagination" id="paginationContainer" style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;">
+                <span class="page-info" id="paginationInfo">Hiển thị 0 - 0 trên 0 báo cáo giao ca</span>
+                <div class="page-controls" id="paginationControls">
+                    <!-- Dynamic pagination controls -->
                 </div>
             </div>
         </div>
 
     </main>
 
+    <!-- ============ SHIFT DETAILS MODAL ============ -->
+    <div class="standard-modal-overlay" id="shiftDetailsModal">
+        <div class="standard-modal-container" style="max-width: 650px;">
+            <div class="standard-modal-header" style="background:#f8fafc;border-bottom:1px solid var(--admin-border);">
+                <h2 style="font-size:16px;font-weight:700;color:#0f172a;margin:0;"><i class="fa-solid fa-receipt" style="margin-right:8px;color:var(--admin-primary);"></i>Chi Tiết Ca Làm Việc</h2>
+                <button class="btn-icon" onclick="closeShiftDetailsModal()" style="border:none;background:transparent;cursor:pointer;font-size:16px;color:#6b7280;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="standard-modal-body" id="shiftDetailsBody" style="padding:24px;max-height:70vh;overflow-y:auto;">
+                <!-- Dynamic Content goes here -->
+            </div>
+            <div class="standard-modal-footer" style="padding:16px 24px;border-top:1px solid var(--admin-border);display:flex;justify-content:flex-end;background:#f8fafc;">
+                <button class="btn-secondary" onclick="closeShiftDetailsModal()">Đóng lại</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ============ SCRIPTS ============ -->
     <script>
-        const API_BASE = (localStorage.getItem('MG_API_BASE') || (
+        var API_BASE = (localStorage.getItem('MG_API_BASE') || (
             (window.location.origin.includes('localhost:5500') ||
              window.location.origin.includes('localhost:5501') ||
              window.location.origin.includes('127.0.0.1:5500') ||
@@ -93,10 +152,14 @@
             : window.location.origin.replace(/\/+$/, '') + '/api'
         )) + '/identity';
 
+        // Pagination State
+        var currentPage = 1;
+        var pageSize = 10;
+
         function getAdminToken() {
-            const authRaw = localStorage.getItem('MG_ADMIN_AUTH');
+            var authRaw = localStorage.getItem('MG_ADMIN_AUTH');
             if (authRaw) {
-                const parsed = JSON.parse(authRaw);
+                var parsed = JSON.parse(authRaw);
                 return parsed.accessToken;
             }
             return '';
@@ -108,7 +171,7 @@
 
         function formatDateTime(isoString) {
             if (!isoString) return '-';
-            const date = new Date(isoString);
+            var date = new Date(isoString);
             return date.toLocaleString('vi-VN', { 
                 hour: '2-digit', 
                 minute: '2-digit',
@@ -118,50 +181,141 @@
             });
         }
 
+        function getLocalDateString(date) {
+            var year = date.getFullYear();
+            var month = String(date.getMonth() + 1).padStart(2, '0');
+            var day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function getDatesForRange(rangeType) {
+            var today = new Date();
+            var startDate = '';
+            var endDate = '';
+            
+            switch (rangeType) {
+                case 'today':
+                    startDate = getLocalDateString(today);
+                    endDate = startDate;
+                    break;
+                case 'yesterday':
+                    var yesterday = new Date();
+                    yesterday.setDate(today.getDate() - 1);
+                    startDate = getLocalDateString(yesterday);
+                    endDate = startDate;
+                    break;
+                case '7days':
+                    var sevenDaysAgo = new Date();
+                    sevenDaysAgo.setDate(today.getDate() - 6);
+                    startDate = getLocalDateString(sevenDaysAgo);
+                    endDate = getLocalDateString(today);
+                    break;
+                case '30days':
+                    var thirtyDaysAgo = new Date();
+                    thirtyDaysAgo.setDate(today.getDate() - 29);
+                    startDate = getLocalDateString(thirtyDaysAgo);
+                    endDate = getLocalDateString(today);
+                    break;
+            }
+            return { startDate, endDate };
+        }
+
+        function handleDateRangeChange() {
+            var range = document.getElementById('filterDateRange').value;
+            var container = document.getElementById('customDateRangeContainer');
+            if (range === 'custom') {
+                container.style.display = 'flex';
+            } else {
+                container.style.display = 'none';
+                applyFilters();
+            }
+        }
+
+        var debounceTimer;
+        function debounceApplyFilters() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                applyFilters();
+            }, 300);
+        }
+
+        function applyFilters() {
+            currentPage = 1;
+            loadShifts();
+        }
+
         async function loadShifts() {
-            const tbody = document.getElementById('shiftsTableBody');
+            var tbody = document.getElementById('shiftsTableBody');
             if (!tbody) return;
 
             tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">Đang tải danh sách ca...</td></tr>';
 
             try {
-                const token = getAdminToken();
+                var token = getAdminToken();
                 if (!token) {
                     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#ef4444;">Vui lòng đăng nhập quản trị viên.</td></tr>';
                     return;
                 }
 
-                const res = await fetch(`${API_BASE}/shifts`, {
+                // Prepare query params
+                var params = new URLSearchParams({
+                    page: currentPage,
+                    limit: pageSize
+                });
+
+                var searchVal = document.getElementById('filterSearch').value.trim();
+                var statusVal = document.getElementById('filterStatus').value;
+                var rangeType = document.getElementById('filterDateRange').value;
+                
+                var startDateVal = '';
+                var endDateVal = '';
+                if (rangeType === 'custom') {
+                    startDateVal = document.getElementById('filterStartDate').value;
+                    endDateVal = document.getElementById('filterEndDate').value;
+                } else if (rangeType !== 'all') {
+                    var dates = getDatesForRange(rangeType);
+                    startDateVal = dates.startDate;
+                    endDateVal = dates.endDate;
+                }
+
+                if (searchVal) params.append('search', searchVal);
+                if (statusVal) params.append('status', statusVal);
+                if (startDateVal) params.append('startDate', startDateVal);
+                if (endDateVal) params.append('endDate', endDateVal);
+
+                var res = await fetch(`${API_BASE}/shifts?${params.toString()}`, {
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
-                const result = await res.json();
+                var result = await res.json();
+                
                 if (result.success) {
-                    const shifts = result.data || [];
+                    var shifts = result.data || [];
                     if (shifts.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">Không có ca làm việc nào.</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">Không có ca làm việc nào khớp bộ lọc.</td></tr>';
+                        renderPagination({ total: 0, page: 1, limit: pageSize, totalPages: 1 });
                         return;
                     }
 
                     tbody.innerHTML = shifts.map(s => {
-                        const openedBy = s.opened_by_name || 'Thu ngân';
-                        const startStr = formatDateTime(s.shift_start);
-                        const endStr = s.shift_end ? formatDateTime(s.shift_end) : 'Đang mở';
+                        var openedBy = s.opened_by_name || 'Thu ngân';
+                        var startStr = formatDateTime(s.shift_start);
+                        var endStr = s.shift_end ? formatDateTime(s.shift_end) : 'Đang mở';
                         
-                        const openCash = parseFloat(s.opening_cash) || 0;
-                        const closingCash = s.closing_cash !== null ? parseFloat(s.closing_cash) : null;
-                        const expectedCash = parseFloat(s.expected_closing_cash) || 0;
-                        const diff = parseFloat(s.cash_difference) || 0;
+                        var openCash = parseFloat(s.opening_cash) || 0;
+                        var closingCash = s.closing_cash !== null ? parseFloat(s.closing_cash) : null;
+                        var expectedCash = parseFloat(s.expected_closing_cash) || 0;
+                        var diff = parseFloat(s.cash_difference) || 0;
 
-                        let diffHtml = '';
-                        let statusBadgeHtml = '';
-                        let actionHtml = '';
+                        var diffHtml = '';
+                        var statusBadgeHtml = '';
+                        var actionHtml = '';
 
                         if (s.status === 'open' || !s.shift_end) {
                             diffHtml = '<span style="font-size:13px;color:#6b7280;">Đang mở ca</span>';
                             statusBadgeHtml = '<span class="status-badge" style="background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;">Đang mở</span>';
                             actionHtml = `
                                 <div class="action-btns" style="justify-content:flex-end;">
-                                    <span style="font-size:12px;color:#9ca3af;font-style:italic;">Chưa chốt ca</span>
+                                    <button class="btn-icon" title="Xem chi tiết ca" onclick="openShiftDetails(${s.id})"><i class="fa-solid fa-eye"></i></button>
                                 </div>
                             `;
                         } else {
@@ -170,36 +324,38 @@
                                 statusBadgeHtml = '<span class="status-badge active" style="background:#f0fdf4;color:#15803d;border-color:#bbf7d0;">Đã khớp</span>';
                                 actionHtml = `
                                     <div class="action-btns" style="justify-content:flex-end;">
-                                        <button class="btn-icon" title="Xem chi tiết doanh thu" onclick="alert('Chi tiết doanh thu ca: ${formatVND(expectedCash)}')"><i class="fa-solid fa-chart-line"></i></button>
+                                        <button class="btn-icon" title="Xem chi tiết ca" onclick="openShiftDetails(${s.id})"><i class="fa-solid fa-eye"></i></button>
                                     </div>
                                 `;
                             } else {
-                                const sign = diff > 0 ? '+' : '';
-                                const term = diff > 0 ? 'Dư' : 'Thiếu';
-                                const color = diff > 0 ? '#059669' : '#dc2626';
-                                const icon = diff > 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+                                var sign = diff > 0 ? '+' : '';
+                                var term = diff > 0 ? 'Dư' : 'Thiếu';
+                                var color = diff > 0 ? '#059669' : '#dc2626';
+                                var icon = diff > 0 ? 'fa-arrow-up' : 'fa-arrow-down';
                                 diffHtml = `<span style="font-size:14px;font-weight:800;color:${color};"><i class="fa-solid ${icon}"></i> ${sign}${formatVND(diff)} (${term})</span>`;
 
                                 if (s.reconciliation_status === 'approved') {
                                     statusBadgeHtml = '<span class="status-badge active" style="background:#f0fdf4;color:#15803d;border-color:#bbf7d0;">Đã duyệt</span>';
                                     actionHtml = `
-                                        <div class="action-btns" style="justify-content:flex-end;">
-                                            <span style="font-size:12px;color:#059669;font-weight:600;"><i class="fa-solid fa-circle-check"></i> Đã duyệt bù/thu</span>
+                                        <div class="action-btns" style="justify-content:flex-end;align-items:center;gap:8px;">
+                                            <span style="font-size:12px;color:#059669;font-weight:600;"><i class="fa-solid fa-circle-check"></i> Đã duyệt</span>
+                                            <button class="btn-icon" title="Xem chi tiết ca" onclick="openShiftDetails(${s.id})"><i class="fa-solid fa-eye"></i></button>
                                         </div>
                                     `;
                                 } else {
                                     statusBadgeHtml = '<span class="status-badge inactive" style="background:#fffbeb;color:#b45309;border-color:#fde68a;">Chờ xử lý</span>';
                                     actionHtml = `
-                                        <div class="action-btns" style="justify-content:flex-end;">
+                                        <div class="action-btns" style="justify-content:flex-end;align-items:center;gap:8px;">
                                             <button class="btn-secondary" style="height:32px;font-size:12px;padding:0 12px;color:#047857;border-color:#10b981;" onclick="approveShiftReconciliation(${s.id}, ${diff})">Duyệt lệch</button>
+                                            <button class="btn-icon" title="Xem chi tiết ca" onclick="openShiftDetails(${s.id})"><i class="fa-solid fa-eye"></i></button>
                                         </div>
                                     `;
                                 }
                             }
                         }
 
-                        const closingCashStr = closingCash !== null ? formatVND(closingCash) : '-';
-                        const expectedCashStr = s.shift_end ? formatVND(expectedCash) : '-';
+                        var closingCashStr = closingCash !== null ? formatVND(closingCash) : '-';
+                        var expectedCashStr = s.shift_end ? formatVND(expectedCash) : '-';
 
                         return `
                             <tr>
@@ -222,6 +378,8 @@
                             </tr>
                         `;
                     }).join('');
+
+                    renderPagination(result.pagination);
                 } else {
                     tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:#ef4444;">Lỗi: ${result.message}</td></tr>`;
                 }
@@ -231,18 +389,241 @@
             }
         }
 
-        async function approveShiftReconciliation(id, diff) {
-            const label = diff > 0 ? "thu dư" : "bù tiền";
-            const confirmMsg = `Bạn có chắc chắn muốn duyệt lệch ca này (hành động: ${label} với chênh lệch ${formatVND(diff)})?`;
-            if (!confirm(confirmMsg)) return;
+        function renderPagination(pagination) {
+            var info = document.getElementById('paginationInfo');
+            var controls = document.getElementById('paginationControls');
+            if (!info || !controls) return;
 
-            const note = prompt("Nhập ghi chú phê duyệt (không bắt buộc):") || `Duyệt chênh lệch ca ${label}`;
+            var { total, page, limit, totalPages } = pagination;
+            if (total === 0) {
+                info.innerText = 'Không hiển thị báo cáo giao ca nào';
+                controls.innerHTML = '';
+                return;
+            }
+
+            var startIdx = (page - 1) * limit + 1;
+            var endIdx = Math.min(page * limit, total);
+            info.innerText = `Hiển thị ${startIdx} - ${endIdx} trên ${total} báo cáo giao ca`;
+
+            var html = '';
+            
+            // Previous button
+            html += `<button class="btn-page" ${page === 1 ? 'disabled' : ''} onclick="goToPage(${page - 1})"><i class="fa-solid fa-chevron-left"></i></button>`;
+
+            // Page numbers
+            var maxVisiblePages = 5;
+            var startPage = Math.max(1, page - Math.floor(maxVisiblePages / 2));
+            var endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+
+            if (startPage > 1) {
+                html += `<button class="btn-page" onclick="goToPage(1)">1</button>`;
+                if (startPage > 2) html += `<button class="btn-page" disabled>...</button>`;
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                html += `<button class="btn-page ${i === page ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) html += `<button class="btn-page" disabled>...</button>`;
+                html += `<button class="btn-page" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+            }
+
+            // Next button
+            html += `<button class="btn-page" ${page === totalPages ? 'disabled' : ''} onclick="goToPage(${page + 1})"><i class="fa-solid fa-chevron-right"></i></button>`;
+
+            controls.innerHTML = html;
+        }
+
+        function goToPage(p) {
+            currentPage = p;
+            loadShifts();
+        }
+
+        async function openShiftDetails(id) {
+            var modal = document.getElementById('shiftDetailsModal');
+            var body = document.getElementById('shiftDetailsBody');
+            if (!modal || !body) return;
+
+            body.innerHTML = '<div style="text-align:center;padding:40px;"><i class="fa-solid fa-spinner fa-spin" style="font-size:24px;color:var(--admin-primary);"></i> Đang tải thông tin chi tiết...</div>';
+            modal.classList.add('open');
+            document.body.style.overflow = 'hidden';
 
             try {
-                const token = getAdminToken();
+                var token = getAdminToken();
+                var res = await fetch(`${API_BASE}/shifts/${id}`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                var result = await res.json();
+                if (result.success) {
+                    var s = result.data;
+                    var openedBy = s.opened_by_name || 'Thu ngân';
+                    var approvedBy = s.approved_by_name || '-';
+                    var startStr = formatDateTime(s.shift_start);
+                    var endStr = s.shift_end ? formatDateTime(s.shift_end) : 'Đang trực (chưa chốt)';
+                    var approvedAtStr = s.approved_at ? formatDateTime(s.approved_at) : '-';
+
+                    var openCash = parseFloat(s.opening_cash) || 0;
+                    var closingCash = s.closing_cash !== null ? parseFloat(s.closing_cash) : null;
+                    var expectedCash = parseFloat(s.expected_closing_cash) || 0;
+                    var diff = parseFloat(s.cash_difference) || 0;
+                    var cashSales = parseFloat(s.total_cash_sales) || 0;
+                    var cardSales = parseFloat(s.total_card_sales) || 0;
+                    var qrSales = parseFloat(s.total_qr_sales) || 0;
+                    var totalSales = cashSales + cardSales + qrSales;
+
+                    var diffText = '';
+                    if (s.status === 'open') {
+                        diffText = '<span style="color:#6b7280;font-weight:600;">Ca đang mở</span>';
+                    } else if (diff === 0) {
+                        diffText = '<span style="color:#10b981;font-weight:700;">0 đ (Khớp hoàn toàn)</span>';
+                    } else {
+                        var term = diff > 0 ? 'Thừa (Dư)' : 'Thiếu';
+                        var color = diff > 0 ? '#059669' : '#dc2626';
+                        diffText = `<span style="color:${color};font-weight:700;">${diff > 0 ? '+' : ''}${formatVND(diff)} (${term})</span>`;
+                    }
+
+                    var reconStatusLabel = '';
+                    if (s.reconciliation_status === 'pending') {
+                        reconStatusLabel = '<span class="status-badge" style="background:#fffbeb;color:#d97706;border-color:#fef3c7;">Chờ xử lý</span>';
+                    } else if (s.reconciliation_status === 'matched') {
+                        reconStatusLabel = '<span class="status-badge active" style="background:#f0fdf4;color:#15803d;border-color:#bbf7d0;">Đã khớp</span>';
+                    } else if (s.reconciliation_status === 'excess') {
+                        reconStatusLabel = '<span class="status-badge inactive" style="background:#fffbeb;color:#b45309;border-color:#fde68a;">Thừa tiền (Chờ duyệt)</span>';
+                    } else if (s.reconciliation_status === 'shortage') {
+                        reconStatusLabel = '<span class="status-badge inactive" style="background:#fef2f2;color:#b91c1c;border-color:#fecaca;">Thiếu tiền (Chờ duyệt)</span>';
+                    } else if (s.reconciliation_status === 'approved') {
+                        reconStatusLabel = '<span class="status-badge active" style="background:#f0fdf4;color:#15803d;border-color:#bbf7d0;">Đã duyệt lệch</span>';
+                    }
+
+                    body.innerHTML = `
+                        <div style="display:flex;flex-direction:column;gap:20px;">
+                            <!-- Top Summary Card -->
+                            <div style="background:#f8fafc;border:1px solid var(--admin-border);border-radius:8px;padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                                <div>
+                                    <div style="font-size:11px;color:#6b7280;text-transform:uppercase;font-weight:600;margin-bottom:4px;">Nhân viên trực</div>
+                                    <div style="font-size:15px;font-weight:700;color:#0f172a;">${escapeHtml(openedBy)}</div>
+                                    <div style="font-size:12px;color:#6b7280;margin-top:2px;">Kiosk: #${s.kiosk_id}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size:11px;color:#6b7280;text-transform:uppercase;font-weight:600;margin-bottom:4px;">Trạng thái đối soát</div>
+                                    <div>${reconStatusLabel}</div>
+                                </div>
+                            </div>
+
+                            <!-- Shift Times -->
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;border-bottom:1px dashed var(--admin-border);padding-bottom:16px;">
+                                <div>
+                                    <div style="font-size:13px;font-weight:600;color:#374151;"><i class="fa-regular fa-clock" style="color:#10b981;margin-right:6px;"></i>Bắt đầu ca:</div>
+                                    <div style="font-size:14px;color:#0f172a;font-family:monospace;margin-top:4px;">${startStr}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size:13px;font-weight:600;color:#374151;"><i class="fa-regular fa-clock" style="color:#ef4444;margin-right:6px;"></i>Chốt ca:</div>
+                                    <div style="font-size:14px;color:#0f172a;font-family:monospace;margin-top:4px;">${endStr}</div>
+                                </div>
+                            </div>
+
+                            <!-- Cash Reconciliation & Sales Details -->
+                            <div>
+                                <h3 style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:12px;">ĐỐI SOÁT TIỀN MẶT & DOANH THU</h3>
+                                <div style="display:flex;flex-direction:column;gap:8px;background:#fff;border:1px solid var(--admin-border);border-radius:8px;padding:14px;">
+                                    <div style="display:flex;justify-content:space-between;font-size:13px;color:#4b5563;">
+                                        <span>Tiền mặt đầu ca (1):</span>
+                                        <span style="font-weight:600;">${formatVND(openCash)}</span>
+                                    </div>
+                                    <div style="display:flex;justify-content:space-between;font-size:13px;color:#4b5563;">
+                                        <span>+ Doanh thu tiền mặt trong ca (2):</span>
+                                        <span style="font-weight:600;color:#059669;">+ ${formatVND(cashSales)}</span>
+                                    </div>
+                                    <div style="display:flex;justify-content:space-between;font-size:13px;color:#0f172a;font-weight:700;border-top:1px dashed var(--admin-border);padding-top:8px;">
+                                        <span>= Hệ thống tính cuối ca (1 + 2):</span>
+                                        <span>${formatVND(expectedCash)}</span>
+                                    </div>
+                                    <div style="display:flex;justify-content:space-between;font-size:13px;color:#4b5563;">
+                                        <span>Thực tế thu ngân đếm bàn giao:</span>
+                                        <span style="font-weight:600;color:#0f172a;">${closingCash !== null ? formatVND(closingCash) : 'Chưa nhập'}</span>
+                                    </div>
+                                    <div style="display:flex;justify-content:space-between;font-size:13px;color:#0f172a;font-weight:700;border-top:1px dashed var(--admin-border);padding-top:8px;">
+                                        <span>Chênh lệch khớp quỹ:</span>
+                                        <span>${diffText}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Non-Cash Sales -->
+                            <div>
+                                <h3 style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:12px;">DOANH THU KHÔNG DÙNG TIỀN MẶT</h3>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                                    <div style="background:#f8fafc;border:1px solid var(--admin-border);border-radius:8px;padding:12px;">
+                                        <div style="font-size:11px;color:#6b7280;font-weight:600;">DOANH THU THẺ (CARD)</div>
+                                        <div style="font-size:14px;font-weight:700;color:#374151;margin-top:4px;">${formatVND(cardSales)}</div>
+                                    </div>
+                                    <div style="background:#f8fafc;border:1px solid var(--admin-border);border-radius:8px;padding:12px;">
+                                        <div style="font-size:11px;color:#6b7280;font-weight:600;">DOANH THU CHUYỂN KHOẢN (QR)</div>
+                                        <div style="font-size:14px;font-weight:700;color:#374151;margin-top:4px;">${formatVND(qrSales)}</div>
+                                    </div>
+                                </div>
+                                <div style="display:flex;justify-content:space-between;font-size:13px;color:#4b5563;font-weight:600;margin-top:10px;padding:0 4px;">
+                                    <span>Tổng doanh thu toàn ca (Tiền mặt + Thẻ + QR):</span>
+                                    <span style="color:var(--admin-primary);font-weight:700;">${formatVND(totalSales)}</span>
+                                </div>
+                            </div>
+
+                            <!-- Handover Notes -->
+                            <div>
+                                <h3 style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:6px;">Ghi chú bàn giao ca</h3>
+                                <div style="background:#f8fafc;border:1px solid var(--admin-border);border-radius:8px;padding:12px;font-size:13px;color:#4b5563;min-height:48px;font-style:italic;">
+                                    ${escapeHtml(s.notes) || 'Không có ghi chú bàn giao.'}
+                                </div>
+                            </div>
+
+                            <!-- Admin Reconciliation Approval details if approved -->
+                            ${s.reconciliation_status === 'approved' ? `
+                                <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;padding:16px;">
+                                    <h4 style="font-size:13px;font-weight:700;color:#047857;margin-bottom:8px;"><i class="fa-solid fa-circle-check" style="margin-right:6px;"></i>Thông tin phê duyệt chênh lệch</h4>
+                                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:12px;color:#065f46;margin-bottom:8px;">
+                                        <div><strong>Người duyệt:</strong> ${escapeHtml(approvedBy)}</div>
+                                        <div><strong>Thời gian duyệt:</strong> ${approvedAtStr}</div>
+                                    </div>
+                                    <div style="font-size:12px;color:#065f46;border-top:1px solid #c6f6d5;padding-top:8px;">
+                                        <strong>Ghi chú phê duyệt:</strong> <span style="font-style:italic;">${escapeHtml(s.approval_note) || '-'}</span>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                } else {
+                    body.innerHTML = `<div style="text-align:center;padding:40px;color:#ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Lỗi: ${result.message}</div>`;
+                }
+            } catch (e) {
+                console.error(e);
+                body.innerHTML = '<div style="text-align:center;padding:40px;color:#ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Lỗi kết nối máy chủ.</div>';
+            }
+        }
+
+        function closeShiftDetailsModal() {
+            var modal = document.getElementById('shiftDetailsModal');
+            if (modal) {
+                modal.classList.remove('open');
+                document.body.style.overflow = '';
+            }
+        }
+
+        async function approveShiftReconciliation(id, diff) {
+            var label = diff > 0 ? "thu dư" : "bù tiền";
+            var confirmMsg = `Bạn có chắc chắn muốn duyệt lệch ca này (hành động: ${label} với chênh lệch ${formatVND(diff)})?`;
+            if (!confirm(confirmMsg)) return;
+
+            var note = prompt("Nhập ghi chú phê duyệt (không bắt buộc):") || `Duyệt chênh lệch ca ${label}`;
+
+            try {
+                var token = getAdminToken();
                 if (!token) return;
 
-                const response = await fetch(`${API_BASE}/shifts/${id}/reconcile/approve`, {
+                var response = await fetch(`${API_BASE}/shifts/${id}/reconcile/approve`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -251,7 +632,7 @@
                     body: JSON.stringify({ approval_note: note })
                 });
 
-                const result = await response.json();
+                var result = await response.json();
                 if (result.success) {
                     showToast('Phê duyệt chênh lệch ca thành công!', 'success');
                     loadShifts();
@@ -264,6 +645,105 @@
             }
         }
 
+        async function exportExcel() {
+            try {
+                var token = getAdminToken();
+                if (!token) {
+                    showToast('Vui lòng đăng nhập quản trị viên.', 'error');
+                    return;
+                }
+
+                var params = new URLSearchParams({
+                    page: 1,
+                    limit: 100000 
+                });
+
+                var searchVal = document.getElementById('filterSearch').value.trim();
+                var statusVal = document.getElementById('filterStatus').value;
+                var rangeType = document.getElementById('filterDateRange').value;
+                
+                var startDateVal = '';
+                var endDateVal = '';
+                if (rangeType === 'custom') {
+                    startDateVal = document.getElementById('filterStartDate').value;
+                    endDateVal = document.getElementById('filterEndDate').value;
+                } else if (rangeType !== 'all') {
+                    var dates = getDatesForRange(rangeType);
+                    startDateVal = dates.startDate;
+                    endDateVal = dates.endDate;
+                }
+
+                if (searchVal) params.append('search', searchVal);
+                if (statusVal) params.append('status', statusVal);
+                if (startDateVal) params.append('startDate', startDateVal);
+                if (endDateVal) params.append('endDate', endDateVal);
+
+                var res = await fetch(`${API_BASE}/shifts?${params.toString()}`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                var result = await res.json();
+                
+                if (!result.success || !result.data) {
+                    showToast('Lỗi khi tải dữ liệu xuất Excel: ' + (result.message || 'Không rõ lỗi.'), 'error');
+                    return;
+                }
+
+                var shifts = result.data;
+                if (shifts.length === 0) {
+                    showToast('Không có dữ liệu ca làm việc nào khớp với bộ lọc để xuất.', 'warning');
+                    return;
+                }
+
+                var csvContent = "\uFEFF"; 
+                
+                var headers = [
+                    "Mã Ca", "Kiosk", "Nhân Viên Mở Ca", "Bắt Đầu Ca", "Chốt Ca", 
+                    "Tiền Đầu Ca (VND)", "Hệ Thống Tính (VND)", "Thực Tế Đếm (VND)", 
+                    "Chênh Lệch (VND)", "Trạng Thái", "Người Duyệt Lệch", "Thời Gian Duyệt", "Ghi Chú Phê Duyệt"
+                ];
+                csvContent += headers.map(h => `"${h.replace(/"/g, '""')}"`).join(",") + "\n";
+
+                shifts.forEach(s => {
+                    var statusStr = s.status === 'open' ? 'Đang mở' : (s.cash_difference === 0 ? 'Đã khớp' : (s.reconciliation_status === 'approved' ? 'Đã duyệt lệch' : 'Chờ xử lý'));
+                    
+                    var row = [
+                        s.id,
+                        `Kiosk #${s.kiosk_id}`,
+                        s.opened_by_name || 'Thu ngân',
+                        s.shift_start ? formatDateTime(s.shift_start) : '-',
+                        s.shift_end ? formatDateTime(s.shift_end) : 'Đang mở',
+                        s.opening_cash || 0,
+                        s.expected_closing_cash || 0,
+                        s.closing_cash !== null ? s.closing_cash : '-',
+                        s.cash_difference !== null ? s.cash_difference : '-',
+                        statusStr,
+                        s.approved_by_name || '-',
+                        s.approved_at ? formatDateTime(s.approved_at) : '-',
+                        s.approval_note || '-'
+                    ];
+                    csvContent += row.map(val => {
+                        var strVal = String(val);
+                        return `"${strVal.replace(/"/g, '""')}"`;
+                    }).join(",") + "\n";
+                });
+
+                var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                var url = URL.createObjectURL(blob);
+                var link = document.createElement("a");
+                link.setAttribute("href", url);
+                link.setAttribute("download", `Bao_Cao_Ca_Giao_Dich_${new Date().toISOString().slice(0,10)}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                showToast('Xuất báo cáo Excel thành công!', 'success');
+            } catch (e) {
+                console.error(e);
+                showToast('Lỗi hệ thống khi xuất file.', 'error');
+            }
+        }
+
+
         function escapeHtml(str) {
             if (!str) return '';
             return String(str)
@@ -274,14 +754,15 @@
                 .replace(/'/g, '&#039;');
         }
 
-        // Set active sidebar link safely without erroring if missing
-        const activeLink = document.querySelector('.sidebar-link[href="shifts.html"]');
+        var activeLink = document.querySelector('.sidebar-link[href="shifts.html"]');
         if (activeLink) {
             document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
             activeLink.classList.add('active');
         }
 
-        document.addEventListener('DOMContentLoaded', loadShifts);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadShifts();
+        });
     </script>
 
     <!-- Shared Layout Components -->
