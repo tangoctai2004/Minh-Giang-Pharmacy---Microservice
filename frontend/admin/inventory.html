@@ -841,6 +841,169 @@
                             <option value="Kháng sinh">Kháng sinh</option>
                         </select>
                     </div>
+                    <!-- Nhãn sản phẩm / Tags -->
+                    <div class="form-group" style="background:#f8fafc; padding:16px 20px; border-radius:10px; border:1px solid #cbd5e1; margin-top:16px;">
+                        <label class="form-label" style="font-weight:700; color:#1e293b;"><i class="fa-solid fa-tags"></i> Nhãn sản phẩm (Tags)</label>
+                        <p style="font-size:11px; color:#64748b; margin-bottom:8px;">Chọn gắn nhãn marketing để phân loại và hiển thị lên các khung tiêu đề trang chủ.</p>
+                        
+                        <!-- Chọn nhanh -->
+                        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+                            <label style="display:flex; align-items:center; background:#fff; border:1px solid #cbd5e1; border-radius:16px; padding:4px 12px; font-size:12px; cursor:pointer; gap:6px;">
+                                <input type="checkbox" name="medicineQuickTag" value="flash-sale" style="width:14px; height:14px;"> Flash Sale
+                            </label>
+                            <label style="display:flex; align-items:center; background:#fff; border:1px solid #cbd5e1; border-radius:16px; padding:4px 12px; font-size:12px; cursor:pointer; gap:6px;">
+                                <input type="checkbox" name="medicineQuickTag" value="deal" style="width:14px; height:14px;"> Deal Siêu Khủng
+                            </label>
+                            <label style="display:flex; align-items:center; background:#fff; border:1px solid #cbd5e1; border-radius:16px; padding:4px 12px; font-size:12px; cursor:pointer; gap:6px;">
+                                <input type="checkbox" name="medicineQuickTag" value="best-seller" style="width:14px; height:14px;"> Bán Chạy
+                            </label>
+                            <label style="display:flex; align-items:center; background:#fff; border:1px solid #cbd5e1; border-radius:16px; padding:4px 12px; font-size:12px; cursor:pointer; gap:6px;">
+                                <input type="checkbox" name="medicineQuickTag" value="discount" style="width:14px; height:14px;"> Giảm Giá
+                            </label>
+                            <label style="display:flex; align-items:center; background:#fff; border:1px solid #cbd5e1; border-radius:16px; padding:4px 12px; font-size:12px; cursor:pointer; gap:6px;">
+                                <input type="checkbox" name="medicineQuickTag" value="exclusive" style="width:14px; height:14px;"> Độc Quyền
+                            </label>
+                            <label style="display:flex; align-items:center; background:#fff; border:1px solid #cbd5e1; border-radius:16px; padding:4px 12px; font-size:12px; cursor:pointer; gap:6px;">
+                                <input type="checkbox" name="medicineQuickTag" value="imported" style="width:14px; height:14px;"> Nhập Khẩu
+                            </label>
+                            <label style="display:flex; align-items:center; background:#fff; border:1px solid #cbd5e1; border-radius:16px; padding:4px 12px; font-size:12px; cursor:pointer; gap:6px;">
+                                <input type="checkbox" name="medicineQuickTag" value="trending" style="width:14px; height:14px;"> Đang Thu Hút
+                            </label>
+                        </div>
+                        
+                        <!-- Nhập tự do -->
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="medicineCustomTagInput" class="form-input" placeholder="Gõ tag tự chọn và nhấn Enter..." style="height:34px; font-size:12px;">
+                        </div>
+                        <div id="medicineCustomTagsList" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;"></div>
+                    </div>
+                    <!-- Warning when product requires prescription -->
+                    <div id="rxPromoWarning" style="display:none; color:#ef4444; font-size:12px; margin-top:8px; font-weight:600; display:flex; align-items:center; gap:6px; background:#fef2f2; padding:10px 14px; border-radius:8px; border:1px solid #fecaca; margin-bottom:12px;">
+                        <i class="fa-solid fa-circle-exclamation"></i> Thuốc kê đơn không được phép áp dụng các nhãn khuyến mãi/quảng cáo công khai theo quy định Luật Dược 2016.
+                    </div>
+
+                    <!-- Cấu hình Khuyến mãi nâng cao -->
+                    <div id="promotionConfigsWrapper" style="display:none; background:#f0fdf4; padding:16px 20px; border-radius:10px; border:1px solid #bbf7d0; margin-top:16px;">
+                        <label class="form-label" style="font-weight:700; color:#166534;"><i class="fa-solid fa-calculator"></i> Cấu hình Khuyến mãi Chi tiết</label>
+                        <p style="font-size:11px; color:#15803d; margin-bottom:12px;">Thiết lập các thông số giảm giá, thời gian chạy và giới hạn cho từng nhãn khuyến mãi.</p>
+
+                        <!-- Flash Sale Config Section -->
+                        <div id="promo-config-flash-sale" class="promo-sub-form" style="display:none; background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:12px; margin-bottom:12px;">
+                            <div style="font-weight:700; color:#ef4444; margin-bottom:8px; border-bottom:1px solid #e2e8f0; padding-bottom:4px; display:flex; align-items:center; gap:6px;">
+                                <i class="fa-solid fa-bolt"></i> CẤU HÌNH FLASH SALE
+                            </div>
+                            <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;">
+                                <div>
+                                    <label class="form-label" style="font-size:12px;">Loại giảm giá</label>
+                                    <select class="form-select promo-discount-type" style="height:34px; font-size:12px;" onchange="updatePromoPreview('flash-sale')">
+                                        <option value="percentage">Giảm theo %</option>
+                                        <option value="fixed_price">Giá bán cố định VND</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size:12px;">Giá trị giảm</label>
+                                    <input type="number" class="form-input promo-discount-value" style="height:34px; font-size:12px;" min="0" placeholder="Nhập % hoặc giá tiền" oninput="updatePromoPreview('flash-sale')">
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size:12px;">Số lượng mở bán</label>
+                                    <input type="number" class="form-input promo-campaign-qty" style="height:34px; font-size:12px;" min="1" placeholder="Không giới hạn">
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size:12px;">Mua tối đa / khách</label>
+                                    <input type="number" class="form-input promo-max-per-customer" style="height:34px; font-size:12px;" min="1" placeholder="Không giới hạn">
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size:12px;">Bắt đầu</label>
+                                    <input type="datetime-local" class="form-input promo-start-time" style="height:34px; font-size:12px;">
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size:12px;">Kết thúc</label>
+                                    <input type="datetime-local" class="form-input promo-end-time" style="height:34px; font-size:12px;">
+                                </div>
+                            </div>
+                            <div class="promo-preview" style="font-size:11px; margin-top:8px; padding:6px 10px; background:#f8fafc; border-radius:4px; border:1px dashed #cbd5e1; color:#475569; font-weight:500;">
+                                Bảng giá xem trước: Hãy nhập giá bán lẻ và giá trị giảm giá.
+                            </div>
+                        </div>
+
+                        <!-- Deal Config Section -->
+                        <div id="promo-config-deal" class="promo-sub-form" style="display:none; background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:12px; margin-bottom:12px;">
+                            <div style="font-weight:700; color:#f97316; margin-bottom:8px; border-bottom:1px solid #e2e8f0; padding-bottom:4px; display:flex; align-items:center; gap:6px;">
+                                <i class="fa-solid fa-fire"></i> CẤU HÌNH DEAL SIÊU KHỦNG
+                            </div>
+                            <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;">
+                                <div>
+                                    <label class="form-label" style="font-size:12px;">Loại giảm giá</label>
+                                    <select class="form-select promo-discount-type" style="height:34px; font-size:12px;" onchange="updatePromoPreview('deal')">
+                                        <option value="percentage">Giảm theo %</option>
+                                        <option value="fixed_price">Giá bán cố định VND</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size:12px;">Giá trị giảm</label>
+                                    <input type="number" class="form-input promo-discount-value" style="height:34px; font-size:12px;" min="0" placeholder="Nhập % hoặc giá tiền" oninput="updatePromoPreview('deal')">
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size:12px;">Số lượng mở bán</label>
+                                    <input type="number" class="form-input promo-campaign-qty" style="height:34px; font-size:12px;" min="1" placeholder="Không giới hạn">
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size:12px;">Mua tối đa / khách</label>
+                                    <input type="number" class="form-input promo-max-per-customer" style="height:34px; font-size:12px;" min="1" placeholder="Không giới hạn">
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size:12px;">Bắt đầu</label>
+                                    <input type="datetime-local" class="form-input promo-start-time" style="height:34px; font-size:12px;">
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size:12px;">Kết thúc</label>
+                                    <input type="datetime-local" class="form-input promo-end-time" style="height:34px; font-size:12px;">
+                                </div>
+                            </div>
+                            <div class="promo-preview" style="font-size:11px; margin-top:8px; padding:6px 10px; background:#f8fafc; border-radius:4px; border:1px dashed #cbd5e1; color:#475569; font-weight:500;">
+                                Bảng giá xem trước: Hãy nhập giá bán lẻ và giá trị giảm giá.
+                            </div>
+                        </div>
+
+                        <!-- Discount Config Section -->
+                        <div id="promo-config-discount" class="promo-sub-form" style="display:none; background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:12px;">
+                            <div style="font-weight:700; color:#3b82f6; margin-bottom:8px; border-bottom:1px solid #e2e8f0; padding-bottom:4px; display:flex; align-items:center; gap:6px;">
+                                <i class="fa-solid fa-tag"></i> CẤU HÌNH GIẢM GIÁ
+                            </div>
+                            <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;">
+                                <div>
+                                    <label class="form-label" style="font-size:12px;">Loại giảm giá</label>
+                                    <select class="form-select promo-discount-type" style="height:34px; font-size:12px;" onchange="updatePromoPreview('discount')">
+                                        <option value="percentage">Giảm theo %</option>
+                                        <option value="fixed_price">Giá bán cố định VND</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size:12px;">Giá trị giảm</label>
+                                    <input type="number" class="form-input promo-discount-value" style="height:34px; font-size:12px;" min="0" placeholder="Nhập % hoặc giá tiền" oninput="updatePromoPreview('discount')">
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size:12px;">Số lượng mở bán</label>
+                                    <input type="number" class="form-input promo-campaign-qty" style="height:34px; font-size:12px;" min="1" placeholder="Không giới hạn">
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size:12px;">Mua tối đa / khách</label>
+                                    <input type="number" class="form-input promo-max-per-customer" style="height:34px; font-size:12px;" min="1" placeholder="Không giới hạn">
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size:12px;">Bắt đầu</label>
+                                    <input type="datetime-local" class="form-input promo-start-time" style="height:34px; font-size:12px;">
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size:12px;">Kết thúc</label>
+                                    <input type="datetime-local" class="form-input promo-end-time" style="height:34px; font-size:12px;">
+                                </div>
+                            </div>
+                            <div class="promo-preview" style="font-size:11px; margin-top:8px; padding:6px 10px; background:#f8fafc; border-radius:4px; border:1px dashed #cbd5e1; color:#475569; font-weight:500;">
+                                Bảng giá xem trước: Hãy nhập giá bán lẻ và giá trị giảm giá.
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Tab 2: Unit Conversions -->
@@ -1029,11 +1192,15 @@
             catalogState.currentImages = [];
             catalogState.pendingImages = [];
             catalogState.draggingImageId = null;
+            catalogState.currentTags = [];
+            document.querySelectorAll('input[name="medicineQuickTag"]').forEach(cb => cb.checked = false);
+            renderCustomTagsChips();
             catalogState.currentAudit = [];
             renderProductAudit();
             toggleSpecialControlGroup();
             renderUnitRows([]);
             renderProductImageManager();
+            resetPromotionFormFields();
         }
 
         // Modal Slide-over logic
@@ -1182,6 +1349,7 @@
             currentImages: [],
             pendingImages: [],
             draggingImageId: null,
+            currentTags: [],
             currentAudit: []
         };
 
@@ -1231,7 +1399,19 @@
                     if (!input.value.trim()) input.value = baseUnitInput.value.trim();
                 });
             });
-            prescriptionCheckbox?.addEventListener('change', toggleSpecialControlGroup);
+            prescriptionCheckbox?.addEventListener('change', () => {
+                toggleSpecialControlGroup();
+                togglePromoConfigs();
+            });
+            document.querySelectorAll('input[name="medicineQuickTag"]').forEach(cb => {
+                cb.addEventListener('change', togglePromoConfigs);
+            });
+            var retailPriceInput = document.getElementById('medicineRetailPrice');
+            retailPriceInput?.addEventListener('input', () => {
+                ['flash-sale', 'deal', 'discount'].forEach(tag => {
+                    updatePromoPreview(tag);
+                });
+            });
             specialControlSelect?.addEventListener('change', applySpecialControlStorageRule);
             categorySelect?.addEventListener('change', applyCategoryBusinessHints);
             imageInput?.addEventListener('change', handleProductImageFiles);
@@ -1708,6 +1888,46 @@
             applyCategoryBusinessHints();
             renderUnitRows(Array.isArray(product.units) ? product.units : []);
             renderProductImageManager();
+
+            // Set tags
+            var tags = [];
+            if (product.tags) {
+                try {
+                    tags = Array.isArray(product.tags) ? product.tags : JSON.parse(product.tags);
+                } catch (e) {
+                    tags = [];
+                }
+            }
+            var standardTags = ['flash-sale', 'deal', 'best-seller', 'discount', 'exclusive', 'imported', 'trending'];
+            var customTags = [];
+            document.querySelectorAll('input[name="medicineQuickTag"]').forEach(cb => {
+                cb.checked = tags.includes(cb.value);
+            });
+            tags.forEach(t => {
+                if (!standardTags.includes(t)) {
+                    customTags.push(t);
+                }
+            });
+            catalogState.currentTags = customTags;
+            renderCustomTagsChips();
+
+            // Populate promotions_config
+            resetPromotionFormFields();
+            if (Array.isArray(product.promotions_config)) {
+                product.promotions_config.forEach(promo => {
+                    var tag = promo.tag_name;
+                    var configForm = document.getElementById(`promo-config-${tag}`);
+                    if (configForm) {
+                        configForm.querySelector('.promo-discount-type').value = promo.discount_type || 'percentage';
+                        configForm.querySelector('.promo-discount-value').value = promo.discount_value || '';
+                        configForm.querySelector('.promo-campaign-qty').value = promo.campaign_qty !== null && promo.campaign_qty !== undefined ? promo.campaign_qty : '';
+                        configForm.querySelector('.promo-max-per-customer').value = promo.max_per_customer !== null && promo.max_per_customer !== undefined ? promo.max_per_customer : '';
+                        configForm.querySelector('.promo-start-time').value = formatDateTimeLocal(promo.start_time);
+                        configForm.querySelector('.promo-end-time').value = formatDateTimeLocal(promo.end_time);
+                    }
+                });
+            }
+            togglePromoConfigs();
         }
 
         function collectMedicinePayload() {
@@ -1723,6 +1943,13 @@
             var requiresPrescription = document.getElementById('requirePre').checked;
             var specialControlGroup = getInputValue('medicineSpecialControlGroup');
             var storageCondition = getInputValue('medicineStorageCondition') || 'Điều kiện thường';
+            
+            // Collect tags
+            var tags = [];
+            document.querySelectorAll('input[name="medicineQuickTag"]:checked').forEach(cb => {
+                tags.push(cb.value);
+            });
+            tags = tags.concat(catalogState.currentTags || []);
             var activeIngredient = getInputValue('medicineActiveIngredient');
             var registrationNumber = getInputValue('medicineRegistration');
             var manufacturer = getInputValue('medicineManufacturer');
@@ -1759,6 +1986,51 @@
                 throw validationError('Thuốc chỉ được chuyển Hoạt động khi đã có ít nhất một ảnh sản phẩm', 'tab-general');
             }
 
+            var promotions_config = [];
+            if (!requiresPrescription) {
+                var promoTags = ['flash-sale', 'deal', 'discount'];
+                promoTags.forEach(tag => {
+                    var cb = document.querySelector(`input[name="medicineQuickTag"][value="${tag}"]`);
+                    if (cb && cb.checked) {
+                        var configForm = document.getElementById(`promo-config-${tag}`);
+                        if (configForm) {
+                            var discountType = configForm.querySelector('.promo-discount-type').value;
+                            var discountValue = Number(configForm.querySelector('.promo-discount-value').value) || 0;
+                            var campaignQty = configForm.querySelector('.promo-campaign-qty').value;
+                            var maxPerCustomer = configForm.querySelector('.promo-max-per-customer').value;
+                            var startTime = configForm.querySelector('.promo-start-time').value;
+                            var endTime = configForm.querySelector('.promo-end-time').value;
+
+                            if (!discountValue || discountValue <= 0) {
+                                throw validationError(`Giá trị giảm giá của tag "${tag}" phải lớn hơn 0`, 'tab-general');
+                            }
+                            if (discountType === 'percentage' && discountValue > 100) {
+                                throw validationError(`Phần trăm giảm giá của tag "${tag}" không được vượt quá 100%`, 'tab-general');
+                            }
+                            if (!startTime) {
+                                throw validationError(`Mốc thời gian bắt đầu của tag "${tag}" là bắt buộc`, 'tab-general');
+                            }
+                            if (!endTime) {
+                                throw validationError(`Mốc thời gian kết thúc của tag "${tag}" là bắt buộc`, 'tab-general');
+                            }
+                            if (new Date(startTime) >= new Date(endTime)) {
+                                throw validationError(`Thời gian bắt đầu của tag "${tag}" phải trước thời gian kết thúc`, 'tab-general');
+                            }
+
+                            promotions_config.push({
+                                tag_name: tag,
+                                discount_type: discountType,
+                                discount_value: discountValue,
+                                campaign_qty: campaignQty ? Number(campaignQty) : null,
+                                max_per_customer: maxPerCustomer ? Number(maxPerCustomer) : null,
+                                start_time: new Date(startTime).toISOString(),
+                                end_time: new Date(endTime).toISOString()
+                            });
+                        }
+                    }
+                });
+            }
+
             return {
                 name,
                 strength: strength || null,
@@ -1777,6 +2049,8 @@
                 image_url: getInputValue('medicineImageUrl') || null,
                 barcode: barcode || null,
                 status,
+                tags,
+                promotions_config,
                 unit_conversions: collectUnitConversions(baseUnit, barcode),
                 specifications: buildMedicineSpecifications({
                     strength,
@@ -1867,6 +2141,119 @@
             wrapper.style.display = checked ? 'block' : 'none';
             if (!checked) setInputValue('medicineSpecialControlGroup', '');
             applySpecialControlStorageRule();
+        }
+
+        function togglePromoConfigs() {
+            var requirePre = document.getElementById('requirePre')?.checked;
+            var rxWarning = document.getElementById('rxPromoWarning');
+            var promoWrapper = document.getElementById('promotionConfigsWrapper');
+            
+            var promoTags = ['flash-sale', 'deal', 'discount'];
+            var hasActivePromoTag = false;
+            
+            promoTags.forEach(tag => {
+                var cb = document.querySelector(`input[name="medicineQuickTag"][value="${tag}"]`);
+                var configForm = document.getElementById(`promo-config-${tag}`);
+                if (cb) {
+                    if (requirePre) {
+                        cb.checked = false;
+                        cb.disabled = true;
+                        if (configForm) configForm.style.display = 'none';
+                    } else {
+                        cb.disabled = false;
+                        if (cb.checked) {
+                            if (configForm) configForm.style.display = 'block';
+                            hasActivePromoTag = true;
+                            updatePromoPreview(tag);
+                        } else {
+                            if (configForm) configForm.style.display = 'none';
+                        }
+                    }
+                }
+            });
+            
+            if (requirePre) {
+                if (rxWarning) rxWarning.style.display = 'flex';
+                if (promoWrapper) promoWrapper.style.display = 'none';
+            } else {
+                if (rxWarning) rxWarning.style.display = 'none';
+                if (promoWrapper) {
+                    promoWrapper.style.display = hasActivePromoTag ? 'block' : 'none';
+                }
+            }
+        }
+
+        function updatePromoPreview(tag) {
+            var retailPrice = Number(document.getElementById('medicineRetailPrice')?.value) || 0;
+            var configForm = document.getElementById(`promo-config-${tag}`);
+            if (!configForm) return;
+            
+            var discountType = configForm.querySelector('.promo-discount-type').value;
+            var discountValue = Number(configForm.querySelector('.promo-discount-value').value) || 0;
+            var previewEl = configForm.querySelector('.promo-preview');
+            
+            if (retailPrice <= 0) {
+                previewEl.innerHTML = `<span style="color:#ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Vui lòng nhập giá bán lẻ hợp lệ ở Tab Đơn vị tính để xem trước giá sau giảm.</span>`;
+                return;
+            }
+            
+            var promoPrice = 0;
+            var percentText = '';
+            
+            if (discountType === 'percentage') {
+                if (discountValue < 0 || discountValue > 100) {
+                    previewEl.innerHTML = `<span style="color:#ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Phần trăm giảm giá phải từ 0% đến 100%.</span>`;
+                    return;
+                }
+                promoPrice = Math.max(0, retailPrice - (retailPrice * discountValue / 100));
+                percentText = `giảm ${discountValue}%`;
+            } else {
+                if (discountValue < 0) {
+                    previewEl.innerHTML = `<span style="color:#ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Giá trị giảm phải lớn hơn hoặc bằng 0.</span>`;
+                    return;
+                }
+                if (discountValue > retailPrice) {
+                    previewEl.innerHTML = `<span style="color:#ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Giá trị giảm không được lớn hơn giá bán lẻ gốc (${formatVnd(retailPrice)}).</span>`;
+                    return;
+                }
+                promoPrice = Math.max(0, retailPrice - discountValue);
+                var pct = retailPrice > 0 ? Math.round((discountValue / retailPrice) * 100) : 0;
+                percentText = `giảm còn ${formatVnd(promoPrice)} (giảm ~${pct}%)`;
+            }
+            
+            previewEl.innerHTML = `<span style="color:#166534;"><i class="fa-solid fa-circle-check"></i> Giá gốc: <strong>${formatVnd(retailPrice)}</strong> &rarr; Giá bán lẻ mới: <strong style="color:#ef4444; font-size:13px;">${formatVnd(promoPrice)}</strong> (${percentText})</span>`;
+        }
+
+        function resetPromotionFormFields() {
+            var promoTags = ['flash-sale', 'deal', 'discount'];
+            promoTags.forEach(tag => {
+                var configForm = document.getElementById(`promo-config-${tag}`);
+                if (configForm) {
+                    configForm.querySelector('.promo-discount-type').value = 'percentage';
+                    configForm.querySelector('.promo-discount-value').value = '';
+                    configForm.querySelector('.promo-campaign-qty').value = '';
+                    configForm.querySelector('.promo-max-per-customer').value = '';
+                    configForm.querySelector('.promo-start-time').value = '';
+                    configForm.querySelector('.promo-end-time').value = '';
+                    configForm.querySelector('.promo-preview').innerHTML = 'Bảng giá xem trước: Hãy nhập giá bán lẻ và giá trị giảm giá.';
+                }
+            });
+            var wrapper = document.getElementById('promotionConfigsWrapper');
+            if (wrapper) wrapper.style.display = 'none';
+            var warning = document.getElementById('rxPromoWarning');
+            if (warning) warning.style.display = 'none';
+        }
+
+        function formatDateTimeLocal(dateStr) {
+            if (!dateStr) return '';
+            var d = new Date(dateStr);
+            if (isNaN(d.getTime())) return '';
+            var year = d.getFullYear();
+            var month = String(d.getMonth() + 1).padStart(2, '0');
+            var day = String(d.getDate()).padStart(2, '0');
+            var hours = String(d.getHours()).padStart(2, '0');
+            var minutes = String(d.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
         }
 
         function applySpecialControlStorageRule() {
@@ -2397,6 +2784,52 @@
             if (Number.isNaN(date.getTime())) return null;
             return Math.ceil((date.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
         }
+
+        function renderCustomTagsChips() {
+            var container = document.getElementById('medicineCustomTagsList');
+            if (!container) return;
+            var tags = catalogState.currentTags || [];
+            container.innerHTML = tags.map((t, idx) => `
+                <span style="background:#e2e8f0; color:#475569; padding:4px 10px; border-radius:12px; font-size:12px; display:inline-flex; align-items:center; gap:6px; font-weight:500; margin-bottom: 4px;">
+                    # ${escapeHtml(t)}
+                    <i class="fa-solid fa-xmark" style="cursor:pointer; font-size:11px;" onclick="removeCustomTag(${idx})"></i>
+                </span>
+            `).join('');
+        }
+
+        function removeCustomTag(idx) {
+            catalogState.currentTags.splice(idx, 1);
+            renderCustomTagsChips();
+        }
+
+        // Add keydown listener on custom tag input
+        document.addEventListener('DOMContentLoaded', () => {
+            var tagInput = document.getElementById('medicineCustomTagInput');
+            if (tagInput) {
+                tagInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        var val = tagInput.value.trim().toLowerCase().replace(/\s+/g, '-');
+                        if (val) {
+                            if (!/^[a-z0-9_-]+$/.test(val)) {
+                                showAdminCatalogToast('Tag chỉ được chứa chữ thường, số, dấu gạch nối hoặc gạch dưới', 'error');
+                                return;
+                            }
+                            if (!catalogState.currentTags) catalogState.currentTags = [];
+                            var standardTags = ['flash-sale', 'deal', 'best-seller', 'discount', 'exclusive', 'imported', 'trending'];
+                            if (standardTags.includes(val)) {
+                                var cb = document.querySelector(`input[name="medicineQuickTag"][value="${val}"]`);
+                                if (cb) cb.checked = true;
+                            } else if (!catalogState.currentTags.includes(val)) {
+                                catalogState.currentTags.push(val);
+                                renderCustomTagsChips();
+                            }
+                            tagInput.value = '';
+                        }
+                    }
+                });
+            }
+        });
     </script>
 
     <!-- ============ PRINT BARCODE LABELS MODAL ============ -->

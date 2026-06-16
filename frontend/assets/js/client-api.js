@@ -138,19 +138,48 @@
         const name = escapeHtml(item.name || 'Sản phẩm');
         const image = escapeHtml(productImage(item));
         const unit = item.base_unit ? ` / ${escapeHtml(item.base_unit)}` : '';
+        
+        const oldPrice = Number(item.original_price || options.oldPrice || 0);
+        const hasActivePromo = !item.requires_prescription && oldPrice > item.price;
+        const oldPriceHtml = hasActivePromo
+            ? `<span class="price-old">${formatPrice(oldPrice)}</span>`
+            : '';
+
         const priceHtml = item.requires_prescription
             ? '<span class="price-new catalog-rx-note">Cần tư vấn dược sĩ</span>'
             : `<span class="price-new">${formatPrice(item.price)}<small>${unit}</small></span>`;
 
-        const oldPrice = Number(options.oldPrice || item.original_price || 0);
-        const oldPriceHtml = options.showOldPrice && oldPrice > item.price
-            ? `<span class="price-old">${formatPrice(oldPrice)}</span>`
-            : '';
-
         const discountPercent = Number(options.discountPercent ?? item.discount_percent ?? 0);
-        const badgeHtml = discountPercent > 0
-            ? `<span class="discount-badge">-${Math.round(discountPercent)}%</span>`
-            : '';
+        
+        let tags = [];
+        if (item.tags) {
+            try {
+                tags = Array.isArray(item.tags) ? item.tags : JSON.parse(item.tags);
+            } catch(e) {}
+        }
+        
+        let badgeHtml = '';
+        if (!item.requires_prescription) {
+            if (discountPercent > 0) {
+                if (tags.includes('flash-sale')) {
+                    badgeHtml = `<span class="discount-badge" style="background: linear-gradient(135deg, #ef4444 0%, #ea580c 100%); border: 1px solid #fee2e2; color: #fff; font-weight: 700; font-size: 11px;"><i class="fa-solid fa-bolt" style="color:#facc15; margin-right:2px;"></i> -${Math.round(discountPercent)}%</span>`;
+                } else if (tags.includes('deal')) {
+                    badgeHtml = `<span class="discount-badge" style="background: linear-gradient(135deg, #f97316 0%, #eab308 100%); color: #fff; font-weight: 700; font-size: 11px;"><i class="fa-solid fa-fire" style="color:#facc15; margin-right:2px;"></i> -${Math.round(discountPercent)}%</span>`;
+                } else {
+                    badgeHtml = `<span class="discount-badge">-${Math.round(discountPercent)}%</span>`;
+                }
+            } else if (tags && tags.length > 0) {
+                if (tags.includes('exclusive')) {
+                    badgeHtml = `<span class="discount-badge" style="background:#d97706; color:#fff;">Độc quyền</span>`;
+                } else if (tags.includes('imported')) {
+                    badgeHtml = `<span class="discount-badge" style="background:#059669; color:#fff;">Nhập khẩu</span>`;
+                } else if (tags.includes('flash-sale')) {
+                    badgeHtml = `<span class="discount-badge" style="background:#dc2626; color:#fff;"><i class="fa-solid fa-bolt"></i> Flash Sale</span>`;
+                } else if (tags.includes('best-seller')) {
+                    badgeHtml = `<span class="discount-badge" style="background:#2563eb; color:#fff;">Bán chạy</span>`;
+                }
+            }
+        }
 
         let actionHtml = `<button class="btn-add-cart" onclick="window.addToCart ? addToCart(${id}, event) : (window.location.href='product.html?id=${id}')">Thêm giỏ hàng</button>`;
         if (item.requires_prescription) {

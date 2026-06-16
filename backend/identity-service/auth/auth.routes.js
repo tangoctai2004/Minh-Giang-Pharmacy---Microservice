@@ -174,8 +174,14 @@ async function exchangeGoogleCode(code) {
 }
 
 async function getZaloProfile(accessToken) {
+  const headers = { access_token: accessToken };
+  const appSecret = process.env.ZALO_APP_SECRET;
+  if (isConfiguredSecret(appSecret)) {
+    const proof = crypto.createHmac('sha256', appSecret).update(accessToken).digest('hex');
+    headers.appsecret_proof = proof;
+  }
   const response = await fetch('https://graph.zalo.me/v2.0/me?fields=id,name,picture', {
-    headers: { access_token: accessToken },
+    headers: headers,
   });
   if (!response.ok) {
     throw new Error(`Không lấy được Zalo profile (${response.status})`);
@@ -463,7 +469,7 @@ function getNotificationBaseUrl() {
 
 async function deliverOtp({ target, targetType, otpCode, purpose }) {
   const baseUrl = getNotificationBaseUrl();
-  const timeoutMs = Number(process.env.NOTIFICATION_TIMEOUT_MS || 3000);
+  const timeoutMs = Number(process.env.NOTIFICATION_TIMEOUT_MS || 10000);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -480,9 +486,58 @@ async function deliverOtp({ target, targetType, otpCode, purpose }) {
     const body = targetType === 'email'
       ? {
           to: target,
-          subject: `OTP ${purposeLabels[purpose] || 'xác thực'} - Minh Giang Pharmacy`,
+          subject: `[Minh Giang Pharmacy] Mã OTP ${purposeLabels[purpose] || 'xác thực'} của bạn`,
           text: message,
-          html: `<p>${message}</p>`,
+          html: `
+            <div style="background-color: #0f172a; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #f8fafc; text-align: center;">
+              <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 550px; background-color: #1e293b; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); border: 1px solid #334155;">
+                <tr>
+                  <td style="padding: 40px 30px; text-align: center;">
+                    <!-- Logo -->
+                    <div style="margin-bottom: 25px;">
+                      <img src="cid:logo" alt="Minh Giang Pharmacy" style="height: 60px; width: auto; max-width: 100%; border: 0; outline: none; text-decoration: none;" />
+                    </div>
+                    
+                    <!-- Divider -->
+                    <hr style="border: 0; border-top: 1px solid #334155; margin-bottom: 25px;" />
+                    
+                    <!-- Title -->
+                    <h2 style="font-size: 16px; font-weight: 600; color: #94a3b8; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1.5px;">Mã xác thực của bạn:</h2>
+                    
+                    <!-- OTP Code Box -->
+                    <div style="background-color: #0f172a; border-radius: 8px; border: 1px solid #334155; padding: 15px; margin: 20px 0; display: inline-block; min-width: 200px;">
+                      <span style="font-size: 38px; font-weight: 800; color: #10b981; letter-spacing: 6px; font-family: monospace, Courier, monospace; display: block;">${otpCode}</span>
+                    </div>
+                    
+                    <!-- Content -->
+                    <p style="font-size: 15px; line-height: 1.6; color: #cbd5e1; text-align: left; margin: 20px 0 15px 0;">
+                      Chào bạn,
+                    </p>
+                    <p style="font-size: 15px; line-height: 1.6; color: #cbd5e1; text-align: left; margin: 0 0 20px 0;">
+                      Bạn gần như đã hoàn tất quy trình <strong>${purposeLabels[purpose] || 'xác thực'}</strong> tại <strong>Minh Giang Pharmacy</strong>. Vui lòng quay lại màn hình thiết lập tài khoản và nhập mã OTP ở trên để tiếp tục.
+                    </p>
+                    <p style="font-size: 14px; line-height: 1.6; color: #94a3b8; text-align: left; margin: 0 0 25px 0; background-color: #1a2230; padding: 12px; border-radius: 6px; border-left: 4px solid #10b981;">
+                      ⚠️ Mã xác thực này chỉ có hiệu lực với địa chỉ email nhận thư này và sẽ hết hạn sau <strong>${Math.ceil(OTP_TTL_SECONDS / 60)} phút</strong>. Tuyệt đối không chia sẻ mã này với bất kỳ ai để bảo vệ tài khoản của bạn.
+                    </p>
+                    
+                    <!-- Sign-off -->
+                    <p style="font-size: 14px; color: #94a3b8; text-align: left; margin: 25px 0 0 0; border-top: 1px solid #334155; padding-top: 20px;">
+                      Trân trọng,<br />
+                      <strong>Đội ngũ Minh Giang Pharmacy</strong>
+                    </p>
+                  </td>
+                </tr>
+                <!-- Footer -->
+                <tr>
+                  <td style="background-color: #0f172a; padding: 25px 30px; text-align: center; font-size: 12px; color: #64748b; line-height: 1.6; border-top: 1px solid #1e293b;">
+                    Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email hoặc liên hệ CSKH nếu có thắc mắc.<br />
+                    <a href="http://localhost:5500/client/index.html" style="color: #10b981; text-decoration: none; font-weight: bold; margin-top: 8px; display: inline-block;">Ghé thăm website của chúng tôi</a><br /><br />
+                    © 2026 Minh Giang Pharmacy. All Rights Reserved.
+                  </td>
+                </tr>
+              </table>
+            </div>
+          `,
         }
       : { phone: target, message };
 
@@ -574,6 +629,7 @@ async function createAndDeliverOtp({ target, targetType, purpose }) {
     purpose,
     expires_in: OTP_TTL_SECONDS,
     delivery,
+    ...(process.env.OTP_DEBUG_RESPONSE === 'true' && { code: otpCode }),
   };
   return data;
 }
@@ -986,7 +1042,6 @@ router.post('/register', async (req, res) => {
     const { full_name, email, phone, password } = req.body;
     const normalizedEmail = normalizeTarget(email, 'email');
     const normalizedPhone = normalizeTarget(phone, 'phone');
-    const isDev = process.env.NODE_ENV === 'development';
 
     // 1. Validate input
     if (!full_name || !normalizedEmail || !normalizedPhone || !password) {
@@ -1024,51 +1079,45 @@ router.post('/register', async (req, res) => {
         });
       }
 
-      let otp = null;
-      if (!isDev) {
-        otp = await createAndDeliverOtp({
-          target: normalizedEmail,
-          targetType: 'email',
-          purpose: 'register',
-        });
-      }
+      const otp = await createAndDeliverOtp({
+        target: normalizedEmail,
+        targetType: 'email',
+        purpose: 'register',
+      });
       const passwordHash = await bcrypt.hash(password, 10);
       await pool.query(
         `UPDATE customers
-         SET full_name = ?, email = ?, phone = ?, password_hash = ?, is_active = ? ${supportsEmailVerifiedAt ? `, email_verified_at = ?` : ''}
+         SET full_name = ?, email = ?, phone = ?, password_hash = ?, is_active = 0 ${supportsEmailVerifiedAt ? `, email_verified_at = NULL` : ''}
          WHERE id = ?`,
-        [full_name, normalizedEmail, normalizedPhone, passwordHash, isDev ? 1 : 0, isDev ? new Date() : null, existing.id]
+        [full_name, normalizedEmail, normalizedPhone, passwordHash, existing.id]
       );
 
       return res.status(200).json({
         success: true,
-        message: isDev ? 'Tài khoản đăng ký thành công (Dev mode bypass OTP).' : 'Tài khoản đang chờ xác thực. Mã OTP mới đã được gửi đến email.',
+        message: 'Tài khoản đang chờ xác thực. Mã OTP mới đã được gửi đến email.',
         data: {
           customer: {
             id: existing.id,
             full_name,
             email: normalizedEmail,
             phone: normalizedPhone,
-            is_active: isDev ? 1 : 0,
+            is_active: 0,
           },
           ...(otp && { otp }),
         },
       });
     }
 
-    let otp = null;
-    if (!isDev) {
-      otp = await createAndDeliverOtp({
-        target: normalizedEmail,
-        targetType: 'email',
-        purpose: 'register',
-      });
-    }
+    const otp = await createAndDeliverOtp({
+      target: normalizedEmail,
+      targetType: 'email',
+      purpose: 'register',
+    });
 
     // 3. Hash password
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // 4. Insert customer mới ở trạng thái chờ xác thực (hoặc active nếu là dev)
+    // 4. Insert customer mới ở trạng thái chờ xác thực
     const customerCode = await generateCustomerCode();
     const [result] = await insertCustomer({
       full_name,
@@ -1076,23 +1125,23 @@ router.post('/register', async (req, res) => {
       phone: normalizedPhone,
       password_hash: passwordHash,
       code: customerCode,
-      is_active: isDev ? 1 : 0,
-      email_verified_at: isDev ? new Date() : null,
-      phone_verified_at: isDev ? new Date() : null,
+      is_active: 0,
+      email_verified_at: null,
+      phone_verified_at: null,
     });
     const customerId = result.insertId;
 
     // 8. Trả kết quả
     res.status(201).json({
       success: true,
-      message: isDev ? 'Đăng ký thành công (Dev mode bypass OTP).' : 'Đăng ký thành công. Vui lòng nhập mã OTP đã gửi đến email để kích hoạt tài khoản.',
+      message: 'Đăng ký thành công. Vui lòng nhập mã OTP đã gửi đến email để kích hoạt tài khoản.',
       data: {
         customer: {
           id:        customerId,
           full_name,
           email:     normalizedEmail,
           phone:     normalizedPhone,
-          is_active: isDev ? 1 : 0,
+          is_active: 0,
         },
         ...(otp && { otp }),
       },
@@ -1355,8 +1404,14 @@ router.post('/zalo', async (req, res) => {
     // 1. Xác thực Zalo Access Token
     if (tokenFromBody) {
       try {
+        const headers = { access_token: tokenFromBody };
+        const appSecret = process.env.ZALO_APP_SECRET;
+        if (isConfiguredSecret(appSecret)) {
+          const proof = crypto.createHmac('sha256', appSecret).update(tokenFromBody).digest('hex');
+          headers.appsecret_proof = proof;
+        }
         const response = await fetch('https://graph.zalo.me/v2.0/me?fields=id,name,picture', {
-          headers: { access_token: tokenFromBody }
+          headers: headers
         });
         if (response.ok) {
           const payload = await response.json();

@@ -232,7 +232,6 @@ async function handleSubCategoryHover(parentId, subId) {
     if (!subCat) return;
 
     loadSubNav(parentId, subId, subCat.children);
-    loadProducts(parentId, subId);
 }
 
 function loadSubNav(parentId, subId, level3Cats) {
@@ -255,7 +254,18 @@ async function loadProducts(parentId, categoryId, event) {
     const grid = document.getElementById(`grid-${parentId}`);
     if (!grid) return;
 
-    grid.innerHTML = '<div class="loading">\u0110ang t\u1ea3i...</div>';
+    // Hiển thị 4 card skeleton để giữ khung layout ổn định trong khi tải API
+    grid.innerHTML = Array(4).fill().map(() => `
+        <div class="product-card skeleton">
+            <div class="skeleton-img"></div>
+            <div class="product-info" style="display: flex; flex-direction: column; flex: 1;">
+                <div class="skeleton-text skeleton-title"></div>
+                <div class="skeleton-text skeleton-title-2"></div>
+                <div class="skeleton-text skeleton-price"></div>
+                <div class="skeleton-btn"></div>
+            </div>
+        </div>
+    `).join('');
 
     try {
         const result = await catalogApi().get('products', {
@@ -266,12 +276,15 @@ async function loadProducts(parentId, categoryId, event) {
 
         if (result.success && result.data.length > 0) {
             if (window.MGClientApi && typeof window.MGClientApi.renderProductCard === 'function') {
-                grid.innerHTML = result.data.map((product) => window.MGClientApi.renderProductCard(product)).join('');
+                grid.innerHTML = result.data.map((product) => {
+                    const cardHtml = window.MGClientApi.renderProductCard(product);
+                    return cardHtml.replace('class="product-card', 'class="product-card fade-in-card');
+                }).join('');
                 return;
             }
 
             grid.innerHTML = result.data.map(p => `
-                <div class="product-card" data-product-id="${p.id}">
+                <div class="product-card fade-in-card" data-product-id="${p.id}">
                     <div class="product-image">
                         <span class="discount-badge">-8%</span>
                         <img src="${p.image_url || '../assets/images/product1.png'}" alt="${p.name}">

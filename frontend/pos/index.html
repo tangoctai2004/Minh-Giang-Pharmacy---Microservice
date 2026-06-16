@@ -1603,6 +1603,31 @@
                     const expiryLabel = expiryWarning
                         ? `${expiryWarning.label}: ${expiryWarning.message}`
                         : (product.nearest_expiry ? new Date(product.nearest_expiry).toLocaleDateString('vi-VN') : 'N/A');
+
+                    let productTags = [];
+                    if (product.tags) {
+                        try {
+                            productTags = Array.isArray(product.tags) ? product.tags : JSON.parse(product.tags);
+                        } catch (e) {
+                            console.error('Error parsing product tags:', e);
+                        }
+                    }
+                    let tagBadgesHtml = '';
+                    if (productTags && productTags.length > 0) {
+                        tagBadgesHtml = productTags.map(t => {
+                            let label = t;
+                            let cls = 'pos-meta-tag';
+                            if (t === 'exclusive') { label = 'Độc quyền'; cls += ' exclusive'; }
+                            else if (t === 'imported') { label = 'Nhập khẩu'; cls += ' imported'; }
+                            else if (t === 'flash-sale') { label = 'Flash Sale'; cls += ' flash-sale'; }
+                            else if (t === 'deal') { label = 'Deal Hot'; cls += ' deal'; }
+                            else if (t === 'best-seller') { label = 'Bán chạy'; cls += ' best-seller'; }
+                            else if (t === 'discount') { label = 'Giảm giá'; cls += ' discount'; }
+                            else if (t === 'trending') { label = 'Xu hướng'; cls += ' trending'; }
+                            return `<span class="pos-meta-badge ${cls}" title="${escapeHtml(label)}"># ${escapeHtml(label)}</span>`;
+                        }).join('');
+                    }
+
                     return `
                         <div class="pos-product-card ${isOut ? 'out-of-stock' : ''} ${product.requires_prescription ? 'requires-rx' : ''}" data-product-id="${product.id}">
                             ${product.requires_prescription ? '<div class="pos-rx-corner"><i class="fa-solid fa-prescription"></i> Rx</div>' : ''}
@@ -1612,6 +1637,7 @@
                             <img src="${escapeHtml(product.image_url || FALLBACK_IMAGE)}" alt="${escapeHtml(product.name)}" class="pos-product-img" onerror="this.src='${FALLBACK_IMAGE}'">
                             <div class="pos-product-name">${escapeHtml(product.name)}</div>
                             <div class="pos-product-price">${formatMoney(product.price || product.retail_price)}</div>
+                            ${tagBadgesHtml ? `<div class="pos-tag-container" style="margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 4px;">${tagBadgesHtml}</div>` : ''}
                             <div class="pos-product-meta">
                                 <span class="pos-meta-badge pos-meta-loc" title="${escapeHtml(product.location_name || 'Chưa có vị trí')}"><i class="fa-solid fa-location-dot"></i> ${escapeHtml((product.location_name || 'N/A').split('/').pop().trim())}</span>
                                 <span class="pos-meta-badge pos-meta-stock ${isLow ? 'low' : ''}"><i class="fa-solid fa-box"></i> SL: ${stock}</span>

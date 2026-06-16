@@ -78,6 +78,48 @@ async function findOrCreateCustomerByPhone(connection, phone, name) {
     return insertResult.insertId;
 }
 
+async function incrementPromotionSoldQty(connection, productId, quantity) {
+    const [promos] = await connection.query(
+        `SELECT id FROM mg_catalog.product_tag_promotions
+         WHERE product_id = ?
+           AND status = 'active'
+           AND start_time <= NOW()
+           AND end_time >= NOW()
+         ORDER BY FIELD(tag_name, 'flash-sale', 'deal', 'discount') ASC
+         LIMIT 1`,
+        [productId]
+    );
+    if (promos.length > 0) {
+        await connection.query(
+            `UPDATE mg_catalog.product_tag_promotions
+             SET sold_qty = sold_qty + ?
+             WHERE id = ?`,
+            [quantity, promos[0].id]
+        );
+    }
+}
+
+async function decrementPromotionSoldQty(connection, productId, quantity) {
+    const [promos] = await connection.query(
+        `SELECT id FROM mg_catalog.product_tag_promotions
+         WHERE product_id = ?
+           AND status = 'active'
+           AND start_time <= NOW()
+           AND end_time >= NOW()
+         ORDER BY FIELD(tag_name, 'flash-sale', 'deal', 'discount') ASC
+         LIMIT 1`,
+        [productId]
+    );
+    if (promos.length > 0) {
+        await connection.query(
+            `UPDATE mg_catalog.product_tag_promotions
+             SET sold_qty = GREATEST(0, CAST(sold_qty AS SIGNED) - ?)
+             WHERE id = ?`,
+            [quantity, promos[0].id]
+        );
+    }
+}
+
 /**
  * [MAPPING: POST /api/order/orders]
  * Tạo đơn hàng POS mới & trừ tồn kho thực tế trong mg_catalog.batch_items (FEFO)
@@ -255,6 +297,9 @@ router.post('/', async (req, res) => {
                     WHERE id = ?
                 `, [remainingToDeduct, batches[0].id]);
             }
+
+            // Cập nhật sold_qty của promotion active
+            await incrementPromotionSoldQty(connection, item.product_id, item.quantity);
         }
 
         // 3.5. Ghi nhận lịch sử khuyến mãi (order_promotions) & tăng lượt sử dụng trong CMS
@@ -456,7 +501,8 @@ router.get('/:id', async (req, res) => {
         }
         const orderId = orders[0].id;
         const [items] = await pool.query('SELECT * FROM order_items WHERE order_id = ? AND is_active = 1', [orderId]);
-        res.json({ success: true, data: { ...orders[0], items } });
+        const [promotions] = await pool.query('SELECT * FROM order_promotions WHERE order_id = ?', [orderId]);
+        res.json({ success: true, data: { ...orders[0], items, promotions } });
     } catch (error) {
         console.error('[Get Order Detail Error]', error);
         res.status(500).json({ success: false, message: 'Lỗi lấy chi tiết đơn hàng' });
@@ -494,6 +540,23 @@ router.put('/:id/status', async (req, res) => {
         const order = orders[0];
         const oldStatus = order.order_status;
 
+        // Bổ sung kiểm soát quyền đối với khách hàng (Customer)
+        const isCustomer = req.userType === 'customer';
+        if (isCustomer) {
+            if (status !== 'cancelled') {
+                await connection.rollback();
+                return res.status(403).json({ success: false, message: 'Khách hàng chỉ có quyền hủy đơn hàng.' });
+            }
+            if (order.customer_id !== req.userId) {
+                await connection.rollback();
+                return res.status(403).json({ success: false, message: 'Bạn không có quyền thao tác trên đơn hàng này.' });
+            }
+            if (oldStatus !== 'pending_approval') {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: 'Chỉ có thể hủy đơn hàng khi đơn đang ở trạng thái chờ duyệt.' });
+            }
+        }
+
         let updateQuery = 'UPDATE orders SET order_status = ?';
         let updateParams = [status];
 
@@ -506,8 +569,83 @@ router.put('/:id/status', async (req, res) => {
 
         await connection.query(updateQuery, updateParams);
 
+        // Xử lý Trừ kho và Cập nhật Promotion khi chuyển sang Completed (đối với Web order)
+        if (oldStatus !== 'completed' && status === 'completed') {
+            if (order.order_channel === 'web') {
+                const [orderItems] = await connection.query(
+                    'SELECT product_id, quantity FROM order_items WHERE order_id = ? AND is_active = 1',
+                    [realId]
+                );
+                for (const item of orderItems) {
+                    let remainingToDeduct = item.quantity;
+                    const [batches] = await connection.query(`
+                        SELECT id, quantity_remaining, lot_number, expiry_date 
+                        FROM mg_catalog.batch_items 
+                        WHERE product_id = ? AND quantity_remaining > 0 AND status IN ('available', 'near_expiry')
+                        ORDER BY expiry_date ASC
+                    `, [item.product_id]);
+
+                    for (const batch of batches) {
+                        if (remainingToDeduct <= 0) break;
+                        const deductAmount = Math.min(remainingToDeduct, batch.quantity_remaining);
+                        await connection.query(`
+                            UPDATE mg_catalog.batch_items 
+                            SET quantity_remaining = quantity_remaining - ? 
+                            WHERE id = ?
+                        `, [deductAmount, batch.id]);
+                        remainingToDeduct -= deductAmount;
+                    }
+
+                    if (remainingToDeduct > 0 && batches.length > 0) {
+                        await connection.query(`
+                            UPDATE mg_catalog.batch_items 
+                            SET quantity_remaining = quantity_remaining - ? 
+                            WHERE id = ?
+                        `, [remainingToDeduct, batches[0].id]);
+                    }
+
+                    await incrementPromotionSoldQty(connection, item.product_id, item.quantity);
+                }
+            }
+        }
+        // Xử lý Hoàn kho và Cập nhật Promotion khi chuyển từ Completed sang Cancelled (đối với Web order)
+        else if (oldStatus === 'completed' && status === 'cancelled') {
+            if (order.order_channel === 'web') {
+                const [orderItems] = await connection.query(
+                    'SELECT product_id, quantity FROM order_items WHERE order_id = ? AND is_active = 1',
+                    [realId]
+                );
+                for (const item of orderItems) {
+                    const [batches] = await connection.query(`
+                        SELECT id FROM mg_catalog.batch_items 
+                        WHERE product_id = ? AND status = 'available'
+                        LIMIT 1
+                    `, [item.product_id]);
+                    if (batches.length > 0) {
+                        await connection.query(`
+                            UPDATE mg_catalog.batch_items 
+                            SET quantity_remaining = quantity_remaining + ? 
+                            WHERE id = ?
+                        `, [item.quantity, batches[0].id]);
+                    }
+                    await decrementPromotionSoldQty(connection, item.product_id, item.quantity);
+                }
+            }
+        }
+
         // Tích lũy điểm khi chuyển sang completed và hoàn điểm khi chuyển sang cancelled
         let activeCustomerId = order.customer_id;
+        if (activeCustomerId) {
+            // Kiểm tra xem khách hàng có thực sự tồn tại trong mg_identity hay không
+            const [[custExists]] = await connection.query(
+                'SELECT id FROM mg_identity.customers WHERE id = ?',
+                [activeCustomerId]
+            );
+            if (!custExists) {
+                activeCustomerId = null;
+            }
+        }
+
         if (!activeCustomerId && order.customer_phone) {
             activeCustomerId = await findOrCreateCustomerByPhone(connection, order.customer_phone, order.customer_name);
             await connection.query('UPDATE orders SET customer_id = ? WHERE id = ?', [activeCustomerId, realId]);

@@ -24,6 +24,7 @@ FILES=(
   "06_mg_catalog_product_media_gpp.sql"
   "07_mg_catalog_quality_workflow.sql"
   "08_mg_catalog_stocktake_adjustments.sql"
+  "03_product_tag_promotions.sql"
   "10_seed_full_catalog.sql"
   "11_seed_clean_catalog_products.sql"
   "03_mg_order.sql"
@@ -37,6 +38,7 @@ FILES=(
   "95_seed_disease_categories.sql"
   "05_mg_notification.sql"
   "90_seed_demo_baseline.sql"
+  "migrations/99_seed_product_tag_promotions.sql"
 )
 
 echo "================================================"

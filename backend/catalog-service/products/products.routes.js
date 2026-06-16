@@ -458,6 +458,7 @@ async function validateProductBusinessRules(payload = {}, { isCreate = false, ex
   const isMedicine = isMedicineCategoryLineage(lineage) || Number(merged.requires_prescription || 0) === 1;
   const specialControlGroup = cleanNullableText(merged.special_control_group);
   const storageCondition = cleanNullableText(merged.storage_condition) || 'Điều kiện thường';
+  const isRx = Number(merged.requires_prescription || 0) === 1;
 
   if (isMedicine) {
     if (!cleanNullableText(merged.active_ingredient)) errors.push('Thuốc phải có hoạt chất để đối chiếu hồ sơ GPP/Bộ Y tế');
@@ -482,6 +483,47 @@ async function validateProductBusinessRules(payload = {}, { isCreate = false, ex
 
   if ((isCreate || payload.storage_condition !== undefined) && storageCondition === 'Tủ khóa kiểm soát đặc biệt' && Number(merged.requires_prescription || 0) !== 1) {
     errors.push('Chỉ thuốc kê đơn/quản lý đặc biệt mới được chọn tủ khóa kiểm soát đặc biệt');
+  }
+
+  // Ràng buộc thuốc kê đơn Rx không được phép khuyến mãi
+  if (isRx) {
+    let tagsList = [];
+    if (merged.tags) {
+      try {
+        tagsList = Array.isArray(merged.tags) ? merged.tags : JSON.parse(merged.tags);
+      } catch (e) {
+        tagsList = [];
+      }
+    }
+    const hasPromoTags = tagsList.some(t => ['flash-sale', 'deal', 'discount'].includes(t));
+    if (hasPromoTags || payload.promotions_config) {
+      errors.push('Thuốc kê đơn không được phép áp dụng các nhãn khuyến mãi hoặc cấu hình khuyến mãi');
+    }
+  }
+
+  // Kiểm tra tính hợp lệ của cấu hình khuyến mãi
+  if (payload.promotions_config) {
+    const configs = Array.isArray(payload.promotions_config) ? payload.promotions_config : [payload.promotions_config];
+    configs.forEach(promo => {
+      if (!['flash-sale', 'deal', 'discount'].includes(promo.tag_name)) {
+        errors.push(`Nhãn khuyến mãi không hợp lệ: ${promo.tag_name}`);
+      }
+      if (!['percentage', 'fixed_price'].includes(promo.discount_type)) {
+        errors.push(`Kiểu giảm giá không hợp lệ: ${promo.discount_type}`);
+      }
+      if (Number(promo.discount_value) <= 0) {
+        errors.push(`Giá trị giảm giá của tag "${promo.tag_name}" phải lớn hơn 0`);
+      }
+      if (promo.discount_type === 'percentage' && Number(promo.discount_value) > 100) {
+        errors.push(`Phần trăm giảm giá của tag "${promo.tag_name}" không được vượt quá 100%`);
+      }
+      if (!promo.start_time || !promo.end_time) {
+        errors.push(`Khuyến mãi cho tag "${promo.tag_name}" yêu cầu thời điểm bắt đầu và kết thúc`);
+      }
+      if (promo.start_time && promo.end_time && new Date(promo.start_time) >= new Date(promo.end_time)) {
+        errors.push(`Thời gian bắt đầu của tag "${promo.tag_name}" phải trước thời gian kết thúc`);
+      }
+    });
   }
 
   return errors;
@@ -566,6 +608,103 @@ function toPosProduct(row, units = [], req = null) {
     }
   };
 }
+
+function computeActivePromoInfo(product, promotions) {
+  if (Number(product.requires_prescription || 0) === 1) {
+    return null;
+  }
+  if (!promotions || promotions.length === 0) {
+    return null;
+  }
+  
+  const now = new Date();
+  const activePromos = promotions.filter(p => {
+    const start = new Date(p.start_time);
+    const end = new Date(p.end_time);
+    const hasRemaining = p.campaign_qty === null || Number(p.sold_qty) < Number(p.campaign_qty);
+    return p.status === 'active' && start <= now && end >= now && hasRemaining;
+  });
+
+  if (activePromos.length === 0) {
+    return null;
+  }
+
+  // Ưu tiên: flash-sale -> deal -> discount
+  const activePromo = activePromos.find(p => p.tag_name === 'flash-sale') ||
+                      activePromos.find(p => p.tag_name === 'deal') ||
+                      activePromos[0];
+
+  const originalPrice = Number(product.retail_price || 0);
+  let promoPrice = originalPrice;
+  let discountPercent = 0;
+
+  if (activePromo.discount_type === 'percentage') {
+    discountPercent = Math.round(Number(activePromo.discount_value));
+    promoPrice = Math.round(originalPrice * (1 - discountPercent / 100));
+  } else {
+    promoPrice = Math.round(Number(activePromo.discount_value));
+    discountPercent = originalPrice > 0 ? Math.round((originalPrice - promoPrice) / originalPrice * 100) : 0;
+  }
+
+  return {
+    tag_name: activePromo.tag_name,
+    discount_type: activePromo.discount_type,
+    discount_value: Number(activePromo.discount_value),
+    promo_price: promoPrice,
+    original_price: originalPrice,
+    campaign_qty: activePromo.campaign_qty,
+    sold_qty: activePromo.sold_qty,
+    max_per_customer: activePromo.max_per_customer,
+    end_time: activePromo.end_time,
+    discount_percent: discountPercent
+  };
+}
+
+async function saveProductPromotions(conn, productId, promotionsConfig, tags) {
+  // 1. Xóa cấu hình khuyến mãi cũ của sản phẩm này
+  await conn.query(`DELETE FROM product_tag_promotions WHERE product_id = ?`, [productId]);
+
+  if (!promotionsConfig || !Array.isArray(promotionsConfig) || promotionsConfig.length === 0) {
+    return;
+  }
+
+  // 2. Parse danh sách tag đang chọn của sản phẩm
+  let tagsList = [];
+  if (tags) {
+    tagsList = Array.isArray(tags) ? tags : JSON.parse(tags);
+  }
+
+  // Chỉ giữ lại cấu hình khuyến mãi của các tag thực sự đang được gán
+  const validPromos = promotionsConfig.filter(p => 
+    tagsList.includes(p.tag_name) && ['flash-sale', 'deal', 'discount'].includes(p.tag_name)
+  );
+
+  if (validPromos.length === 0) {
+    return;
+  }
+
+  // 3. Thêm cấu hình mới
+  const insertValues = validPromos.map(promo => [
+    productId,
+    promo.tag_name,
+    promo.discount_type,
+    promo.discount_value,
+    promo.campaign_qty !== undefined && promo.campaign_qty !== '' && promo.campaign_qty !== null ? Number(promo.campaign_qty) : null,
+    promo.sold_qty ? Number(promo.sold_qty) : 0,
+    promo.max_per_customer !== undefined && promo.max_per_customer !== '' && promo.max_per_customer !== null ? Number(promo.max_per_customer) : null,
+    new Date(promo.start_time),
+    new Date(promo.end_time),
+    promo.status || 'active'
+  ]);
+
+  await conn.query(
+    `INSERT INTO product_tag_promotions 
+      (product_id, tag_name, discount_type, discount_value, campaign_qty, sold_qty, max_per_customer, start_time, end_time, status)
+     VALUES ?`,
+    [insertValues]
+  );
+}
+
 
 const POS_STOCK_SELECT = `COALESCE(SUM(CASE
   WHEN bi.status IN ('available', 'near_expiry')
@@ -685,8 +824,64 @@ router.get('/', async (req, res) => {
       where += ' AND p.requires_prescription = 0';
     }
     if (tag) {
-      where += ' AND JSON_CONTAINS(p.tags, ?)';
-      params.push(JSON.stringify(tag));
+      if (tag === 'flash-sale') {
+        where += ` AND JSON_CONTAINS(p.tags, ?) 
+          AND EXISTS (
+            SELECT 1 FROM product_tag_promotions ptp 
+            WHERE ptp.product_id = p.id 
+              AND ptp.tag_name = 'flash-sale' 
+              AND ptp.status = 'active' 
+              AND ptp.start_time <= NOW() 
+              AND ptp.end_time >= NOW() 
+              AND (ptp.campaign_qty IS NULL OR ptp.sold_qty < ptp.campaign_qty)
+          )`;
+        params.push(JSON.stringify(tag));
+      } else if (tag === 'deal') {
+        where += ` AND JSON_CONTAINS(p.tags, ?) 
+          AND EXISTS (
+            SELECT 1 FROM product_tag_promotions ptp 
+            WHERE ptp.product_id = p.id 
+              AND ptp.tag_name = 'deal' 
+              AND ptp.status = 'active' 
+              AND ptp.start_time <= NOW() 
+              AND ptp.end_time >= NOW() 
+              AND (ptp.campaign_qty IS NULL OR ptp.sold_qty < ptp.campaign_qty)
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM product_tag_promotions ptp_high 
+            WHERE ptp_high.product_id = p.id 
+              AND ptp_high.tag_name = 'flash-sale' 
+              AND ptp_high.status = 'active' 
+              AND ptp_high.start_time <= NOW() 
+              AND ptp_high.end_time >= NOW() 
+              AND (ptp_high.campaign_qty IS NULL OR ptp_high.sold_qty < ptp_high.campaign_qty)
+          )`;
+        params.push(JSON.stringify(tag));
+      } else if (tag === 'discount') {
+        where += ` AND JSON_CONTAINS(p.tags, ?) 
+          AND EXISTS (
+            SELECT 1 FROM product_tag_promotions ptp 
+            WHERE ptp.product_id = p.id 
+              AND ptp.tag_name = 'discount' 
+              AND ptp.status = 'active' 
+              AND ptp.start_time <= NOW() 
+              AND ptp.end_time >= NOW() 
+              AND (ptp.campaign_qty IS NULL OR ptp.sold_qty < ptp.campaign_qty)
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM product_tag_promotions ptp_high 
+            WHERE ptp_high.product_id = p.id 
+              AND ptp_high.tag_name IN ('flash-sale', 'deal') 
+              AND ptp_high.status = 'active' 
+              AND ptp_high.start_time <= NOW() 
+              AND ptp_high.end_time >= NOW() 
+              AND (ptp_high.campaign_qty IS NULL OR ptp_high.sold_qty < ptp_high.campaign_qty)
+          )`;
+        params.push(JSON.stringify(tag));
+      } else {
+        where += ' AND JSON_CONTAINS(p.tags, ?)';
+        params.push(JSON.stringify(tag));
+      }
     }
     if (excludeId) {
       where += ' AND p.id != ?';
@@ -772,17 +967,40 @@ router.get('/', async (req, res) => {
       `SELECT COUNT(*) AS total FROM products p ${where}`, params
     );
 
+    const productIds = rows.map((row) => row.id);
+    let promotionsByProductId = {};
+    if (productIds.length > 0) {
+      const [promotions] = await pool.query(
+        `SELECT * FROM product_tag_promotions
+         WHERE product_id IN (${productIds.map(() => '?').join(',')})`,
+        productIds
+      );
+      promotionsByProductId = promotions.reduce((acc, p) => {
+        if (!acc[p.product_id]) acc[p.product_id] = [];
+        acc[p.product_id].push(p);
+        return acc;
+      }, {});
+    }
+
     const data = rows.map((r) => {
+      const promotions = promotionsByProductId[r.id] || [];
+      const promo_info = computeActivePromoInfo(r, promotions);
+      const sellingPrice = promo_info ? promo_info.promo_price : r.retail_price;
+      const discPercent = promo_info ? promo_info.discount_percent : 0;
+
       const normalized = normalizeProductImageFields({
         ...r,
         thumbnail: r.image_url,
         original_price: r.retail_price,
-        price: r.retail_price,
-        discount_percent: 0,
+        price: sellingPrice,
+        retail_price: sellingPrice,
+        discount_percent: discPercent,
+        promo_info,
         in_stock: Boolean(r.in_stock)
       }, req);
       return { ...normalized, ...computeProductQuality(normalized) };
     });
+
 
     let categoryInfo = null;
     if (categoryId) {
@@ -917,7 +1135,7 @@ router.get('/barcode/:barcode', async (req, res) => {
     const [[row]] = await pool.query(
       `SELECT p.id, p.sku, p.barcode, p.name, p.status, p.retail_price, p.base_unit,
               p.requires_prescription, p.image_url, p.active_ingredient, p.manufacturer,
-              p.registration_number, p.description, p.min_stock_alert,
+              p.registration_number, p.description, p.min_stock_alert, p.tags,
               c.id AS category_id, c.name AS category_name,
               b.id AS brand_id, b.name AS brand_name,
               COALESCE(SUM(CASE WHEN bi.status IN ('available', 'near_expiry') THEN bi.quantity_remaining ELSE 0 END), 0) AS total_stock,
@@ -971,7 +1189,7 @@ router.get('/barcode/:barcode', async (req, res) => {
        WHERE ${whereClause}
        GROUP BY p.id, p.sku, p.barcode, p.name, p.status, p.retail_price,
                 p.base_unit, p.requires_prescription, p.image_url, p.active_ingredient,
-                p.manufacturer, p.registration_number, p.description, p.min_stock_alert,
+                p.manufacturer, p.registration_number, p.description, p.min_stock_alert, p.tags,
                 c.id, c.name, b.id, b.name`,
       [queryParam]
     );
@@ -1134,13 +1352,13 @@ router.get('/pos-search', async (req, res) => {
 
     const groupBy = `GROUP BY p.id, p.sku, p.barcode, p.name, p.retail_price, p.base_unit,
               p.requires_prescription, p.image_url, p.active_ingredient, p.manufacturer,
-              p.registration_number, p.description, p.min_stock_alert, c.id, c.name, b.id, b.name`;
+              p.registration_number, p.description, p.min_stock_alert, p.tags, c.id, c.name, b.id, b.name`;
     const having = inStockOnly ? `HAVING available_stock > 0` : '';
 
     const [rows] = await pool.query(
       `SELECT p.id, p.sku, p.barcode, p.name, p.retail_price, p.base_unit,
               p.requires_prescription, p.image_url, p.active_ingredient, p.manufacturer,
-              p.registration_number, p.description, p.min_stock_alert,
+              p.registration_number, p.description, p.min_stock_alert, p.tags,
               c.id AS category_id, c.name AS category_name,
               b.id AS brand_id, b.name AS brand_name,
               COALESCE(SUM(CASE WHEN bi.status IN ('available', 'near_expiry') THEN bi.quantity_remaining ELSE 0 END), 0) AS total_stock,
@@ -1255,7 +1473,7 @@ router.get('/pos-detail/:id', async (req, res) => {
       `SELECT p.id, p.sku, p.barcode, p.name, p.status, p.retail_price, p.base_unit,
               p.requires_prescription, p.image_url, p.active_ingredient,
               p.registration_number, p.manufacturer, p.description, p.min_stock_alert,
-              p.country_of_origin,
+              p.country_of_origin, p.tags,
               c.id AS category_id, c.name AS category_name,
               pc.id AS parent_category_id, pc.name AS parent_category_name,
               b.id AS brand_id, b.name AS brand_name,
@@ -1298,7 +1516,7 @@ router.get('/pos-detail/:id', async (req, res) => {
        WHERE p.id = ? AND p.status = 'active'
        GROUP BY p.id, p.sku, p.barcode, p.name, p.status, p.retail_price, p.base_unit,
                 p.requires_prescription, p.image_url, p.active_ingredient, p.registration_number,
-                p.manufacturer, p.description, p.min_stock_alert, p.country_of_origin,
+                p.manufacturer, p.description, p.min_stock_alert, p.country_of_origin, p.tags,
                 c.id, c.name, pc.id, pc.name, b.id, b.name`,
       [productId]
     );
@@ -1579,6 +1797,12 @@ router.get('/:id', async (req, res) => {
       ? normalizedImages.map((image) => image.public_url)
       : fallbackGallery.map((image) => toPublicImageUrl(image, req));
 
+    const [promotionsConfig] = await pool.query(
+      `SELECT * FROM product_tag_promotions WHERE product_id = ?`,
+      [productId]
+    );
+    const promo_info = computeActivePromoInfo(product, promotionsConfig);
+
     const data = {
       ...normalizeProductImageFields(product, req),
       brand: product.brand_id ? { id: product.brand_id, name: product.brand_name } : null,
@@ -1594,8 +1818,25 @@ router.get('/:id', async (req, res) => {
       total_stock: Number(total_stock),
       in_stock: Number(total_stock) > 0,
       image_url: primaryImage?.public_url || toPublicImageUrl(product.image_url, req),
-      gallery: normalizedGallery
+      gallery: normalizedGallery,
+      original_price: product.retail_price,
+      price: promo_info ? promo_info.promo_price : product.retail_price,
+      retail_price: promo_info ? promo_info.promo_price : product.retail_price,
+      discount_percent: promo_info ? promo_info.discount_percent : 0,
+      promo_info,
+      promotions_config: promotionsConfig.map(p => ({
+        tag_name: p.tag_name,
+        discount_type: p.discount_type,
+        discount_value: Number(p.discount_value),
+        campaign_qty: p.campaign_qty,
+        sold_qty: p.sold_qty,
+        max_per_customer: p.max_per_customer,
+        start_time: p.start_time,
+        end_time: p.end_time,
+        status: p.status
+      }))
     };
+
 
     delete data.brand_id;
     delete data.brand_name;
@@ -1619,7 +1860,7 @@ router.post('/', canWriteCatalog, requireFields(['name', 'category_id', 'base_un
       name, strength, route_of_administration, category_id, brand_id, active_ingredient, registration_number,
       manufacturer, requires_prescription, special_control_group, storage_condition, base_unit, retail_price, cost_price,
       min_stock_alert, image_url, gallery, description, tags, country_of_origin,
-      barcode, status, unit_conversions, specifications
+      barcode, status, unit_conversions, specifications, promotions_config
     } = req.body;
 
     const validationErrors = validateProductPayload(req.body, { isCreate: true });
@@ -1679,6 +1920,11 @@ router.post('/', canWriteCatalog, requireFields(['name', 'category_id', 'base_un
         [specValues]
       );
     }
+
+    if (promotions_config && Array.isArray(promotions_config) && promotions_config.length > 0) {
+      await saveProductPromotions(conn, productId, promotions_config, tags);
+    }
+
     await writeAudit({
       action: 'product_create',
       entity_type: 'product',
@@ -1719,7 +1965,7 @@ router.put('/:id', canWriteCatalog, async (req, res) => {
       name, strength, route_of_administration, category_id, brand_id, active_ingredient, registration_number,
       manufacturer, requires_prescription, special_control_group, storage_condition, base_unit, retail_price, cost_price,
       min_stock_alert, image_url, gallery, description, tags, country_of_origin,
-      barcode, status, unit_conversions, specifications
+      barcode, status, unit_conversions, specifications, promotions_config
     } = req.body;
 
     const [[existing]] = await conn.query(`SELECT * FROM products WHERE id = ?`, [productId]);
@@ -1808,6 +2054,14 @@ router.put('/:id', canWriteCatalog, async (req, res) => {
         await conn.query(`INSERT INTO product_specifications (product_id, spec_key, spec_value, sort_order) VALUES ?`, [specValues]);
       }
     }
+
+    if (promotions_config && Array.isArray(promotions_config)) {
+      await saveProductPromotions(conn, productId, promotions_config, tags !== undefined ? tags : existing.tags);
+    } else if (tags !== undefined) {
+      const [existingPromos] = await conn.query(`SELECT * FROM product_tag_promotions WHERE product_id = ?`, [productId]);
+      await saveProductPromotions(conn, productId, existingPromos, tags);
+    }
+
     const [[updatedProduct]] = await conn.query(`SELECT * FROM products WHERE id = ?`, [productId]);
     const beforeAudit = pickAuditProductFields(existing);
     const afterAudit = pickAuditProductFields(updatedProduct || {});

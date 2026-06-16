@@ -244,9 +244,88 @@ function _applyClientAuthToHeader() {
     } catch (e) { /* ignore */ }
 }
 
+function showToast(message, type = 'success') {
+    const existing = document.getElementById('mgGlobalToast');
+    if (existing) existing.remove();
+
+    const colors = {
+        success: { bg: '#10b981', border: '#059669', icon: 'fa-circle-check' },
+        error: { bg: '#ef4444', border: '#dc2626', icon: 'fa-circle-exclamation' },
+        info: { bg: '#1e293b', border: '#334155', icon: 'fa-circle-info' }
+    };
+    const theme = colors[type] || colors.success;
+
+    const toast = document.createElement('div');
+    toast.id = 'mgGlobalToast';
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 110000;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 20px;
+        background: ${theme.bg};
+        border: 1px solid ${theme.border};
+        border-radius: 10px;
+        color: #fff;
+        font-family: 'Sarabun', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
+        transform: translateX(120%);
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+        opacity: 0;
+    `;
+    toast.innerHTML = `<i class="fa-solid ${theme.icon}" style="font-size: 16px;"></i><span>${message}</span>`;
+    document.body.appendChild(toast);
+
+    // Trigger animate in
+    requestAnimationFrame(() => {
+        toast.style.transform = 'translateX(0)';
+        toast.style.opacity = '1';
+    });
+
+    // Animate out and remove
+    setTimeout(() => {
+        toast.style.transform = 'translateY(16px)';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 350);
+    }, 3500);
+}
+
+function triggerToastAfterReload(message, type = 'success') {
+    sessionStorage.setItem('MG_PENDING_TOAST', JSON.stringify({ message, type }));
+}
+
+// Check for pending toast on load
+(function initToastCheck() {
+    const check = () => {
+        try {
+            const pending = sessionStorage.getItem('MG_PENDING_TOAST');
+            if (pending) {
+                sessionStorage.removeItem('MG_PENDING_TOAST');
+                const { message, type } = JSON.parse(pending);
+                setTimeout(() => showToast(message, type), 300);
+            }
+        } catch (e) {}
+    };
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', check);
+    } else {
+        check();
+    }
+})();
+
 function clientLogout() {
     localStorage.removeItem('MG_CLIENT_AUTH');
-    window.location.reload();
+    triggerToastAfterReload('Đăng xuất thành công!', 'info');
+    if (window.location.pathname.includes('user-profile.html') || window.location.pathname.includes('profile')) {
+        window.location.href = 'index.html';
+    } else {
+        window.location.reload();
+    }
 }
 
 // ─── Client Auth Modal ─────────────────
@@ -397,8 +476,9 @@ function _ensureClientAuthModal() {
         }
         .mg-auth-panel {
             padding: 30px 34px;
-            overflow: auto;
+            overflow-y: auto;
             min-height: 560px;
+            max-height: min(760px, calc(100vh - 40px));
         }
         .mg-auth-top {
             display: flex;
@@ -582,22 +662,36 @@ function _ensureClientAuthModal() {
             cursor: pointer;
         }
         .mg-auth-otp {
-            display: none;
-            margin-bottom: 14px;
-            padding: 12px;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            padding: 0 12px;
+            border-width: 0;
+            margin-bottom: 0;
             border-radius: 8px;
             background: #f0fdf4;
-            border: 1px solid #bbf7d0;
+            border-color: #bbf7d0;
+            border-style: solid;
             color: #166534;
             font-size: 13px;
             font-weight: 700;
             line-height: 1.45;
+            transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
+                        opacity 0.35s ease, 
+                        padding 0.35s ease, 
+                        border-width 0.35s ease, 
+                        margin-bottom 0.35s ease;
         }
         .mg-auth-otp.is-visible {
-            display: block;
+            max-height: 200px;
+            opacity: 1;
+            padding: 12px;
+            border-width: 1px;
+            margin-bottom: 14px;
         }
         .mg-auth-otp .mg-auth-input {
             margin-top: 10px;
+            margin-bottom: 8px;
         }
         .mg-auth-password-rules {
             display: grid;
@@ -613,6 +707,47 @@ function _ensureClientAuthModal() {
             color: #64748b;
             font-size: 13px;
             font-weight: 700;
+        }
+        #mgRegisterFields {
+            max-height: 500px;
+            opacity: 1;
+            overflow: hidden;
+            transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
+                        opacity 0.35s ease, 
+                        margin-bottom 0.35s ease;
+        }
+        #mgRegisterFields.is-hidden {
+            max-height: 0;
+            opacity: 0;
+            margin-bottom: 0;
+            pointer-events: none;
+        }
+        .mg-auth-buttons-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .mg-auth-buttons-group .mg-auth-submit,
+        .mg-auth-buttons-group .mg-auth-cancel {
+            flex: 1;
+        }
+        .mg-auth-cancel {
+            height: 46px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: #f1f5f9;
+            color: #475569;
+            font-weight: 900;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.18s ease, transform 0.18s ease;
+        }
+        .mg-auth-cancel:hover {
+            background: #e2e8f0;
+        }
+        #mgRegisterResend {
+            margin-top: 6px;
+            display: inline-block;
         }
         body.mg-auth-lock {
             overflow: hidden;
@@ -695,24 +830,26 @@ function _ensureClientAuthModal() {
                     <form class="mg-auth-form" id="mgRegisterForm">
                         <h3 class="mg-auth-title">Đăng ký</h3>
                         <p class="mg-auth-subtitle">Tạo tài khoản và xác thực email bằng OTP.</p>
-                        <div class="mg-auth-field">
-                            <label for="mgRegisterName">Họ và tên</label>
-                            <div class="mg-auth-input"><i class="fa-solid fa-user"></i><input id="mgRegisterName" type="text" autocomplete="name" required></div>
-                        </div>
-                        <div class="mg-auth-field">
-                            <label for="mgRegisterPhone">Số điện thoại</label>
-                            <div class="mg-auth-input"><i class="fa-solid fa-phone"></i><input id="mgRegisterPhone" type="tel" autocomplete="tel" required></div>
-                        </div>
-                        <div class="mg-auth-field">
-                            <label for="mgRegisterEmail">Email</label>
-                            <div class="mg-auth-input"><i class="fa-solid fa-envelope"></i><input id="mgRegisterEmail" type="email" autocomplete="email" required></div>
-                        </div>
-                        <div class="mg-auth-field">
-                            <label for="mgRegisterPassword">Mật khẩu</label>
-                            <div class="mg-auth-input"><i class="fa-solid fa-lock"></i><input id="mgRegisterPassword" type="password" autocomplete="new-password" required></div>
-                            <div class="mg-auth-password-rules">
-                                <span>Tối thiểu 8 ký tự</span>
-                                <span>Có chữ in hoa và chữ số</span>
+                        <div id="mgRegisterFields">
+                            <div class="mg-auth-field">
+                                <label for="mgRegisterName">Họ và tên</label>
+                                <div class="mg-auth-input"><i class="fa-solid fa-user"></i><input id="mgRegisterName" type="text" autocomplete="name" required></div>
+                            </div>
+                            <div class="mg-auth-field">
+                                <label for="mgRegisterPhone">Số điện thoại</label>
+                                <div class="mg-auth-input"><i class="fa-solid fa-phone"></i><input id="mgRegisterPhone" type="tel" autocomplete="tel" required></div>
+                            </div>
+                            <div class="mg-auth-field">
+                                <label for="mgRegisterEmail">Email</label>
+                                <div class="mg-auth-input"><i class="fa-solid fa-envelope"></i><input id="mgRegisterEmail" type="email" autocomplete="email" required></div>
+                            </div>
+                            <div class="mg-auth-field">
+                                <label for="mgRegisterPassword">Mật khẩu</label>
+                                <div class="mg-auth-input"><i class="fa-solid fa-lock"></i><input id="mgRegisterPassword" type="password" autocomplete="new-password" required></div>
+                                <div class="mg-auth-password-rules">
+                                    <span>Tối thiểu 8 ký tự</span>
+                                    <span>Có chữ in hoa và chữ số</span>
+                                </div>
                             </div>
                         </div>
                         <div class="mg-auth-otp" id="mgRegisterOtpBox">
@@ -720,29 +857,35 @@ function _ensureClientAuthModal() {
                             <div class="mg-auth-input"><i class="fa-solid fa-key"></i><input id="mgRegisterOtp" type="text" inputmode="numeric" maxlength="6" placeholder="Nhập mã OTP 6 số"></div>
                             <button class="mg-auth-link" type="button" id="mgRegisterResend">Gửi lại OTP</button>
                         </div>
-                        <button class="mg-auth-submit" id="mgRegisterSubmit" type="submit">Tạo tài khoản</button>
+                        <div class="mg-auth-buttons-group">
+                            <button class="mg-auth-submit" id="mgRegisterSubmit" type="submit">Tạo tài khoản</button>
+                            <button class="mg-auth-cancel" id="mgRegisterCancel" type="button" style="display: none;">Hủy</button>
+                        </div>
                         <div class="mg-auth-footer-switch">Đã có tài khoản? <button class="mg-auth-link" type="button" data-auth-mode="login">Đăng nhập</button></div>
                     </form>
                     <form class="mg-auth-form" id="mgForgotForm">
                         <h3 class="mg-auth-title">Quên mật khẩu</h3>
                         <p class="mg-auth-subtitle">Nhận OTP qua email hoặc số điện thoại để đặt mật khẩu mới.</p>
-                        <div class="mg-auth-field">
+                        <div class="mg-auth-field" id="mgResetTargetField">
                             <label for="mgResetTarget">Email hoặc SĐT</label>
                             <div class="mg-auth-input"><i class="fa-solid fa-envelope"></i><input id="mgResetTarget" type="text" autocomplete="username" required></div>
                         </div>
                         <div class="mg-auth-field" data-reset-step style="display:none;">
                             <label for="mgResetOtp">Mã OTP</label>
-                            <div class="mg-auth-input"><i class="fa-solid fa-key"></i><input id="mgResetOtp" type="text" inputmode="numeric" maxlength="6"></div>
+                            <div class="mg-auth-input"><i class="fa-solid fa-key"></i><input id="mgResetOtp" type="text" inputmode="numeric" maxlength="6" disabled></div>
                         </div>
                         <div class="mg-auth-field" data-reset-step style="display:none;">
                             <label for="mgResetPassword">Mật khẩu mới</label>
-                            <div class="mg-auth-input"><i class="fa-solid fa-lock"></i><input id="mgResetPassword" type="password" autocomplete="new-password"></div>
+                            <div class="mg-auth-input"><i class="fa-solid fa-lock"></i><input id="mgResetPassword" type="password" autocomplete="new-password" disabled></div>
                         </div>
                         <div class="mg-auth-field" data-reset-step style="display:none;">
                             <label for="mgResetConfirm">Nhập lại mật khẩu mới</label>
-                            <div class="mg-auth-input"><i class="fa-solid fa-lock"></i><input id="mgResetConfirm" type="password" autocomplete="new-password"></div>
+                            <div class="mg-auth-input"><i class="fa-solid fa-lock"></i><input id="mgResetConfirm" type="password" autocomplete="new-password" disabled></div>
                         </div>
-                        <button class="mg-auth-submit" id="mgResetSubmit" type="submit">Gửi mã OTP</button>
+                        <div class="mg-auth-buttons-group">
+                            <button class="mg-auth-submit" id="mgResetSubmit" type="submit">Gửi mã OTP</button>
+                            <button class="mg-auth-cancel" id="mgResetCancel" type="button" style="display: none;">Hủy</button>
+                        </div>
                         <div class="mg-auth-footer-switch">Nhớ mật khẩu? <button class="mg-auth-link" type="button" data-auth-mode="login">Đăng nhập</button></div>
                     </form>
                 </div>
@@ -765,6 +908,8 @@ function _ensureClientAuthModal() {
     document.getElementById('mgRegisterForm').addEventListener('submit', _submitClientRegister);
     document.getElementById('mgForgotForm').addEventListener('submit', _submitClientResetPassword);
     document.getElementById('mgRegisterResend').addEventListener('click', _resendClientRegisterOtp);
+    document.getElementById('mgRegisterCancel').addEventListener('click', _resetClientRegisterForm);
+    document.getElementById('mgResetCancel').addEventListener('click', _resetClientForgotForm);
 }
 
 function openClientAuthModal(mode) {
@@ -786,12 +931,16 @@ function closeClientAuthModal() {
     modal.classList.remove('is-open');
     modal.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('mg-auth-lock');
+    _resetClientRegisterForm();
+    _resetClientForgotForm();
 }
 
 function _switchClientAuthMode(mode) {
     const modal = document.getElementById('mgClientAuthModal');
     if (!modal) return;
     _setClientAuthAlert('');
+    _resetClientRegisterForm();
+    _resetClientForgotForm();
     modal.querySelectorAll('.mg-auth-tab').forEach((tab) => {
         tab.classList.toggle('is-active', tab.dataset.authMode === (mode === 'forgot' ? 'login' : mode));
     });
@@ -844,6 +993,119 @@ function _validClientPassword(password) {
 let _pendingClientRegistration = null;
 let _resetClientOtpSent = false;
 
+function _showClientRegisterOtpState(email) {
+    const fields = document.getElementById('mgRegisterFields');
+    if (fields) {
+        fields.classList.add('is-hidden');
+        fields.querySelectorAll('input').forEach(input => {
+            input.disabled = true;
+        });
+    }
+
+    const otpBox = document.getElementById('mgRegisterOtpBox');
+    if (otpBox) {
+        otpBox.classList.add('is-visible');
+    }
+
+    const otpText = document.getElementById('mgRegisterOtpText');
+    if (otpText) {
+        otpText.textContent = 'Mã OTP đã được gửi đến ' + email + '.';
+    }
+
+    const otpInput = document.getElementById('mgRegisterOtp');
+    if (otpInput) {
+        otpInput.focus();
+    }
+
+    const cancelBtn = document.getElementById('mgRegisterCancel');
+    if (cancelBtn) {
+        cancelBtn.style.display = 'block';
+    }
+    
+    const btn = document.getElementById('mgRegisterSubmit');
+    if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Xác thực Email';
+    }
+}
+
+function _resetClientRegisterForm() {
+    _pendingClientRegistration = null;
+    _setClientAuthAlert('');
+    
+    const fields = document.getElementById('mgRegisterFields');
+    if (fields) {
+        fields.classList.remove('is-hidden');
+        fields.querySelectorAll('input').forEach(input => {
+            input.disabled = false;
+        });
+    }
+
+    const otpBox = document.getElementById('mgRegisterOtpBox');
+    if (otpBox) {
+        otpBox.classList.remove('is-visible');
+    }
+    
+    const otpInput = document.getElementById('mgRegisterOtp');
+    if (otpInput) {
+        otpInput.value = '';
+    }
+
+    const cancelBtn = document.getElementById('mgRegisterCancel');
+    if (cancelBtn) {
+        cancelBtn.style.display = 'none';
+    }
+
+    const submitBtn = document.getElementById('mgRegisterSubmit');
+    if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Tạo tài khoản';
+    }
+}
+
+function _resetClientForgotForm() {
+    _resetClientOtpSent = false;
+    
+    // Show target field & enable input
+    const targetField = document.getElementById('mgResetTargetField');
+    if (targetField) {
+        targetField.style.display = 'block';
+        const input = targetField.querySelector('input');
+        if (input) {
+            input.disabled = false;
+            input.required = true;
+        }
+    }
+
+    const forgotForm = document.getElementById('mgForgotForm');
+    if (forgotForm) {
+        forgotForm.reset();
+    }
+
+    // Hide reset steps & disable inputs inside them to prevent HTML5 validation conflicts
+    document.querySelectorAll('[data-reset-step]').forEach((el) => {
+        el.style.display = 'none';
+        const input = el.querySelector('input');
+        if (input) {
+            input.required = false;
+            input.disabled = true;
+            input.value = '';
+        }
+    });
+
+    // Hide cancel button
+    const cancelBtn = document.getElementById('mgResetCancel');
+    if (cancelBtn) {
+        cancelBtn.style.display = 'none';
+    }
+
+    const btn = document.getElementById('mgResetSubmit');
+    if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Gửi mã OTP';
+    }
+}
+
 async function _submitClientLogin(e) {
     e.preventDefault();
     const btn = document.getElementById('mgLoginSubmit');
@@ -860,8 +1122,8 @@ async function _submitClientLogin(e) {
         }
         _saveClientAuth(data.data);
         await _syncClientCartAfterLogin(data.data.accessToken);
-        _setClientAuthAlert('Đăng nhập thành công.', 'success');
-        setTimeout(() => window.location.reload(), 350);
+        triggerToastAfterReload('Đăng nhập thành công!', 'success');
+        setTimeout(() => window.location.reload(), 200);
     } catch (err) {
         _setClientAuthAlert(err.message || 'Đăng nhập thất bại.');
         btn.disabled = false;
@@ -895,8 +1157,8 @@ async function _submitClientRegister(e) {
             });
             _saveClientAuth(loginData.data);
             await _syncClientCartAfterLogin(loginData.data.accessToken);
-            _setClientAuthAlert('Đăng ký thành công.', 'success');
-            setTimeout(() => window.location.reload(), 450);
+            triggerToastAfterReload('Đăng ký thành công!', 'success');
+            setTimeout(() => window.location.reload(), 200);
         } catch (err) {
             _setClientAuthAlert(err.message || 'Không xác thực được OTP.');
             btn.disabled = false;
@@ -913,12 +1175,8 @@ async function _submitClientRegister(e) {
     try {
         await _clientAuthJson('/auth/register', { full_name: fullName, email, phone, password });
         _pendingClientRegistration = { email, password };
-        document.getElementById('mgRegisterOtpBox').classList.add('is-visible');
-        document.getElementById('mgRegisterOtpText').textContent = 'Mã OTP đã được gửi đến ' + email + '.';
-        document.getElementById('mgRegisterOtp').focus();
+        _showClientRegisterOtpState(email);
         _setClientAuthAlert('Vui lòng kiểm tra email để nhập OTP.', 'success');
-        btn.disabled = false;
-        btn.textContent = 'Xác thực Email';
     } catch (err) {
         _setClientAuthAlert(err.message || 'Đăng ký thất bại.');
         btn.disabled = false;
@@ -956,10 +1214,36 @@ async function _submitClientResetPassword(e) {
                 account_type: 'customer',
             });
             _resetClientOtpSent = true;
-            document.querySelectorAll('[data-reset-step]').forEach((el) => { el.style.display = 'block'; });
+            
+            // Hide target field & disable input to prevent validation issues
+            const targetField = document.getElementById('mgResetTargetField');
+            if (targetField) {
+                targetField.style.display = 'none';
+                const input = targetField.querySelector('input');
+                if (input) input.disabled = true;
+            }
+
+            // Show reset steps & make inputs required & enabled
+            document.querySelectorAll('[data-reset-step]').forEach((el) => { 
+                el.style.display = 'block'; 
+                const input = el.querySelector('input');
+                if (input) {
+                    input.required = true;
+                    input.disabled = false;
+                }
+            });
+
+            // Show cancel button
+            const cancelBtn = document.getElementById('mgResetCancel');
+            if (cancelBtn) cancelBtn.style.display = 'block';
+
             _setClientAuthAlert('OTP đặt lại mật khẩu đã được gửi.', 'success');
             btn.disabled = false;
             btn.textContent = 'Đặt lại mật khẩu';
+            
+            // Focus on OTP input
+            const otpInput = document.getElementById('mgResetOtp');
+            if (otpInput) otpInput.focus();
             return;
         }
 
@@ -979,11 +1263,7 @@ async function _submitClientResetPassword(e) {
             confirm_password: confirmPassword,
         });
         _setClientAuthAlert('Mật khẩu đã được đổi. Vui lòng đăng nhập lại.', 'success');
-        _resetClientOtpSent = false;
-        document.getElementById('mgForgotForm').reset();
-        document.querySelectorAll('[data-reset-step]').forEach((el) => { el.style.display = 'none'; });
-        btn.disabled = false;
-        btn.textContent = 'Gửi mã OTP';
+        _resetClientForgotForm();
         setTimeout(() => _switchClientAuthMode('login'), 700);
     } catch (err) {
         _setClientAuthAlert(err.message || 'Không đặt lại được mật khẩu.');

@@ -76,6 +76,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Tab switcher logic
     initTabs();
+
+    // Quantity change listener for subtotal recalculation
+    const qtyInput = document.getElementById('pdQty');
+    qtyInput?.addEventListener('input', () => {
+        if (typeof recalculateSubtotal === 'function') {
+            recalculateSubtotal();
+        }
+    });
 });
 
 /**
@@ -163,12 +171,149 @@ function updateProductUI(p) {
         supNotice.style.display = 'block';
     }
 
-    // 3. Price Box
-    if (p.retail_price) {
-        const priceStr = new Intl.NumberFormat('vi-VN').format(Math.round(p.retail_price)) + "đ";
-        document.getElementById('pdPrice').textContent = priceStr;
-        document.getElementById('pdPriceBox').innerHTML = `${priceStr} <span class="pd-price-unit">/ ${p.base_unit || 'Hộp'}</span>`;
+    // Clear old countdown interval if exists
+    if (window.promoCountdownInterval) {
+        clearInterval(window.promoCountdownInterval);
+        window.promoCountdownInterval = null;
     }
+
+    // 3. Price Box and Promotions
+    const hasPromo = p.promo_info && !p.requires_prescription;
+    const discountSticker = document.getElementById('pdDiscountSticker');
+    const promoBanner = document.getElementById('pdPromoBanner');
+    const promoProgressBox = document.getElementById('pdPromoProgressBox');
+    const originalPriceBox = document.getElementById('pdOriginalPriceBox');
+    const savingsBox = document.getElementById('pdSavingsBox');
+    const voucherBox = document.getElementById('pdVoucherBox');
+
+    // Reset visibility
+    if (discountSticker) discountSticker.style.display = 'none';
+    if (promoBanner) promoBanner.style.display = 'none';
+    if (promoProgressBox) promoProgressBox.style.display = 'none';
+    if (originalPriceBox) originalPriceBox.style.display = 'none';
+    if (savingsBox) savingsBox.style.display = 'none';
+    if (voucherBox) voucherBox.style.display = 'none';
+
+    if (hasPromo) {
+        const info = p.promo_info;
+        const discountType = info.discount_type;
+        const discountValue = Number(info.discount_value);
+        const originalPrice = Number(p.original_price || p.retail_price);
+        const promoPrice = Number(p.retail_price);
+
+        let pct = 0;
+        if (discountType === 'percentage') {
+            pct = Math.round(discountValue);
+        } else {
+            pct = originalPrice > 0 ? Math.round((discountValue / originalPrice) * 100) : 0;
+        }
+
+        // Image sticker
+        if (discountSticker) {
+            discountSticker.textContent = `-${pct}%`;
+            discountSticker.style.display = 'flex';
+        }
+
+        // Render main price card
+        const formatPrice = (val) => new Intl.NumberFormat('vi-VN').format(Math.round(val)) + 'đ';
+        const priceStr = formatPrice(promoPrice);
+        const origPriceStr = formatPrice(originalPrice);
+        const savingsAmt = Math.max(0, originalPrice - promoPrice);
+
+        const priceBox = document.getElementById('pdPriceBox');
+        if (priceBox) {
+            priceBox.innerHTML = `
+                <div style="display: flex; align-items: baseline; gap: 8px;">
+                    <span id="pdPrice" style="font-size: 26px; font-weight: 700; color: #0b7a3e;">${priceStr}</span>
+                    <span id="pdPriceUnit" class="pd-price-unit" style="font-size: 14px; color: #4b5563; font-weight: 400;">/ ${p.base_unit || 'Hộp'}</span>
+                </div>
+                <div id="pdOriginalPriceBox" style="display: flex; align-items: center; gap: 8px;">
+                    <span id="pdOriginalPrice" style="text-decoration: line-through; color: #9ca3af; font-size: 15px;">${origPriceStr}</span>
+                    <span id="pdDiscountPercent" style="background: #fef2f2; color: #ef4444; font-size: 12px; font-weight: 700; padding: 2px 6px; border-radius: 4px; border: 1px solid #fee2e2;">-${pct}%</span>
+                </div>
+                ${savingsAmt > 0 ? `
+                <div id="pdSavingsBox" style="display: flex; font-size: 13px; color: #16a34a; font-weight: 500;">
+                    Tiết kiệm: <span id="pdSavings">${formatPrice(savingsAmt)}</span>
+                </div>` : ''}
+            `;
+        }
+
+        // Setup Countdown
+        if (promoBanner) {
+            const promoLabel = document.getElementById('pdPromoLabel');
+            if (info.tag_name === 'flash-sale') {
+                promoLabel.innerHTML = `<i class="fa-solid fa-bolt" style="color:#facc15;"></i> FLASH SALE ĐANG DIỄN RA`;
+                promoBanner.style.background = 'linear-gradient(90deg, #dc2626 0%, #ea580c 100%)';
+            } else if (info.tag_name === 'deal') {
+                promoLabel.innerHTML = `<i class="fa-solid fa-fire" style="color:#facc15;"></i> CƠ HỘI MUA DEAL HOT`;
+                promoBanner.style.background = 'linear-gradient(90deg, #ea580c 0%, #f97316 100%)';
+            } else {
+                promoLabel.innerHTML = `<i class="fa-solid fa-tag"></i> CHƯƠNG TRÌNH KHUYẾN MÃI`;
+                promoBanner.style.background = 'linear-gradient(90deg, #2563eb 0%, #3b82f6 100%)';
+            }
+            promoBanner.style.display = 'flex';
+
+            const endTime = new Date(info.end_time).getTime();
+            const updateTimer = () => {
+                const now = new Date().getTime();
+                const distance = endTime - now;
+                if (distance < 0) {
+                    if (window.promoCountdownInterval) clearInterval(window.promoCountdownInterval);
+                    const cdEl = document.getElementById('pdPromoCountdown');
+                    if (cdEl) cdEl.innerHTML = `<span style="font-weight: 700;">Chương trình đã kết thúc</span>`;
+                    return;
+                }
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                const dEl = document.getElementById('promoDays');
+                const hEl = document.getElementById('promoHours');
+                const mEl = document.getElementById('promoMinutes');
+                const sEl = document.getElementById('promoSeconds');
+
+                if (dEl) dEl.textContent = String(days).padStart(2, '0');
+                if (hEl) hEl.textContent = String(hours).padStart(2, '0');
+                if (mEl) mEl.textContent = String(minutes).padStart(2, '0');
+                if (sEl) sEl.textContent = String(seconds).padStart(2, '0');
+            };
+            updateTimer();
+            window.promoCountdownInterval = setInterval(updateTimer, 1000);
+        }
+
+        // Progress bar for flash-sale
+        if (info.tag_name === 'flash-sale' && promoProgressBox) {
+            const campaignQty = Number(info.campaign_qty || 0);
+            const soldQty = Number(info.sold_qty || 0);
+            if (campaignQty > 0) {
+                const percent = Math.min(100, Math.round((soldQty / campaignQty) * 100));
+                const pBar = document.getElementById('pdPromoProgressBar');
+                const pText = document.getElementById('pdPromoProgressText');
+                if (pBar) pBar.style.width = `${percent}%`;
+                if (pText) pText.textContent = `${soldQty}/${campaignQty} đã bán`;
+                promoProgressBox.style.display = 'flex';
+            }
+        }
+
+
+    } else {
+        if (p.retail_price) {
+            const priceStr = new Intl.NumberFormat('vi-VN').format(Math.round(p.retail_price)) + "đ";
+            const priceBox = document.getElementById('pdPriceBox');
+            if (priceBox) {
+                priceBox.innerHTML = `
+                    <div style="display: flex; align-items: baseline; gap: 8px;">
+                        <span id="pdPrice" style="font-size: 26px; font-weight: 700; color: #eb7c23;">${priceStr}</span>
+                        <span id="pdPriceUnit" class="pd-price-unit" style="font-size: 14px; color: #4b5563; font-weight: 400;">/ ${p.base_unit || 'Hộp'}</span>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    // Recalculate subtotal based on quantity input
+    recalculateSubtotal();
 
     // 4. Gallery
     const mainImg = document.getElementById('pdMainImg');
@@ -194,18 +339,91 @@ function updateProductUI(p) {
         `).join('');
     }
 
-    // 5. Content
-    const contentHtml = document.getElementById('pdContentHtml');
-    if (contentHtml) {
-        let desc = p.description || "Chưa có thông tin mô tả chi tiết.";
-        if (!desc.includes('<')) desc = `<p>${desc.replace(/\n/g, '<br>')}</p>`;
-        
-        // Cố gắng định dạng lại content cho đẹp nếu là text thô
-        desc = desc.replace(/Thành phần\s+Hàm lượng/g, '<h3>Thành phần</h3>');
-        desc = desc.replace(/Công dụng/g, '<h3>Công dụng</h3>');
-        desc = desc.replace(/Cách dùng/g, '<h3>Cách dùng</h3>');
-        
-        contentHtml.innerHTML = desc;
+    // 5. Content (Tự động tách thành các phần và hiển thị động lên Menu dọc)
+    const contentBox = document.querySelector('.pd-content-box');
+    if (contentBox) {
+        const sections = parseDescriptionSections(p.description);
+
+        const reviewSection = document.getElementById('section-review');
+        const reviewHtml = reviewSection ? reviewSection.outerHTML : '';
+
+        const sectionsHtml = [];
+        const menuItems = [];
+
+        if (sections.desc) {
+            sectionsHtml.push(`
+                <div class="pd-content-section" id="section-desc">
+                    <h2>Mô tả sản phẩm</h2>
+                    <div class="pd-content-html">${formatSectionContent(sections.desc)}</div>
+                </div>
+            `);
+            menuItems.push(`<a href="#section-desc" class="pd-tab-link active">Mô tả sản phẩm</a>`);
+        }
+
+        if (sections.ingredients) {
+            sectionsHtml.push(`
+                <div class="pd-content-section" id="section-ingredients">
+                    <h2>Thành phần</h2>
+                    <div class="pd-content-html">${formatSectionContent(sections.ingredients)}</div>
+                </div>
+            `);
+            menuItems.push(`<a href="#section-ingredients" class="pd-tab-link ${menuItems.length === 0 ? 'active' : ''}">Thành phần</a>`);
+        }
+
+        if (sections.usage) {
+            sectionsHtml.push(`
+                <div class="pd-content-section" id="section-usage">
+                    <h2>Công dụng & Chỉ định</h2>
+                    <div class="pd-content-html">${formatSectionContent(sections.usage)}</div>
+                </div>
+            `);
+            menuItems.push(`<a href="#section-usage" class="pd-tab-link ${menuItems.length === 0 ? 'active' : ''}">Công dụng</a>`);
+        }
+
+        if (sections.dosage) {
+            sectionsHtml.push(`
+                <div class="pd-content-section" id="section-dosage">
+                    <h2>Cách dùng & Liều dùng</h2>
+                    <div class="pd-content-html">${formatSectionContent(sections.dosage)}</div>
+                </div>
+            `);
+            menuItems.push(`<a href="#section-dosage" class="pd-tab-link ${menuItems.length === 0 ? 'active' : ''}">Cách dùng</a>`);
+        }
+
+        if (sections.warnings) {
+            sectionsHtml.push(`
+                <div class="pd-content-section" id="section-warnings">
+                    <h2>Lưu ý & Tác dụng phụ</h2>
+                    <div class="pd-content-html">${formatSectionContent(sections.warnings)}</div>
+                </div>
+            `);
+            menuItems.push(`<a href="#section-warnings" class="pd-tab-link ${menuItems.length === 0 ? 'active' : ''}">Lưu ý</a>`);
+        }
+
+        menuItems.push(`<a href="#section-review" class="pd-tab-link">Đánh giá</a>`);
+
+        // Ghi đè lại nội dung khung chi tiết (bao bọc bằng wrapper thu gọn và thêm nút xem thêm)
+        contentBox.innerHTML = `
+            <div class="pd-details-wrapper collapsed">
+                ${sectionsHtml.join('\n')}
+                <div class="readmore-overlay"></div>
+            </div>
+            <div class="readmore-btn-area">
+                <button class="btn-readmore" onclick="toggleReadmore()">Xem thêm <i class="fa-solid fa-chevron-down"></i></button>
+            </div>
+            ${reviewHtml}
+        `;
+
+        // Cập nhật lại danh sách liên kết bên tab menu dọc
+        const tabMenu = document.querySelector('.pd-tab-menu');
+        if (tabMenu) {
+            tabMenu.innerHTML = menuItems.join('\n');
+        }
+
+        // Đăng ký lại sự kiện click cuộn mượt cho các thẻ tab mới thêm
+        if (typeof initTabs === 'function') {
+            initTabs();
+        }
     }
 
     // 6. Action buttons
@@ -234,6 +452,84 @@ function updateProductUI(p) {
             btnBuy.disabled = false;
             btnBuy.onclick = (event) => addCurrentProductToCart(event, true);
         }
+    }
+
+    // Nạp mã giảm giá POS động
+    loadDynamicPosVouchers(p);
+}
+
+/**
+ * Nạp danh sách mã giảm giá POS động từ API cms-service
+ */
+async function loadDynamicPosVouchers(p) {
+    const voucherBox = document.getElementById('pdVoucherBox');
+    if (!voucherBox) return;
+
+    // Reset visibility
+    voucherBox.style.display = 'none';
+
+    // Nếu là thuốc kê đơn hoặc sản phẩm đang chạy Flash Sale, không hiển thị khuyến mãi/voucher
+    if (p.requires_prescription || (p.promo_info && p.promo_info.tag_name === 'flash-sale')) {
+        return;
+    }
+
+    try {
+        const gateway = ((window.MGClientApi && window.MGClientApi.gatewayOrigin) || window.MG_API_GATEWAY_ORIGIN || 'http://localhost:8000').replace(/\/+$/, '');
+        const res = await fetch(`${gateway}/api/cms/promotions/active`);
+        if (!res.ok) return;
+        const result = await res.json();
+        
+        if (result.success && Array.isArray(result.data)) {
+            // Lọc các mã voucher (không phải quà tặng tự động buy_x_get_y)
+            // áp dụng cho kênh POS (hoặc cả POS & Web)
+            const posVouchers = result.data.filter(v => 
+                v.code && 
+                (v.applicable_channel === 'all' || v.applicable_channel === 'pos') &&
+                v.type !== 'buy_x_get_y' &&
+                v.is_active === 1
+            );
+
+            if (posVouchers.length > 0) {
+                // Lấy voucher đầu tiên khả dụng để hiển thị
+                const v = posVouchers[0];
+                
+                let discountDesc = '';
+                const val = Number(v.discount_value || 0);
+                const minBill = Number(v.min_order_value || 0);
+                
+                const formatMoney = (amount) => new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
+                
+                if (v.type === 'percent_discount' || v.type === 'percent') {
+                    discountDesc = `giảm ${val}%`;
+                    const maxDisc = Number(v.max_discount_amount || 0);
+                    if (maxDisc > 0) {
+                        discountDesc += ` (tối đa ${formatMoney(maxDisc)})`;
+                    }
+                } else if (v.type === 'fixed_discount' || v.type === 'fixed') {
+                    discountDesc = `giảm ${formatMoney(val)}`;
+                } else if (v.type === 'free_shipping' || v.type === 'freeship') {
+                    discountDesc = `miễn phí vận chuyển`;
+                }
+
+                let condText = '';
+                if (minBill > 0) {
+                    condText = ` cho đơn hàng từ ${formatMoney(minBill)}`;
+                }
+                
+                voucherBox.innerHTML = `
+                    <div style="font-weight: 700; display: flex; align-items: center; gap: 6px; font-size: 13px;">
+                        <i class="fa-solid fa-ticket"></i> Mã giảm giá áp dụng tại POS
+                    </div>
+                    <div style="font-family: monospace; font-size: 11px; background: #fff; padding: 4px 8px; border: 1px solid #bbf7d0; border-radius: 4px; display: inline-block; width: fit-content; font-weight: bold; color: #15803d; margin: 4px 0;">
+                        ${escapeProductHtml(v.code)}
+                    </div>
+                    <div>Nhập mã voucher tại quầy thuốc để được ${discountDesc}${condText} khi thanh toán trực tiếp.</div>
+                `;
+                voucherBox.style.display = 'flex';
+            }
+        }
+    } catch (e) {
+        console.error('[Storefront Load POS Vouchers Error]:', e);
     }
 }
 
@@ -577,10 +873,7 @@ async function renderRecentlyViewed() {
  */
 function renderProductCard(p) {
     if (window.MGClientApi && typeof window.MGClientApi.renderProductCard === 'function') {
-        return window.MGClientApi.renderProductCard(p, {
-            showOldPrice: Boolean(p.retail_price && !p.requires_prescription),
-            oldPrice: p.retail_price ? Number(p.retail_price) * 1.05 : 0
-        });
+        return window.MGClientApi.renderProductCard(p);
     }
 
     const isRx = p.requires_prescription;
@@ -634,19 +927,258 @@ window.consult = consult;
 function initTabs() {
     const links = document.querySelectorAll('.pd-tab-link');
     links.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            links.forEach(l => l.classList.remove('active'));
-            this.classList.add('active');
-            
-            const targetId = this.getAttribute('href').substring(1);
-            const targetEl = document.getElementById(targetId);
-            if (targetEl) {
+        link.removeEventListener('click', handleTabClick);
+        link.addEventListener('click', handleTabClick);
+    });
+}
+
+function handleTabClick(e) {
+    e.preventDefault();
+    const links = document.querySelectorAll('.pd-tab-link');
+    links.forEach(l => l.classList.remove('active'));
+    this.classList.add('active');
+    
+    const targetId = this.getAttribute('href').substring(1);
+    const targetEl = document.getElementById(targetId);
+    if (targetEl) {
+        const wrapper = document.querySelector('.pd-details-wrapper');
+        
+        if (targetId === 'section-review') {
+            if (typeof window.expandDetailsFully === 'function') {
+                window.expandDetailsFully();
+            }
+            setTimeout(() => {
                 window.scrollTo({
                     top: targetEl.offsetTop - 100,
                     behavior: 'smooth'
                 });
+            }, 100);
+            return;
+        }
+
+        if (wrapper && wrapper.classList.contains('collapsed')) {
+            const totalHeight = wrapper.scrollHeight;
+            const sectionBottom = targetEl.offsetTop + targetEl.offsetHeight;
+            
+            // Nếu phần nội dung này vượt quá chiều cao đang hiển thị của khung thu gọn
+            if (sectionBottom > wrapper.offsetHeight) {
+                if (totalHeight - sectionBottom < 60) {
+                    // Nếu đã chạm rất gần đáy, mở rộng hoàn toàn luôn
+                    if (typeof window.expandDetailsFully === 'function') {
+                        window.expandDetailsFully();
+                    }
+                } else {
+                    // Nới rộng khung vừa đủ để hiện phần này, giữ nguyên nút xem thêm
+                    wrapper.style.maxHeight = (sectionBottom + 40) + 'px';
+                }
             }
-        });
+        }
+
+        // Chờ hiệu ứng chuyển đổi chiều cao bắt đầu rồi cuộn mượt
+        setTimeout(() => {
+            const wrapperOffset = wrapper ? wrapper.offsetTop : 0;
+            window.scrollTo({
+                top: targetEl.offsetTop + wrapperOffset - 100,
+                behavior: 'smooth'
+            });
+        }, 100);
+    }
+}
+
+/**
+ * Tách nội dung mô tả sản phẩm thô thành các phần: Mô tả, Thành phần, Công dụng, Cách dùng, Lưu ý
+ */
+function parseDescriptionSections(description) {
+    if (!description) return { desc: "Chưa có thông tin mô tả chi tiết." };
+
+    let text = description.trim();
+
+    const sectionKeywords = [
+        { key: 'ingredients', label: 'Thành phần', patterns: [/Thành\s+phần/gi, /Hoạt\s+chất/gi] },
+        { key: 'usage', label: 'Công dụng', patterns: [/Công\s+dụng/gi, /Chỉ\s+định/gi] },
+        { key: 'dosage', label: 'Cách dùng', patterns: [/Cách\s+dùng/gi, /Liều\s+dùng/gi, /Hướng\s+dẫn\s+sử\s+dụng/gi] },
+        { key: 'warnings', label: 'Lưu ý', patterns: [/Lưu\s+ý/gi, /Lưu\s+ý/gi, /Thận\s+trọng/gi, /Tác\s+dụng\s+phụ/gi, /Chống\s+chỉ\s+định/gi] }
+    ];
+
+    const matches = [];
+    sectionKeywords.forEach(sec => {
+        let firstIndex = -1;
+        let matchedText = '';
+        for (let pattern of sec.patterns) {
+            const regex = new RegExp(pattern);
+            const match = regex.exec(text);
+            if (match) {
+                if (firstIndex === -1 || match.index < firstIndex) {
+                    firstIndex = match.index;
+                    matchedText = match[0];
+                }
+            }
+        }
+        if (firstIndex !== -1) {
+            matches.push({
+                key: sec.key,
+                label: sec.label,
+                index: firstIndex,
+                length: matchedText.length,
+                patterns: sec.patterns
+            });
+        }
+    });
+
+    matches.sort((a, b) => a.index - b.index);
+
+    const sections = {};
+    if (matches.length === 0) {
+        sections['desc'] = text;
+    } else {
+        const firstMatch = matches[0];
+        if (firstMatch.index > 0) {
+            sections['desc'] = text.substring(0, firstMatch.index).trim();
+        }
+
+        for (let i = 0; i < matches.length; i++) {
+            const current = matches[i];
+            const next = matches[i + 1];
+            const startIdx = current.index + current.length;
+            const endIdx = next ? next.index : text.length;
+
+            let sectionContent = text.substring(startIdx, endIdx).trim();
+
+            // Xóa các ký tự phi chữ cái (dấu hai chấm, dấu gạch ngang, khoảng trắng...) dư thừa ở đầu phần nội dung
+            sectionContent = sectionContent.replace(/^[^a-zA-ZÀ-ỹ]+/i, '').trim();
+
+            sections[current.key] = sectionContent;
+        }
+    }
+
+    return sections;
+}
+
+/**
+ * Định dạng văn bản thô thành HTML có ngắt dòng hợp lý, thẻ p, thẻ li, h4 cho sub-heading
+ */
+function formatSectionContent(text) {
+    if (!text) return '';
+
+    let formatted = text.trim();
+    if (formatted.includes('<p>') || formatted.includes('<h3>') || formatted.includes('<br>')) {
+        return formatted;
+    }
+
+    const lines = formatted.split(/\n+/);
+    const resultHtml = [];
+
+    lines.forEach(line => {
+        let trimmedLine = line.trim();
+        if (!trimmedLine) return;
+
+        const subheaderKeywords = [
+            'Liều dùng', 'Người lớn', 'Trẻ em', 'Người cao tuổi', 
+            'Dược lực học', 'Dược động học', 'Hấp thu', 'Phân bố', 'Chuyển hóa', 'Thải trừ',
+            'Triệu chứng', 'Điều trị', 'Chống chỉ định', 'Thận trọng', 'Tác dụng phụ',
+            'Lưu ý', 'Làm gì khi dùng quá liều?', 'Làm gì khi quên 1 liều?'
+        ];
+
+        let isSubheader = false;
+        for (let kw of subheaderKeywords) {
+            if (trimmedLine.toLowerCase() === kw.toLowerCase() || 
+                (trimmedLine.toLowerCase().startsWith(kw.toLowerCase()) && trimmedLine.length < kw.length + 15)) {
+                isSubheader = true;
+                break;
+            }
+        }
+
+        if (isSubheader) {
+            resultHtml.push(`<h4 class="detail-subheading">${trimmedLine}</h4>`);
+        } else if (trimmedLine.startsWith('-') || trimmedLine.startsWith('+') || trimmedLine.startsWith('•') || trimmedLine.startsWith('*')) {
+            const itemText = trimmedLine.replace(/^[-+•*]\s*/, '');
+            resultHtml.push(`<li>${itemText}</li>`);
+        } else {
+            // Tách các đoạn văn quá dài thành nhóm tối đa 2 câu để dễ đọc
+            const sentences = trimmedLine.split(/(?<=\.|\?)\s+(?=[A-ZÀ-ỹ])/g);
+            if (sentences.length > 2) {
+                for (let i = 0; i < sentences.length; i += 2) {
+                    const group = sentences.slice(i, i + 2).join(' ');
+                    resultHtml.push(`<p>${group}</p>`);
+                }
+            } else {
+                resultHtml.push(`<p>${trimmedLine}</p>`);
+            }
+        }
+    });
+
+    let htmlString = resultHtml.join('\n');
+    htmlString = htmlString.replace(/(<li>.*?<\/li>\n?)+/g, match => `<ul>\n${match}</ul>\n`);
+
+    return htmlString;
+}
+
+/**
+ * Xem thêm / Thu gọn khung chi tiết
+ */
+function toggleReadmore() {
+    const wrapper = document.querySelector('.pd-details-wrapper');
+    if (!wrapper) return;
+    if (wrapper.classList.contains('collapsed')) {
+        expandDetailsFully();
+    } else {
+        collapseDetails();
+    }
+}
+
+function expandDetailsFully() {
+    const wrapper = document.querySelector('.pd-details-wrapper');
+    const btn = document.querySelector('.btn-readmore');
+    if (!wrapper) return;
+
+    wrapper.classList.remove('collapsed');
+    wrapper.style.maxHeight = wrapper.scrollHeight + 'px';
+
+    // Đợi transition hoàn tất rồi gỡ max-height để tránh lỗi giao diện co giãn
+    setTimeout(() => {
+        if (!wrapper.classList.contains('collapsed')) {
+            wrapper.style.maxHeight = 'none';
+        }
+    }, 400);
+
+    if (btn) {
+        btn.innerHTML = 'Thu gọn <i class="fa-solid fa-chevron-up"></i>';
+    }
+}
+
+function collapseDetails() {
+    const wrapper = document.querySelector('.pd-details-wrapper');
+    const btn = document.querySelector('.btn-readmore');
+    if (!wrapper) return;
+
+    wrapper.classList.add('collapsed');
+    wrapper.style.maxHeight = '400px';
+
+    if (btn) {
+        btn.innerHTML = 'Xem thêm <i class="fa-solid fa-chevron-down"></i>';
+    }
+
+    // Cuộn mượt trở lại đầu phần mô tả
+    window.scrollTo({
+        top: wrapper.offsetTop - 100,
+        behavior: 'smooth'
     });
 }
+
+// Expose to window scope so onclick in dynamic HTML works
+window.toggleReadmore = toggleReadmore;
+window.expandDetailsFully = expandDetailsFully;
+window.collapseDetails = collapseDetails;
+
+function recalculateSubtotal() {
+    if (!currentProduct) return;
+    const qty = getSelectedQuantity();
+    const price = Number(currentProduct.retail_price || 0);
+    const subtotal = qty * price;
+    const subtotalStr = new Intl.NumberFormat('vi-VN').format(Math.round(subtotal)) + "đ";
+    const pdPriceText = document.getElementById('pdPrice');
+    if (pdPriceText) {
+        pdPriceText.textContent = subtotalStr;
+    }
+}
+window.recalculateSubtotal = recalculateSubtotal;

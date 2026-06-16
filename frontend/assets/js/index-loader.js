@@ -107,9 +107,28 @@ const homeCatalog = {
         const unit = product.base_unit ? ` / ${this.escape(product.base_unit)}` : '';
         const isRx = Boolean(product.requires_prescription);
         const inStock = product.in_stock !== false;
-        const badge = product.discount_percent > 0
+        let tags = [];
+        if (product.tags) {
+            try {
+                tags = Array.isArray(product.tags) ? product.tags : JSON.parse(product.tags);
+            } catch(e) {}
+        }
+        
+        let badge = product.discount_percent > 0
             ? `<span class="discount-badge">-${Number(product.discount_percent)}%</span>`
             : '';
+
+        if (!badge && tags && tags.length > 0) {
+            if (tags.includes('exclusive')) {
+                badge = `<span class="discount-badge" style="background:#d97706; color:#fff;">Độc quyền</span>`;
+            } else if (tags.includes('imported')) {
+                badge = `<span class="discount-badge" style="background:#059669; color:#fff;">Nhập khẩu</span>`;
+            } else if (tags.includes('flash-sale')) {
+                badge = `<span class="discount-badge" style="background:#dc2626; color:#fff;"><i class="fa-solid fa-bolt"></i> Flash Sale</span>`;
+            } else if (tags.includes('best-seller')) {
+                badge = `<span class="discount-badge" style="background:#2563eb; color:#fff;">Bán chạy</span>`;
+            }
+        }
 
         let action = `<button class="btn-add-cart" onclick="window.addToCart ? addToCart(${id}, event) : (window.location.href='product.html?id=${id}')">Thêm giỏ hàng</button>`;
         if (isRx) {
@@ -323,6 +342,39 @@ const homeCatalog = {
 
     async init() {
         this.setInitialLoadingState();
+        
+        // Load dynamic configuration to map homepage sections to tag filters
+        try {
+            let config = {};
+            if (typeof window.getStoreConfig === 'function') {
+                config = await window.getStoreConfig();
+            } else if (window.MGClientApi && typeof window.MGClientApi.getStoreConfig === 'function') {
+                config = await window.MGClientApi.getStoreConfig();
+            }
+            
+            const tagMap = {
+                'flash-sale': config.layout_home_tag_flash_sale ?? 'flash-sale',
+                'deal': config.layout_home_tag_deal ?? 'deal',
+                'best-seller': config.layout_home_tag_best_seller ?? 'best-seller',
+                'discount': config.layout_home_tag_discount ?? 'discount',
+                'exclusive': config.layout_home_tag_exclusive ?? 'exclusive',
+                'imported': config.layout_home_tag_imported ?? 'imported',
+                'trending': 'trending'
+            };
+
+            this.productSections.forEach(section => {
+                const sectionName = section.selector.match(/"([^"]+)"/)?.[1] || '';
+                const mappedTag = tagMap[sectionName];
+                if (mappedTag) {
+                    section.params.tag = mappedTag;
+                } else if (mappedTag === '') {
+                    delete section.params.tag;
+                }
+            });
+        } catch (err) {
+            console.error('[HomeCatalog] Failed to load storefront configurations:', err);
+        }
+
         await this.loadActivePromotions();
         await Promise.all([
             this.loadCategories(),

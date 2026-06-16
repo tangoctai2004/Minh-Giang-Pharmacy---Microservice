@@ -81,12 +81,35 @@ router.post('/', async (req, res) => {
         const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
         const parsedShippingFee = parseFloat(shipping_fee) || 0;
 
+        // --- Kiểm tra sản phẩm Flash Sale ---
+        let hasFlashSaleItem = false;
+        const productIds = items.map(it => it.product_id);
+        if (productIds.length > 0) {
+            const [flashSales] = await connection.query(
+                `SELECT DISTINCT product_id FROM mg_catalog.product_tag_promotions 
+                 WHERE product_id IN (?) 
+                   AND tag_name = 'flash-sale' 
+                   AND status = 'active' 
+                   AND start_time <= NOW() 
+                   AND end_time >= NOW() 
+                   AND (campaign_qty IS NULL OR sold_qty < campaign_qty)`,
+                [productIds]
+            );
+            if (flashSales.length > 0) {
+                hasFlashSaleItem = true;
+            }
+        }
+
         // --- Xử lý áp dụng nhiều Voucher ---
         let calculatedDiscount = 0;
         const promotionsToInsert = [];
         const promoUsageIncrements = [];
 
-        if (applied_voucher_codes && Array.isArray(applied_voucher_codes) && applied_voucher_codes.length > 0) {
+        if (applied_voucher_codes && Array.isArray(applied_voucher_codes) && applied_voucher_codes.length > 0 && applied_voucher_codes.filter(Boolean).length > 0) {
+            if (hasFlashSaleItem) {
+                throw new Error('Đơn hàng có chứa sản phẩm Flash Sale nên không thể áp dụng mã giảm giá.');
+            }
+
             for (const code of applied_voucher_codes) {
                 if (!code) continue;
                 const normalizedCode = code.trim().toUpperCase();
@@ -150,42 +173,44 @@ router.post('/', async (req, res) => {
 
         // --- Xử lý tặng quà tự động (buy_x_get_y) ---
         const giftItems = [];
-        const [activeGifts] = await connection.query(
-            `SELECT id, name, gift_product_name, gift_product_qty, min_order_value
-             FROM mg_cms.promotions
-             WHERE type = 'buy_x_get_y'
-               AND is_active = 1
-               AND start_date <= NOW()
-               AND end_date >= NOW()
-               AND (usage_limit IS NULL OR usage_count < usage_limit)
-               AND (applicable_channel = 'all' OR applicable_channel = 'web')
-               AND min_order_value <= ?
-             ORDER BY min_order_value DESC`,
-            [subtotal]
-        );
+        if (!hasFlashSaleItem) {
+            const [activeGifts] = await connection.query(
+                `SELECT id, name, gift_product_name, gift_product_qty, min_order_value
+                 FROM mg_cms.promotions
+                 WHERE type = 'buy_x_get_y'
+                   AND is_active = 1
+                   AND start_date <= NOW()
+                   AND end_date >= NOW()
+                   AND (usage_limit IS NULL OR usage_count < usage_limit)
+                   AND (applicable_channel = 'all' OR applicable_channel = 'web')
+                   AND min_order_value <= ?
+                 ORDER BY min_order_value DESC`,
+                [subtotal]
+            );
 
-        for (const giftCampaign of activeGifts) {
-            // Tìm kiếm sản phẩm trong catalog theo tên (hỗ trợ so khớp mềm và chính xác)
-            const prod = await findProductForGift(connection, giftCampaign.gift_product_name);
+            for (const giftCampaign of activeGifts) {
+                // Tìm kiếm sản phẩm trong catalog theo tên (hỗ trợ so khớp mềm và chính xác)
+                const prod = await findProductForGift(connection, giftCampaign.gift_product_name);
 
-            if (prod) {
-                giftItems.push({
-                    product_id: prod.id,
-                    product_name: `🎁 [Quà tặng] ${prod.name}`,
-                    unit_name: prod.base_unit || 'Hộp',
-                    quantity: giftCampaign.gift_product_qty || 1,
-                    unit_price: 0
-                });
+                if (prod) {
+                    giftItems.push({
+                        product_id: prod.id,
+                        product_name: `🎁 [Quà tặng] ${prod.name}`,
+                        unit_name: prod.base_unit || 'Hộp',
+                        quantity: giftCampaign.gift_product_qty || 1,
+                        unit_price: 0
+                    });
 
-                promotionsToInsert.push({
-                    promotion_id: giftCampaign.id,
-                    promo_code: null,
-                    promo_name: giftCampaign.name,
-                    promo_type: 'buy_x_get_y',
-                    discount_value: 0,
-                    discount_applied: 0
-                });
-                promoUsageIncrements.push(giftCampaign.id);
+                    promotionsToInsert.push({
+                        promotion_id: giftCampaign.id,
+                        promo_code: null,
+                        promo_name: giftCampaign.name,
+                        promo_type: 'buy_x_get_y',
+                        discount_value: 0,
+                        discount_applied: 0
+                    });
+                    promoUsageIncrements.push(giftCampaign.id);
+                }
             }
         }
 

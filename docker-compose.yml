@@ -50,7 +50,7 @@ services:
       JWT_EXPIRES_IN: 8h
       NOTIFICATION_SERVICE_URL: http://notification-service:8005
       NOTIFICATION_REQUIRED: "true"
-      OTP_DEBUG_RESPONSE: "false"
+      OTP_DEBUG_RESPONSE: ${OTP_DEBUG_RESPONSE:-false}
     volumes:
       - ./backend/identity-service:/app
       - /app/node_modules

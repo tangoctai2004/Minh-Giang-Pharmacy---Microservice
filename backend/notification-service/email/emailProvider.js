@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const path = require('path');
 
 function createTransport() {
   if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
@@ -28,12 +29,22 @@ async function sendEmail({ to, subject, html, text }) {
   }
 
   const transporter = createTransport();
+  
+  const attachments = [
+    {
+      filename: 'logo.png',
+      path: path.join(__dirname, 'logo.png'),
+      cid: 'logo',
+    },
+  ];
+
   const info = await transporter.sendMail({
     from: process.env.EMAIL_FROM || `"${process.env.SMTP_FROM_NAME || 'Minh Giang Pharmacy'}" <${process.env.SMTP_USER}>`,
     to,
     subject,
     html,
     text,
+    attachments,
   });
 
   return {

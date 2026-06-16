@@ -291,8 +291,28 @@ router.put('/vouchers/:id/reset-usage', canManagePromotions, async (req, res) =>
 router.post('/vouchers/validate', async (req, res) => {
   try {
     await syncVoucherStatuses();
-    const { code, order_amount = 0 } = req.body || {};
+    const { code, order_amount = 0, items = [] } = req.body || {};
     if (!code) return res.status(400).json({ success: false, message: 'Thiếu mã voucher' });
+
+    // Kiểm tra xem giỏ hàng có chứa sản phẩm Flash Sale đang hoạt động hay không
+    if (items && items.length > 0) {
+      const productIds = items.map(it => Number(it.product_id || it.id)).filter(id => !isNaN(id));
+      if (productIds.length > 0) {
+        const [flashSales] = await pool.query(
+          `SELECT DISTINCT product_id FROM product_tag_promotions 
+           WHERE product_id IN (?) 
+             AND tag_name = 'flash-sale' 
+             AND status = 'active' 
+             AND start_time <= NOW() 
+             AND end_time >= NOW() 
+             AND (campaign_qty IS NULL OR sold_qty < campaign_qty)`,
+          [productIds]
+        );
+        if (flashSales.length > 0) {
+          return res.status(400).json({ success: false, message: 'Đơn hàng có chứa sản phẩm Flash Sale nên không thể áp dụng mã giảm giá.' });
+        }
+      }
+    }
 
     const [[voucher]] = await pool.query(
       `SELECT * FROM catalog_vouchers WHERE code = ?`,

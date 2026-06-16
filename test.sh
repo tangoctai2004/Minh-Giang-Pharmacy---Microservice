@@ -65,6 +65,11 @@ run_identity_tests() {
   R=$(curl -s $AUTH_BASE/auth/register -H 'Content-Type: application/json' -d '{"full_name":"RegTest","email":"'$RANDOM_EMAIL'","phone":"'$RANDOM_PHONE'","password":"Test@123"}')
   chk "POST /auth/register" "True" "$R"
 
+  local OTP_CODE=$(echo "$R" | python3 -c "import sys,json; print(json.load(sys.stdin).get('data', {}).get('otp', {}).get('code', ''))" 2>/dev/null)
+  if [ -n "$OTP_CODE" ]; then
+    curl -s -X POST $AUTH_BASE/auth/verify-otp -H 'Content-Type: application/json' -d '{"target":"'$RANDOM_EMAIL'","target_type":"email","purpose":"register","otp_code":"'$OTP_CODE'"}' >/dev/null
+  fi
+
   R=$(curl -s $AUTH_BASE/auth/login -H 'Content-Type: application/json' -d '{"email_or_phone":"'$RANDOM_EMAIL'","password":"Test@123"}')
   chk "POST /auth/login (customer)" "True" "$R"
   local CUST_TOKEN=$(echo "$R" | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['accessToken'])" 2>/dev/null)
@@ -216,6 +221,10 @@ run_order_tests() {
   local RANDOM_EMAIL="order_test_${RANDOM}@test.com"
   local PHONE="08$(python3 -c "import random; print(''.join([str(random.randint(0,9)) for _ in range(8)]))")"
   local R=$(curl -s $AUTH_BASE/auth/register -H 'Content-Type: application/json' -d '{"full_name":"Order Tester","email":"'$RANDOM_EMAIL'","phone":"'$PHONE'","password":"Test@123"}')
+  local OTP_CODE=$(echo "$R" | python3 -c "import sys,json; print(json.load(sys.stdin).get('data', {}).get('otp', {}).get('code', ''))" 2>/dev/null)
+  if [ -n "$OTP_CODE" ]; then
+    curl -s -X POST $AUTH_BASE/auth/verify-otp -H 'Content-Type: application/json' -d '{"target":"'$RANDOM_EMAIL'","target_type":"email","purpose":"register","otp_code":"'$OTP_CODE'"}' >/dev/null
+  fi
   R=$(curl -s $AUTH_BASE/auth/login -H 'Content-Type: application/json' -d '{"email_or_phone":"'$RANDOM_EMAIL'","password":"Test@123"}')
   local CUST_TOKEN=$(echo "$R" | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['accessToken'])" 2>/dev/null)
 
@@ -269,6 +278,10 @@ run_promotions_tests() {
   local RANDOM_EMAIL="promo_test_${RANDOM}@test.com"
   local PHONE="09$(python3 -c "import random; print(''.join([str(random.randint(0,9)) for _ in range(8)]))")"
   local R=$(curl -s $AUTH_BASE/auth/register -H 'Content-Type: application/json' -d '{"full_name":"Tester Khuyến Mãi","email":"'$RANDOM_EMAIL'","phone":"'$PHONE'","password":"Test@123"}')
+  local OTP_CODE=$(echo "$R" | python3 -c "import sys,json; print(json.load(sys.stdin).get('data', {}).get('otp', {}).get('code', ''))" 2>/dev/null)
+  if [ -n "$OTP_CODE" ]; then
+    curl -s -X POST $AUTH_BASE/auth/verify-otp -H 'Content-Type: application/json' -d '{"target":"'$RANDOM_EMAIL'","target_type":"email","purpose":"register","otp_code":"'$OTP_CODE'"}' >/dev/null
+  fi
   R=$(curl -s $AUTH_BASE/auth/login -H 'Content-Type: application/json' -d '{"email_or_phone":"'$RANDOM_EMAIL'","password":"Test@123"}')
   local CUST_TOKEN=$(echo "$R" | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['accessToken'])" 2>/dev/null)
 

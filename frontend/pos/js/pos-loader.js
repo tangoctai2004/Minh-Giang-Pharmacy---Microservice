@@ -206,6 +206,30 @@ function renderProductGrid(products) {
         // Safely pass product object to addProductToCart
         const pJson = JSON.stringify(p).replace(/"/g, '&quot;');
 
+        let productTags = [];
+        if (p.tags) {
+            try {
+                productTags = Array.isArray(p.tags) ? p.tags : JSON.parse(p.tags);
+            } catch (e) {
+                console.error('Error parsing product tags:', e);
+            }
+        }
+        let tagBadgesHtml = '';
+        if (productTags && productTags.length > 0) {
+            tagBadgesHtml = productTags.map(t => {
+                let label = t;
+                let cls = 'pos-meta-tag';
+                if (t === 'exclusive') { label = 'Độc quyền'; cls += ' exclusive'; }
+                else if (t === 'imported') { label = 'Nhập khẩu'; cls += ' imported'; }
+                else if (t === 'flash-sale') { label = 'Flash Sale'; cls += ' flash-sale'; }
+                else if (t === 'deal') { label = 'Deal Hot'; cls += ' deal'; }
+                else if (t === 'best-seller') { label = 'Bán chạy'; cls += ' best-seller'; }
+                else if (t === 'discount') { label = 'Giảm giá'; cls += ' discount'; }
+                else if (t === 'trending') { label = 'Xu hướng'; cls += ' trending'; }
+                return `<span class="pos-meta-badge ${cls}" title="${label}"># ${label}</span>`;
+            }).join('');
+        }
+
         return `
             <div class="pos-product-card ${outOfStockClass}" onclick="handleProductClick(${pJson})">
                 ${p.in_stock ? '' : `
@@ -216,6 +240,7 @@ function renderProductGrid(products) {
                 <img src="${p.image_url || '../assets/images/product_frame.png'}" alt="${p.name}" class="pos-product-img" onerror="this.src='../assets/images/product_frame.png'">
                 <div class="pos-product-name">${p.name}</div>
                 <div class="pos-product-price">${formatVND(p.price)}</div>
+                ${tagBadgesHtml ? `<div class="pos-tag-container" style="margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 4px;">${tagBadgesHtml}</div>` : ''}
                 <div class="pos-product-meta">
                     <span class="pos-meta-badge pos-meta-loc"><i class="fa-solid fa-location-dot"></i> Kệ A1</span>
                     <span class="pos-meta-badge pos-meta-stock ${lowStockClass}"><i class="fa-solid fa-box"></i> ${stockStatus}</span>

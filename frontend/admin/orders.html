@@ -953,10 +953,40 @@
 
                 // Update pricing sums
                 var priceSummaryDiv = document.querySelector('#orderModal tbody').closest('table').nextElementSibling;
+                let promoRowsHtml = '';
+                let discountAmount = parseFloat(order.discount_amount || 0);
+                if (discountAmount > 0) {
+                    let pointsDiscount = discountAmount;
+                    if (Array.isArray(order.promotions)) {
+                        order.promotions.forEach(promo => {
+                            const disc = parseFloat(promo.discount_applied || 0);
+                            if (disc > 0) {
+                                const codeLabel = promo.promo_code_snapshot ? ` (Mã: ${promo.promo_code_snapshot})` : '';
+                                promoRowsHtml += `
+                                    <div style="font-size:11px;color:#4b5563;margin-bottom:3px;padding-right:10px;">
+                                        • Giảm giá: ${promo.promo_name_snapshot}${codeLabel}: 
+                                        <span style="font-weight:600;color:#ef4444;">-${formatVND(disc)}</span>
+                                    </div>
+                                `;
+                                pointsDiscount -= disc;
+                            }
+                        });
+                    }
+                    if (pointsDiscount > 0) {
+                        promoRowsHtml += `
+                            <div style="font-size:11px;color:#4b5563;margin-bottom:3px;padding-right:10px;">
+                                • Quy đổi điểm tích lũy: 
+                                <span style="font-weight:600;color:#ef4444;">-${formatVND(pointsDiscount)}</span>
+                            </div>
+                        `;
+                    }
+                }
+
                 priceSummaryDiv.innerHTML = `
                     <div style="font-size:12px;color:#6b7280;margin-bottom:3px;">Tiêu tổng: <span style="font-weight:600;color:#1e293b;">${formatVND(order.subtotal || itemsSubtotal)}</span></div>
                     <div style="font-size:12px;color:#6b7280;margin-bottom:3px;">Phí giao hàng: <span style="font-weight:600;color:#1e293b;">${formatVND(order.shipping_fee || 0)}</span></div>
-                    <div style="font-size:12px;color:#6b7280;margin-bottom:3px;">Khuyến mãi: <span style="font-weight:600;color:#ef4444;">-${formatVND(order.discount_amount || 0)}</span></div>
+                    <div style="font-size:12px;color:#6b7280;margin-bottom:3px;">Tổng khuyến mãi & điểm: <span style="font-weight:600;color:#ef4444;">-${formatVND(order.discount_amount || 0)}</span></div>
+                    ${promoRowsHtml}
                     <div style="font-size:14px;color:#047857;font-weight:700;">Tổng thu: <span style="font-size:18px;">${formatVND(order.total_amount)}</span></div>
                 `;
 

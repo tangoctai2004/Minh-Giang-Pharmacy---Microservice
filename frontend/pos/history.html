@@ -1407,6 +1407,35 @@
                         `).join('');
                     }
 
+                    let promoRowsHtml = '';
+                    let discountAmount = parseFloat(order.discount_amount || 0);
+                    if (discountAmount > 0) {
+                        let pointsDiscount = discountAmount;
+                        if (Array.isArray(order.promotions)) {
+                            order.promotions.forEach(promo => {
+                                const disc = parseFloat(promo.discount_applied || 0);
+                                if (disc > 0) {
+                                    const codeLabel = promo.promo_code_snapshot ? ` (Mã: ${promo.promo_code_snapshot})` : '';
+                                    promoRowsHtml += `
+                                        <div class="detail-summary-row discount" style="font-size:12px; margin-top:2px; height:auto;">
+                                            <span class="label" style="padding-left:12px; color:#4b5563; font-weight:normal;">• ${promo.promo_name_snapshot}${codeLabel}</span>
+                                            <span class="value" style="font-weight:normal;">-${disc.toLocaleString('vi-VN')}₫</span>
+                                        </div>
+                                    `;
+                                    pointsDiscount -= disc;
+                                }
+                            });
+                        }
+                        if (pointsDiscount > 0) {
+                            promoRowsHtml += `
+                                <div class="detail-summary-row discount" style="font-size:12px; margin-top:2px; height:auto;">
+                                    <span class="label" style="padding-left:12px; color:#4b5563; font-weight:normal;">• Quy đổi điểm tích lũy</span>
+                                    <span class="value" style="font-weight:normal;">-${pointsDiscount.toLocaleString('vi-VN')}₫</span>
+                                </div>
+                            `;
+                        }
+                    }
+
                     detailBody.innerHTML = `
                         <div class="detail-meta">
                             <div class="detail-meta-item">
@@ -1443,8 +1472,9 @@
                             </div>
                             <div class="detail-summary-row discount">
                                 <span class="label">Giảm giá</span>
-                                <span class="value">-${parseFloat(order.discount_amount || 0).toLocaleString('vi-VN')}₫</span>
+                                <span class="value">-${discountAmount.toLocaleString('vi-VN')}₫</span>
                             </div>
+                            ${promoRowsHtml}
                             <div class="detail-summary-total">
                                 <span class="label">TỔNG CỘNG</span>
                                 <span class="value">${parseFloat(order.total_amount).toLocaleString('vi-VN')}₫</span>
