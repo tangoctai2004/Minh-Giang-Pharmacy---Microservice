@@ -1735,7 +1735,11 @@ async function _loadDynamicStoreConfig() {
 
         // Homepage Section Title Banner Image Updates
         document.querySelectorAll('[data-layout-img]').forEach(el => {
-            const imgKey = 'layout_home_header_' + el.getAttribute('data-layout-img');
+            let attrVal = el.getAttribute('data-layout-img');
+            if (attrVal.startsWith('header_')) {
+                attrVal = attrVal.substring(7);
+            }
+            const imgKey = 'layout_home_header_' + attrVal;
             const val = config[imgKey];
             if (val) {
                 el.src = _resolveImageUrl(val, gateway);

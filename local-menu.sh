@@ -24,7 +24,7 @@ open_url() {
   elif command -v xdg-open >/dev/null 2>&1; then
     xdg-open "$url" >/dev/null 2>&1
   elif command -v cmd.exe >/dev/null 2>&1; then
-    cmd.exe /c start "$url" >/dev/null 2>&1
+    cmd.exe /c start "" "$url" >/dev/null 2>&1
   else
     printf 'Mo tren trinh duyet: %s\n' "$url"
   fi

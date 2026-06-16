@@ -324,14 +324,16 @@ const homeCatalog = {
             }
 
             // 3. Fetch popup banner
-            const popupRes = await fetch(`${gateway}/api/cms/banners?position=popup&t=${Date.now()}`);
-            if (popupRes.ok) {
-                const res = await popupRes.json();
-                if (res.success && Array.isArray(res.data) && res.data.length > 0) {
-                    const popupAd = res.data.find(b => b.is_active !== 0);
-                    if (popupAd) {
-                        popupAd.image_url = resolveImg(popupAd.image_url);
-                        showPopupAdModal(popupAd);
+            if (sessionStorage.getItem('mg_popup_ad_shown') !== 'true') {
+                const popupRes = await fetch(`${gateway}/api/cms/banners?position=popup&t=${Date.now()}`);
+                if (popupRes.ok) {
+                    const res = await popupRes.json();
+                    if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+                        const popupAd = res.data.find(b => b.is_active !== 0);
+                        if (popupAd) {
+                            popupAd.image_url = resolveImg(popupAd.image_url);
+                            showPopupAdModal(popupAd);
+                        }
                     }
                 }
             }
@@ -466,6 +468,7 @@ function showPopupAdModal(ad) {
     `;
     
     document.body.appendChild(overlay);
+    sessionStorage.setItem('mg_popup_ad_shown', 'true');
     
     setTimeout(() => {
         overlay.classList.add('open');
@@ -479,6 +482,5 @@ function showPopupAdModal(ad) {
                 modal.remove();
             }, 300);
         }
-        sessionStorage.setItem('mg_popup_ad_shown', 'true');
     };
 }
