@@ -182,6 +182,7 @@ router.get('/admin', canWrite, async (req, res) => {
 
     const [rows] = await pool.query(
       `SELECT a.id, a.title, a.slug, a.status, a.view_count,
+              a.thumbnail_url,
               a.published_at, a.created_at, a.updated_at, a.category_id,
               a.author_id, c.name AS category_name
        FROM articles a
