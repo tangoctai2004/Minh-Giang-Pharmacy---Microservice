@@ -10,7 +10,7 @@ services:
       MYSQL_DATABASE: minhgiang_db
       MYSQL_ROOT_HOST: '%'
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - db-data:/var/lib/mysql
       - ./infrastructure/database:/docker-entrypoint-initdb.d/
