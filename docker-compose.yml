@@ -76,6 +76,7 @@ services:
     volumes:
       - ./backend/catalog-service:/app
       - /app/node_modules
+      - ./frontend/uploads/products:/app/uploads/products
     command: npm run dev
     depends_on:
       mysql-db:
@@ -120,6 +121,7 @@ services:
     volumes:
       - ./backend/cms-service:/app
       - /app/node_modules
+      - ./frontend/uploads/cms:/app/uploads/cms
     command: npm run dev
     depends_on:
       mysql-db:

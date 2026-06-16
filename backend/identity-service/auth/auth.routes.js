@@ -1,7 +1,7 @@
 const router = require('express').Router();
-const pool   = require('../db/pool');
+const pool = require('../db/pool');
 const bcrypt = require('bcryptjs');
-const jwt    = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
 const OTP_PURPOSES = new Set(['register', 'reset_password', 'verify_email', 'pos_confirm']);
@@ -485,10 +485,10 @@ async function deliverOtp({ target, targetType, otpCode, purpose }) {
     const url = targetType === 'email' ? `${baseUrl}/email/send` : `${baseUrl}/sms/send`;
     const body = targetType === 'email'
       ? {
-          to: target,
-          subject: `[Minh Giang Pharmacy] Mã OTP ${purposeLabels[purpose] || 'xác thực'} của bạn`,
-          text: message,
-          html: `
+        to: target,
+        subject: `[Minh Giang Pharmacy] Mã OTP ${purposeLabels[purpose] || 'xác thực'} của bạn`,
+        text: message,
+        html: `
             <div style="background-color: #0f172a; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #f8fafc; text-align: center;">
               <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 550px; background-color: #1e293b; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); border: 1px solid #334155;">
                 <tr>
@@ -538,7 +538,7 @@ async function deliverOtp({ target, targetType, otpCode, purpose }) {
               </table>
             </div>
           `,
-        }
+      }
       : { phone: target, message };
 
     const response = await fetch(url, {
@@ -765,7 +765,7 @@ router.post('/login', async (req, res) => {
 
     // 7. Cập nhật last_login (chỉ staff có field này)
     if (isStaff) {
-      pool.query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]).catch(() => {});
+      pool.query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]).catch(() => { });
     }
 
     // 11. Trả kết quả
@@ -776,19 +776,19 @@ router.post('/login', async (req, res) => {
 
     if (isStaff) {
       responseData.user = {
-        id:        user.id,
-        username:  user.username,
+        id: user.id,
+        username: user.username,
         full_name: user.full_name,
-        email:     user.email,
-        role:      user.role_name,
+        email: user.email,
+        role: user.role_name,
       };
     } else {
       responseData.customer = {
-        id:        customer.id,
+        id: customer.id,
         full_name: customer.full_name,
-        email:     customer.email,
-        phone:     customer.phone,
-        role:      'customer',
+        email: customer.email,
+        phone: customer.phone,
+        role: 'customer',
       };
     }
 
@@ -848,7 +848,7 @@ router.post('/admin/login', async (req, res) => {
     const tokenPayload = { id: user.id, role: user.role_name, type: 'staff', permissions: parsePermissions(user.permissions) };
     const { accessToken, refreshToken } = await generateTokens(tokenPayload);
 
-    pool.query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]).catch(() => {});
+    pool.query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]).catch(() => { });
 
     res.json({
       success: true,
@@ -856,11 +856,11 @@ router.post('/admin/login', async (req, res) => {
         accessToken,
         refreshToken,
         user: {
-          id:        user.id,
-          username:  user.username,
+          id: user.id,
+          username: user.username,
           full_name: user.full_name,
-          email:     user.email,
-          role:      user.role_name,
+          email: user.email,
+          role: user.role_name,
         },
         expires_in: process.env.JWT_EXPIRES_IN || '8h',
       },
@@ -921,7 +921,7 @@ router.post('/pos/verify-pin', async (req, res) => {
     const tokenPayload = { id: user.id, role: user.role_name, type: 'staff', permissions: parsePermissions(user.permissions) };
     const { accessToken, refreshToken } = await generateTokens(tokenPayload);
 
-    pool.query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]).catch(() => {});
+    pool.query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]).catch(() => { });
 
     res.json({
       success: true,
@@ -929,10 +929,10 @@ router.post('/pos/verify-pin', async (req, res) => {
         accessToken,
         refreshToken,
         user: {
-          id:        user.id,
-          username:  user.username,
+          id: user.id,
+          username: user.username,
           full_name: user.full_name,
-          role:      user.role_name,
+          role: user.role_name,
         },
         kiosk_id,
       },
@@ -1014,7 +1014,7 @@ router.post('/login-pos', async (req, res) => {
     );
 
     // 8. Cập nhật last_login
-    pool.query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]).catch(() => {});
+    pool.query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]).catch(() => { });
 
     // 9. Trả kết quả
     res.json({
@@ -1023,10 +1023,10 @@ router.post('/login-pos', async (req, res) => {
         accessToken,
         refreshToken,
         user: {
-          id:        user.id,
-          username:  user.username,
+          id: user.id,
+          username: user.username,
           full_name: user.full_name,
-          role:      user.role_name,
+          role: user.role_name,
         },
         kiosk_id,
       },
@@ -1137,10 +1137,10 @@ router.post('/register', async (req, res) => {
       message: 'Đăng ký thành công. Vui lòng nhập mã OTP đã gửi đến email để kích hoạt tài khoản.',
       data: {
         customer: {
-          id:        customerId,
+          id: customerId,
           full_name,
-          email:     normalizedEmail,
-          phone:     normalizedPhone,
+          email: normalizedEmail,
+          phone: normalizedPhone,
           is_active: 0,
         },
         ...(otp && { otp }),
