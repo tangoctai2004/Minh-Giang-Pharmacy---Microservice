@@ -46,6 +46,13 @@ function consult(productId, event) {
 }
 
 let currentProduct = null;
+const PRODUCT_REVIEWS_PAGE_SIZE = 3;
+const productReviewsState = {
+    productId: null,
+    page: 1,
+    total: 0,
+    limit: PRODUCT_REVIEWS_PAGE_SIZE
+};
 
 document.addEventListener("DOMContentLoaded", function () {
     const params = new URLSearchParams(window.location.search);
@@ -426,6 +433,8 @@ function updateProductUI(p) {
         }
     }
 
+    loadProductReviews(p.id);
+
     // 6. Action buttons
     const btnBuy = document.getElementById('btnBuyNow');
     const btnCart = document.getElementById('btnAddToCart');
@@ -456,6 +465,258 @@ function updateProductUI(p) {
 
     // Nạp mã giảm giá POS động
     loadDynamicPosVouchers(p);
+}
+
+function getClientAuth() {
+    try {
+        return JSON.parse(localStorage.getItem('MG_CLIENT_AUTH') || 'null');
+    } catch (_err) {
+        return null;
+    }
+}
+
+function getCatalogBaseUrl() {
+    const gateway = ((window.MGClientApi && window.MGClientApi.gatewayOrigin) || window.MG_API_GATEWAY_ORIGIN || 'http://localhost:8000').replace(/\/+$/, '');
+    return (window.MG_CATALOG_API_BASE || (gateway + '/api/catalog')).replace(/\/+$/, '');
+}
+
+function getClientAuthHeaders() {
+    const auth = getClientAuth();
+    return auth?.accessToken ? { Authorization: `Bearer ${auth.accessToken}` } : {};
+}
+
+async function fetchCatalogJson(path, options = {}) {
+    const url = `${getCatalogBaseUrl()}/${String(path).replace(/^\/+/, '')}`;
+    const response = await fetch(url, {
+        ...options,
+        headers: {
+            Accept: 'application/json',
+            ...(options.headers || {})
+        }
+    });
+    const payload = await response.json().catch(() => null);
+    if (!response.ok) {
+        throw new Error(payload?.message || `HTTP ${response.status}`);
+    }
+    return payload;
+}
+
+function renderStars(rating = 0) {
+    const value = Number(rating || 0);
+    return [1, 2, 3, 4, 5].map((star) => (
+        `<i class="${value >= star ? 'fa-solid' : 'fa-regular'} fa-star"></i>`
+    )).join('');
+}
+
+function renderReviewBars(distribution = []) {
+    const rows = distribution.length ? distribution : [5, 4, 3, 2, 1].map(rating => ({ rating, percent: 0 }));
+    return rows.map((item) => `
+        <div class="pd-bar-row">
+            <span>${item.rating}<i class="fa-solid fa-star" style="font-size:10px;margin-left:2px"></i></span>
+            <div class="pd-bar-track"><div class="pd-bar-fill" style="width:${Number(item.percent || 0)}%"></div></div>
+            <span>${Number(item.percent || 0)}%</span>
+        </div>
+    `).join('');
+}
+
+function updateReviewSummary(summary = {}) {
+    const average = Number(summary.average || 0);
+    const total = Number(summary.total || 0);
+    const averageText = average ? average.toFixed(1) : '0.0';
+    const countText = `${total} đánh giá`;
+
+    const averageEl = document.getElementById('pdReviewAverage');
+    const countEl = document.getElementById('pdReviewCount');
+    const starsEl = document.getElementById('pdReviewStars');
+    const barsEl = document.getElementById('pdReviewBars');
+    const metaStarsEl = document.getElementById('pdMetaReviewStars');
+    const metaCountEl = document.getElementById('pdMetaReviewCount');
+
+    if (averageEl) averageEl.textContent = averageText;
+    if (countEl) countEl.textContent = countText;
+    if (starsEl) starsEl.innerHTML = renderStars(Math.round(average));
+    if (barsEl) barsEl.innerHTML = renderReviewBars(summary.distribution || []);
+    if (metaStarsEl) metaStarsEl.innerHTML = renderStars(Math.round(average));
+    if (metaCountEl) metaCountEl.textContent = countText;
+}
+
+function renderReviewList(reviews = []) {
+    const list = document.getElementById('pdReviewsList');
+    if (!list) return;
+
+    if (!reviews.length) {
+        list.innerHTML = '<div class="pd-reviews-empty">Chưa có đánh giá nào cho sản phẩm này.</div>';
+        return;
+    }
+
+    list.innerHTML = reviews.map((review) => {
+        const title = review.title ? `<div class="pd-review-title">${escapeProductHtml(review.title)}</div>` : '';
+        const verified = review.is_verified_purchase
+            ? '<span class="pd-review-badge"><i class="fa-solid fa-circle-check"></i> Đã mua hàng</span>'
+            : '';
+        const date = review.created_at
+            ? new Date(review.created_at).toLocaleDateString('vi-VN')
+            : '';
+        return `
+            <div class="pd-review-item">
+                <div class="pd-review-head">
+                    <div>
+                        <span class="pd-review-author">${escapeProductHtml(review.customer_name || 'Khách hàng Minh Giang')}</span>
+                        ${verified}
+                    </div>
+                    <div class="pd-review-stars">${renderStars(review.rating)}</div>
+                </div>
+                ${title}
+                <div class="pd-review-comment">${escapeProductHtml(review.comment || '')}</div>
+                ${date ? `<div class="pd-review-date">${date}</div>` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+function renderReviewPagination(pagination = {}) {
+    const paginationEl = document.getElementById('pdReviewPagination');
+    if (!paginationEl) return;
+
+    const total = Number(pagination.total || 0);
+    const limit = Number(pagination.limit || PRODUCT_REVIEWS_PAGE_SIZE);
+    const page = Number(pagination.page || 1);
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+
+    productReviewsState.page = page;
+    productReviewsState.total = total;
+    productReviewsState.limit = limit;
+
+    if (totalPages <= 1) {
+        paginationEl.style.display = 'none';
+        paginationEl.innerHTML = '';
+        return;
+    }
+
+    paginationEl.style.display = 'flex';
+    paginationEl.innerHTML = `
+        <button class="pd-review-page-btn" type="button" ${page <= 1 ? 'disabled' : ''} onclick="changeProductReviewPage(${page - 1})">
+            Trước
+        </button>
+        <span class="pd-review-page-info">Trang ${page} / ${totalPages}</span>
+        <button class="pd-review-page-btn" type="button" ${page >= totalPages ? 'disabled' : ''} onclick="changeProductReviewPage(${page + 1})">
+            Sau
+        </button>
+    `;
+}
+
+function changeProductReviewPage(page) {
+    if (!productReviewsState.productId) return;
+    const totalPages = Math.max(1, Math.ceil(productReviewsState.total / productReviewsState.limit));
+    const nextPage = Math.min(totalPages, Math.max(1, Number(page || 1)));
+    loadProductReviews(productReviewsState.productId, nextPage, { loadEligibility: false });
+}
+
+function renderReviewForm(productId, eligibility) {
+    const box = document.getElementById('pdReviewFormBox');
+    if (!box) return;
+
+    if (!eligibility?.can_review) {
+        box.style.display = 'block';
+        box.innerHTML = `
+            <div class="pd-review-note">
+                ${escapeProductHtml(eligibility?.message || 'Chỉ khách đã mua sản phẩm mới có thể viết đánh giá.')}
+            </div>
+        `;
+        return;
+    }
+
+    box.style.display = 'block';
+    box.innerHTML = `
+        <div class="pd-review-form-title">Viết đánh giá của bạn</div>
+        <form id="pdReviewForm" class="pd-review-form-grid">
+            <div>
+                <div class="pd-review-rating-input" id="pdReviewRatingInput" data-rating="5">
+                    ${[1, 2, 3, 4, 5].map((star) => `<button type="button" data-star="${star}" aria-label="${star} sao"><i class="fa-solid fa-star"></i></button>`).join('')}
+                </div>
+                <div class="pd-review-note">Đánh giá mới sẽ được nhà thuốc duyệt trước khi hiển thị.</div>
+            </div>
+            <div class="pd-review-fields">
+                <input id="pdReviewTitleInput" type="text" maxlength="160" placeholder="Tiêu đề ngắn">
+                <textarea id="pdReviewCommentInput" maxlength="1200" required placeholder="Chia sẻ trải nghiệm mua hàng hoặc sử dụng sản phẩm. Không ghi hướng dẫn thay thế tư vấn y tế."></textarea>
+                <button class="pd-review-submit" type="submit">Gửi đánh giá</button>
+            </div>
+        </form>
+    `;
+
+    const ratingInput = document.getElementById('pdReviewRatingInput');
+    ratingInput?.addEventListener('click', (event) => {
+        const button = event.target.closest('button[data-star]');
+        if (!button) return;
+        const rating = Number(button.dataset.star || 5);
+        ratingInput.dataset.rating = String(rating);
+        ratingInput.querySelectorAll('button[data-star]').forEach((starButton) => {
+            const star = Number(starButton.dataset.star || 0);
+            starButton.innerHTML = `<i class="${star <= rating ? 'fa-solid' : 'fa-regular'} fa-star"></i>`;
+        });
+    });
+
+    document.getElementById('pdReviewForm')?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const submitButton = event.currentTarget.querySelector('.pd-review-submit');
+        const payload = {
+            rating: Number(ratingInput?.dataset.rating || 5),
+            title: document.getElementById('pdReviewTitleInput')?.value || '',
+            comment: document.getElementById('pdReviewCommentInput')?.value || '',
+        };
+        try {
+            submitButton.disabled = true;
+            submitButton.textContent = 'Đang gửi...';
+            const result = await fetchCatalogJson(`products/${productId}/reviews`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...getClientAuthHeaders(),
+                },
+                body: JSON.stringify(payload),
+            });
+            box.innerHTML = `<div class="pd-review-note">${escapeProductHtml(result.message || 'Đã gửi đánh giá. Đánh giá sẽ hiển thị sau khi được duyệt.')}</div>`;
+        } catch (err) {
+            alert(err.message || 'Không gửi được đánh giá.');
+            submitButton.disabled = false;
+            submitButton.textContent = 'Gửi đánh giá';
+        }
+    });
+}
+
+async function loadProductReviews(productId, page = 1, options = {}) {
+    productReviewsState.productId = productId;
+    const requestedPage = Math.max(1, Number(page || 1));
+
+    try {
+        const [summaryResult, reviewsResult] = await Promise.all([
+            fetchCatalogJson(`products/${productId}/reviews/summary`),
+            fetchCatalogJson(`products/${productId}/reviews?page=${requestedPage}&limit=${PRODUCT_REVIEWS_PAGE_SIZE}`),
+        ]);
+        updateReviewSummary(summaryResult.data || {});
+        renderReviewList(reviewsResult.data || []);
+        renderReviewPagination(reviewsResult.pagination || { page: requestedPage, limit: PRODUCT_REVIEWS_PAGE_SIZE, total: 0 });
+    } catch (err) {
+        console.warn('[Product Reviews] Không thể tải đánh giá:', err.message);
+        updateReviewSummary({ average: 0, total: 0, distribution: [] });
+        renderReviewList([]);
+        renderReviewPagination({ page: 1, limit: PRODUCT_REVIEWS_PAGE_SIZE, total: 0 });
+    }
+
+    if (options.loadEligibility === false) return;
+
+    try {
+        const eligibilityResult = await fetchCatalogJson(`products/${productId}/reviews/eligibility`, {
+            headers: getClientAuthHeaders(),
+        });
+        renderReviewForm(productId, eligibilityResult.data || {});
+    } catch (err) {
+        const box = document.getElementById('pdReviewFormBox');
+        if (box) {
+            box.style.display = 'block';
+            box.innerHTML = `<div class="pd-review-note">${escapeProductHtml(err.message || 'Chưa thể kiểm tra điều kiện đánh giá.')}</div>`;
+        }
+    }
 }
 
 /**

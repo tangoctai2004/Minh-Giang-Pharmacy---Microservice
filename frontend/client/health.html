@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Góc sức khỏe — Nhà Thuốc Minh Giang</title>
+    <meta name="description" content="Tổng hợp thông tin y học, bí quyết chăm sóc sức khỏe toàn diện và mẹo vặt hữu ích từ các Dược sĩ Minh Giang.">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        
+        /* Hero Search Banner */
+        .health-hero {
+            background: linear-gradient(135deg, #0b7a3e 0%, #10a854 50%, #0d8f47 100%);
+            padding: 28px 0;
+            margin-bottom: 24px;
+        }
+
+        .health-hero .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .health-hero-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            white-space: nowrap;
+        }
+
+        .health-search-box {
+            flex: 1;
+            max-width: 500px;
+            display: flex;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+        }
+
+        .health-search-box input {
+            flex: 1;
+            border: none;
+            padding: 12px 16px;
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+            color: #333;
+        }
+
+        .health-search-box input::placeholder {
+            color: #9ca3af;
+        }
+
+        .health-search-box button {
+            width: 48px;
+            border: none;
+            background: #0b7a3e;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background .15s;
+        }
+
+        .health-search-box button:hover {
+            background: #095e30;
+        }
+
+        /* Layout */
+        .page-layout-custom {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .category-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .tab-pill {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 20px;
+            padding: 8px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #4b5563;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-pill:hover {
+            border-color: #0b7a3e;
+            color: #0b7a3e;
+            background: #f0faf4;
+        }
+
+        .tab-pill.active {
+            background: #0b7a3e;
+            border-color: #0b7a3e;
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(11, 122, 62, 0.2);
+        }
+
+        .article-card-main {
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .article-card-main:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
+
+        .article-card-main img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            background: #f3f4f6;
+        }
+
+        .article-card-content {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .article-category {
+            font-size: 11px;
+            color: #0b7a3e;
+            background: #eafaf1;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 10px;
+            width: fit-content;
+            font-weight: 700;
+        }
+
+        .article-card-main h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #111827;
+            margin: 0 0 8px 0;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .article-card-main p {
+            font-size: 13px;
+            color: #4b5563;
+            line-height: 1.5;
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .main-articles-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            min-height: 200px;
+        }
+
+        .section-header-custom {
+            font-size: 18px;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .featured-news-sidebar {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            align-self: start;
+        }
+
+        .tin-noi-bat-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 100px;
+        }
+
+        .tin-noi-bat-card {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            text-decoration: none;
+            color: inherit;
+            transition: opacity 0.2s ease;
+        }
+
+        .tin-noi-bat-card:hover {
+            opacity: 0.85;
+        }
+
+        .tin-noi-bat-card img {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 6px;
+            background: #f3f4f6;
+        }
+
+        .tin-noi-bat-card h4 {
+            font-size: 13px;
+            font-weight: 700;
+            color: #111827;
+            margin: 0;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+
+        .breadcrumb { padding: 14px 0; font-size: 14px; color: #6b7280; }
+        .breadcrumb a { color: #0b7a3e; text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .breadcrumb span { margin: 0 6px; color: #9ca3af; }
+
+        @keyframes skeleton-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .skeleton-card { animation: skeleton-pulse 1.5s infinite; }
+
+        @media (max-width: 992px) {
+            .page-layout-custom { grid-template-columns: 1fr; }
+            .main-articles-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 576px) {
+            .main-articles-grid { grid-template-columns: 1fr; }
+            .health-hero .container { flex-direction: column; align-items: stretch; text-align: center; }
+            .health-search-box { max-width: none; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header Banner -->
+    <div mg-include="../components/header_banner.html"></div>
+
+    <!-- Top Bar -->
+    <div mg-include="../components/top_bar.html"></div>
+
+    <!-- Main Header -->
+    <div mg-include="../components/main_header.html"></div>
+
+    <!-- Green Hero Search Bar -->
+    <div class="health-hero">
+        <div class="container">
+            <div class="health-hero-title"><i class="fa-solid fa-heart-pulse"></i> Góc sức khỏe & tư vấn</div>
+            <div class="health-search-box">
+                <input type="text" placeholder="Tìm kiếm bài viết sức khỏe..." id="cmsSearch">
+                <button onclick="triggerCmsSearch()"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <main class="container" data-cms-type="health">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="index.html">Trang chủ</a><span>›</span>
+            <strong style="color:#0b7a3e">Góc sức khỏe</strong>
+        </div>
+
+        <div class="page-layout-custom">
+            <!-- Left: Tabs and Grid -->
+            <div>
+                <!-- Tabs -->
+                <div class="category-tabs" id="categoryTabs">
+                    <div class="tab-pill active" data-category-id="all" onclick="switchCategory('all')">Tất cả</div>
+                    <div class="tab-pill" data-category-id="1" onclick="switchCategory(1)">Sức khỏe tổng quát</div>
+                    <div class="tab-pill" data-category-id="3" onclick="switchCategory(3)">Tư vấn dùng thuốc</div>
+                    <div class="tab-pill" data-category-id="6" onclick="switchCategory(6)">Người cao tuổi</div>
+                </div>
+
+                <!-- Section Title -->
+                <h2 class="section-header-custom" id="listHeader">BÀI VIẾT MỚI NHẤT</h2>
+
+                <!-- Articles Grid -->
+                <div class="main-articles-grid" id="articlesGrid">
+                    <!-- Loaded dynamically via cms-portal-loader.js -->
+                </div>
+            </div>
+
+            <!-- Right Sidebar: Featured articles -->
+            <aside class="featured-news-sidebar">
+                <h2 class="section-header-custom" style="font-size: 15px; border-bottom-color: #f3f4f6;">BÀI VIẾT NỔI BẬT</h2>
+                <div class="tin-noi-bat-list" id="featuredList">
+                    <!-- Loaded dynamically via cms-portal-loader.js -->
+                </div>
+            </aside>
+        </div>
+
+        <!-- Bottom segments -->
+        <div class="bottom-sections">
+            <div mg-include="../components/disease_groups.html"></div>
+            <div mg-include="../components/top_searches.html"></div>
+            <div mg-include="../components/featured_products.html"></div>
+        </div>
+    </main>
+
+    <!-- Pre-Footer Promises -->
+    <div mg-include="../components/promises.html"></div>
+
+    <!-- Newsletter -->
+    <div mg-include="../components/newsletter.html"></div>
+
+    <!-- Main Footer -->
+    <div mg-include="../components/main_footer.html"></div>
+
+    <script src="../assets/js/dropdown-handler.js"></script>
+    <script src="../assets/js/mega-menu-loader.js"></script>
+    <script src="../assets/js/components.js"></script>
+    <script src="../assets/js/cms-portal-loader.js"></script>
+</body>
+
+</html>

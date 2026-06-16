@@ -166,11 +166,11 @@ health_menu() {
 
 print_links() {
   printf '\nDuong dan web:\n'
-  printf '- Khach hang: %s\n' "$(frontend_url)"
-  printf '- Admin:      %s\n' "$(admin_url)"
-  printf '- POS:        %s\n' "$(pos_url)"
-  printf '- API:        %s/health\n' "$GATEWAY_URL"
-  printf '- RabbitMQ:   http://localhost:15672 (guest/guest)\n\n'
+  printf -- '- Khach hang: %s\n' "$(frontend_url)"
+  printf -- '- Admin:      %s\n' "$(admin_url)"
+  printf -- '- POS:        %s\n' "$(pos_url)"
+  printf -- '- API:        %s/health\n' "$GATEWAY_URL"
+  printf -- '- RabbitMQ:   http://localhost:15672 (guest/guest)\n\n'
 }
 
 menu() {
@@ -186,7 +186,8 @@ menu() {
     printf '8. Xem logs api-gateway\n'
     printf '9. Chay test.sh (Kiem thu hop nhat)\n'
     printf '10. Stop Docker services\n'
-    printf '11. Khoi tao/Reset Database (Seeder)\n'
+    printf '11. Khoi tao/Reset Database (Che do SACH - Khong giao dich)\n'
+    printf '12. Khoi tao/Reset Database (Che do DEMO - Day du giao dich)\n'
     printf '0. Thoat menu\n'
     printf 'Chon: '
     read -r choice
@@ -202,7 +203,8 @@ menu() {
       8) dc logs -f api-gateway ;;
       9) bash "$ROOT_DIR/test.sh" ;;
       10) dc down; stop_frontend ;;
-      11) bash "$ROOT_DIR/infrastructure/database/run_all.sh" ;;
+      11) bash "$ROOT_DIR/infrastructure/database/run_clean.sh" ;;
+      12) bash "$ROOT_DIR/infrastructure/database/run_all.sh" ;;
       0) break ;;
       *) printf 'Lua chon khong hop le.\n' ;;
     esac

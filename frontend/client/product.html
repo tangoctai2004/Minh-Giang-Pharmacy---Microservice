@@ -512,10 +512,164 @@
         
         .pd-reviews-list {
             margin-top: 24px;
-            text-align: center;
-            padding: 40px 0;
+            text-align: left;
+            padding: 8px 0 0;
             color: #6b7280;
+        }
+        .pd-reviews-empty {
+            text-align: center;
+            padding: 36px 0;
             font-style: italic;
+        }
+        .pd-review-form-box {
+            margin-top: 18px;
+            padding: 16px;
+            border: 1px solid #dbeafe;
+            border-radius: 8px;
+            background: #f8fbff;
+        }
+        .pd-review-form-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        .pd-review-form-grid {
+            display: grid;
+            grid-template-columns: 160px 1fr;
+            gap: 12px;
+            align-items: start;
+        }
+        .pd-review-rating-input {
+            display: flex;
+            gap: 4px;
+            color: #f59e0b;
+            font-size: 22px;
+        }
+        .pd-review-rating-input button {
+            border: none;
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+            padding: 0 2px;
+            font-size: inherit;
+        }
+        .pd-review-fields {
+            display: grid;
+            gap: 10px;
+        }
+        .pd-review-fields input,
+        .pd-review-fields textarea {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font: inherit;
+            outline: none;
+            background: #fff;
+        }
+        .pd-review-fields textarea {
+            min-height: 92px;
+            resize: vertical;
+        }
+        .pd-review-submit {
+            justify-self: start;
+            border: none;
+            border-radius: 8px;
+            background: #116a35;
+            color: #fff;
+            padding: 10px 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .pd-review-submit:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+        .pd-review-note {
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.5;
+        }
+        .pd-review-item {
+            border-top: 1px solid #edf2f7;
+            padding: 18px 0;
+        }
+        .pd-review-item:first-child {
+            border-top: none;
+        }
+        .pd-review-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        .pd-review-author {
+            font-weight: 700;
+            color: #1f2937;
+        }
+        .pd-review-stars {
+            color: #f59e0b;
+            white-space: nowrap;
+        }
+        .pd-review-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: 8px;
+            color: #047857;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .pd-review-title {
+            color: #111827;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .pd-review-comment {
+            color: #374151;
+            line-height: 1.6;
+        }
+        .pd-review-date {
+            color: #94a3b8;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        .pd-review-pagination {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding-top: 16px;
+            margin-top: 6px;
+            border-top: 1px solid #edf2f7;
+        }
+        .pd-review-page-btn {
+            min-width: 88px;
+            height: 36px;
+            border: 1px solid #d1d5db;
+            border-radius: 999px;
+            background: #fff;
+            color: #116a35;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .pd-review-page-btn:hover:not(:disabled) {
+            background: #f0fdf4;
+            border-color: #116a35;
+        }
+        .pd-review-page-btn:disabled {
+            color: #9ca3af;
+            cursor: not-allowed;
+            background: #f9fafb;
+        }
+        .pd-review-page-info {
+            color: #475569;
+            font-size: 13px;
+            font-weight: 700;
+            min-width: 92px;
+            text-align: center;
         }
 
         /* --- BOTTOM LAYOUT --- */
@@ -579,6 +733,31 @@
             /* 5 items per view, gap 15px -> (100% - 4*15) / 5 */
             flex: 0 0 calc((100% - 60px) / 5); 
         }
+        .pd-bottom-section .carousel-track {
+            align-items: stretch;
+        }
+        .pd-bottom-section .carousel-track > .product-card {
+            height: 100%;
+            min-height: 365px;
+        }
+        .pd-bottom-section .product-card .product-info {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        .pd-bottom-section .product-card h5 {
+            min-height: 46px;
+            margin-bottom: 10px;
+        }
+        .pd-bottom-section .product-card .product-price {
+            min-height: 54px;
+            align-content: flex-start;
+            margin-bottom: 12px;
+        }
+        .pd-bottom-section .product-card .btn-add-cart {
+            margin-top: auto;
+            flex-shrink: 0;
+        }
         .pd-tags {
             display: flex;
             flex-wrap: wrap;
@@ -640,8 +819,8 @@
                         <span id="pdSku">SKU: ...</span>
                         <span>|</span>
                         <div class="pd-meta-item">
-                            <span class="pd-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></span>
-                            <span>0 đánh giá</span>
+                            <span class="pd-stars" id="pdMetaReviewStars"><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i></span>
+                            <span id="pdMetaReviewCount">0 đánh giá</span>
                         </div>
                     </div>
 
@@ -803,11 +982,11 @@
                     <h2>Đánh giá sản phẩm</h2>
                     <div class="pd-reviews-summary">
                         <div class="pd-reviews-score">
-                            <div class="score">0.0</div>
-                            <div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
-                            <div class="count">0 đánh giá</div>
+                            <div class="score" id="pdReviewAverage">0.0</div>
+                            <div class="stars" id="pdReviewStars"><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i></div>
+                            <div class="count" id="pdReviewCount">0 đánh giá</div>
                         </div>
-                        <div class="pd-reviews-bars">
+                        <div class="pd-reviews-bars" id="pdReviewBars">
                             <div class="pd-bar-row">
                                 <span>5<i class="fa-solid fa-star" style="font-size:10px;margin-left:2px"></i></span>
                                 <div class="pd-bar-track"><div class="pd-bar-fill" style="width:0%"></div></div>
@@ -835,9 +1014,11 @@
                             </div>
                         </div>
                     </div>
-                    <div class="pd-reviews-list">
+                    <div class="pd-review-form-box" id="pdReviewFormBox" style="display:none;"></div>
+                    <div class="pd-reviews-list" id="pdReviewsList">
                         Chưa có đánh giá nào cho sản phẩm này.
                     </div>
+                    <div class="pd-review-pagination" id="pdReviewPagination"></div>
                 </div>
             </div>
 

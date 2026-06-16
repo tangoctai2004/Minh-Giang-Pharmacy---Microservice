@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đánh Giá Sản Phẩm — Nhà Thuốc Minh Giang</title>
+    <link rel="stylesheet" href="css/admin-style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .review-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .review-stat-card {
+            background: #fff;
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .review-stat-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .review-stat-card span {
+            display: block;
+            color: #64748b;
+            font-size: 12px;
+            margin-bottom: 3px;
+        }
+        .review-stat-card strong {
+            color: #0f172a;
+            font-size: 24px;
+        }
+        .review-toolbar {
+            background: #fff;
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            padding: 16px;
+            display: grid;
+            grid-template-columns: 1.5fr 180px 150px auto;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        .review-toolbar input,
+        .review-toolbar select {
+            height: 40px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 0 12px;
+            font: inherit;
+            background: #fff;
+        }
+        .review-table-card {
+            background: #fff;
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .review-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .review-table th {
+            text-align: left;
+            background: #f8fafc;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 12px 14px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .review-table td {
+            padding: 14px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+            font-size: 13px;
+            color: #334155;
+        }
+        .review-product {
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.4;
+            max-width: 280px;
+        }
+        .review-muted {
+            color: #94a3b8;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+        .review-stars {
+            color: #f59e0b;
+            white-space: nowrap;
+            font-size: 14px;
+        }
+        .review-content-title {
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 5px;
+        }
+        .review-content-text {
+            line-height: 1.5;
+            max-width: 420px;
+        }
+        .review-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            border-radius: 999px;
+            padding: 4px 9px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .review-badge.pending { background: #fff7ed; color: #c2410c; }
+        .review-badge.approved { background: #ecfdf5; color: #047857; }
+        .review-badge.rejected { background: #fef2f2; color: #b91c1c; }
+        .review-badge.hidden { background: #f1f5f9; color: #475569; }
+        .review-verified {
+            display: inline-flex;
+            gap: 5px;
+            color: #047857;
+            font-size: 12px;
+            font-weight: 700;
+            margin-top: 6px;
+        }
+        .review-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: flex-end;
+        }
+        .review-action-btn {
+            border: 1px solid #d1d5db;
+            background: #fff;
+            border-radius: 7px;
+            height: 32px;
+            padding: 0 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .review-action-btn.approve { border-color: #bbf7d0; color: #047857; }
+        .review-action-btn.reject { border-color: #fecaca; color: #b91c1c; }
+        .review-action-btn.hide { border-color: #cbd5e1; color: #475569; }
+        .review-pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            background: #fff;
+        }
+        .review-empty {
+            text-align: center;
+            color: #64748b;
+            padding: 40px 16px;
+        }
+        @media (max-width: 1100px) {
+            .review-stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .review-toolbar { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="admin-sidebar"></aside>
+    <header class="admin-header"></header>
+
+    <main class="admin-main">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Đánh Giá Sản Phẩm</h1>
+                <p class="page-subtitle">Kiểm duyệt nội dung khách hàng trước khi hiển thị trên trang sản phẩm</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn-secondary" onclick="loadReviews()">
+                    <i class="fa-solid fa-rotate"></i> Tải lại
+                </button>
+            </div>
+        </div>
+
+        <div class="review-stats-grid">
+            <div class="review-stat-card">
+                <div class="review-stat-icon" style="background:#fff7ed;color:#f97316;"><i class="fa-regular fa-clock"></i></div>
+                <div><span>Chờ duyệt</span><strong id="statPending">0</strong></div>
+            </div>
+            <div class="review-stat-card">
+                <div class="review-stat-icon" style="background:#ecfdf5;color:#10b981;"><i class="fa-solid fa-circle-check"></i></div>
+                <div><span>Đã duyệt</span><strong id="statApproved">0</strong></div>
+            </div>
+            <div class="review-stat-card">
+                <div class="review-stat-icon" style="background:#fef2f2;color:#ef4444;"><i class="fa-solid fa-ban"></i></div>
+                <div><span>Từ chối</span><strong id="statRejected">0</strong></div>
+            </div>
+            <div class="review-stat-card">
+                <div class="review-stat-icon" style="background:#eff6ff;color:#2563eb;"><i class="fa-solid fa-star"></i></div>
+                <div><span>Tổng đang xem</span><strong id="statTotal">0</strong></div>
+            </div>
+        </div>
+
+        <div class="review-toolbar">
+            <input id="reviewSearch" type="search" placeholder="Tìm theo sản phẩm, khách hàng hoặc nội dung">
+            <select id="reviewStatus">
+                <option value="">Tất cả trạng thái</option>
+                <option value="pending">Chờ duyệt</option>
+                <option value="approved">Đã duyệt</option>
+                <option value="rejected">Từ chối</option>
+                <option value="hidden">Đã ẩn</option>
+            </select>
+            <select id="reviewRating">
+                <option value="">Tất cả số sao</option>
+                <option value="5">5 sao</option>
+                <option value="4">4 sao</option>
+                <option value="3">3 sao</option>
+                <option value="2">2 sao</option>
+                <option value="1">1 sao</option>
+            </select>
+            <button class="btn-primary" onclick="applyReviewFilters()">
+                <i class="fa-solid fa-filter"></i> Lọc
+            </button>
+        </div>
+
+        <div class="review-table-card">
+            <table class="review-table">
+                <thead>
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th>Khách hàng</th>
+                        <th>Đánh giá</th>
+                        <th>Nội dung</th>
+                        <th>Trạng thái</th>
+                        <th style="text-align:right;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="reviewTableBody">
+                    <tr><td colspan="6" class="review-empty">Đang tải đánh giá...</td></tr>
+                </tbody>
+            </table>
+            <div class="review-pagination">
+                <button class="btn-secondary" id="reviewPrevBtn" onclick="changeReviewPage(-1)">Trước</button>
+                <span id="reviewPageInfo">Trang 1</span>
+                <button class="btn-secondary" id="reviewNextBtn" onclick="changeReviewPage(1)">Sau</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/admin-catalog-api.js"></script>
+    <script src="js/admin-components.js"></script>
+    <script>
+        var reviewState = {
+            page: 1,
+            limit: 20,
+            total: 0,
+            rows: []
+        };
+
+        document.addEventListener('DOMContentLoaded', function () {
+            renderAdminLayout('product-reviews');
+            bindReviewFilters();
+            loadReviews();
+        });
+
+        function bindReviewFilters() {
+            var search = document.getElementById('reviewSearch');
+            search?.addEventListener('keypress', function (event) {
+                if (event.key === 'Enter') applyReviewFilters();
+            });
+            document.getElementById('reviewStatus')?.addEventListener('change', applyReviewFilters);
+            document.getElementById('reviewRating')?.addEventListener('change', applyReviewFilters);
+        }
+
+        function escapeAdminHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function renderStars(rating) {
+            var value = Number(rating || 0);
+            return [1, 2, 3, 4, 5].map(function (star) {
+                return '<i class="' + (value >= star ? 'fa-solid' : 'fa-regular') + ' fa-star"></i>';
+            }).join('');
+        }
+
+        function statusLabel(status) {
+            var labels = {
+                pending: 'Chờ duyệt',
+                approved: 'Đã duyệt',
+                rejected: 'Từ chối',
+                hidden: 'Đã ẩn'
+            };
+            return labels[status] || status || 'Không rõ';
+        }
+
+        function applyReviewFilters() {
+            reviewState.page = 1;
+            loadReviews();
+        }
+
+        async function loadReviews() {
+            var body = document.getElementById('reviewTableBody');
+            body.innerHTML = '<tr><td colspan="6" class="review-empty">Đang tải đánh giá...</td></tr>';
+            try {
+                var result = await window.MGAdminCatalogApi.get('/admin/reviews', {
+                    page: reviewState.page,
+                    limit: reviewState.limit,
+                    q: document.getElementById('reviewSearch')?.value.trim() || '',
+                    status: document.getElementById('reviewStatus')?.value || '',
+                    rating: document.getElementById('reviewRating')?.value || ''
+                });
+                reviewState.rows = Array.isArray(result.data) ? result.data : [];
+                reviewState.total = Number(result.pagination?.total || reviewState.rows.length || 0);
+                renderReviews();
+            } catch (err) {
+                body.innerHTML = '<tr><td colspan="6" class="review-empty">Không tải được đánh giá: ' + escapeAdminHtml(err.message) + '</td></tr>';
+            }
+        }
+
+        function renderReviews() {
+            var body = document.getElementById('reviewTableBody');
+            if (!reviewState.rows.length) {
+                body.innerHTML = '<tr><td colspan="6" class="review-empty">Không có đánh giá phù hợp.</td></tr>';
+            } else {
+                body.innerHTML = reviewState.rows.map(function (review) {
+                    var created = review.created_at ? new Date(review.created_at).toLocaleString('vi-VN') : '';
+                    var verified = review.is_verified_purchase
+                        ? '<div class="review-verified"><i class="fa-solid fa-circle-check"></i> Đã mua hàng</div>'
+                        : '';
+                    var note = review.moderation_note
+                        ? '<div class="review-muted">Ghi chú: ' + escapeAdminHtml(review.moderation_note) + '</div>'
+                        : '';
+                    var actions = [
+                        review.status !== 'approved' ? '<button class="review-action-btn approve" onclick="moderateReview(' + review.id + ', &quot;approve&quot;)">Duyệt</button>' : '',
+                        review.status !== 'rejected' ? '<button class="review-action-btn reject" onclick="moderateReview(' + review.id + ', &quot;reject&quot;)">Từ chối</button>' : '',
+                        review.status !== 'hidden' ? '<button class="review-action-btn hide" onclick="moderateReview(' + review.id + ', &quot;hide&quot;)">Ẩn</button>' : ''
+                    ].join('');
+
+                    return '<tr>' +
+                        '<td><div class="review-product">' + escapeAdminHtml(review.product_name) + '</div><div class="review-muted">SKU: ' + escapeAdminHtml(review.product_sku || '—') + '</div></td>' +
+                        '<td><strong>' + escapeAdminHtml(review.customer_name || 'Khách hàng') + '</strong><div class="review-muted">' + escapeAdminHtml(review.customer_phone || '') + '</div>' + verified + '</td>' +
+                        '<td><div class="review-stars">' + renderStars(review.rating) + '</div><div class="review-muted">' + Number(review.rating || 0) + '/5 sao</div></td>' +
+                        '<td><div class="review-content-title">' + escapeAdminHtml(review.title || 'Không có tiêu đề') + '</div><div class="review-content-text">' + escapeAdminHtml(review.comment || '') + '</div><div class="review-muted">' + created + '</div>' + note + '</td>' +
+                        '<td><span class="review-badge ' + escapeAdminHtml(review.status) + '">' + statusLabel(review.status) + '</span></td>' +
+                        '<td><div class="review-actions">' + actions + '</div></td>' +
+                    '</tr>';
+                }).join('');
+            }
+
+            var pending = reviewState.rows.filter(function (item) { return item.status === 'pending'; }).length;
+            var approved = reviewState.rows.filter(function (item) { return item.status === 'approved'; }).length;
+            var rejected = reviewState.rows.filter(function (item) { return item.status === 'rejected'; }).length;
+            document.getElementById('statPending').textContent = pending;
+            document.getElementById('statApproved').textContent = approved;
+            document.getElementById('statRejected').textContent = rejected;
+            document.getElementById('statTotal').textContent = reviewState.total;
+
+            var totalPages = Math.max(1, Math.ceil(reviewState.total / reviewState.limit));
+            document.getElementById('reviewPageInfo').textContent = 'Trang ' + reviewState.page + ' / ' + totalPages;
+            document.getElementById('reviewPrevBtn').disabled = reviewState.page <= 1;
+            document.getElementById('reviewNextBtn').disabled = reviewState.page >= totalPages;
+        }
+
+        async function moderateReview(id, action) {
+            var promptText = action === 'approve'
+                ? 'Ghi chú duyệt nếu cần'
+                : action === 'reject'
+                    ? 'Lý do từ chối'
+                    : 'Lý do ẩn đánh giá';
+            var note = prompt(promptText, '');
+            if (note === null) return;
+            try {
+                await window.MGAdminCatalogApi.patch('/admin/reviews/' + encodeURIComponent(id) + '/' + action, {
+                    moderation_note: note
+                });
+                showToast('Đã cập nhật đánh giá');
+                loadReviews();
+            } catch (err) {
+                showToast(err.message || 'Không cập nhật được đánh giá', 'error');
+            }
+        }
+
+        function changeReviewPage(delta) {
+            var totalPages = Math.max(1, Math.ceil(reviewState.total / reviewState.limit));
+            reviewState.page = Math.min(totalPages, Math.max(1, reviewState.page + delta));
+            loadReviews();
+        }
+    </script>
+</body>
+
+</html>

@@ -3,6 +3,7 @@ const gatewayAuth = require('../middlewares/gatewayAuth');
 
 router.use(gatewayAuth);
 
+router.use('/',           require('../reviews/reviews.routes'));
 router.use('/products',   require('../products/products.routes'));
 router.use('/categories', require('../categories/categories.routes'));
 router.use('/suppliers',  require('../suppliers/suppliers.routes'));
@@ -18,6 +19,10 @@ router.get('/', (req, res) => {
       'GET    /products           — Danh sách sản phẩm (public)',
       'GET    /products?ids=1,2   — Lấy nhiều sản phẩm theo id (public)',
       'GET    /products/:id       — Chi tiết sản phẩm (public)',
+      'GET    /products/:id/reviews — Danh sách đánh giá đã duyệt (public)',
+      'GET    /products/:id/reviews/summary — Tổng hợp điểm đánh giá (public)',
+      'POST   /products/:id/reviews — Gửi đánh giá sau khi mua hàng',
+      'GET    /admin/reviews     — Kiểm duyệt đánh giá sản phẩm',
       'GET    /products/pos-search — Tìm/scan thuốc cho POS',
       'GET    /products/pos-detail/:id — Chi tiết thuốc cho POS',
       'GET    /products/barcode/:barcode — Tra barcode cho POS',

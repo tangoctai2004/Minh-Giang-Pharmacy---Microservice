@@ -239,6 +239,9 @@ function renderAdminLayout(activePageId) {
             <a href="promotions.html" class="sidebar-link ${activePageId === 'promotions' ? 'active' : ''}">
                 <i class="fa-solid fa-tags"></i> Marketing & Khuyến Mãi
             </a>
+            <a href="product-reviews.html" class="sidebar-link ${activePageId === 'product-reviews' ? 'active' : ''}">
+                <i class="fa-solid fa-star-half-stroke"></i> Đánh Giá Sản Phẩm
+            </a>
             <a href="cms-articles.html" class="sidebar-link ${activePageId === 'cms' ? 'active' : ''}">
                 <i class="fa-solid fa-newspaper"></i> Nội Dung Y Khoa (CMS)
             </a>
@@ -646,6 +649,7 @@ function _getPageIdFromFile(filename) {
         'returns.html': 'returns',
         'suppliers.html': 'suppliers',
         'promotions.html': 'promotions',
+        'product-reviews.html': 'product-reviews',
         'cms-articles.html': 'cms',
         'storefront.html': 'storefront',
         'crm-customers.html': 'crm',

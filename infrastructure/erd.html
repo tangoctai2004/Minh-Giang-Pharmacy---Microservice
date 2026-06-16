@@ -165,301 +165,182 @@ const SC = {
 // TABLE DATA  — [name, key, type]  key: PK/FK/UK/--
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const TABLES = [
-// ── mg_identity ──────────────────────────────────────────────────────────────
-{id:'mg_identity.roles',s:'mg_identity',x:40,y:40,cols:[
-  ['id','PK','INT'],['name','UK','VARCHAR(50)'],['display_name','--','VARCHAR(100)'],
-  ['permissions','--','JSON'],['created_at','--','DATETIME'],
+{id:'mg_identity.customer_addresses',s:'mg_identity',x:40,y:40,cols:[
+  ['id','PK','BIGINT'], ['customer_id','FK','BIGINT'], ['receiver_name','--','VARCHAR(200)'], ['phone','--','VARCHAR(20)'], ['province','--','VARCHAR(100)'], ['district','--','VARCHAR(100)'], ['ward','--','VARCHAR(100)'], ['street_address','--','TEXT'], ['is_default','--','TINYINT(1)']
 ]},
-{id:'mg_identity.users',s:'mg_identity',x:292,y:40,cols:[
-  ['id','PK','BIGINT'],['role_id','FK','INT'],['username','UK','VARCHAR(100)'],
-  ['email','UK','VARCHAR(200)'],['password_hash','--','VARCHAR(255)'],
-  ['full_name','--','VARCHAR(200)'],['phone','--','VARCHAR(20)'],
-  ['status','--','ENUM'],['created_at','--','DATETIME'],['updated_at','--','DATETIME'],
+{id:'mg_identity.customers',s:'mg_identity',x:460,y:40,cols:[
+  ['id','PK','BIGINT'], ['full_name','--','VARCHAR(200)'], ['email','UK','VARCHAR(200)'], ['phone','UK','VARCHAR(20)'], ['password_hash','--','VARCHAR(255)'], ['date_of_birth','--','DATE'], ['gender','--','ENUM(\'MALE\',\'FEMALE\',\'OTHER\')'], ['loyalty_points','--','INT'], ['loyalty_tier','--','ENUM(\'MEMBER\',\'SILVER\',\'GOLD\',\'VIP\')'], ['is_active','--','TINYINT(1)'], ['email_verified_at','--','DATETIME'], ['phone_verified_at','--','DATETIME'], ['created_at','--','DATETIME'], ['updated_at','--','DATETIME'], ['deleted_at','--','DATETIME'], ['code','UK','VARCHAR(20)'], ['zalo_id','UK','VARCHAR(50)'], ['notes','--','TEXT']
 ]},
-{id:'mg_identity.refresh_tokens',s:'mg_identity',x:544,y:40,cols:[
-  ['id','PK','BIGINT'],['user_type','--','ENUM'],['user_id','--','BIGINT'],
-  ['token_hash','UK','VARCHAR(255)'],['expires_at','--','DATETIME'],['created_at','--','DATETIME'],
+{id:'mg_identity.loyalty_points_transactions',s:'mg_identity',x:880,y:40,cols:[
+  ['id','PK','BIGINT'], ['customer_id','FK','BIGINT'], ['transaction_type','--','ENUM(\'EARN_PURCHASE\',\'EARN_BONUS\',\'REDEEM\',\'ADJUST_ADD\',\'ADJUST_DEDUCT\',\'EXPIRE\')'], ['points_change','--','INT'], ['description','--','VARCHAR(300)'], ['reference_order_id','FK','BIGINT'], ['adjusted_by','FK','BIGINT'], ['admin_note','--','TEXT'], ['created_at','--','DATETIME'], ['idempotency_key','UK','VARCHAR(128)'], ['expires_at','--','DATETIME']
 ]},
-{id:'mg_identity.customers',s:'mg_identity',x:40,y:308,cols:[
-  ['id','PK','BIGINT'],['email','UK','VARCHAR(200)'],['phone','UK','VARCHAR(20)'],
-  ['password_hash','--','VARCHAR(255)'],['full_name','--','VARCHAR(200)'],
-  ['date_of_birth','--','DATE'],['gender','--','ENUM'],
-  ['loyalty_points','--','INT'],['loyalty_tier','--','ENUM'],
-  ['total_spending','--','DECIMAL(15,2)'],['is_active','--','TINYINT'],
-  ['created_at','--','DATETIME'],
+{id:'mg_identity.loyalty_tier_config',s:'mg_identity',x:40,y:560,cols:[
+  ['id','PK','INT'], ['tier_code','UK','ENUM(\'MEMBER\',\'SILVER\',\'GOLD\',\'VIP\')'], ['tier_name','--','VARCHAR(100)'], ['tier_icon','--','VARCHAR(20)'], ['min_spending','--','DECIMAL(15,2)'], ['max_spending','--','DECIMAL(15,2)'], ['points_ratio','--','DECIMAL(5,2)'], ['points_per_vnd','--','INT'], ['discount_pct','--','DECIMAL(5,2)'], ['description','--','VARCHAR(300)'], ['updated_at','--','DATETIME'], ['points_expiry_months','--','INT']
 ]},
-{id:'mg_identity.customer_addresses',s:'mg_identity',x:292,y:308,cols:[
-  ['id','PK','BIGINT'],['customer_id','FK','BIGINT'],['label','--','VARCHAR(100)'],
-  ['recipient_name','--','VARCHAR(200)'],['recipient_phone','--','VARCHAR(20)'],
-  ['province','--','VARCHAR(100)'],['district','--','VARCHAR(100)'],
-  ['ward','--','VARCHAR(100)'],['address_line','--','VARCHAR(500)'],
-  ['is_default','--','TINYINT'],
+{id:'mg_identity.otp_codes',s:'mg_identity',x:460,y:560,cols:[
+  ['id','PK','BIGINT'], ['target','--','VARCHAR(200)'], ['target_type','--','ENUM(\'PHONE\',\'EMAIL\')'], ['otp_hash','--','VARCHAR(255)'], ['purpose','--','ENUM(\'REGISTER\',\'RESET_PASSWORD\',\'VERIFY_EMAIL\',\'POS_CONFIRM\')'], ['attempts','--','INT'], ['expires_at','--','DATETIME'], ['used_at','--','DATETIME'], ['created_at','--','DATETIME'], ['send_count_today','--','INT'], ['last_send_at','--','DATETIME'], ['blocked_until','--','DATETIME']
 ]},
-{id:'mg_identity.shifts',s:'mg_identity',x:544,y:308,cols:[
-  ['id','PK','BIGINT'],['user_id','FK','BIGINT'],['kiosk_id','--','VARCHAR(30)'],
-  ['shift_start','--','DATETIME'],['shift_end','--','DATETIME'],
-  ['opening_cash','--','DECIMAL(12,2)'],['closing_cash','--','DECIMAL(12,2)'],
-  ['total_cash_sales','--','DECIMAL(12,2)'],['total_card_sales','--','DECIMAL(12,2)'],
-  ['total_qr_sales','--','DECIMAL(12,2)'],['status','--','ENUM'],
-  ['expected_closing_cash','--','DECIMAL(12,2)'],['cash_difference','--','DECIMAL(12,2)'],
-  ['reconciliation_status','--','ENUM'],['approved_by','--','BIGINT'],
+{id:'mg_identity.refresh_tokens',s:'mg_identity',x:880,y:560,cols:[
+  ['id','PK','BIGINT'], ['user_id','--','BIGINT'], ['user_type','--','ENUM(\'STAFF\',\'CUSTOMER\')'], ['token_hash','UK','VARCHAR(255)'], ['expires_at','--','DATETIME'], ['revoked_at','--','DATETIME'], ['created_at','--','DATETIME']
 ]},
-{id:'mg_identity.loyalty_tier_config',s:'mg_identity',x:40,y:666,cols:[
-  ['id','PK','INT'],['tier_code','UK','ENUM'],['tier_name','--','VARCHAR(100)'],
-  ['tier_icon','--','VARCHAR(20)'],['min_spending','--','DECIMAL(15,2)'],
-  ['max_spending','--','DECIMAL(15,2)'],['points_ratio','--','DECIMAL(5,2)'],
-  ['points_per_vnd','--','INT'],['discount_pct','--','DECIMAL(5,2)'],
+{id:'mg_identity.roles',s:'mg_identity',x:40,y:1080,cols:[
+  ['id','PK','INT'], ['name','UK','VARCHAR(50)'], ['description','--','VARCHAR(200)'], ['permissions','--','JSON'], ['created_at','--','DATETIME']
 ]},
-{id:'mg_identity.loyalty_points_transactions',s:'mg_identity',x:292,y:666,cols:[
-  ['id','PK','BIGINT'],['customer_id','FK','BIGINT'],['transaction_type','--','ENUM'],
-  ['points_change','--','INT'],['points_balance','--','INT'],
-  ['description','--','VARCHAR(300)'],['reference_order_id','--','BIGINT'],
-  ['adjusted_by','--','BIGINT'],['created_at','--','DATETIME'],
+{id:'mg_identity.shifts',s:'mg_identity',x:460,y:1080,cols:[
+  ['id','PK','BIGINT'], ['user_id','FK','BIGINT'], ['kiosk_id','--','VARCHAR(20)'], ['shift_start','--','DATETIME'], ['shift_end','--','DATETIME'], ['opening_cash','--','DECIMAL(12,2)'], ['closing_cash','--','DECIMAL(12,2)'], ['total_cash_sales','--','DECIMAL(12,2)'], ['total_card_sales','--','DECIMAL(12,2)'], ['total_qr_sales','--','DECIMAL(12,2)'], ['status','--','ENUM(\'OPEN\',\'CLOSED\')'], ['notes','--','TEXT'], ['created_at','--','DATETIME'], ['updated_at','--','DATETIME'], ['expected_closing_cash','--','DECIMAL(12,2)'], ['cash_difference','--','DECIMAL(12,2)'], ['reconciliation_status','--','ENUM(\'PENDING\',\'MATCHED\',\'EXCESS\',\'SHORTAGE\',\'APPROVED\')'], ['approved_by','FK','BIGINT'], ['approved_at','--','DATETIME'], ['approval_note','--','TEXT']
 ]},
-{id:'mg_identity.otp_codes',s:'mg_identity',x:544,y:666,cols:[
-  ['id','PK','BIGINT'],['target','--','VARCHAR(200)'],['target_type','--','ENUM'],
-  ['otp_hash','--','VARCHAR(255)'],['purpose','--','ENUM'],
-  ['attempts','--','INT'],['expires_at','--','DATETIME'],
-  ['used_at','--','DATETIME'],['created_at','--','DATETIME'],
+{id:'mg_identity.users',s:'mg_identity',x:880,y:1080,cols:[
+  ['id','PK','BIGINT'], ['username','UK','VARCHAR(100)'], ['email','UK','VARCHAR(200)'], ['password_hash','--','VARCHAR(255)'], ['full_name','--','VARCHAR(200)'], ['phone','--','VARCHAR(20)'], ['role_id','FK','INT'], ['avatar_url','--','VARCHAR(500)'], ['is_active','--','TINYINT(1)'], ['last_login_at','--','DATETIME'], ['created_at','--','DATETIME'], ['updated_at','--','DATETIME'], ['code','UK','VARCHAR(20)']
 ]},
-
-// ── mg_catalog ────────────────────────────────────────────────────────────────
-{id:'mg_catalog.categories',s:'mg_catalog',x:840,y:40,cols:[
-  ['id','PK','BIGINT'],['name','--','VARCHAR(100)'],['slug','UK','VARCHAR(150)'],
-  ['parent_id','FK','BIGINT'],['image_url','--','VARCHAR(500)'],
-  ['sort_order','--','INT'],['is_active','--','TINYINT'],
+{id:'mg_catalog.audit_items',s:'mg_catalog',x:1340,y:40,cols:[
+  ['id','PK','BIGINT'], ['audit_id','FK','BIGINT'], ['batch_item_id','FK','BIGINT'], ['product_id','FK','BIGINT'], ['system_quantity','--','INT'], ['actual_quantity','--','INT'], ['difference_quantity','--','INT'], ['notes','--','TEXT']
 ]},
-{id:'mg_catalog.brands',s:'mg_catalog',x:1092,y:40,cols:[
-  ['id','PK','INT'],['name','UK','VARCHAR(150)'],['slug','UK','VARCHAR(150)'],
-  ['logo_url','--','VARCHAR(500)'],['country','--','VARCHAR(100)'],
-  ['is_active','--','TINYINT'],['created_at','--','DATETIME'],
+{id:'mg_catalog.batch_items',s:'mg_catalog',x:1760,y:40,cols:[
+  ['id','PK','BIGINT'], ['batch_id','FK','BIGINT'], ['product_id','FK','BIGINT'], ['lot_number','--','VARCHAR(100)'], ['manufacture_date','--','DATE'], ['expiry_date','--','DATE'], ['quantity_received','--','INT'], ['quantity_remaining','--','INT'], ['cost_price','--','DECIMAL(15,2)'], ['clearance_discount_pct','--','DECIMAL(5,2)'], ['clearance_price','--','DECIMAL(15,2)'], ['location_id','FK','BIGINT'], ['status','--','ENUM(\'AVAILABLE\',\'NEAR_EXPIRY\',\'EXPIRED\',\'DEPLETED\')'], ['deleted_reason','--','VARCHAR(300)']
 ]},
-{id:'mg_catalog.suppliers',s:'mg_catalog',x:1344,y:40,cols:[
-  ['id','PK','BIGINT'],['code','UK','VARCHAR(30)'],['name','--','VARCHAR(200)'],
-  ['contact_person','--','VARCHAR(200)'],['phone','--','VARCHAR(20)'],
-  ['email','--','VARCHAR(200)'],['address','--','TEXT'],
-  ['tax_code','--','VARCHAR(30)'],['total_purchase_value','--','DECIMAL(15,2)'],
-  ['current_debt','--','DECIMAL(15,2)'],['status','--','ENUM'],
-  ['created_at','--','DATETIME'],
+{id:'mg_catalog.batches',s:'mg_catalog',x:2180,y:40,cols:[
+  ['id','PK','BIGINT'], ['batch_code','UK','VARCHAR(50)'], ['supplier_id','FK','BIGINT'], ['delivery_person','--','VARCHAR(150)'], ['received_date','--','DATE'], ['total_amount','--','DECIMAL(15,2)'], ['paid_amount','--','DECIMAL(15,2)'], ['status','--','ENUM(\'DRAFT\',\'COMPLETED\')'], ['notes','--','TEXT'], ['created_by','FK','BIGINT'], ['created_at','--','DATETIME'], ['updated_at','--','DATETIME'], ['invoice_number','--','VARCHAR(100)']
 ]},
-{id:'mg_catalog.products',s:'mg_catalog',x:840,y:240,cols:[
-  ['id','PK','BIGINT'],['sku','UK','VARCHAR(50)'],['name','--','VARCHAR(300)'],
-  ['category_id','FK','BIGINT'],['brand_id','FK','INT'],
-  ['active_ingredient','--','VARCHAR(300)'],['registration_number','--','VARCHAR(50)'],
-  ['base_unit','--','VARCHAR(30)'],['cost_price','--','DECIMAL(12,2)'],
-  ['retail_price','--','DECIMAL(12,2)'],['min_stock_alert','--','INT'],
-  ['barcode','UK','VARCHAR(50)'],['status','--','ENUM'],
-  ['country_of_origin','--','VARCHAR(100)'],['is_exclusive','--','TINYINT'],
-  ['sales_volume','--','INT'],['tags','--','JSON'],
-  ['image_url','--','VARCHAR(500)'],
+{id:'mg_catalog.brands',s:'mg_catalog',x:2600,y:40,cols:[
+  ['id','PK','INT'], ['name','--','VARCHAR(150)'], ['slug','UK','VARCHAR(200)'], ['logo_url','--','VARCHAR(500)'], ['country','--','VARCHAR(100)'], ['is_featured','--','TINYINT(1)'], ['is_active','--','TINYINT(1)'], ['sort_order','--','INT']
 ]},
-{id:'mg_catalog.product_units',s:'mg_catalog',x:1092,y:240,cols:[
-  ['id','PK','BIGINT'],['product_id','FK','BIGINT'],['unit_name','--','VARCHAR(50)'],
-  ['conversion_qty','--','INT'],['of_unit','--','VARCHAR(30)'],
-  ['retail_price','--','DECIMAL(12,2)'],
+{id:'mg_catalog.catalog_audit_logs',s:'mg_catalog',x:1340,y:560,cols:[
+  ['id','PK','BIGINT'], ['action','--','VARCHAR(100)'], ['entity_type','--','VARCHAR(100)'], ['entity_id','--','BIGINT'], ['user_id','FK','BIGINT'], ['request_id','--','VARCHAR(64)'], ['before_data','--','JSON'], ['after_data','--','JSON'], ['metadata','--','JSON'], ['created_at','--','DATETIME']
 ]},
-{id:'mg_catalog.product_specifications',s:'mg_catalog',x:1344,y:240,cols:[
-  ['id','PK','BIGINT'],['product_id','FK','BIGINT'],['spec_key','--','VARCHAR(100)'],
-  ['spec_value','--','TEXT'],['sort_order','--','INT'],
+{id:'mg_catalog.catalog_gift_campaigns',s:'mg_catalog',x:1760,y:560,cols:[
+  ['id','PK','BIGINT'], ['name','--','VARCHAR(255)'], ['min_order_amount','--','DECIMAL(15,2)'], ['gift_product_id','FK','BIGINT'], ['max_per_customer','--','INT'], ['usage_count','--','INT'], ['status','--','ENUM(\'ACTIVE\',\'PAUSED\',\'EXPIRED\')'], ['valid_from','--','DATE'], ['valid_to','--','DATE'], ['created_at','--','DATETIME'], ['updated_at','--','DATETIME']
 ]},
-{id:'mg_catalog.locations',s:'mg_catalog',x:1344,y:452,cols:[
-  ['id','PK','BIGINT'],['zone','--','VARCHAR(100)'],['cabinet','--','VARCHAR(100)'],
-  ['shelf','--','VARCHAR(100)'],['label','--','VARCHAR(200)'],
-  ['is_active','--','TINYINT'],
+{id:'mg_catalog.catalog_idempotency_keys',s:'mg_catalog',x:2180,y:560,cols:[
+  ['id','PK','BIGINT'], ['idempotency_scope','UK','VARCHAR(100)'], ['idempotency_key','UK','VARCHAR(120)'], ['request_hash','--','VARCHAR(64)'], ['response_data','--','JSON'], ['created_at','--','DATETIME']
 ]},
-{id:'mg_catalog.batches',s:'mg_catalog',x:840,y:500,cols:[
-  ['id','PK','BIGINT'],['batch_code','UK','VARCHAR(50)'],['supplier_id','FK','BIGINT'],
-  ['delivery_person','--','VARCHAR(200)'],['total_amount','--','DECIMAL(15,2)'],
-  ['paid_amount','--','DECIMAL(15,2)'],['status','--','ENUM'],
-  ['notes','--','TEXT'],['created_by','--','BIGINT'],['created_at','--','DATETIME'],
+{id:'mg_catalog.catalog_loyalty_config',s:'mg_catalog',x:2600,y:560,cols:[
+  ['id','PK','INT'], ['tiers','--','JSON'], ['redemption','--','JSON'], ['channels','--','JSON'], ['updated_at','--','DATETIME']
 ]},
-{id:'mg_catalog.batch_items',s:'mg_catalog',x:1092,y:452,cols:[
-  ['id','PK','BIGINT'],['batch_id','FK','BIGINT'],['product_id','FK','BIGINT'],
-  ['lot_number','--','VARCHAR(80)'],['manufacture_date','--','DATE'],
-  ['expiry_date','--','DATE'],['quantity_received','--','INT'],
-  ['quantity_remaining','--','INT'],['cost_price','--','DECIMAL(12,2)'],
-  ['location_id','FK','BIGINT'],['status','--','ENUM'],
-  ['clearance_discount_pct','--','DECIMAL(5,2)'],
+{id:'mg_catalog.catalog_vouchers',s:'mg_catalog',x:1340,y:1080,cols:[
+  ['id','PK','BIGINT'], ['code','UK','VARCHAR(50)'], ['name','--','VARCHAR(255)'], ['discount_type','--','ENUM(\'PERCENT\',\'FIXED\',\'FREESHIP\')'], ['discount_value','--','DECIMAL(15,2)'], ['max_discount','--','DECIMAL(15,2)'], ['min_order_amount','--','DECIMAL(15,2)'], ['usage_count','--','INT'], ['usage_limit','--','INT'], ['valid_from','--','DATE'], ['valid_to','--','DATE'], ['status','--','ENUM(\'ACTIVE\',\'PAUSED\',\'EXPIRED\',\'USED_UP\')'], ['created_at','--','DATETIME'], ['updated_at','--','DATETIME']
 ]},
-{id:'mg_catalog.stock_movements',s:'mg_catalog',x:840,y:752,cols:[
-  ['id','PK','BIGINT'],['movement_code','--','VARCHAR(60)'],
-  ['batch_item_id','FK','BIGINT'],['product_id','FK','BIGINT'],
-  ['movement_type','--','ENUM'],['quantity','--','INT'],
-  ['reference_type','--','ENUM'],['reference_id','--','BIGINT'],
-  ['reason','--','TEXT'],['created_by','--','BIGINT'],['created_at','--','DATETIME'],
+{id:'mg_catalog.categories',s:'mg_catalog',x:1760,y:1080,cols:[
+  ['id','PK','BIGINT'], ['name','--','VARCHAR(150)'], ['slug','UK','VARCHAR(200)'], ['parent_id','FK','BIGINT'], ['description','--','TEXT'], ['image_url','--','VARCHAR(500)'], ['is_active','--','TINYINT(1)'], ['sort_order','--','INT'], ['created_at','--','DATETIME'], ['updated_at','--','DATETIME']
 ]},
-{id:'mg_catalog.inventory_audits',s:'mg_catalog',x:1092,y:752,cols:[
-  ['id','PK','BIGINT'],['audit_code','UK','VARCHAR(50)'],
-  ['location_id','FK','BIGINT'],['total_items','--','INT'],
-  ['total_missing','--','INT'],['total_surplus','--','INT'],
-  ['total_value_diff','--','DECIMAL(15,2)'],['status','--','ENUM'],
-  ['created_by','--','BIGINT'],['reconciled_by','--','BIGINT'],
-  ['reconciled_at','--','DATETIME'],['created_at','--','DATETIME'],
+{id:'mg_catalog.delivery_config',s:'mg_catalog',x:2180,y:1080,cols:[
+  ['id','PK','INT'], ['max_delivery_radius_km','--','DECIMAL(5,1)'], ['base_shipping_fee','--','DECIMAL(10,2)'], ['free_shipping_threshold','--','DECIMAL(12,2)'], ['is_enabled','--','TINYINT(1)'], ['updated_at','--','DATETIME']
 ]},
-{id:'mg_catalog.audit_items',s:'mg_catalog',x:1344,y:752,cols:[
-  ['id','PK','BIGINT'],['audit_id','FK','BIGINT'],['batch_item_id','FK','BIGINT'],
-  ['product_id','FK','BIGINT'],['system_quantity','--','INT'],
-  ['actual_quantity','--','INT'],['difference_quantity','--','INT'],
-  ['notes','--','TEXT'],
+{id:'mg_catalog.delivery_timeslots',s:'mg_catalog',x:2600,y:1080,cols:[
+  ['id','PK','INT'], ['label','--','VARCHAR(100)'], ['start_time','--','TIME'], ['end_time','--','TIME'], ['slot_type','--','ENUM(\'STANDARD\',\'RUSHED\')'], ['is_active','--','TINYINT(1)'], ['sort_order','--','INT']
 ]},
-{id:'mg_catalog.storage_zones',s:'mg_catalog',x:840,y:1000,cols:[
-  ['id','PK','INT'],['name','--','VARCHAR(100)'],['description','--','VARCHAR(300)'],
-  ['temperature_range','--','VARCHAR(50)'],['is_active','--','TINYINT'],
+{id:'mg_catalog.inventory_audits',s:'mg_catalog',x:1340,y:1600,cols:[
+  ['id','PK','BIGINT'], ['audit_code','UK','VARCHAR(50)'], ['location_id','FK','BIGINT'], ['total_items','--','INT'], ['total_missing','--','INT'], ['total_surplus','--','INT'], ['total_value_diff','--','DECIMAL(15,2)'], ['status','--','ENUM(\'DRAFT\',\'RECONCILED\')'], ['notes','--','TEXT'], ['created_by','FK','BIGINT'], ['reconciled_by','FK','BIGINT'], ['reconciled_at','--','DATETIME'], ['created_at','--','DATETIME'], ['updated_at','--','DATETIME']
 ]},
-{id:'mg_catalog.storage_cabinets',s:'mg_catalog',x:1092,y:1000,cols:[
-  ['id','PK','INT'],['zone_id','FK','INT'],['name','--','VARCHAR(100)'],
-  ['capacity_units','--','INT'],['is_active','--','TINYINT'],
+{id:'mg_catalog.locations',s:'mg_catalog',x:1760,y:1600,cols:[
+  ['id','PK','BIGINT'], ['zone','--','VARCHAR(100)'], ['cabinet','--','VARCHAR(100)'], ['shelf','--','VARCHAR(100)'], ['label','--','VARCHAR(200)'], ['is_active','--','TINYINT(1)']
 ]},
-{id:'mg_catalog.storage_shelves',s:'mg_catalog',x:1344,y:1000,cols:[
-  ['id','PK','INT'],['cabinet_id','FK','INT'],['location_id','FK','BIGINT'],
-  ['name','--','VARCHAR(100)'],['is_active','--','TINYINT'],
+{id:'mg_catalog.outbox_events',s:'mg_catalog',x:2180,y:1600,cols:[
+  ['id','PK','BIGINT'], ['event_type','--','VARCHAR(100)'], ['aggregate_type','--','VARCHAR(50)'], ['aggregate_id','--','BIGINT'], ['payload','--','JSON'], ['status','--','ENUM(\'PENDING\',\'DISPATCHED\',\'FAILED\')'], ['retry_count','--','TINYINT'], ['error_message','--','TEXT'], ['created_at','--','DATETIME'], ['dispatched_at','--','DATETIME']
 ]},
-{id:'mg_catalog.delivery_config',s:'mg_catalog',x:840,y:1180,cols:[
-  ['id','PK','INT'],['max_delivery_radius_km','--','DECIMAL(5,2)'],
-  ['base_shipping_fee','--','DECIMAL(10,2)'],
-  ['free_shipping_threshold','--','DECIMAL(12,2)'],
-  ['express_fee','--','DECIMAL(10,2)'],['is_enabled','--','TINYINT'],
-  ['updated_at','--','DATETIME'],
+{id:'mg_catalog.product_images',s:'mg_catalog',x:2600,y:1600,cols:[
+  ['id','PK','BIGINT'], ['product_id','FK','BIGINT'], ['file_name','--','VARCHAR(255)'], ['original_name','--','VARCHAR(255)'], ['mime_type','--','VARCHAR(100)'], ['file_size','--','BIGINT'], ['storage_path','--','VARCHAR(500)'], ['public_url','--','VARCHAR(500)'], ['image_role','--','ENUM(\'MAIN\',\'GALLERY\',\'PACKAGING\',\'LABEL\',\'CERTIFICATE\')'], ['alt_text','--','VARCHAR(300)'], ['is_primary','--','TINYINT(1)'], ['sort_order','--','INT'], ['uploaded_by','FK','BIGINT'], ['created_at','--','DATETIME'], ['updated_at','--','DATETIME']
 ]},
-{id:'mg_catalog.delivery_timeslots',s:'mg_catalog',x:1092,y:1180,cols:[
-  ['id','PK','INT'],['label','--','VARCHAR(50)'],['start_time','--','TIME'],
-  ['end_time','--','TIME'],['slot_type','--','ENUM'],
-  ['is_active','--','TINYINT'],['sort_order','--','INT'],
+{id:'mg_catalog.product_recalls',s:'mg_catalog',x:1340,y:2120,cols:[
+  ['id','PK','BIGINT'], ['recall_code','UK','VARCHAR(100)'], ['product_id','FK','BIGINT'], ['lot_numbers','--','JSON'], ['recall_reason','--','TEXT'], ['severity','--','ENUM(\'CLASS_I\',\'CLASS_II\',\'CLASS_III\')'], ['regulatory_reference','--','VARCHAR(200)'], ['recalled_by','FK','BIGINT'], ['recall_date','--','DATE'], ['status','--','ENUM(\'ACTIVE\',\'RESOLVED\')'], ['resolved_at','--','DATETIME'], ['created_at','--','DATETIME'], ['updated_at','--','DATETIME']
 ]},
-
-// ── mg_order ──────────────────────────────────────────────────────────────────
-{id:'mg_order.carts',s:'mg_order',x:1700,y:40,cols:[
-  ['id','PK','BIGINT'],['customer_id','--','BIGINT'],['session_id','--','VARCHAR(100)'],
-  ['created_at','--','DATETIME'],['updated_at','--','DATETIME'],
+{id:'mg_catalog.product_reviews',s:'mg_catalog',x:1760,y:2120,cols:[
+  ['id','PK','BIGINT'], ['product_id','FK','BIGINT'], ['customer_id','UK','BIGINT'], ['order_id','FK','BIGINT'], ['order_item_id','FK','BIGINT'], ['rating','--','TINYINT'], ['title','--','VARCHAR(160)'], ['comment','--','TEXT'], ['status','--','ENUM(\'PENDING\',\'APPROVED\',\'REJECTED\',\'HIDDEN\')'], ['is_verified_purchase','--','TINYINT(1)'], ['moderation_note','--','VARCHAR(500)'], ['created_at','--','DATETIME'], ['updated_at','--','DATETIME'], ['approved_at','--','DATETIME'], ['approved_by','FK','BIGINT'], ['hidden_at','--','DATETIME']
 ]},
-{id:'mg_order.cart_items',s:'mg_order',x:1952,y:40,cols:[
-  ['id','PK','BIGINT'],['cart_id','FK','BIGINT'],['product_id','--','BIGINT'],
-  ['unit_name','--','VARCHAR(50)'],['quantity','--','DECIMAL(10,3)'],
-  ['unit_price','--','DECIMAL(12,2)'],['added_at','--','DATETIME'],
+{id:'mg_catalog.product_specifications',s:'mg_catalog',x:2180,y:2120,cols:[
+  ['id','PK','BIGINT'], ['product_id','FK','BIGINT'], ['spec_key','--','VARCHAR(150)'], ['spec_value','--','TEXT'], ['sort_order','--','INT']
 ]},
-{id:'mg_order.orders',s:'mg_order',x:1700,y:240,cols:[
-  ['id','PK','BIGINT'],['order_code','UK','VARCHAR(50)'],
-  ['customer_id','--','BIGINT'],['order_channel','--','ENUM'],
-  ['payment_method','--','ENUM'],['payment_status','--','ENUM'],
-  ['shipping_address','--','JSON'],['subtotal','--','DECIMAL(12,2)'],
-  ['shipping_fee','--','DECIMAL(10,2)'],['discount_amount','--','DECIMAL(12,2)'],
-  ['total_amount','--','DECIMAL(12,2)'],['points_used','--','INT'],
-  ['points_earned','--','INT'],['status','--','ENUM'],
-  ['staff_id','--','BIGINT'],['shift_id','--','BIGINT'],
-  ['notes','--','TEXT'],['created_at','--','DATETIME'],
+{id:'mg_catalog.product_tag_promotions',s:'mg_catalog',x:2600,y:2120,cols:[
+  ['id','PK','BIGINT'], ['product_id','FK','BIGINT'], ['tag_name','UK','ENUM(\'FLASH-SALE\', \'DEAL\', \'DISCOUNT\')'], ['discount_type','--','ENUM(\'PERCENTAGE\', \'FIXED_PRICE\')'], ['discount_value','--','DECIMAL(15, 2)'], ['campaign_qty','--','INT'], ['sold_qty','--','INT'], ['max_per_customer','--','INT'], ['start_time','--','DATETIME'], ['end_time','--','DATETIME'], ['status','UK','ENUM(\'ACTIVE\', \'INACTIVE\', \'PAUSED\')'], ['created_at','--','DATETIME'], ['updated_at','--','DATETIME']
 ]},
-{id:'mg_order.order_items',s:'mg_order',x:1952,y:240,cols:[
-  ['id','PK','BIGINT'],['order_id','FK','BIGINT'],['product_id','--','BIGINT'],
-  ['batch_item_id','--','BIGINT'],['product_name','--','VARCHAR(300)'],
-  ['sku','--','VARCHAR(50)'],['unit_name','--','VARCHAR(50)'],
-  ['quantity','--','DECIMAL(10,3)'],['unit_price','--','DECIMAL(12,2)'],
-  ['discount_amount','--','DECIMAL(12,2)'],['subtotal','--','DECIMAL(12,2)'],
+{id:'mg_catalog.product_units',s:'mg_catalog',x:1340,y:2640,cols:[
+  ['id','PK','BIGINT'], ['product_id','FK','BIGINT'], ['unit_name','--','VARCHAR(50)'], ['conversion_qty','--','INT'], ['of_unit','--','VARCHAR(50)'], ['retail_price','--','DECIMAL(15,2)'], ['sort_order','--','INT'], ['barcode','--','VARCHAR(100)']
 ]},
-{id:'mg_order.returns',s:'mg_order',x:1700,y:600,cols:[
-  ['id','PK','BIGINT'],['return_code','UK','VARCHAR(50)'],
-  ['order_id','FK','BIGINT'],['reason','--','VARCHAR(500)'],
-  ['refund_amount','--','DECIMAL(12,2)'],['refund_method','--','ENUM'],
-  ['status','--','ENUM'],['created_by','--','BIGINT'],
-  ['approved_by','--','BIGINT'],['created_at','--','DATETIME'],
+{id:'mg_catalog.products',s:'mg_catalog',x:1760,y:2640,cols:[
+  ['id','PK','BIGINT'], ['sku','UK','VARCHAR(50)'], ['name','--','VARCHAR(300)'], ['strength','--','VARCHAR(100)'], ['route_of_administration','--','VARCHAR(100)'], ['category_id','FK','BIGINT'], ['active_ingredient','--','TEXT'], ['registration_number','--','VARCHAR(100)'], ['manufacturer','--','VARCHAR(300)'], ['requires_prescription','--','TINYINT(1)'], ['special_control_group','--','VARCHAR(100)'], ['storage_condition','--','VARCHAR(100)'], ['base_unit','--','VARCHAR(50)'], ['cost_price','--','DECIMAL(15,2)'], ['retail_price','--','DECIMAL(15,2)'], ['min_stock_alert','--','INT'], ['image_url','--','VARCHAR(500)'], ['description','--','TEXT'], ['status','--','ENUM(\'DRAFT\',\'PENDING_REVIEW\',\'ACTIVE\',\'INACTIVE\',\'REJECTED\')'], ['barcode','UK','VARCHAR(100)'], ['created_at','--','DATETIME'], ['updated_at','--','DATETIME'], ['brand_id','--','INT'], ['tags','--','JSON'], ['country_of_origin','--','VARCHAR(100)'], ['is_exclusive','--','TINYINT(1)'], ['sales_volume','--','INT'], ['gallery','--','JSON']
 ]},
-{id:'mg_order.return_items',s:'mg_order',x:1952,y:600,cols:[
-  ['id','PK','BIGINT'],['return_id','FK','BIGINT'],['order_item_id','FK','BIGINT'],
-  ['quantity_returned','--','DECIMAL(10,3)'],['refund_amount','--','DECIMAL(12,2)'],
-  ['condition_note','--','VARCHAR(300)'],
+{id:'mg_catalog.stock_movements',s:'mg_catalog',x:2180,y:2640,cols:[
+  ['id','PK','BIGINT'], ['movement_code','--','VARCHAR(50)'], ['batch_item_id','FK','BIGINT'], ['product_id','FK','BIGINT'], ['movement_type','--','ENUM(\'INBOUND\',\'OUTBOUND_SALE\',\'OUTBOUND_RETURN_SUPPLIER\',\'OUTBOUND_DAMAGE\',\'OUTBOUND_EXPIRY\',\'ADJUSTMENT\')'], ['quantity','--','INT'], ['reference_type','--','ENUM(\'PURCHASE_ORDER\',\'POS_ORDER\',\'WEB_ORDER\',\'RETURN\',\'ADJUSTMENT\')'], ['reference_id','--','BIGINT'], ['reason','--','TEXT'], ['created_by','FK','BIGINT'], ['created_at','--','DATETIME']
 ]},
-{id:'mg_order.pos_held_orders',s:'mg_order',x:1700,y:870,cols:[
-  ['id','PK','BIGINT'],['hold_code','UK','VARCHAR(50)'],
-  ['staff_id','--','BIGINT'],['shift_id','--','BIGINT'],
-  ['customer_id','--','BIGINT'],['customer_name','--','VARCHAR(200)'],
-  ['note','--','VARCHAR(500)'],['held_at','--','DATETIME'],
-  ['auto_release_at','--','DATETIME'],['is_released','--','TINYINT'],
+{id:'mg_catalog.stock_reservations',s:'mg_catalog',x:2600,y:2640,cols:[
+  ['id','PK','BIGINT'], ['batch_item_id','FK','BIGINT'], ['product_id','FK','BIGINT'], ['quantity','--','INT'], ['source_type','--','ENUM(\'POS_HOLD\',\'WEB_CHECKOUT\',\'POS_CHECKOUT\')'], ['source_id','--','BIGINT'], ['reserved_by','--','BIGINT'], ['reserved_at','--','DATETIME'], ['expires_at','--','DATETIME'], ['released_at','--','DATETIME'], ['release_reason','--','ENUM(\'COMPLETED\',\'CANCELLED\',\'EXPIRED\')']
 ]},
-{id:'mg_order.pos_held_order_items',s:'mg_order',x:1952,y:870,cols:[
-  ['id','PK','BIGINT'],['hold_id','FK','BIGINT'],['product_id','--','BIGINT'],
-  ['product_name','--','VARCHAR(300)'],['unit_name','--','VARCHAR(50)'],
-  ['quantity','--','DECIMAL(10,3)'],['unit_price','--','DECIMAL(12,2)'],
-  ['subtotal','--','DECIMAL(12,2)'],
+{id:'mg_catalog.storage_cabinets',s:'mg_catalog',x:1340,y:3160,cols:[
+  ['id','PK','INT'], ['zone_id','FK','INT'], ['code','UK','VARCHAR(50)'], ['name','--','VARCHAR(100)'], ['shelf_count','--','INT'], ['is_active','--','TINYINT(1)']
 ]},
-{id:'mg_order.prescriptions',s:'mg_order',x:1700,y:1100,cols:[
-  ['id','PK','BIGINT'],['prescription_code','UK','VARCHAR(100)'],
-  ['order_id','FK','BIGINT'],['customer_id','--','BIGINT'],
-  ['patient_name','--','VARCHAR(200)'],['doctor_name','--','VARCHAR(200)'],
-  ['hospital_name','--','VARCHAR(300)'],['issue_date','--','DATE'],
-  ['expiry_date','--','DATE'],['image_url','--','VARCHAR(500)'],
-  ['status','--','ENUM'],['verified_by','--','BIGINT'],['created_at','--','DATETIME'],
+{id:'mg_catalog.storage_shelves',s:'mg_catalog',x:1760,y:3160,cols:[
+  ['id','PK','INT'], ['cabinet_id','FK','INT'], ['name','--','VARCHAR(100)'], ['location_id','FK','BIGINT'], ['product_type','--','VARCHAR(100)'], ['is_active','--','TINYINT(1)']
 ]},
-
-// ── mg_cms ────────────────────────────────────────────────────────────────────
-{id:'mg_cms.cms_categories',s:'mg_cms',x:2270,y:40,cols:[
-  ['id','PK','INT'],['name','--','VARCHAR(150)'],['slug','UK','VARCHAR(150)'],
-  ['type','--','ENUM'],['description','--','VARCHAR(300)'],
-  ['sort_order','--','INT'],['is_active','--','TINYINT'],
+{id:'mg_catalog.storage_zones',s:'mg_catalog',x:2180,y:3160,cols:[
+  ['id','PK','INT'], ['code','UK','VARCHAR(50)'], ['name','--','VARCHAR(100)'], ['description','--','VARCHAR(300)'], ['is_active','--','TINYINT(1)']
 ]},
-{id:'mg_cms.articles',s:'mg_cms',x:2522,y:40,cols:[
-  ['id','PK','BIGINT'],['title','--','VARCHAR(300)'],['slug','UK','VARCHAR(300)'],
-  ['content','--','LONGTEXT'],['excerpt','--','TEXT'],
-  ['thumbnail_url','--','VARCHAR(500)'],['category_id','FK','INT'],
-  ['author_id','--','BIGINT'],['tags','--','JSON'],
-  ['status','--','ENUM'],['view_count','--','INT'],
-  ['published_at','--','DATETIME'],['created_at','--','DATETIME'],
+{id:'mg_catalog.suppliers',s:'mg_catalog',x:2600,y:3160,cols:[
+  ['id','PK','BIGINT'], ['code','UK','VARCHAR(20)'], ['name','--','VARCHAR(300)'], ['contact_name','--','VARCHAR(150)'], ['phone','--','VARCHAR(20)'], ['email','--','VARCHAR(150)'], ['address','--','TEXT'], ['tax_code','--','VARCHAR(50)'], ['total_purchase_value','--','DECIMAL(20,2)'], ['current_debt','--','DECIMAL(20,2)'], ['status','--','ENUM(\'ACTIVE\',\'INACTIVE\')'], ['created_at','--','DATETIME'], ['updated_at','--','DATETIME']
 ]},
-{id:'mg_cms.banners',s:'mg_cms',x:2270,y:308,cols:[
-  ['id','PK','INT'],['title','--','VARCHAR(200)'],['image_url','--','VARCHAR(500)'],
-  ['link_url','--','VARCHAR(500)'],['position','--','ENUM'],
-  ['sort_order','--','INT'],['is_active','--','TINYINT'],
-  ['start_date','--','DATETIME'],['end_date','--','DATETIME'],
+{id:'mg_order.cart_items',s:'mg_order',x:3060,y:40,cols:[
+  ['id','PK','BIGINT'], ['cart_id','FK','BIGINT'], ['product_id','UK','BIGINT'], ['product_name','--','VARCHAR(300)'], ['product_sku','--','VARCHAR(100)'], ['thumbnail','--','TEXT'], ['unit_name','UK','VARCHAR(50)'], ['quantity','--','INT'], ['unit_price','--','DECIMAL(12,2)'], ['is_active','--','TINYINT(1)']
 ]},
-{id:'mg_cms.promotions',s:'mg_cms',x:2522,y:308,cols:[
-  ['id','PK','BIGINT'],['name','--','VARCHAR(200)'],['code','UK','VARCHAR(50)'],
-  ['type','--','ENUM'],['discount_value','--','DECIMAL(12,2)'],
-  ['min_order_value','--','DECIMAL(12,2)'],['max_discount_amount','--','DECIMAL(12,2)'],
-  ['applicable_to','--','ENUM'],['applicable_ids','--','JSON'],
-  ['usage_limit','--','INT'],['usage_count','--','INT'],
-  ['start_date','--','DATETIME'],['end_date','--','DATETIME'],['is_active','--','TINYINT'],
+{id:'mg_order.carts',s:'mg_order',x:3480,y:40,cols:[
+  ['id','PK','BIGINT'], ['customer_id','FK','BIGINT'], ['session_id','--','VARCHAR(100)'], ['is_active','--','TINYINT(1)'], ['created_at','--','DATETIME'], ['updated_at','--','DATETIME']
 ]},
-{id:'mg_cms.store_config',s:'mg_cms',x:2270,y:620,cols:[
-  ['config_key','PK','VARCHAR(100)'],['config_value','--','TEXT'],
-  ['value_type','--','ENUM'],['display_name','--','VARCHAR(200)'],
-  ['description','--','VARCHAR(500)'],['group_name','--','VARCHAR(100)'],
-  ['is_public','--','TINYINT'],['is_editable','--','TINYINT'],
-  ['updated_by','--','BIGINT'],['updated_at','--','DATETIME'],
+{id:'mg_order.order_internal_notes',s:'mg_order',x:3900,y:40,cols:[
+  ['id','PK','BIGINT'], ['order_id','FK','BIGINT'], ['note','--','TEXT'], ['created_by','FK','BIGINT'], ['created_at','--','DATETIME']
 ]},
-{id:'mg_cms.cms_media',s:'mg_cms',x:2522,y:620,cols:[
-  ['id','PK','BIGINT'],['original_name','--','VARCHAR(500)'],
-  ['stored_name','--','VARCHAR(500)'],['file_url','--','VARCHAR(1000)'],
-  ['thumbnail_url','--','VARCHAR(1000)'],['file_size','--','BIGINT'],
-  ['mime_type','--','VARCHAR(100)'],['media_type','--','ENUM'],
-  ['width','--','INT'],['height','--','INT'],['alt_text','--','VARCHAR(300)'],
-  ['uploaded_by','--','BIGINT'],['is_deleted','--','TINYINT'],
-  ['created_at','--','DATETIME'],
+{id:'mg_order.order_items',s:'mg_order',x:3060,y:560,cols:[
+  ['id','PK','BIGINT'], ['order_id','FK','BIGINT'], ['product_id','FK','BIGINT'], ['product_name','--','VARCHAR(300)'], ['unit_name','--','VARCHAR(50)'], ['quantity','--','INT'], ['unit_price','--','DECIMAL(12,2)'], ['total_price','--','DECIMAL(12,2)'], ['batch_item_id','FK','BIGINT'], ['lot_number','--','VARCHAR(100)'], ['prescription_id','FK','BIGINT'], ['is_active','--','TINYINT(1)']
 ]},
-{id:'mg_cms.cms_pages',s:'mg_cms',x:2270,y:934,cols:[
-  ['id','PK','INT'],['slug','UK','VARCHAR(200)'],['title','--','VARCHAR(300)'],
-  ['content','--','LONGTEXT'],['meta_title','--','VARCHAR(300)'],
-  ['meta_description','--','VARCHAR(500)'],['author_id','--','BIGINT'],
-  ['is_active','--','TINYINT'],['show_in_footer','--','TINYINT'],
-  ['published_at','--','DATETIME'],['created_at','--','DATETIME'],
+{id:'mg_order.order_promotions',s:'mg_order',x:3480,y:560,cols:[
+  ['id','PK','BIGINT'], ['order_id','FK','BIGINT'], ['promotion_id','--','BIGINT'], ['promo_code_snapshot','--','VARCHAR(50)'], ['promo_name_snapshot','--','VARCHAR(200)'], ['promo_type_snapshot','--','VARCHAR(50)'], ['discount_value_snapshot','--','DECIMAL(10,2)'], ['discount_applied','--','DECIMAL(12,2)'], ['applied_at','--','DATETIME']
 ]},
-{id:'mg_cms.trending_searches',s:'mg_cms',x:2522,y:934,cols:[
-  ['id','PK','INT'],['keyword','--','VARCHAR(300)'],['context','--','ENUM'],
-  ['search_count','--','BIGINT'],['distinct_users','--','INT'],
-  ['is_pinned','--','TINYINT'],['pin_order','--','INT'],
-  ['period_start','--','DATE'],['period_end','--','DATE'],
-  ['last_searched','--','DATETIME'],
+{id:'mg_order.orders',s:'mg_order',x:3900,y:560,cols:[
+  ['id','PK','BIGINT'], ['order_code','UK','VARCHAR(50)'], ['order_channel','--','ENUM(\'WEB\',\'POS\')'], ['customer_id','FK','BIGINT'], ['customer_name','--','VARCHAR(200)'], ['customer_phone','--','VARCHAR(20)'], ['shipping_address','--','TEXT'], ['staff_id','FK','BIGINT'], ['kiosk_id','--','VARCHAR(20)'], ['shift_id','FK','BIGINT'], ['subtotal','--','DECIMAL(15,2)'], ['shipping_fee','--','DECIMAL(12,2)'], ['discount_amount','--','DECIMAL(12,2)'], ['total_amount','--','DECIMAL(15,2)'], ['payment_method','--','ENUM(\'CASH\',\'COD\',\'VNPAY\',\'MOMO\',\'CARD_VISA\',\'QR_TRANSFER\')'], ['payment_status','--','ENUM(\'PENDING\',\'PAID\',\'FAILED\',\'REFUNDED\')'], ['order_status','--','ENUM(\'PENDING_APPROVAL\',\'CONFIRMED\',\'PICKING\',\'SHIPPING\',\'COMPLETED\',\'CANCELLED\')'], ['requires_vat_invoice','--','TINYINT(1)'], ['customer_notes','--','TEXT'], ['is_active','--','TINYINT(1)'], ['created_at','--','DATETIME'], ['updated_at','--','DATETIME']
 ]},
-
-// ── mg_notification ───────────────────────────────────────────────────────────
-{id:'mg_notification.notification_templates',s:'mg_notification',x:2830,y:40,cols:[
-  ['id','PK','INT'],['name','UK','VARCHAR(100)'],
-  ['channel','--','ENUM'],['subject','--','VARCHAR(300)'],
-  ['body_template','--','TEXT'],['is_active','--','TINYINT'],
+{id:'mg_order.outbox_events',s:'mg_order',x:3060,y:1080,cols:[
+  ['id','PK','BIGINT'], ['event_type','--','VARCHAR(100)'], ['aggregate_type','--','VARCHAR(50)'], ['aggregate_id','--','BIGINT'], ['payload','--','JSON'], ['status','--','ENUM(\'PENDING\',\'DISPATCHED\',\'FAILED\')'], ['retry_count','--','TINYINT'], ['error_message','--','TEXT'], ['created_at','--','DATETIME'], ['dispatched_at','--','DATETIME']
 ]},
-{id:'mg_notification.notifications',s:'mg_notification',x:2830,y:280,cols:[
-  ['id','PK','BIGINT'],['template_id','FK','INT'],['recipient_type','--','ENUM'],
-  ['recipient_id','--','BIGINT'],['channel','--','ENUM'],
-  ['subject','--','VARCHAR(300)'],['body','--','TEXT'],
-  ['status','--','ENUM'],['sent_at','--','DATETIME'],
-  ['read_at','--','DATETIME'],['created_at','--','DATETIME'],
+{id:'mg_order.pos_held_order_items',s:'mg_order',x:3480,y:1080,cols:[
+  ['id','PK','BIGINT'], ['hold_id','FK','BIGINT'], ['product_id','FK','BIGINT'], ['product_name','--','VARCHAR(300)'], ['sku','--','VARCHAR(100)'], ['unit_name','--','VARCHAR(50)'], ['quantity','--','DECIMAL(10,3)'], ['unit_price','--','DECIMAL(12,2)'], ['current_unit_price','--','DECIMAL(12,2)'], ['price_discrepancy','--','DECIMAL(12,2)'], ['discount_amount','--','DECIMAL(12,2)'], ['subtotal','--','DECIMAL(12,2)'], ['note','--','VARCHAR(300)']
+]},
+{id:'mg_order.pos_held_orders',s:'mg_order',x:3900,y:1080,cols:[
+  ['id','PK','BIGINT'], ['hold_code','UK','VARCHAR(50)'], ['staff_id','FK','BIGINT'], ['shift_id','FK','BIGINT'], ['customer_id','FK','BIGINT'], ['customer_name','--','VARCHAR(200)'], ['note','--','VARCHAR(500)'], ['held_at','--','DATETIME'], ['auto_release_at','--','DATETIME'], ['is_released','--','TINYINT(1)'], ['released_at','--','DATETIME'], ['released_note','--','VARCHAR(300)']
+]},
+{id:'mg_order.prescriptions',s:'mg_order',x:3060,y:1600,cols:[
+  ['id','PK','BIGINT'], ['prescription_code','UK','VARCHAR(100)'], ['order_id','FK','BIGINT'], ['customer_id','FK','BIGINT'], ['patient_name','--','VARCHAR(200)'], ['patient_dob','--','DATE'], ['patient_phone','--','VARCHAR(20)'], ['doctor_name','--','VARCHAR(200)'], ['doctor_license','--','VARCHAR(100)'], ['hospital_name','--','VARCHAR(300)'], ['issue_date','--','DATE'], ['expiry_date','--','DATE'], ['image_url','--','VARCHAR(500)'], ['image_sha256','UK','CHAR(64)'], ['verified_image_url','--','VARCHAR(500)'], ['max_dispensing_qty','--','INT'], ['dispensed_qty','--','INT'], ['diagnosis_code','--','VARCHAR(50)'], ['diagnosis_text','--','VARCHAR(500)'], ['notes','--','TEXT'], ['status','--','ENUM(\'PENDING\',\'VERIFIED\',\'REJECTED\',\'EXPIRED\')'], ['verified_by','FK','BIGINT'], ['verified_at','--','DATETIME'], ['rejection_reason','--','VARCHAR(500)'], ['created_at','--','DATETIME'], ['updated_at','--','DATETIME']
+]},
+{id:'mg_order.return_items',s:'mg_order',x:3480,y:1600,cols:[
+  ['id','PK','BIGINT'], ['return_id','FK','BIGINT'], ['order_item_id','FK','BIGINT'], ['quantity_returned','--','INT'], ['return_to_stock','--','TINYINT(1)'], ['is_active','--','TINYINT(1)']
+]},
+{id:'mg_order.returns',s:'mg_order',x:3900,y:1600,cols:[
+  ['id','PK','BIGINT'], ['return_code','UK','VARCHAR(50)'], ['order_id','FK','BIGINT'], ['order_channel','--','ENUM(\'WEB\',\'POS\',\'SUPPLIER\')'], ['reason','--','TEXT'], ['refund_amount','--','DECIMAL(15,2)'], ['refund_method','--','ENUM(\'CASH\',\'ORIGINAL_PAYMENT\',\'STORE_CREDIT\')'], ['status','--','ENUM(\'PENDING\',\'APPROVED\',\'REJECTED\',\'COMPLETED\')'], ['handled_by','--','BIGINT'], ['is_active','--','TINYINT(1)'], ['created_at','--','DATETIME'], ['updated_at','--','DATETIME']
+]},
+{id:'mg_cms.articles',s:'mg_cms',x:4360,y:40,cols:[
+  ['id','PK','BIGINT'], ['title','--','VARCHAR(400)'], ['slug','UK','VARCHAR(450)'], ['content','--','LONGTEXT'], ['excerpt','--','TEXT'], ['thumbnail_url','--','VARCHAR(500)'], ['category_id','FK','INT'], ['author_id','FK','BIGINT'], ['related_product_ids','--','JSON'], ['related_article_ids','--','JSON'], ['tags','--','JSON'], ['status','--','ENUM(\'DRAFT\',\'PUBLISHED\',\'ARCHIVED\')'], ['published_at','--','DATETIME'], ['view_count','--','INT'], ['created_at','--','DATETIME'], ['updated_at','--','DATETIME'], ['content_sanitized','--','LONGTEXT'], ['sanitized_at','--','DATETIME']
+]},
+{id:'mg_cms.banners',s:'mg_cms',x:4780,y:40,cols:[
+  ['id','PK','INT'], ['title','--','VARCHAR(200)'], ['image_url','--','VARCHAR(500)'], ['link_url','--','VARCHAR(500)'], ['position','--','ENUM(\'HERO\',\'POPUP\',\'SIDEBAR\')'], ['is_active','--','TINYINT(1)'], ['start_date','--','DATE'], ['end_date','--','DATE'], ['sort_order','--','INT']
+]},
+{id:'mg_cms.cms_categories',s:'mg_cms',x:4360,y:560,cols:[
+  ['id','PK','INT'], ['name','--','VARCHAR(150)'], ['slug','UK','VARCHAR(200)'], ['type','--','ENUM(\'ARTICLE\',\'DISEASE\',\'PROMOTION\')'], ['parent_id','FK','INT'], ['description','--','TEXT'], ['image_url','--','VARCHAR(500)'], ['is_active','--','TINYINT(1)'], ['sort_order','--','INT']
+]},
+{id:'mg_cms.cms_media',s:'mg_cms',x:4780,y:560,cols:[
+  ['id','PK','BIGINT'], ['original_name','--','VARCHAR(500)'], ['stored_name','--','VARCHAR(500)'], ['file_url','--','VARCHAR(1000)'], ['thumbnail_url','--','VARCHAR(1000)'], ['file_size','--','BIGINT'], ['mime_type','--','VARCHAR(100)'], ['media_type','--','ENUM(\'IMAGE\',\'DOCUMENT\',\'VIDEO\',\'OTHER\')'], ['width','--','INT'], ['height','--','INT'], ['alt_text','--','VARCHAR(300)'], ['tags','--','JSON'], ['used_in','--','VARCHAR(100)'], ['used_in_id','--','BIGINT'], ['uploaded_by','FK','BIGINT'], ['is_deleted','--','TINYINT(1)'], ['deleted_at','--','DATETIME'], ['created_at','--','DATETIME'], ['file_extension','--','VARCHAR(10)']
+]},
+{id:'mg_cms.cms_pages',s:'mg_cms',x:4360,y:1080,cols:[
+  ['id','PK','INT'], ['slug','UK','VARCHAR(200)'], ['title','--','VARCHAR(300)'], ['content','--','LONGTEXT'], ['meta_title','--','VARCHAR(300)'], ['meta_description','--','VARCHAR(500)'], ['meta_keywords','--','VARCHAR(300)'], ['featured_image','--','VARCHAR(1000)'], ['author_id','FK','BIGINT'], ['published_by','FK','BIGINT'], ['is_active','--','TINYINT(1)'], ['show_in_footer','--','TINYINT(1)'], ['sort_order','--','INT'], ['published_at','--','DATETIME'], ['created_at','--','DATETIME'], ['updated_at','--','DATETIME']
+]},
+{id:'mg_cms.promotions',s:'mg_cms',x:4780,y:1080,cols:[
+  ['id','PK','BIGINT'], ['name','--','VARCHAR(200)'], ['campaign_name','--','VARCHAR(200)'], ['code','UK','VARCHAR(50)'], ['type','--','ENUM(\'PERCENT_DISCOUNT\',\'FIXED_DISCOUNT\',\'FREE_SHIPPING\',\'BUY_X_GET_Y\')'], ['discount_value','--','DECIMAL(10,2)'], ['min_order_value','--','DECIMAL(12,2)'], ['max_discount_amount','--','DECIMAL(12,2)'], ['applicable_to','--','ENUM(\'ALL\',\'SPECIFIC_CATEGORIES\',\'SPECIFIC_PRODUCTS\')'], ['applicable_ids','--','JSON'], ['gift_product_name','--','VARCHAR(300)'], ['gift_product_qty','--','INT'], ['applicable_channel','--','ENUM(\'ALL\',\'WEB\',\'POS\')'], ['usage_limit','--','INT'], ['usage_count','--','INT'], ['start_date','--','DATETIME'], ['end_date','--','DATETIME'], ['is_active','--','TINYINT(1)'], ['created_at','--','DATETIME']
+]},
+{id:'mg_cms.store_config',s:'mg_cms',x:4360,y:1600,cols:[
+  ['config_key','PK','VARCHAR(100)'], ['config_value','--','TEXT'], ['value_type','--','ENUM(\'STRING\',\'INTEGER\',\'DECIMAL\',\'BOOLEAN\',\'JSON\')'], ['display_name','--','VARCHAR(200)'], ['description','--','VARCHAR(500)'], ['group_name','--','VARCHAR(100)'], ['is_public','--','TINYINT(1)'], ['is_editable','--','TINYINT(1)'], ['updated_by','FK','BIGINT'], ['updated_at','--','DATETIME'], ['is_sensitive','--','TINYINT(1)'], ['value_hash','--','CHAR(64)'], ['id','UK','INT'], ['is_active','--','TINYINT(1)']
+]},
+{id:'mg_cms.trending_searches',s:'mg_cms',x:4780,y:1600,cols:[
+  ['id','PK','INT'], ['keyword','UK','VARCHAR(300)'], ['context','UK','ENUM(\'GLOBAL\',\'PRODUCT\',\'DISEASE\',\'ARTICLE\')'], ['search_count','--','BIGINT'], ['distinct_users','--','INT'], ['is_pinned','--','TINYINT(1)'], ['is_hidden','--','TINYINT(1)'], ['pin_order','--','INT'], ['period_start','UK','DATE'], ['period_end','--','DATE'], ['last_searched','--','DATETIME'], ['updated_at','--','DATETIME']
+]},
+{id:'mg_notification.notification_templates',s:'mg_notification',x:5260,y:40,cols:[
+  ['id','PK','INT'], ['name','UK','VARCHAR(100)'], ['channel','UK','ENUM(\'EMAIL\',\'SMS\',\'PUSH\',\'IN_APP\',\'ZALO\')'], ['subject','--','VARCHAR(300)'], ['body_template','--','TEXT'], ['is_active','--','TINYINT(1)']
+]},
+{id:'mg_notification.notifications',s:'mg_notification',x:5260,y:560,cols:[
+  ['id','PK','BIGINT'], ['template_id','FK','INT'], ['recipient_type','--','ENUM(\'CUSTOMER\',\'STAFF\',\'ADMIN\')'], ['recipient_id','--','BIGINT'], ['channel','--','ENUM(\'EMAIL\',\'SMS\',\'PUSH\',\'IN_APP\',\'ZALO\')'], ['reference_type','--','VARCHAR(50)'], ['reference_id','--','BIGINT'], ['payload','--','JSON'], ['status','--','ENUM(\'PENDING\',\'SENT\',\'FAILED\')'], ['sent_at','--','DATETIME'], ['created_at','--','DATETIME']
 ]},
 ];
 
@@ -468,62 +349,78 @@ const TABLES = [
 // [fromTable, fromCol, toTable, toCol, crossSchema]
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const FKS = [
-// mg_identity — within
-['mg_identity.users','role_id','mg_identity.roles','id',false],
 ['mg_identity.customer_addresses','customer_id','mg_identity.customers','id',false],
-['mg_identity.shifts','user_id','mg_identity.users','id',false],
 ['mg_identity.loyalty_points_transactions','customer_id','mg_identity.customers','id',false],
-
-// mg_catalog — within
-['mg_catalog.categories','parent_id','mg_catalog.categories','id',false],
-['mg_catalog.products','category_id','mg_catalog.categories','id',false],
-['mg_catalog.products','brand_id','mg_catalog.brands','id',false],
-['mg_catalog.product_units','product_id','mg_catalog.products','id',false],
-['mg_catalog.product_specifications','product_id','mg_catalog.products','id',false],
-['mg_catalog.batches','supplier_id','mg_catalog.suppliers','id',false],
-['mg_catalog.batch_items','batch_id','mg_catalog.batches','id',false],
-['mg_catalog.batch_items','product_id','mg_catalog.products','id',false],
-['mg_catalog.batch_items','location_id','mg_catalog.locations','id',false],
-['mg_catalog.stock_movements','batch_item_id','mg_catalog.batch_items','id',false],
-['mg_catalog.stock_movements','product_id','mg_catalog.products','id',false],
-['mg_catalog.inventory_audits','location_id','mg_catalog.locations','id',false],
+['mg_identity.loyalty_points_transactions','reference_order_id','mg_order.orders','id',true],
+['mg_identity.loyalty_points_transactions','adjusted_by','mg_identity.users','id',true],
+['mg_identity.shifts','user_id','mg_identity.users','id',false],
+['mg_identity.shifts','approved_by','mg_identity.users','id',true],
+['mg_identity.users','role_id','mg_identity.roles','id',false],
 ['mg_catalog.audit_items','audit_id','mg_catalog.inventory_audits','id',false],
 ['mg_catalog.audit_items','batch_item_id','mg_catalog.batch_items','id',false],
 ['mg_catalog.audit_items','product_id','mg_catalog.products','id',false],
+['mg_catalog.batch_items','batch_id','mg_catalog.batches','id',false],
+['mg_catalog.batch_items','product_id','mg_catalog.products','id',false],
+['mg_catalog.batch_items','location_id','mg_catalog.locations','id',false],
+['mg_catalog.batches','supplier_id','mg_catalog.suppliers','id',false],
+['mg_catalog.batches','created_by','mg_identity.users','id',true],
+['mg_catalog.catalog_audit_logs','user_id','mg_identity.users','id',true],
+['mg_catalog.catalog_gift_campaigns','gift_product_id','mg_catalog.products','id',false],
+['mg_catalog.categories','parent_id','mg_catalog.categories','id',false],
+['mg_catalog.inventory_audits','location_id','mg_catalog.locations','id',false],
+['mg_catalog.inventory_audits','created_by','mg_identity.users','id',true],
+['mg_catalog.inventory_audits','reconciled_by','mg_identity.users','id',true],
+['mg_catalog.product_recalls','product_id','mg_catalog.products','id',false],
+['mg_catalog.product_recalls','recalled_by','mg_identity.users','id',true],
+['mg_catalog.product_specifications','product_id','mg_catalog.products','id',false],
+['mg_catalog.product_units','product_id','mg_catalog.products','id',false],
+['mg_catalog.products','category_id','mg_catalog.categories','id',false],
+['mg_catalog.product_images','product_id','mg_catalog.products','id',false],
+['mg_catalog.product_images','uploaded_by','mg_identity.users','id',true],
+['mg_catalog.product_reviews','product_id','mg_catalog.products','id',false],
+['mg_catalog.product_reviews','order_id','mg_order.orders','id',true],
+['mg_catalog.product_reviews','order_item_id','mg_order.order_items','id',true],
+['mg_catalog.product_reviews','approved_by','mg_identity.users','id',true],
+['mg_catalog.product_tag_promotions','product_id','mg_catalog.products','id',false],
+['mg_catalog.stock_movements','batch_item_id','mg_catalog.batch_items','id',false],
+['mg_catalog.stock_movements','product_id','mg_catalog.products','id',false],
+['mg_catalog.stock_movements','created_by','mg_identity.users','id',true],
+['mg_catalog.stock_reservations','batch_item_id','mg_catalog.batch_items','id',false],
+['mg_catalog.stock_reservations','product_id','mg_catalog.products','id',false],
 ['mg_catalog.storage_cabinets','zone_id','mg_catalog.storage_zones','id',false],
 ['mg_catalog.storage_shelves','cabinet_id','mg_catalog.storage_cabinets','id',false],
 ['mg_catalog.storage_shelves','location_id','mg_catalog.locations','id',false],
-
-// mg_order — within
 ['mg_order.cart_items','cart_id','mg_order.carts','id',false],
+['mg_order.carts','customer_id','mg_identity.customers','id',true],
+['mg_order.order_internal_notes','order_id','mg_order.orders','id',false],
+['mg_order.order_internal_notes','created_by','mg_identity.users','id',true],
 ['mg_order.order_items','order_id','mg_order.orders','id',false],
-['mg_order.returns','order_id','mg_order.orders','id',false],
-['mg_order.return_items','return_id','mg_order.returns','id',false],
-['mg_order.return_items','order_item_id','mg_order.order_items','id',false],
-['mg_order.pos_held_order_items','hold_id','mg_order.pos_held_orders','id',false],
-['mg_order.prescriptions','order_id','mg_order.orders','id',false],
-
-// mg_cms — within
-['mg_cms.articles','category_id','mg_cms.cms_categories','id',false],
-
-// mg_notification — within
-['mg_notification.notifications','template_id','mg_notification.notification_templates','id',false],
-
-// CROSS-SCHEMA FKs (logical, not enforced by MySQL)
-['mg_order.orders','customer_id','mg_identity.customers','id',true],
-['mg_order.orders','staff_id','mg_identity.users','id',true],
-['mg_order.cart_items','product_id','mg_catalog.products','id',true],
 ['mg_order.order_items','product_id','mg_catalog.products','id',true],
 ['mg_order.order_items','batch_item_id','mg_catalog.batch_items','id',true],
-['mg_order.prescriptions','customer_id','mg_identity.customers','id',true],
+['mg_order.order_items','prescription_id','mg_order.prescriptions','id',false],
+['mg_order.order_promotions','order_id','mg_order.orders','id',false],
+['mg_order.orders','customer_id','mg_identity.customers','id',true],
+['mg_order.orders','staff_id','mg_identity.users','id',true],
+['mg_order.orders','shift_id','mg_identity.shifts','id',true],
+['mg_order.pos_held_order_items','hold_id','mg_order.pos_held_orders','id',false],
+['mg_order.pos_held_order_items','product_id','mg_catalog.products','id',true],
 ['mg_order.pos_held_orders','staff_id','mg_identity.users','id',true],
-['mg_catalog.batches','created_by','mg_identity.users','id',true],
-['mg_catalog.stock_movements','created_by','mg_identity.users','id',true],
-['mg_catalog.inventory_audits','created_by','mg_identity.users','id',true],
+['mg_order.pos_held_orders','shift_id','mg_identity.shifts','id',true],
+['mg_order.pos_held_orders','customer_id','mg_identity.customers','id',true],
+['mg_order.prescriptions','order_id','mg_order.orders','id',false],
+['mg_order.prescriptions','customer_id','mg_identity.customers','id',true],
+['mg_order.prescriptions','verified_by','mg_identity.users','id',true],
+['mg_order.return_items','return_id','mg_order.returns','id',false],
+['mg_order.return_items','order_item_id','mg_order.order_items','id',false],
+['mg_order.returns','order_id','mg_order.orders','id',false],
+['mg_cms.articles','category_id','mg_cms.cms_categories','id',false],
 ['mg_cms.articles','author_id','mg_identity.users','id',true],
-['mg_cms.cms_pages','author_id','mg_identity.users','id',true],
+['mg_cms.cms_categories','parent_id','mg_cms.cms_categories','id',false],
 ['mg_cms.cms_media','uploaded_by','mg_identity.users','id',true],
-['mg_identity.loyalty_points_transactions','reference_order_id','mg_order.orders','id',true],
+['mg_cms.cms_pages','author_id','mg_identity.users','id',true],
+['mg_cms.cms_pages','published_by','mg_identity.users','id',true],
+['mg_cms.store_config','updated_by','mg_identity.users','id',true],
+['mg_notification.notifications','template_id','mg_notification.notification_templates','id',false],
 ];
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -668,45 +565,22 @@ function bestPorts(fr, tr) {
 
 // Build a smooth orthogonal path with rounded elbows
 function buildPath(x1, y1, sx1, sy1, x2, y2, sx2, sy2) {
-  const dist = Math.sqrt((x2-x1)**2 + (y2-y1)**2);
-  // For short distances use simple bezier; for longer use orthogonal
-  if (dist < 80) {
-    const cx1 = x1 + sx1 * Math.min(dist * 0.6, 60);
-    const cy1 = y1 + sy1 * Math.min(dist * 0.6, 60);
-    const cx2 = x2 + sx2 * Math.min(dist * 0.6, 60);
-    const cy2 = y2 + sy2 * Math.min(dist * 0.6, 60);
-    return `M${x1},${y1} C${cx1},${cy1} ${cx2},${cy2} ${x2},${y2}`;
-  }
-
-  // Orthogonal routing: exit → elbow → elbow → entry
-  const R = 6; // corner radius
-
-  // Same-axis exit and entry (both horizontal or both vertical)
   const hExit  = (sx1 !== 0);
   const hEntry = (sx2 !== 0);
 
   if (hExit && hEntry) {
-    // Both horizontal → S-bend
     const midX = (x1 + x2) / 2;
-    // Clamp midX to not cross either box
-    const clampedMid = Math.max(
-      Math.min(x1, x2) - 0,
-      Math.min(Math.max(x1, x2) + 0, midX)
-    );
-    return `M${x1},${y1} C${x1 + sx1*Math.min(Math.abs(x2-x1)*0.45, 80)},${y1} ${x2 + sx2*Math.min(Math.abs(x2-x1)*0.45, 80)},${y2} ${x2},${y2}`;
+    return `M${x1},${y1} L${midX},${y1} L${midX},${y2} L${x2},${y2}`;
   } else if (!hExit && !hEntry) {
-    // Both vertical → S-bend vertical
-    return `M${x1},${y1} C${x1},${y1 + sy1*Math.min(Math.abs(y2-y1)*0.45, 80)} ${x2},${y2 + sy2*Math.min(Math.abs(y2-y1)*0.45, 80)} ${x2},${y2}`;
+    const midY = (y1 + y2) / 2;
+    return `M${x1},${y1} L${x1},${midY} L${x2},${midY} L${x2},${y2}`;
   } else {
-    // Mixed → L-bend with bezier elbow
-    let elbowX, elbowY;
-    if (hExit) { elbowX = x2; elbowY = y1; }
-    else       { elbowX = x1; elbowY = y2; }
-    const c1x = x1 + sx1 * Math.min(Math.abs(elbowX - x1) * 0.7, 60);
-    const c1y = y1 + sy1 * Math.min(Math.abs(elbowY - y1) * 0.7, 60);
-    const c2x = x2 + sx2 * Math.min(Math.abs(elbowX - x2) * 0.7, 60);
-    const c2y = y2 + sy2 * Math.min(Math.abs(elbowY - y2) * 0.7, 60);
-    return `M${x1},${y1} C${c1x},${c1y} ${c2x},${c2y} ${x2},${y2}`;
+    // One horizontal, one vertical
+    if (hExit) {
+      return `M${x1},${y1} L${x2},${y1} L${x2},${y2}`;
+    } else {
+      return `M${x1},${y1} L${x1},${y2} L${x2},${y2}`;
+    }
   }
 }
 

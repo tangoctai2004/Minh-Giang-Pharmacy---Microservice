@@ -1,101 +1,42 @@
-# Minh Giang Pharmacy Seed Data Handoff
+# Tài liệu bàn giao Dữ liệu mẫu (Seed Data Handoff) - Nhà Thuốc Minh Giang
 
-This dataset is designed for a small pharmacy microservice demo centered on:
+Bộ dữ liệu mẫu này được thiết kế để phục vụ cho ứng dụng microservice Nhà Thuốc Minh Giang với các thông tin cốt lõi:
+- Cửa hàng chính: Nhà Thuốc Minh Giang
+- Địa chỉ: 918 An Dương Vương, Thành phố Hòa Bình
+- Phạm vi vận chuyển: Thành phố Hòa Bình, bán kính tối đa 8km
 
-- Store: Nha Thuoc Minh Giang
-- Main address: 918 An Duong Vuong, Thanh pho Hoa Binh
-- Delivery scope: Thanh pho Hoa Binh, max radius 8km
+## Lệnh khởi tạo lại (Rebuild Command)
 
-## Rebuild Command
-
-Run from the repository root:
-
+Chạy script tự động từ thư mục gốc của dự án:
 ```bash
 bash infrastructure/database/run_all.sh
 ```
 
-The script rebuilds the MySQL schemas and runs the acceptance checks at the end.
-If any critical business rule fails, `99_verify_seed_quality.sql` stops the script.
+Script này sẽ dựng lại cấu trúc 5 schema trong MySQL, nạp toàn bộ dữ liệu mẫu theo đúng thứ tự ràng buộc khóa ngoại và thực thi kiểm tra chất lượng ở bước cuối cùng. Nếu có bất kỳ vi phạm ràng buộc nghiệp vụ nào, file `verify.sql` sẽ báo lỗi và dừng script.
 
-## Seed Scripts
+## Danh sách các file Seed mới (`seeds/`)
 
-The detailed phase scripts are archived in `archive/seed_phases/` for traceability.
-The active rebuild flow is intentionally compact:
+Dưới đây là các file seed đã được tổ chức lại trong thư mục `infrastructure/database/seeds/`:
 
-| File | Purpose |
+| Tên File | Vai trò & Mục đích |
 | --- | --- |
-| `90_seed_demo_baseline.sql` | Consolidated baseline demo data: catalog cleanup, inventory batches, sale units, customers, orders, prescriptions, returns, notifications, and brand/media cleanup |
-| `91_seed_daily_activity.sql` | Daily inbound stock, POS/web sales, stock outflows, loyalty and notifications for `CURDATE()` |
-| `99_verify_seed_quality.sql` | Validate core data and business rules |
+| `01_seed_full_catalog.sql` | Nạp dữ liệu cơ sở cho Catalog: Nhà cung cấp, thương hiệu, danh mục chính. |
+| `02_seed_clean_catalog_products.sql` | Nạp 3000+ sản phẩm sạch, phân loại nhóm thuốc cùng các đơn vị bán hàng tương ứng. |
+| `03_seed_clean_cms_content.sql` | Nạp các danh mục bài viết y khoa và 54 bài viết tư vấn sức khỏe mẫu. |
+| `04_seed_disease_categories.sql` | Nạp danh mục bệnh lý để hỗ trợ tìm kiếm sản phẩm và gợi ý đơn thuốc. |
+| `05_seed_demo_promotions.sql` | Nạp các chương trình khuyến mãi mẫu (giảm giá trực tiếp, quà tặng kèm). |
+| `06_seed_product_tag_promotions.sql` | Cấu hình khuyến mãi áp dụng theo thẻ sản phẩm (Ví dụ: Thẻ 'Mẹ và Bé', 'Thuốc kê đơn'). |
+| `07_seed_demo_baseline.sql` | Dữ liệu nền tảng cho hệ thống: cấu hình giao hàng, các mẫu thông báo (email, sms, zalo) và người dùng hệ thống. |
+| `08_seed_daily_activity.sql` | Dữ liệu giao dịch phát sinh giả lập cho ngày hiện tại (`CURDATE()`): bao gồm nhập kho, bán hàng tại quầy POS, đơn hàng web, thay đổi điểm tích lũy và thông báo gửi đi. |
 
-## Current Dataset Totals
+## File Xác thực Chất lượng Dữ liệu
+- `verify.sql`: Chứa các câu lệnh SQL tự động kiểm tra tính toàn vẹn của dữ liệu mẫu, đảm bảo số tiền đơn hàng khớp với chi tiết mặt hàng, không có tồn kho âm, không có lô thuốc hết hạn được phép bán, v.v.
 
-Verified after a clean `run_all.sh` rebuild:
-
-| Area | Count |
-| --- | ---: |
-| Products | 4000 |
-| Active products | 3000 |
-| Pending review products | 1000 |
-| Batch items | 6033 |
-| Orders | 300 |
-| Prescriptions | 60 |
-| Returns | 48 |
-| Notifications | 453 |
-
-The daily activity script adds extra records on top of these baseline counts each time the database is
-rebuilt for the current day.
-
-## Business Rules Covered
-
-- Active products have manufacturer, active ingredient, and registration number.
-- Visible seed text uses Minh Giang branding.
-- Customer addresses are scoped to Hoa Binh.
-- Web delivery addresses stay in Hoa Binh and reference the 918 An Duong Vuong store scope.
-- Delivery config is enabled with an 8km radius.
-- Inventory never has negative remaining quantity or remaining greater than received.
-- Expired batches are not sellable.
-- Product unit barcodes do not collide with product barcodes.
-- Order subtotal and total amount match order items.
-- Rx order items only use verified, unexpired prescriptions.
-- Returns do not include Rx items and do not restock unless completed.
-- Notification references resolve to real order, prescription, return, batch, and template records.
-- Notification payloads include the store address.
-- Product SKUs use `MG-` prefix.
-- Product source URL specifications are removed from demo-facing data.
-
-## Service Schema Fixes Included
-
-The seed work also aligns service code with the database schema:
-
-- `backend/order-service/returns/returns.routes.js`
-  - Uses `return_code`, `order_channel`, `refund_amount`, `refund_method`.
-  - Inserts `return_items.quantity_returned`.
-  - Rejects automatic returns for prescription items.
-
-- `backend/notification-service/email/email.routes.js`
-  - Uses `notification_templates.subject` and `channel = 'email'`.
-
-- `backend/notification-service/templates/templates.routes.js`
-  - Uses `channel` and `subject`.
-  - Provides basic create, update, and soft delete operations.
-
-## Demo Checklist
-
-- Catalog browsing: active products, pending review products, product units.
-- Inventory: FEFO batches, near-expiry/expired/depleted stock, movement history.
-- Customers: loyalty tiers, Hoa Binh addresses.
-- Checkout/order: POS and web order statuses.
-- Delivery: web orders are in the supported Hoa Binh radius.
-- Prescription: pending/verified/expired/rejected prescriptions and verified Rx order items.
-- Returns: pending/approved/rejected/completed return cases.
-- Notifications: customer, staff, admin messages across email, SMS, in-app, and Zalo.
-- Today activity: `PH12-*` orders, inbound stock, outbound sale movements, loyalty earn rows, and order notifications.
-- QA: rerun `99_verify_seed_quality.sql` or full `run_all.sh`.
-
-## Media Note
-
-Product image URLs are intentionally preserved from the live seed source so the frontend can
-render real product images instead of falling back to default placeholders. Do not rewrite
-`products.image_url`, `products.gallery`, or `product_images.public_url` unless matching static
-files are created and served by the catalog service.
+## Các quy tắc nghiệp vụ được kiểm soát (Business Rules Checked)
+- Sản phẩm đang hoạt động bắt buộc có nhà sản xuất, hoạt chất và số đăng ký.
+- Các địa chỉ giao hàng của khách hàng mẫu đều thuộc khu vực Hòa Bình trong bán kính 8km.
+- Cấu hình phí vận chuyển hoạt động chính xác theo khoảng cách.
+- Số lượng lô hàng tồn kho không bao giờ âm.
+- Lô thuốc hết hạn sẽ không thể bán được.
+- Tổng số tiền đơn hàng khớp chính xác với đơn giá x số lượng của các mặt hàng bên trong.
+- Đơn hàng kê đơn chỉ sử dụng các đơn thuốc mẫu đã được phê duyệt hợp lệ.
