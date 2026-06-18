@@ -24,6 +24,65 @@ function catalogApi() {
     };
 }
 
+class ProductCarousel {
+    constructor(idPrefix, totalItems) {
+        this.track = document.getElementById(`pd${idPrefix}Products`) || document.getElementById(`pdRecently${idPrefix}`);
+        this.btnPrev = document.getElementById(`btnPrev${idPrefix}`);
+        this.btnNext = document.getElementById(`btnNext${idPrefix}`);
+        
+        if (!this.track || !this.btnPrev || !this.btnNext) return;
+
+        this.totalItems = totalItems;
+        this.itemsPerView = 5;
+        this.currentIndex = 0;
+        this.maxIndex = Math.max(0, this.totalItems - this.itemsPerView);
+        this.init();
+    }
+
+    init() {
+        this.updateButtons();
+        
+        this.btnPrev.addEventListener('click', () => {
+            this.currentIndex = Math.max(0, this.currentIndex - this.itemsPerView);
+            this.updateTrack();
+        });
+
+        this.btnNext.addEventListener('click', () => {
+            this.currentIndex = Math.min(this.maxIndex, this.currentIndex + this.itemsPerView);
+            this.updateTrack();
+        });
+
+        this.startAutoPlay();
+    }
+
+    updateTrack() {
+        const itemNode = this.track.children[0];
+        if (!itemNode) return;
+        const itemTotalWidth = itemNode.offsetWidth + 15; 
+        this.track.style.transform = `translateX(-${this.currentIndex * itemTotalWidth}px)`;
+        this.updateButtons();
+    }
+
+    updateButtons() {
+        this.btnPrev.disabled = this.currentIndex <= 0;
+        this.btnNext.disabled = this.currentIndex >= this.maxIndex;
+    }
+
+    startAutoPlay() {
+        this.interval = setInterval(() => {
+            if (this.currentIndex >= this.maxIndex) {
+                this.currentIndex = 0;
+            } else {
+                this.currentIndex = Math.min(this.maxIndex, this.currentIndex + this.itemsPerView);
+            }
+            this.updateTrack();
+        }, 5000);
+
+        this.track.parentElement.addEventListener('mouseenter', () => clearInterval(this.interval));
+        this.track.parentElement.addEventListener('mouseleave', () => this.startAutoPlay());
+    }
+}
+
 const homeCatalog = {
     iconPool: [
         '../assets/images/icon_category_than_kinh_nao.png',
@@ -47,7 +106,7 @@ const homeCatalog = {
         { selector: '[data-home-products="discount"]', params: { sort: 'price_desc', limit: 4, requires_prescription: '0' } },
         { selector: '[data-home-products="exclusive"]', params: { sort: 'newest', limit: 5, requires_prescription: '0' } },
         { selector: '[data-home-products="imported"]', params: { sort: 'popular', limit: 4, requires_prescription: '0' } },
-        { selector: '[data-home-products="trending"]', params: { sort: 'trending', limit: 5, requires_prescription: '0' } }
+        { selector: '[data-home-products="trending"]', params: { sort: 'trending', limit: 15, requires_prescription: '0' } }
     ],
 
     activePromotions: [],
@@ -192,6 +251,9 @@ const homeCatalog = {
                 return;
             }
             container.innerHTML = products.map((product) => this.renderProductCard(product)).join('');
+            if (section.selector === '[data-home-products="trending"]') {
+                new ProductCarousel('Trending', products.length);
+            }
         } catch (error) {
             console.error('[HomeCatalog] Product section error:', section.selector, error);
             container.innerHTML = '<div class="catalog-widget-loading">Chưa tải được sản phẩm.</div>';
@@ -360,8 +422,7 @@ const homeCatalog = {
                 'best-seller': config.layout_home_tag_best_seller ?? 'best-seller',
                 'discount': config.layout_home_tag_discount ?? 'discount',
                 'exclusive': config.layout_home_tag_exclusive ?? 'exclusive',
-                'imported': config.layout_home_tag_imported ?? 'imported',
-                'trending': 'trending'
+                'imported': config.layout_home_tag_imported ?? 'imported'
             };
 
             this.productSections.forEach(section => {
