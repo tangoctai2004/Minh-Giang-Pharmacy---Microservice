@@ -1576,20 +1576,75 @@ router.get('/pos-detail/:id', async (req, res) => {
   }
 });
 
-// GET /products/top-searches — Dữ liệu tĩnh tạm thời
+// Helper to generate slug
+const slugify = (text) => {
+  if (!text) return '';
+  return text
+    .toString()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[đĐ]/g, 'd')
+    .replace(/([^a-z0-9\s-]|_)+/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+};
+
+// GET /products/top-searches — Dữ liệu động từ trending_searches của mg_cms
 router.get('/top-searches', async (req, res) => {
   try {
     const limit = Math.min(50, Number(req.query.limit) || 30);
-    const keywords = [
+    const fallbackKeywords = [
       { keyword: "Khẩu trang", slug: "khau-trang" },
       { keyword: "Nước súc miệng", slug: "nuoc-suc-mieng" },
       { keyword: "Vitamin C", slug: "vitamin-c" },
       { keyword: "Panadol", slug: "panadol" },
       { keyword: "Dầu gió", slug: "dau-gio" }
     ];
-    res.json({ success: true, data: keywords.slice(0, limit) });
+
+    // Truy vấn dữ liệu tìm kiếm hàng đầu từ mg_cms
+    const [rows] = await pool.query(
+      `SELECT keyword
+       FROM mg_cms.trending_searches
+       WHERE context = 'global'
+         AND is_hidden = 0
+         AND period_end >= CURDATE() - INTERVAL 30 DAY
+       ORDER BY
+         is_pinned DESC,
+         pin_order ASC,
+         search_count DESC
+       LIMIT ?`,
+      [limit]
+    );
+
+    let keywords = rows.map(row => ({
+      keyword: row.keyword,
+      slug: slugify(row.keyword)
+    }));
+
+    // Trộn thêm dữ liệu tĩnh nếu DB thiếu dữ liệu
+    const seenKeywords = new Set(keywords.map(k => k.keyword.toLowerCase()));
+    for (const fb of fallbackKeywords) {
+      if (keywords.length >= limit) break;
+      if (!seenKeywords.has(fb.keyword.toLowerCase())) {
+        keywords.push(fb);
+        seenKeywords.add(fb.keyword.toLowerCase());
+      }
+    }
+
+    res.json({ success: true, data: keywords });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    // Fallback hoàn toàn nếu có lỗi DB (ví dụ cross-db permissions)
+    const limit = Math.min(50, Number(req.query.limit) || 30);
+    const fallbackKeywords = [
+      { keyword: "Khẩu trang", slug: "khau-trang" },
+      { keyword: "Nước súc miệng", slug: "nuoc-suc-mieng" },
+      { keyword: "Vitamin C", slug: "vitamin-c" },
+      { keyword: "Panadol", slug: "panadol" },
+      { keyword: "Dầu gió", slug: "dau-gio" }
+    ];
+    res.json({ success: true, data: fallbackKeywords.slice(0, limit) });
   }
 });
 

@@ -20,6 +20,20 @@ function catalogApi() {
     };
 }
 
+/**
+ * Làm mới widget Tìm kiếm hàng đầu sau khi tracking xong.
+ * Retry tới 15 lần (mỗi 100ms) để đợi catalog-widgets.js inject xong.
+ */
+function refreshTopSearchesWidget(attempt = 0) {
+    if (window.MGCatalogWidgets && typeof window.MGCatalogWidgets.init === 'function') {
+        window.MGCatalogWidgets.init(true);
+        return;
+    }
+    if (attempt < 15) {
+        setTimeout(() => refreshTopSearchesWidget(attempt + 1), 100);
+    }
+}
+
 function escapeHtml(value) {
     if (window.MGClientApi && typeof window.MGClientApi.escapeHtml === 'function') {
         return window.MGClientApi.escapeHtml(value);
@@ -98,11 +112,33 @@ function updateSearchUrl() {
     window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
 }
 
+async function trackSearchKeyword(keyword) {
+    if (!keyword || keyword.trim().length < 2) return;
+    try {
+        const gateway = ((window.MGClientApi && window.MGClientApi.gatewayOrigin) || window.MG_API_GATEWAY_ORIGIN || 'http://localhost:8000').replace(/\/+$/, '');
+        const trackUrl = `${gateway}/api/cms/trending-searches/track`;
+        await fetch(trackUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ keyword: keyword.trim() })
+        });
+    } catch (e) {
+        console.warn('[SearchPage] Tracking failed:', e);
+    }
+}
+
 async function fetchSearchResults() {
     const grid = document.getElementById('searchResultGrid');
     if (!grid) return;
 
     grid.innerHTML = '<div class="loading">Đang tìm kiếm sản phẩm...</div>';
+
+    // Theo dõi từ khóa tìm kiếm và đợi hoàn tất
+    await trackSearchKeyword(searchState.query);
+
+    // Kích hoạt làm mới widget ngay sau khi track xong.
+    // Dùng retry vì catalog-widgets.js có thể đang được inject động bởi components.js
+    refreshTopSearchesWidget();
 
     try {
         const result = await catalogApi().get('products', {
@@ -221,11 +257,22 @@ function renderPagination(pagination) {
 function renderNoResults(message) {
     const grid = document.getElementById('searchResultGrid');
     grid.innerHTML = `
-        <div class="no-results" style="grid-column: 1 / -1;">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <h2>${message}</h2>
-            <p style="margin-top:10px; color:#666;">Hãy thử tìm kiếm với từ khóa khác hoặc kiểm tra lại chính tả.</p>
+        <div class="no-results" style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; gap: 24px;">
+            <div style="text-align: center;">
+                <i class="fa-solid fa-magnifying-glass" style="font-size: 48px; color: #ccc; margin-bottom: 15px;"></i>
+                <h2 style="font-size: 20px; color: #4b5563;">${message}</h2>
+                <p style="margin-top:10px; color:#6b7280; font-size: 15px;">Hãy thử tìm kiếm với từ khóa khác hoặc kiểm tra lại chính tả.</p>
+            </div>
+            <div class="top-searches" style="margin-top: 20px; border-top: 1px solid #e5e7eb; padding-top: 24px; width: 100%; text-align: left;">
+                <h3 style="font-size: 16px; font-weight: 700; color: #1f2937; margin-bottom: 14px;">Gợi ý từ khóa tìm kiếm hàng đầu:</h3>
+                <div class="top-search-links">
+                    <span class="catalog-widget-loading">Đang tải tìm kiếm hàng đầu...</span>
+                </div>
+            </div>
         </div>
     `;
     document.getElementById('totalCount').textContent = '0';
+
+    const pagination = document.getElementById('searchPagination');
+    if (pagination) pagination.innerHTML = '';
 }

@@ -937,7 +937,7 @@ async function fetchTopSearches() {
     const container = document.getElementById('pdTopSearches');
     if (!container) return;
     try {
-        const result = await catalogApi().get('products/top-searches');
+        const result = await catalogApi().get('products/top-searches', { t: Date.now() });
         const items = result.data || [];
         
         if (items.length > 0) {

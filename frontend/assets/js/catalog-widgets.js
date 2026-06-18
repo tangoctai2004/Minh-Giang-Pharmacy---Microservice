@@ -74,7 +74,7 @@
 
         try {
             if (!cachedTopSearches) {
-                const result = await catalogApi().get('products/top-searches', { limit: 30 });
+                const result = await catalogApi().get('products/top-searches', { limit: 30, t: Date.now() });
                 cachedTopSearches = Array.isArray(result.data) ? result.data : [];
             }
             const items = cachedTopSearches;
@@ -219,7 +219,11 @@
         restart();
     }
 
-    async function init() {
+    async function init(force = false) {
+        if (force === true) {
+            cachedTopSearches = null;
+            document.querySelectorAll('.top-search-links').forEach(el => initializedTopSearchContainers.delete(el));
+        }
         await Promise.all([loadTopSearches(), loadFeaturedProducts()]);
     }
 

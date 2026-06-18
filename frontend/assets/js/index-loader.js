@@ -304,7 +304,7 @@ const homeCatalog = {
         if (!container) return;
 
         try {
-            const result = await catalogApi().get('products/top-searches', { limit: 30 });
+            const result = await catalogApi().get('products/top-searches', { limit: 30, t: Date.now() });
             const keywords = result.data || [];
             if (keywords.length === 0) {
                 container.innerHTML = '<span class="catalog-widget-loading">Chưa có tìm kiếm hàng đầu.</span>';

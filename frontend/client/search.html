@@ -144,6 +144,45 @@
             font-size: 20px;
             color: #4b5563;
         }
+
+        /* --- TOP SEARCHES --- */
+        .top-searches {
+            margin-top: 40px;
+            padding: 24px 0;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .top-searches h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 14px;
+        }
+
+        .top-search-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .top-search-links a {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #4b5563;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+
+        .top-search-links a:hover {
+            border-color: #0b7a3e;
+            color: #0b7a3e;
+            background: #ecfdf5;
+        }
     </style>
 </head>
 
@@ -195,6 +234,14 @@
         <!-- Pagination -->
         <div class="pagination" id="searchPagination">
             <!-- Phân trang động -->
+        </div>
+
+        <!-- Top Searches -->
+        <div class="top-searches">
+            <h3>Tìm kiếm hàng đầu</h3>
+            <div class="top-search-links">
+                <span class="catalog-widget-loading">Đang tải tìm kiếm hàng đầu...</span>
+            </div>
         </div>
     </main>
 
