@@ -186,12 +186,19 @@ router.post('/audits', canWriteCatalog, async (req, res) => {
       [auditCode(), locationId, stockRows.length, notes, req.userId || 0]
     );
 
-    for (const row of stockRows) {
+    if (stockRows.length > 0) {
+      const auditId = auditResult.insertId;
+      const values = stockRows.map((row) => [
+        auditId,
+        row.batch_item_id,
+        row.product_id,
+        row.quantity_remaining
+      ]);
       await conn.query(
         `INSERT INTO audit_items (
           audit_id, batch_item_id, product_id, system_quantity
-        ) VALUES (?, ?, ?, ?)`,
-        [auditResult.insertId, row.batch_item_id, row.product_id, row.quantity_remaining]
+        ) VALUES ?`,
+        [values]
       );
     }
 
@@ -277,11 +284,20 @@ router.put('/audits/:id/items', canWriteCatalog, async (req, res) => {
       return res.status(409).json({ success: false, message: 'Phiếu đã đối soát thì không thể sửa' });
     }
 
-    for (const item of items) {
-      const [[existingItem]] = await conn.query(
-        `SELECT id, system_quantity FROM audit_items WHERE id = ? AND audit_id = ?`,
-        [item.id, auditId]
+    const itemIds = items.map((it) => it.id);
+    let existingItemsMap = {};
+    if (itemIds.length > 0) {
+      const [existingItems] = await conn.query(
+        `SELECT id, system_quantity FROM audit_items WHERE audit_id = ? AND id IN (?)`,
+        [auditId, itemIds]
       );
+      existingItems.forEach((existingItem) => {
+        existingItemsMap[existingItem.id] = existingItem;
+      });
+    }
+
+    for (const item of items) {
+      const existingItem = existingItemsMap[item.id];
       if (!existingItem) {
         await conn.query('ROLLBACK');
         return res.status(400).json({ success: false, message: `Dòng kiểm kê #${item.id} không thuộc phiếu này` });
@@ -330,15 +346,22 @@ router.post('/audits/:id/reconcile', canWriteCatalog, async (req, res) => {
     }
 
     if (items.length) {
+      const itemIds = items.map((it) => it.id);
+      let existingItemsMap = {};
+      const [existingItems] = await conn.query(
+        `SELECT id, system_quantity FROM audit_items WHERE audit_id = ? AND id IN (?)`,
+        [auditId, itemIds]
+      );
+      existingItems.forEach((existingItem) => {
+        existingItemsMap[existingItem.id] = existingItem;
+      });
+
       for (const item of items) {
         if (!Number.isInteger(item.id) || item.id <= 0 || !Number.isInteger(item.actual_quantity) || item.actual_quantity < 0) {
           await conn.query('ROLLBACK');
           return res.status(400).json({ success: false, message: 'Dữ liệu số lượng kiểm kê không hợp lệ' });
         }
-        const [[existingItem]] = await conn.query(
-          `SELECT id, system_quantity FROM audit_items WHERE id = ? AND audit_id = ?`,
-          [item.id, auditId]
-        );
+        const existingItem = existingItemsMap[item.id];
         if (!existingItem) {
           await conn.query('ROLLBACK');
           return res.status(400).json({ success: false, message: `Dòng kiểm kê #${item.id} không thuộc phiếu này` });

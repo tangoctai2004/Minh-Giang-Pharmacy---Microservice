@@ -619,6 +619,8 @@ CREATE TABLE `products` (
   KEY `idx_products_name` (`name`),
   KEY `idx_products_brand_id` (`brand_id`),
   KEY `idx_products_is_exclusive` (`is_exclusive`),
+  KEY `idx_products_cat_status` (`category_id`,`status`),
+  KEY `idx_products_brand_status` (`brand_id`,`status`),
   CONSTRAINT `fk_products_category` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1537 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Há»“ sÆ¡ thuá»‘c master data â€” danh má»¥c sáº£n pháº©m kinh doanh';
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -809,6 +811,7 @@ CREATE TABLE `stock_reservations` (
   KEY `idx_reservations_product` (`product_id`,`released_at`),
   KEY `idx_reservations_source` (`source_type`,`source_id`),
   KEY `idx_reservations_expires` (`expires_at`),
+  KEY `idx_reservations_active_expiry` (`batch_item_id`,`released_at`,`expires_at`,`quantity`),
   CONSTRAINT `fk_reservations_batch` FOREIGN KEY (`batch_item_id`) REFERENCES `batch_items` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_reservations_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `chk_reservation_qty_positive` CHECK ((`quantity` > 0))

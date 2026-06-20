@@ -74,6 +74,34 @@ async function normalizeBatchItems(conn, items, receivedDate, targetStatus) {
   const normalizedItems = [];
   let totalAmount = 0;
 
+  // Thu thập ID duy nhất của sản phẩm và vị trí để batch fetch
+  const productIds = [...new Set(items.map((it) => Number(it.product_id)).filter((id) => !Number.isNaN(id) && id > 0))];
+  const locationIds = [...new Set(items.map((it) => Number(it.location_id)).filter((id) => !Number.isNaN(id) && id > 0))];
+
+  let productsMap = {};
+  if (productIds.length > 0) {
+    const [products] = await conn.query(
+      `SELECT id, name, status, storage_condition, special_control_group
+       FROM products
+       WHERE id IN (?) AND status = 'active'`,
+      [productIds]
+    );
+    products.forEach((p) => {
+      productsMap[p.id] = p;
+    });
+  }
+
+  let locationsMap = {};
+  if (locationIds.length > 0) {
+    const [locations] = await conn.query(
+      `SELECT id, zone, cabinet, shelf, label, is_active FROM locations WHERE id IN (?) AND is_active = 1`,
+      [locationIds]
+    );
+    locations.forEach((l) => {
+      locationsMap[l.id] = l;
+    });
+  }
+
   for (let index = 0; index < items.length; index += 1) {
     const item = items[index];
     const rowNumber = index + 1;
@@ -94,22 +122,14 @@ async function normalizeBatchItems(conn, items, receivedDate, targetStatus) {
       throw Object.assign(new Error(`Dòng ${rowNumber}: ${expiryError}`), { statusCode: 400 });
     }
 
-    const [[product]] = await conn.query(
-      `SELECT id, name, status, storage_condition, special_control_group
-       FROM products
-       WHERE id = ? AND status = 'active'`,
-      [productId]
-    );
+    const product = productsMap[productId];
     if (!product) {
       throw Object.assign(new Error(`Dòng ${rowNumber}: sản phẩm #${productId} không tồn tại hoặc chưa ở trạng thái active`), { statusCode: 400 });
     }
 
     let location = null;
     if (locationId) {
-      [[location]] = await conn.query(
-        `SELECT id, zone, cabinet, shelf, label, is_active FROM locations WHERE id = ? AND is_active = 1`,
-        [locationId]
-      );
+      location = locationsMap[locationId];
       if (!location) {
         throw Object.assign(new Error(`Dòng ${rowNumber}: vị trí lưu trữ không tồn tại hoặc đã ngừng dùng`), { statusCode: 400 });
       }

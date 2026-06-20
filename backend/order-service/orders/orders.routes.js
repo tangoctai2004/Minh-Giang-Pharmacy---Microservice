@@ -255,19 +255,22 @@ router.post('/', async (req, res) => {
         ]);
         const orderId = orderResult.insertId;
 
-        // 3. Thêm các chi tiết đơn hàng (order_items) & trừ tồn kho thực tế trong mg_catalog.batch_items
-        for (const item of items) {
+        // 3. Thêm các chi tiết đơn hàng (order_items)
+        if (items.length > 0) {
+            const values = items.map(item => [
+                orderId, item.product_id, item.product_name, item.unit_name || 'Hộp',
+                item.quantity, item.unit_price, item.quantity * item.unit_price
+            ]);
             await connection.query(`
                 INSERT INTO order_items (
                     order_id, product_id, product_name, unit_name,
                     quantity, unit_price, total_price
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
-            `, [
-                orderId, item.product_id, item.product_name, item.unit_name || 'Hộp',
-                item.quantity, item.unit_price, item.quantity * item.unit_price
-            ]);
+                ) VALUES ?
+            `, [values]);
+        }
 
-            // Trừ tồn kho trong mg_catalog.batch_items theo FEFO
+        // Trừ tồn kho trong mg_catalog.batch_items theo FEFO
+        for (const item of items) {
             let remainingToDeduct = item.quantity;
 
             const [batches] = await connection.query(`
@@ -303,16 +306,17 @@ router.post('/', async (req, res) => {
         }
 
         // 3.5. Ghi nhận lịch sử khuyến mãi (order_promotions) & tăng lượt sử dụng trong CMS
-        for (const promo of promotionsToInsert) {
+        if (promotionsToInsert.length > 0) {
+            const values = promotionsToInsert.map(promo => [
+                orderId, promo.promotion_id, promo.promo_code, promo.promo_name,
+                promo.promo_type, promo.discount_value, promo.discount_applied
+            ]);
             await connection.query(`
                 INSERT INTO order_promotions (
                     order_id, promotion_id, promo_code_snapshot, promo_name_snapshot,
                     promo_type_snapshot, discount_value_snapshot, discount_applied
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
-            `, [
-                orderId, promo.promotion_id, promo.promo_code, promo.promo_name,
-                promo.promo_type, promo.discount_value, promo.discount_applied
-            ]);
+                ) VALUES ?
+            `, [values]);
         }
 
         for (const promoId of promoUsageIncrements) {

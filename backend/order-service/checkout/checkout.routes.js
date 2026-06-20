@@ -251,29 +251,31 @@ router.post('/', async (req, res) => {
             unit_price: item.unit_price
         })), ...giftItems];
 
-        for (const item of allItemsToInsert) {
+        if (allItemsToInsert.length > 0) {
+            const values = allItemsToInsert.map(item => [
+                orderId, item.product_id, item.product_name, item.unit_name,
+                item.quantity, item.unit_price, item.quantity * item.unit_price
+            ]);
             await connection.query(`
                 INSERT INTO order_items (
                     order_id, product_id, product_name, unit_name,
                     quantity, unit_price, total_price
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
-            `, [
-                orderId, item.product_id, item.product_name, item.unit_name,
-                item.quantity, item.unit_price, item.quantity * item.unit_price
-            ]);
+                ) VALUES ?
+            `, [values]);
         }
 
         // 7. Ghi nhận lịch sử khuyến mãi (order_promotions)
-        for (const promo of promotionsToInsert) {
+        if (promotionsToInsert.length > 0) {
+            const values = promotionsToInsert.map(promo => [
+                orderId, promo.promotion_id, promo.promo_code, promo.promo_name,
+                promo.promo_type, promo.discount_value, promo.discount_applied
+            ]);
             await connection.query(`
                 INSERT INTO order_promotions (
                     order_id, promotion_id, promo_code_snapshot, promo_name_snapshot,
                     promo_type_snapshot, discount_value_snapshot, discount_applied
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
-            `, [
-                orderId, promo.promotion_id, promo.promo_code, promo.promo_name,
-                promo.promo_type, promo.discount_value, promo.discount_applied
-            ]);
+                ) VALUES ?
+            `, [values]);
         }
 
         // 8. Tăng usage_count cho promotions
