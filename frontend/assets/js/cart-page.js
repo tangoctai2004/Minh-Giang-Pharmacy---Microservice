@@ -142,7 +142,6 @@ function renderCartUI(data) {
                          onerror="this.src='../assets/images/placeholder.png'">
                     <div class="item-details">
                         <h4>${item.product_name || 'Sản phẩm'}</h4>
-                        <span class="sku">ID: ${item.product_id}</span>
                         ${item.promo ? `<div class="promo-badge"><i class="fa-solid fa-circle-check"></i> ${item.promo}</div>` : ''}
                     </div>
                 </div>

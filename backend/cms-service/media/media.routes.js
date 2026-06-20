@@ -186,11 +186,30 @@ router.post(
       let finalStoredName = stored_name;
       let finalFileUrl = file_url;
       let finalFileSize = file_size;
+      let finalWidth = width ? Number(width) : null;
+      let finalHeight = height ? Number(height) : null;
 
       if (data_base64) {
-        const buffer = Buffer.from(data_base64.replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/, ''), 'base64');
+        let buffer = Buffer.from(data_base64.replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/, ''), 'base64');
         if (!buffer.length || buffer.length > 8 * 1024 * 1024) {
           return res.status(400).json({ success: false, message: 'Dung lượng ảnh phải lớn hơn 0 và không quá 8MB' });
+        }
+
+        const isResizableImage = mime_type.startsWith('image/') && mime_type !== 'image/gif';
+        if (isResizableImage) {
+          try {
+            const Jimp = require('jimp');
+            const image = await Jimp.read(buffer);
+            if (image.bitmap.width > 1200 || image.bitmap.height > 1200) {
+              image.scaleToFit(1200, 1200);
+            }
+            image.quality(85);
+            buffer = await image.getBufferAsync(mime_type);
+            finalWidth = image.bitmap.width;
+            finalHeight = image.bitmap.height;
+          } catch (jimpErr) {
+            console.error('Jimp image resize error in CMS:', jimpErr);
+          }
         }
 
         const ext = mime_type === 'image/png' ? 'png' : (mime_type === 'image/webp' ? 'webp' : (mime_type === 'image/gif' ? 'gif' : 'jpg'));
@@ -239,8 +258,8 @@ router.post(
           Number(finalFileSize),
           mime_type,
           media_type,
-          width ? Number(width) : null,
-          height ? Number(height) : null,
+          finalWidth,
+          finalHeight,
           alt_text || original_name,
           tags ? JSON.stringify(tags) : null,
           used_in,

@@ -113,7 +113,7 @@ router.post('/items', async (req, res) => {
 
     } catch (error) {
         console.error('[Cart POST] Error:', error);
-        res.status(500).json({ success: false, message: 'Không thể thêm vào giỏ hàng' });
+        res.status(500).json({ success: false, message: 'Không thể thêm vào giỏ hàng: ' + error.message });
     }
 });
 

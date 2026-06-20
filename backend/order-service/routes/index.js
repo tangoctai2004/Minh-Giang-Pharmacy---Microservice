@@ -7,6 +7,7 @@ router.use('/orders',   require('../orders/orders.routes'));
 router.use('/cart',     require('../cart/cart.routes'));
 router.use('/checkout', require('../checkout/checkout.routes'));
 router.use('/returns',  require('../returns/returns.routes'));
+router.use('/flashsale',require('./flashsale.routes'));
 
 router.get('/', (req, res) => {
   res.json({

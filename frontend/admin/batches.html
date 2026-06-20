@@ -630,6 +630,15 @@
                 showToast(error.message || 'Không tải được dữ liệu tham chiếu', 'error');
             }
             await loadBatches();
+
+            // Tự động mở modal tạo phiếu nhập nếu URL có action=new
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('action') === 'new') {
+                // Xoá parameter khỏi URL để tránh tự động mở lại khi reload trang
+                const newUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+                openPoModal();
+            }
         });
     </script>
 </body>

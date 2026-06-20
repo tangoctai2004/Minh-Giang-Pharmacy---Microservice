@@ -2219,6 +2219,19 @@ router.post('/:id/images', canWriteCatalog, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Dung lượng ảnh phải lớn hơn 0 và không quá 8MB' });
     }
 
+    let finalBuffer = buffer;
+    try {
+      const Jimp = require('jimp');
+      const image = await Jimp.read(buffer);
+      if (image.bitmap.width > 400 || image.bitmap.height > 400) {
+        image.scaleToFit(400, 400);
+      }
+      image.quality(80);
+      finalBuffer = await image.getBufferAsync(mime_type);
+    } catch (jimpErr) {
+      console.error('Jimp image resize error, fallback to original buffer:', jimpErr);
+    }
+
     const ext = mime_type === 'image/png' ? '.png' : (mime_type === 'image/webp' ? '.webp' : '.jpg');
     const uploadDir = path.join(__dirname, '..', 'uploads', 'products', String(productId));
     await fs.mkdir(uploadDir, { recursive: true });
@@ -2226,7 +2239,7 @@ router.post('/:id/images', canWriteCatalog, async (req, res) => {
     const fileName = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}-${safeUploadName(baseOriginalName)}${ext}`;
     const storagePath = path.join('uploads', 'products', String(productId), fileName);
     const fullPath = path.join(__dirname, '..', storagePath);
-    await fs.writeFile(fullPath, buffer);
+    await fs.writeFile(fullPath, finalBuffer);
     const publicUrl = `${getPublicBaseUrl(req)}/${storagePath.split(path.sep).join('/')}`;
     const primary = is_primary ? 1 : 0;
 
@@ -2244,7 +2257,7 @@ router.post('/:id/images', canWriteCatalog, async (req, res) => {
         fileName,
         original_name || fileName,
         mime_type,
-        buffer.length,
+        finalBuffer.length,
         storagePath.split(path.sep).join('/'),
         publicUrl,
         primary ? 'main' : image_role,

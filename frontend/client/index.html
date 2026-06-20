@@ -2,12 +2,27 @@
 <html lang="vi">
 
 <head>
+    <script>
+        window.onerror = function (message, source, lineno, colno, error) {
+            const errDiv = document.createElement('div');
+            errDiv.style = 'position:fixed;top:10px;left:10px;right:10px;background:#fef2f2;color:#991b1b;border:2px solid #f87171;padding:15px;z-index:999999;font-family:monospace;font-size:14px;border-radius:8px;box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);';
+            errDiv.innerHTML = '<strong>JS ERROR:</strong> ' + message + '<br><em>Line: ' + lineno + ' in ' + source + '</em>';
+            document.body.appendChild(errDiv);
+        };
+        window.addEventListener('unhandledrejection', function (event) {
+            const errDiv = document.createElement('div');
+            errDiv.style = 'position:fixed;top:100px;left:10px;right:10px;background:#fffbeb;color:#92400e;border:2px solid #fbbf24;padding:15px;z-index:999999;font-family:monospace;font-size:14px;border-radius:8px;box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);';
+            errDiv.innerHTML = '<strong>UNHANDLED REJECTION:</strong> ' + event.reason;
+            document.body.appendChild(errDiv);
+        });
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nhà Thuốc Minh Giang</title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        media="print" onload="this.media='all'">
     <style>
         /* --- CAROUSEL STYLES FOR TRENDING SECTION --- */
         .pd-section-header {
@@ -18,6 +33,7 @@
             padding-bottom: 12px;
             border-bottom: 1px solid #e5e7eb;
         }
+
         .pd-section-title {
             font-size: 18px;
             font-weight: 700;
@@ -25,10 +41,12 @@
             text-transform: uppercase;
             margin: 0;
         }
+
         .carousel-nav {
             display: flex;
             gap: 8px;
         }
+
         .carousel-btn {
             width: 32px;
             height: 32px;
@@ -43,51 +61,79 @@
             align-items: center;
             justify-content: center;
         }
+
         .carousel-btn:hover:not(:disabled) {
             background: #f3f4f6;
             color: #1b8844;
             border-color: #1b8844;
         }
+
         .carousel-btn:disabled {
             opacity: 0.3;
             cursor: not-allowed;
         }
+
         .carousel-container {
             position: relative;
             overflow: hidden;
-            margin: 0 -10px; /* Safe padding cho box-shadow */
+            margin: 0 -10px;
+            /* Safe padding cho box-shadow */
             padding: 10px;
         }
+
         .carousel-track {
             display: flex;
             transition: transform 0.5s ease-in-out;
             gap: 15px;
         }
-        .carousel-track > div {
-            flex: 0 0 calc((100% - 60px) / 5); 
+
+        .carousel-track>div {
+            flex: 0 0 calc((100% - 60px) / 5);
         }
-        .carousel-track > .product-card {
+
+        .carousel-track>.product-card {
             height: 100%;
             min-height: 365px;
         }
+
         .carousel-track .product-info {
             display: flex;
             flex-direction: column;
             flex: 1;
         }
+
         .carousel-track .product-card h5 {
             min-height: 46px;
             margin-bottom: 10px;
         }
+
         .carousel-track .product-card .product-price {
             min-height: 54px;
             align-content: flex-start;
             margin-bottom: 12px;
         }
+
         .carousel-track .product-card .btn-add-cart,
         .carousel-track .product-card .btn-consult {
             margin-top: auto;
             flex-shrink: 0;
+        }
+
+        /* --- LAZY LOAD PLACEHOLDER & CLS PREVENTION --- */
+        [data-home-products] {
+            min-height: 380px;
+        }
+
+        .catalog-widget-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            min-height: 300px;
+            color: #6b7280;
+            font-size: 14px;
+            font-weight: 500;
         }
     </style>
 </head>
@@ -220,7 +266,8 @@
                         <img src="../assets/images/product_frame.png" alt="Product">
                     </div>
                     <div class="product-info">
-                        <h5><a href="product.html">Thực phẩm bảo vệ sức khoẻ Women's MultiVitamin With Probiotics Henry</a></h5>
+                        <h5><a href="product.html">Thực phẩm bảo vệ sức khoẻ Women's MultiVitamin With Probiotics
+                                Henry</a></h5>
                         <div class="product-price">
                             <span class="price-new">458,500đ</span>
                         </div>
@@ -260,7 +307,8 @@
         <!-- Deal Sieu Khung Section -->
         <section class="product-section container bg-green-container" data-home-section="deal">
             <div class="product-section-header">
-                <img src="../assets/images/banner_deal_sieu_khung.png" alt="Deal Siêu Khủng" data-layout-img="header_deal">
+                <img src="../assets/images/banner_deal_sieu_khung.png" alt="Deal Siêu Khủng"
+                    data-layout-img="header_deal">
             </div>
             <div class="product-grid" data-home-products="deal">
                 <!-- Product 1 -->
@@ -336,7 +384,8 @@
         <!-- San Pham Ban Chay Section -->
         <section class="product-section container bg-green-container" data-home-section="best-seller">
             <div class="product-section-header">
-                <img src="../assets/images/banner_san_pham_ban_chay.png" alt="Sản Phẩm Bán Chạy" data-layout-img="header_best_seller">
+                <img src="../assets/images/banner_san_pham_ban_chay.png" alt="Sản Phẩm Bán Chạy"
+                    data-layout-img="header_best_seller">
             </div>
             <div class="product-grid" data-home-products="best-seller">
                 <!-- Product 1 -->
@@ -469,7 +518,8 @@
         <!-- San Pham Doc Quyen Section -->
         <section class="product-section container bg-yellow-container" data-home-section="exclusive">
             <div class="product-section-header">
-                <img src="../assets/images/banner_san_pham_doc_quyen.png" alt="Sản Phẩm Độc Quyền" data-layout-img="header_exclusive">
+                <img src="../assets/images/banner_san_pham_doc_quyen.png" alt="Sản Phẩm Độc Quyền"
+                    data-layout-img="header_exclusive">
             </div>
             <div class="product-grid" data-home-products="exclusive">
                 <!-- Product 1 -->
@@ -544,7 +594,8 @@
         <!-- Nhap Khau 100% Section -->
         <section class="product-section container bg-red-container" data-home-section="imported">
             <div class="product-section-header">
-                <img src="../assets/images/banner_nhap_khau_100.png" alt="Nhập Khẩu 100%" data-layout-img="header_imported">
+                <img src="../assets/images/banner_nhap_khau_100.png" alt="Nhập Khẩu 100%"
+                    data-layout-img="header_imported">
             </div>
             <div class="product-grid" data-home-products="imported">
                 <!-- Product 1 -->
@@ -603,36 +654,45 @@
             <a href="category.html" class="view-all-btn">Xem tất cả ></a>
         </section>
 
-                <!-- Top Thương Hiệu Section -->
+        <!-- Top Thương Hiệu Section -->
         <section class="top-brands-section container" data-home-section="brands">
             <h2 class="section-title">Top thương hiệu và sản phẩm nổi bật</h2>
             <div class="top-brands-grid">
                 <a href="#" class="brand-banner banner-large" data-brand-link="1">
-                    <img src="../assets/images/banner_top_thuong_hieu_va_san_pham_noi_bat_1.png" alt="Tháng của nàng" data-brand-idx="1">
+                    <img src="../assets/images/banner_top_thuong_hieu_va_san_pham_noi_bat_1.png" alt="Tháng của nàng"
+                        data-brand-idx="1">
                 </a>
                 <a href="#" class="brand-banner" data-brand-link="2">
-                    <img src="../assets/images/banner_top_thuong_hieu_va_san_pham_noi_bat_2.png" alt="Blackmores" data-brand-idx="2">
+                    <img src="../assets/images/banner_top_thuong_hieu_va_san_pham_noi_bat_2.png" alt="Blackmores"
+                        data-brand-idx="2">
                 </a>
                 <a href="#" class="brand-banner" data-brand-link="3">
-                    <img src="../assets/images/banner_top_thuong_hieu_va_san_pham_noi_bat_3.png" alt="Trung Sơn Care" data-brand-idx="3">
+                    <img src="../assets/images/banner_top_thuong_hieu_va_san_pham_noi_bat_3.png" alt="Trung Sơn Care"
+                        data-brand-idx="3">
                 </a>
                 <a href="#" class="brand-banner" data-brand-link="4">
-                    <img src="../assets/images/banner_top_thuong_hieu_va_san_pham_noi_bat_4.png" alt="Nucos" data-brand-idx="4">
+                    <img src="../assets/images/banner_top_thuong_hieu_va_san_pham_noi_bat_4.png" alt="Nucos"
+                        data-brand-idx="4">
                 </a>
                 <a href="#" class="brand-banner" data-brand-link="5">
-                    <img src="../assets/images/banner_top_thuong_hieu_va_san_pham_noi_bat_5.png" alt="Cocoon" data-brand-idx="5">
+                    <img src="../assets/images/banner_top_thuong_hieu_va_san_pham_noi_bat_5.png" alt="Cocoon"
+                        data-brand-idx="5">
                 </a>
                 <a href="#" class="brand-banner" data-brand-link="6">
-                    <img src="../assets/images/banner_top_thuong_hieu_va_san_pham_noi_bat_6.png" alt="Brand 6" data-brand-idx="6">
+                    <img src="../assets/images/banner_top_thuong_hieu_va_san_pham_noi_bat_6.png" alt="Brand 6"
+                        data-brand-idx="6">
                 </a>
                 <a href="#" class="brand-banner" data-brand-link="7">
-                    <img src="../assets/images/banner_top_thuong_hieu_va_san_pham_noi_bat_7.png" alt="Brand 7" data-brand-idx="7">
+                    <img src="../assets/images/banner_top_thuong_hieu_va_san_pham_noi_bat_7.png" alt="Brand 7"
+                        data-brand-idx="7">
                 </a>
                 <a href="#" class="brand-banner" data-brand-link="8">
-                    <img src="../assets/images/banner_top_thuong_hieu_va_san_pham_noi_bat_8.png" alt="Brand 8" data-brand-idx="8">
+                    <img src="../assets/images/banner_top_thuong_hieu_va_san_pham_noi_bat_8.png" alt="Brand 8"
+                        data-brand-idx="8">
                 </a>
                 <a href="#" class="brand-banner" data-brand-link="9">
-                    <img src="../assets/images/banner_top_thuong_hieu_va_san_pham_noi_bat_9.png" alt="Brand 9" data-brand-idx="9">
+                    <img src="../assets/images/banner_top_thuong_hieu_va_san_pham_noi_bat_9.png" alt="Brand 9"
+                        data-brand-idx="9">
                 </a>
             </div>
 
@@ -709,76 +769,19 @@
         </section>
 
         <!-- San Pham Đang Thu Hut Section -->
-        <section class="product-section container bg-white-container" data-home-section="trending" style="padding: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="font-size: 18px; font-weight: 700;">SẢN PHẨM ĐANG THU HÚT</h2>
-                <div style="display: flex; gap: 10px;">
-                    <button class="slider-btn" style="position: static; border: 1px solid #ddd;"><img
-                            src="../assets/images/icon_banner_arrow_left.png" alt="Prev" style="filter: brightness(0);"></button>
-                    <button class="slider-btn" style="position: static; border: 1px solid #ddd;"><img
-                            src="../assets/images/icon_banner_arrow_right.png" alt="Next" style="filter: brightness(0);"></button>
+        <section class="product-section container bg-white-container" data-home-section="trending"
+            style="padding: 20px;">
+            <div class="pd-section-header">
+                <h2 class="pd-section-title">SẢN PHẨM ĐANG THU HÚT</h2>
+                <div class="carousel-nav">
+                    <button class="carousel-btn" id="btnPrevTrending" disabled><i
+                            class="fa-solid fa-arrow-left"></i></button>
+                    <button class="carousel-btn" id="btnNextTrending"><i class="fa-solid fa-arrow-right"></i></button>
                 </div>
             </div>
-            <div class="product-grid" data-home-products="trending" style="padding: 0; background: none;">
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Sữa bột Abbott Glucerna bổ sung vitamin, khoáng chất</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">419,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Thực phẩm bảo vệ sức khoẻ Green Calcium (100 viên)</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">550,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Dầu gội trắng Trung Sơn Care (24ml)</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">55,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Thực phẩm bảo vệ sức khoẻ Robertia (60 viên)</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">390,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Sữa rửa mặt và toàn thân daphil Gentle Skin</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">599,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
+            <div class="carousel-container">
+                <div class="carousel-track" id="pdTrendingProducts" data-home-products="trending">
+                    <!-- Nạp bằng JS -->
                 </div>
             </div>
         </section>

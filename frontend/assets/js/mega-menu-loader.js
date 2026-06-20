@@ -103,7 +103,7 @@ function renderNavList(container, categories) {
                 if (firstSubItem) {
                     const subId = firstSubItem.getAttribute('data-id');
                     const grid = document.getElementById(`grid-${parentId}`);
-                    if (grid && (grid.innerHTML.trim() === '' || grid.querySelector('.loading'))) {
+                    if (grid && (!grid.querySelector('.product-card') && !grid.querySelector('.no-products') && !grid.querySelector('.error'))) {
                         handleSubCategoryHover(parentId, subId);
                     }
                 }
@@ -186,9 +186,7 @@ function renderRichItem(cat) {
                                 <a href="${getCategoryUrl(cat)}" class="view-all">Xem t\u1ea5t c\u1ea3 <i class="fa-solid fa-chevron-right"></i></a>
                             </div>
                         </div>
-                        <div class="products-grid" id="grid-${cat.id}">
-                            <!-- Product cards go here -->
-                        </div>
+                        <div class="products-grid" id="grid-${cat.id}"></div>
                     </div>
                 </div>
             </div>

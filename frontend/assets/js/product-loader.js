@@ -148,7 +148,6 @@ function updateProductUI(p) {
     // 2. Info Col
     document.getElementById('pdBrand').textContent = p.brand?.name || p.manufacturer || "Đang cập nhật";
     document.getElementById('pdName').textContent = p.name;
-    document.getElementById('pdSku').textContent = `SKU: ${p.sku}`;
     
     // Specs
     const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || "—"; };

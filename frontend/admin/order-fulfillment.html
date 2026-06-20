@@ -613,9 +613,11 @@
 
                 var res = await fetch(`${API_BASE}?channel=web&limit=200`, { headers: getAuthHeader() });
                 var json = await res.json();
+                console.log('[Kanban Board API BASE]:', API_BASE, '[Kanban Board API Response] data keys:', Object.keys(json.data || {}), 'isArray:', Array.isArray(json.data), 'typeof:', typeof json.data, 'json:', json);
 
-                if (!json.success) {
-                    colContainers.forEach(c => c.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;">Lỗi tải dữ liệu</div>`);
+                if (!json.success || !json.data || !Array.isArray(json.data)) {
+                    console.error('[Kanban Board] Invalid response data:', json);
+                    colContainers.forEach(c => c.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;">Lỗi tải dữ liệu (Dữ liệu không hợp lệ)</div>`);
                     return;
                 }
 

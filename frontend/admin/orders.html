@@ -462,8 +462,9 @@
 
                 var res = await fetch(`${API_BASE}?status=pending_approval&limit=100`, { headers: getAuthHeader() });
                 var json = await res.json();
+                console.log('[Inbox Orders API Response]:', json);
 
-                if (!json.success || !json.data || json.data.length === 0) {
+                if (!json.success || !json.data || !Array.isArray(json.data) || json.data.length === 0) {
                     window.knownPendingOrderIds.clear();
                     if (!window.isKnownPendingOrdersInitialized) {
                         window.isKnownPendingOrdersInitialized = true;
@@ -472,8 +473,8 @@
                         <tr id="emptyInbox">
                             <td colspan="7" style="text-align:center;padding:40px;color:#9ca3af;">
                                 <i class="fa-solid fa-inbox" style="font-size:32px;display:block;margin-bottom:10px;opacity:.3;"></i>
-                                <div style="font-weight:600;">Inbox trống — Không có đơn nào đang chờ duyệt</div>
-                                <div style="font-size:12px;margin-top:4px;">Tất cả đơn đã được xử lý 🎉</div>
+                                <div style="font-weight:600;">${(!json.success || !Array.isArray(json.data)) ? 'Lỗi tải dữ liệu — Kiểm tra Console' : 'Inbox trống — Không có đơn nào đang chờ duyệt'}</div>
+                                <div style="font-size:12px;margin-top:4px;">${(!json.success || !Array.isArray(json.data)) ? 'Có lỗi xảy ra khi kết nối máy chủ' : 'Tất cả đơn đã được xử lý 🎉'}</div>
                             </td>
                         </tr>`;
                     return;
@@ -481,7 +482,7 @@
 
                 // Check for NEW pending orders to trigger alert
                 var hasNewOrder = false;
-                var pendingOrders = json.data || [];
+                var pendingOrders = json.data;
                 for (const o of pendingOrders) {
                     if (!window.knownPendingOrderIds.has(o.id)) {
                         window.knownPendingOrderIds.add(o.id);

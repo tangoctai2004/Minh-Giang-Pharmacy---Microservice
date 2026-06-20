@@ -77,6 +77,20 @@ router.post('/', async (req, res) => {
             throw new Error('Giỏ hàng không có sản phẩm nào để thanh toán.');
         }
 
+        // Kiểm tra tồn kho của từng sản phẩm trước khi tạo đơn
+        for (const item of items) {
+            const [stockRows] = await connection.query(
+                `SELECT COALESCE(SUM(quantity_remaining), 0) AS total_stock 
+                 FROM mg_catalog.batch_items 
+                 WHERE product_id = ? AND status IN ('available', 'near_expiry')`,
+                [item.product_id]
+            );
+            const totalStock = parseFloat(stockRows[0]?.total_stock || 0);
+            if (totalStock < item.quantity) {
+                throw new Error(`Sản phẩm "${item.product_name}" không đủ tồn kho (còn lại: ${totalStock}).`);
+            }
+        }
+
         // 3. Tính toán các khoản tiền
         const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
         const parsedShippingFee = parseFloat(shipping_fee) || 0;

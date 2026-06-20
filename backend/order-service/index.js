@@ -23,6 +23,19 @@ app.use((err, req, res, _next) => {
   res.status(err.status || 500).json({ success: false, message: err.message || 'Lỗi máy chủ nội bộ' });
 });
 
-app.listen(PORT, () => {
+const { connectRedis } = require('./utils/redis');
+const { connectRabbitMQ } = require('./utils/rabbitmq');
+const { startFlashsaleWorker } = require('./workers/flashsale.worker');
+
+app.listen(PORT, async () => {
   console.log(`[order-service] ✅  http://localhost:${PORT}`);
+  
+  // Initialize Redis and RabbitMQ connections and start background workers
+  try {
+    await connectRedis();
+    await connectRabbitMQ();
+    startFlashsaleWorker();
+  } catch (err) {
+    console.error('[order-service Initialization Failed]:', err.message);
+  }
 });
