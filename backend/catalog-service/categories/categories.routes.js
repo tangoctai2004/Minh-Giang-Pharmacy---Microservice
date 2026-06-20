@@ -2,6 +2,7 @@ const router = require('express').Router();
 const pool = require('../db/pool');
 const requireRoles = require('../middlewares/requireRoles');
 const { requireFields } = require('../middlewares/validate');
+const cache = require('../utils/cache');
 
 const canWriteCatalog = requireRoles(['admin', 'manager']);
 
@@ -18,6 +19,12 @@ function toSlug(value = '') {
 // GET /categories — Cây danh mục (public)
 router.get('/', async (req, res) => {
   try {
+    const cacheKey = req.query.for === 'pos' ? 'categories:list:pos' : 'categories:list:default';
+    const cachedData = await cache.get(cacheKey);
+    if (cachedData) {
+      return res.json({ success: true, data: cachedData });
+    }
+
     if (req.query.for === 'pos') {
       const [rows] = await pool.query(
         `SELECT id, name, slug
@@ -25,6 +32,7 @@ router.get('/', async (req, res) => {
          WHERE is_active = 1 AND parent_id IS NOT NULL
          ORDER BY sort_order ASC, id ASC`
       );
+      await cache.set(cacheKey, rows, 600); // cache 10 phút
       return res.json({ success: true, data: rows });
     }
 
@@ -33,6 +41,7 @@ router.get('/', async (req, res) => {
        FROM categories WHERE is_active = 1
        ORDER BY sort_order ASC, id ASC`
     );
+    await cache.set(cacheKey, rows, 600); // cache 10 phút
     res.json({ success: true, data: rows });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -42,6 +51,12 @@ router.get('/', async (req, res) => {
 // GET /categories/tree — Trả về cấu trúc cây 3 cấp cho Mega Menu
 router.get('/tree', async (req, res) => {
   try {
+    const cacheKey = 'categories:tree';
+    const cachedData = await cache.get(cacheKey);
+    if (cachedData) {
+      return res.json({ success: true, data: cachedData });
+    }
+
     const [rows] = await pool.query(
       `SELECT id, name, slug, parent_id, image_url, sort_order
        FROM categories WHERE is_active = 1
@@ -66,6 +81,7 @@ router.get('/tree', async (req, res) => {
       }
     });
 
+    await cache.set(cacheKey, tree, 600); // cache 10 phút
     res.json({ success: true, data: tree });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -75,6 +91,12 @@ router.get('/tree', async (req, res) => {
 // GET /categories/pos-tree — Cây danh mục gọn cho POS, kèm số thuốc và số còn hàng
 router.get('/pos-tree', async (_req, res) => {
   try {
+    const cacheKey = 'categories:pos-tree';
+    const cachedData = await cache.get(cacheKey);
+    if (cachedData) {
+      return res.json({ success: true, data: cachedData });
+    }
+
     const [rows] = await pool.query(
       `SELECT id, name, slug, parent_id, image_url, sort_order
        FROM categories
@@ -148,14 +170,18 @@ router.get('/pos-tree', async (_req, res) => {
     };
     tree.forEach(rollupCounts);
 
-    res.json({
+    const responseData = tree.filter((node) => node.product_count > 0);
+    const result = {
       success: true,
-      data: tree.filter((node) => node.product_count > 0),
+      data: responseData,
       meta: {
         total_roots: tree.length,
-        visible_roots: tree.filter((node) => node.product_count > 0).length
+        visible_roots: responseData.length
       }
-    });
+    };
+
+    await cache.set(cacheKey, responseData, 300); // cache 5 phút
+    res.json(result);
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -169,6 +195,12 @@ router.get('/:parent_id/children', async (req, res) => {
       return res.status(400).json({ success: false, message: 'parent_id không hợp lệ' });
     }
 
+    const cacheKey = `categories:children:${parentId}`;
+    const cachedData = await cache.get(cacheKey);
+    if (cachedData) {
+      return res.json({ success: true, data: cachedData });
+    }
+
     const [rows] = await pool.query(
       `SELECT id, name, slug, parent_id, image_url, sort_order
        FROM categories
@@ -177,6 +209,7 @@ router.get('/:parent_id/children', async (req, res) => {
       [parentId]
     );
 
+    await cache.set(cacheKey, rows, 600); // cache 10 phút
     res.json({ success: true, data: rows });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -185,8 +218,17 @@ router.get('/:parent_id/children', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM categories WHERE id = ?', [req.params.id]);
+    const categoryId = req.params.id;
+    const cacheKey = `categories:id:${categoryId}`;
+    const cachedData = await cache.get(cacheKey);
+    if (cachedData) {
+      return res.json({ success: true, data: cachedData });
+    }
+
+    const [rows] = await pool.query('SELECT * FROM categories WHERE id = ?', [categoryId]);
     if (!rows.length) return res.status(404).json({ success: false, message: 'Không tìm thấy danh mục' });
+    
+    await cache.set(cacheKey, rows[0], 600); // cache 10 phút
     res.json({ success: true, data: rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -220,6 +262,10 @@ router.post('/', canWriteCatalog, requireFields(['name']), async (req, res) => {
        VALUES (?, ?, ?, ?, ?, ?, 1)`,
       [name, normalizedSlug, parent_id ?? null, description || null, image_url || null, Number(sort_order) || 0]
     );
+
+    // Invalidate cache
+    await cache.clearByPrefix('categories:');
+
     res.status(201).json({ success: true, data: { id: result.insertId } });
   } catch (err) {
     if (err.code === 'ER_DUP_ENTRY') {
@@ -280,6 +326,10 @@ router.put('/:id', canWriteCatalog, async (req, res) => {
     }
 
     await pool.query(`UPDATE categories SET ${fields.join(', ')} WHERE id = ?`, [...params, id]);
+
+    // Invalidate cache
+    await cache.clearByPrefix('categories:');
+
     res.json({ success: true, message: 'Cập nhật danh mục thành công' });
   } catch (err) {
     if (err.code === 'ER_DUP_ENTRY') {
@@ -299,6 +349,10 @@ router.delete('/:id', canWriteCatalog, async (req, res) => {
     if (!result.affectedRows) {
       return res.status(404).json({ success: false, message: 'Không tìm thấy danh mục' });
     }
+
+    // Invalidate cache
+    await cache.clearByPrefix('categories:');
+
     res.json({ success: true, message: 'Ẩn danh mục thành công' });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

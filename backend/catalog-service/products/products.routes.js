@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const requireRoles = require('../middlewares/requireRoles');
 const { requireFields } = require('../middlewares/validate');
 const { writeAudit } = require('../services/audit.service');
+const cache = require('../utils/cache');
 const canWriteCatalog = requireRoles(['admin', 'manager']);
 let productUnitBarcodeColumnCache = null;
 let productImagesTableCache = null;
@@ -729,6 +730,12 @@ END), 0)`;
 // GET /products — Danh sách sản phẩm với phân trang + filters
 router.get('/', async (req, res) => {
   try {
+    const cacheKey = `products:list:${req.originalUrl || req.url}`;
+    const cachedData = await cache.get(cacheKey);
+    if (cachedData) {
+      return res.json({ success: true, ...cachedData });
+    }
+
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = Math.min(100, Number(req.query.limit) || 20);
     const offset = (page - 1) * limit;
@@ -1023,9 +1030,8 @@ router.get('/', async (req, res) => {
 
     const totalPages = Math.ceil(total / limit);
 
-    res.json({ 
-      success: true, 
-      data, 
+    const responsePayload = {
+      data,
       pagination: {
         total,
         page,
@@ -1034,6 +1040,13 @@ router.get('/', async (req, res) => {
         total_pages: totalPages
       },
       category: categoryInfo
+    };
+
+    await cache.set(cacheKey, responsePayload, 120); // TTL: 120s
+
+    res.json({ 
+      success: true, 
+      ...responsePayload
     });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -1801,6 +1814,11 @@ router.get('/:id/audit', canWriteCatalog, async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const productId = req.params.id;
+    const cacheKey = `products:detail:${productId}`;
+    const cachedData = await cache.get(cacheKey);
+    if (cachedData) {
+      return res.json({ success: true, data: cachedData });
+    }
 
     const [[product]] = await pool.query(
       `SELECT p.*, b.name as brand_name,
@@ -1901,6 +1919,8 @@ router.get('/:id', async (req, res) => {
     delete data.category_parent_id;
     delete data.category_parent_name;
 
+    await cache.set(cacheKey, data, 120); // TTL: 120s
+
     res.json({ success: true, data });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -1998,6 +2018,7 @@ router.post('/', canWriteCatalog, requireFields(['name', 'category_id', 'base_un
     }, conn);
 
     await conn.query('COMMIT');
+    await cache.clearByPrefix('products:');
     res.status(201).json({ success: true, data: { id: productId, sku } });
   } catch (err) {
     await conn.query('ROLLBACK');
@@ -2136,6 +2157,7 @@ router.put('/:id', canWriteCatalog, async (req, res) => {
     }, conn);
 
     await conn.query('COMMIT');
+    await cache.clearByPrefix('products:');
     res.json({ success: true, message: 'Cập nhật sản phẩm thành công' });
   } catch (err) {
     await conn.query('ROLLBACK');
@@ -2252,6 +2274,7 @@ router.post('/:id/images', canWriteCatalog, async (req, res) => {
       metadata: { product_id: productId }
     }, conn);
     await conn.query('COMMIT');
+    await cache.clearByPrefix('products:');
 
     const [[image]] = await pool.query(`SELECT * FROM product_images WHERE id = ?`, [result.insertId]);
     res.status(201).json({ success: true, data: normalizeProductImageRecord(image, req) });
@@ -2306,6 +2329,7 @@ router.put('/:id/images/reorder', canWriteCatalog, async (req, res) => {
       metadata: { product_id: productId }
     }, conn);
     await conn.query('COMMIT');
+    await cache.clearByPrefix('products:');
 
     const images = await getProductImages(productId);
     res.json({
@@ -2387,6 +2411,7 @@ router.put('/:id/images/:imageId', canWriteCatalog, async (req, res) => {
       }
     }, conn);
     await conn.query('COMMIT');
+    await cache.clearByPrefix('products:');
 
     const [[updated]] = await pool.query(`SELECT * FROM product_images WHERE id = ?`, [imageId]);
     res.json({
@@ -2436,6 +2461,7 @@ router.put('/:id/images/:imageId/primary', canWriteCatalog, async (req, res) => 
       metadata: { product_id: productId }
     }, conn);
     await conn.query('COMMIT');
+    await cache.clearByPrefix('products:');
     res.json({ success: true, message: 'Đã đặt ảnh chính' });
   } catch (err) {
     try { await conn.query('ROLLBACK'); } catch (_rollbackErr) {}
@@ -2485,6 +2511,7 @@ router.delete('/:id/images/:imageId', canWriteCatalog, async (req, res) => {
       metadata: { product_id: Number(req.params.id) }
     }, conn);
     await conn.query('COMMIT');
+    await cache.clearByPrefix('products:');
 
     if (image.storage_path && !image.storage_path.includes('..')) {
       await fs.unlink(path.join(__dirname, '..', image.storage_path)).catch(() => {});
@@ -2520,6 +2547,7 @@ router.delete('/:id', canWriteCatalog, async (req, res) => {
       metadata: { reason: 'soft_delete' }
     }, conn);
     await conn.query('COMMIT');
+    await cache.clearByPrefix('products:');
     res.json({ success: true, message: 'Xóa sản phẩm thành công (soft delete)' });
   } catch (err) {
     try { await conn.query('ROLLBACK'); } catch (_rollbackErr) {}

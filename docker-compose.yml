@@ -10,10 +10,9 @@ services:
       MYSQL_DATABASE: minhgiang_db
       MYSQL_ROOT_HOST: '%'
     ports:
-      - "3307:3306"
+      - "127.0.0.1:3307:3306"
     volumes:
       - db-data:/var/lib/mysql
-      - ./infrastructure/database:/docker-entrypoint-initdb.d/
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
@@ -31,6 +30,18 @@ services:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
     restart: unless-stopped
+
+  redis-db:
+    image: redis:7.2-alpine
+    container_name: minhgiang_redis
+    ports:
+      - "127.0.0.1:6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # ─────────────────────────── Microservices ────────────────────────────
   identity-service:
@@ -79,6 +90,8 @@ services:
       DB_USER: root
       DB_PASS: root
       DB_NAME: mg_catalog
+      REDIS_HOST: ${REDIS_HOST:-redis-db}
+      REDIS_PORT: ${REDIS_PORT:-6379}
     volumes:
       - ./backend/catalog-service:/app
       - /app/node_modules
@@ -86,6 +99,8 @@ services:
     command: npm run dev
     depends_on:
       mysql-db:
+        condition: service_healthy
+      redis-db:
         condition: service_healthy
     restart: unless-stopped
 
