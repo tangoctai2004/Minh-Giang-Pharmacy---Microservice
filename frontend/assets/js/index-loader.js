@@ -342,6 +342,48 @@ const homeCatalog = {
         }
     },
 
+    setupLazyLoadSections() {
+        if (!('IntersectionObserver' in window)) {
+            // Fallback cho trình duyệt cũ
+            this.productSections.forEach(section => this.loadProductSection(section));
+            return;
+        }
+
+        const observerOptions = {
+            root: null,
+            rootMargin: '200px 0px', // Load trước khi cuộn tới cách 200px
+            threshold: 0.01
+        };
+
+        const observer = new IntersectionObserver((entries, self) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const targetElement = entry.target;
+                    const selector = targetElement.getAttribute('data-selector');
+                    const section = this.productSections.find(s => s.selector === selector);
+                    if (section) {
+                        this.loadProductSection(section);
+                    }
+                    self.unobserve(targetElement); // Chỉ load 1 lần duy nhất
+                }
+            });
+        }, observerOptions);
+
+        this.productSections.forEach(section => {
+            const gridElement = document.querySelector(section.selector);
+            if (gridElement) {
+                const parentSection = gridElement.closest('.product-section');
+                if (parentSection) {
+                    parentSection.setAttribute('data-selector', section.selector);
+                    observer.observe(parentSection);
+                } else {
+                    gridElement.setAttribute('data-selector', section.selector);
+                    observer.observe(gridElement);
+                }
+            }
+        });
+    },
+
     async init() {
         this.setInitialLoadingState();
 
@@ -381,9 +423,11 @@ const homeCatalog = {
         await Promise.all([
             this.loadCategories(),
             this.loadTopSearches(),
-            this.loadBanners(),
-            ...this.productSections.map((section) => this.loadProductSection(section))
+            this.loadBanners()
         ]);
+
+        // Kích hoạt lazy load các phần sản phẩm theo hành vi cuộn chuột
+        this.setupLazyLoadSections();
     }
 };
 
