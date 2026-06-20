@@ -24,8 +24,9 @@ services:
     image: rabbitmq:3-management
     container_name: minhgiang_rabbitmq
     ports:
-      - "5672:5672"    # AMQP (code kết nối)
-      - "15672:15672"  # Management UI: http://localhost:15672  (guest/guest)
+      - "127.0.0.1:5672:5672"    # AMQP (code kết nối)
+      - "127.0.0.1:15672:15672"  # Management UI: http://localhost:15672  (guest/guest)
+
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
@@ -45,8 +46,6 @@ services:
   identity-service:
     build: ./backend/identity-service
     container_name: minhgiang_identity
-    ports:
-      - "8001:8001"
     environment:
       PORT: 8001
       NODE_ENV: development
@@ -55,8 +54,8 @@ services:
       DB_USER: root
       DB_PASS: root
       DB_NAME: mg_identity
-      JWT_SECRET: ${JWT_SECRET:-change_me_to_a_random_32_char_string}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-2h}
+      JWT_SECRET: ${JWT_SECRET:-23668e27c1340b01c3de8ff3ad40a5a0}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
       CUSTOMER_ACCESS_TOKEN_TTL: ${CUSTOMER_ACCESS_TOKEN_TTL:-2h}
       CUSTOMER_REFRESH_TOKEN_TTL: ${CUSTOMER_REFRESH_TOKEN_TTL:-14d}
       ADMIN_ACCESS_TOKEN_TTL: ${ADMIN_ACCESS_TOKEN_TTL:-2h}
@@ -66,6 +65,8 @@ services:
       NOTIFICATION_SERVICE_URL: http://notification-service:8005
       NOTIFICATION_REQUIRED: "true"
       OTP_DEBUG_RESPONSE: ${OTP_DEBUG_RESPONSE:-false}
+      GATEWAY_INTERNAL_TOKEN: ${GATEWAY_INTERNAL_TOKEN:-_nQKkw93nTQdu4ZiCEOy8eg_UJmHd0CfbCJ2thy4hx4}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-xazQ9fTOSl_oSBtJHqwDm93f0AwrPkRZ4neR_S6R_2M}
     volumes:
       - ./backend/identity-service:/app
       - /app/node_modules
@@ -78,8 +79,6 @@ services:
   catalog-service:
     build: ./backend/catalog-service
     container_name: minhgiang_catalog
-    ports:
-      - "8002:8002"
     environment:
       PORT: 8002
       NODE_ENV: development
@@ -90,6 +89,8 @@ services:
       DB_NAME: mg_catalog
       REDIS_HOST: ${REDIS_HOST:-redis-db}
       REDIS_PORT: ${REDIS_PORT:-6379}
+      GATEWAY_INTERNAL_TOKEN: ${GATEWAY_INTERNAL_TOKEN:-_nQKkw93nTQdu4ZiCEOy8eg_UJmHd0CfbCJ2thy4hx4}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-xazQ9fTOSl_oSBtJHqwDm93f0AwrPkRZ4neR_S6R_2M}
     volumes:
       - ./backend/catalog-service:/app
       - /app/node_modules
@@ -105,8 +106,6 @@ services:
   order-service:
     build: ./backend/order-service
     container_name: minhgiang_order
-    ports:
-      - "8003:8003"
     environment:
       PORT: 8003
       NODE_ENV: development
@@ -115,6 +114,10 @@ services:
       DB_USER: root
       DB_PASS: root
       DB_NAME: mg_order
+      CATALOG_SERVICE_URL: http://minhgiang_catalog:8002
+      IDENTITY_SERVICE_URL: http://minhgiang_identity:8001
+      GATEWAY_INTERNAL_TOKEN: ${GATEWAY_INTERNAL_TOKEN:-_nQKkw93nTQdu4ZiCEOy8eg_UJmHd0CfbCJ2thy4hx4}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-xazQ9fTOSl_oSBtJHqwDm93f0AwrPkRZ4neR_S6R_2M}
     volumes:
       - ./backend/order-service:/app
       - /app/node_modules
@@ -127,8 +130,6 @@ services:
   cms-service:
     build: ./backend/cms-service
     container_name: minhgiang_cms
-    ports:
-      - "8004:8004"
     environment:
       PORT: 8004
       NODE_ENV: development
@@ -137,6 +138,8 @@ services:
       DB_USER: root
       DB_PASS: root
       DB_NAME: mg_cms
+      GATEWAY_INTERNAL_TOKEN: ${GATEWAY_INTERNAL_TOKEN:-_nQKkw93nTQdu4ZiCEOy8eg_UJmHd0CfbCJ2thy4hx4}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-xazQ9fTOSl_oSBtJHqwDm93f0AwrPkRZ4neR_S6R_2M}
     volumes:
       - ./backend/cms-service:/app
       - /app/node_modules
@@ -150,8 +153,6 @@ services:
   notification-service:
     build: ./backend/notification-service
     container_name: minhgiang_notification
-    ports:
-      - "8005:8005"
     environment:
       PORT: 8005
       NODE_ENV: development
@@ -160,6 +161,8 @@ services:
       DB_USER: root
       DB_PASS: root
       DB_NAME: mg_notification
+      GATEWAY_INTERNAL_TOKEN: ${GATEWAY_INTERNAL_TOKEN:-_nQKkw93nTQdu4ZiCEOy8eg_UJmHd0CfbCJ2thy4hx4}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-xazQ9fTOSl_oSBtJHqwDm93f0AwrPkRZ4neR_S6R_2M}
       EMAIL_PROVIDER: smtp
       SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
       SMTP_PORT: ${SMTP_PORT:-587}
@@ -198,13 +201,14 @@ services:
     environment:
       PORT: 8000
       NODE_ENV: development
-      JWT_SECRET: ${JWT_SECRET:-change_me_to_a_random_32_char_string}
+      JWT_SECRET: ${JWT_SECRET:-23668e27c1340b01c3de8ff3ad40a5a0}
       IDENTITY_SERVICE_URL: http://identity-service:8001
       CATALOG_SERVICE_URL: http://catalog-service:8002
       ORDER_SERVICE_URL: http://order-service:8003
       CMS_SERVICE_URL: http://cms-service:8004
       NOTIFICATION_SERVICE_URL: http://notification-service:8005
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5500,http://localhost:3000}
+      GATEWAY_INTERNAL_TOKEN: ${GATEWAY_INTERNAL_TOKEN:-_nQKkw93nTQdu4ZiCEOy8eg_UJmHd0CfbCJ2thy4hx4}
     volumes:
       - ./backend/api-gateway:/app
       - /app/node_modules

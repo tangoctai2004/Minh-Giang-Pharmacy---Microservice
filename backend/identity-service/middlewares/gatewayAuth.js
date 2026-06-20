@@ -25,15 +25,21 @@ module.exports = function gatewayAuth(req, res, next) {
     });
   }
 
-  // Gắn thông tin user vào req để routes sử dụng
-  req.userId   = userId   ? Number(userId)   : null;
-  req.userRole = userRole || null;
-  req.userType = userType || null;   // 'staff' | 'customer'
-
-  try {
-    req.userPermissions = req.headers['x-user-permissions'] ? JSON.parse(req.headers['x-user-permissions']) : [];
-  } catch (e) {
+  // Prevents header spoofing: ignore identification headers if not from Gateway/Internal
+  if (!isGatewayRequest && !isInternalService) {
+    req.userId   = null;
+    req.userRole = null;
+    req.userType = null;
     req.userPermissions = [];
+  } else {
+    req.userId   = userId   ? Number(userId)   : null;
+    req.userRole = userRole || null;
+    req.userType = userType || null;   // 'staff' | 'customer'
+    try {
+      req.userPermissions = req.headers['x-user-permissions'] ? JSON.parse(req.headers['x-user-permissions']) : [];
+    } catch (e) {
+      req.userPermissions = [];
+    }
   }
 
   next();

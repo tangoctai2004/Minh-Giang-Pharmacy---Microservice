@@ -2,6 +2,7 @@ const router = require('express').Router();
 const pool   = require('../db/pool');
 const requireRoles = require('../middlewares/requireRoles');
 const { writeAudit } = require('../services/audit.service');
+const cache = require('../utils/cache');
 const canWriteCatalog = requireRoles(['admin', 'manager']);
 
 function auditCode() {
@@ -449,6 +450,7 @@ router.post('/audits/:id/reconcile', canWriteCatalog, async (req, res) => {
     );
 
     await conn.query('COMMIT');
+    await cache.clearByPrefix('products:').catch(err => console.error('Cache clear error:', err));
     await writeAudit({
       action: 'inventory_audit_reconcile',
       entity_type: 'inventory_audit',
@@ -756,4 +758,271 @@ router.get('/:productId', async (req, res) => {
   }
 });
 
+// POST /inventory/deduct — Trừ kho theo thuật toán FEFO (với kiểm tra chống âm kho và hỗ trợ reservation)
+router.post('/deduct', async (req, res) => {
+  const conn = await pool.getConnection();
+  try {
+    const {
+      items = [],
+      source_type,
+      source_id,
+      reference_type,
+      reference_id,
+      created_by
+    } = req.body || {};
+
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ success: false, message: 'Danh sách sản phẩm không hợp lệ' });
+    }
+
+    await conn.query('START TRANSACTION');
+
+    // 1. Giải phóng các reservation hết hạn
+    await conn.query(
+      `UPDATE stock_reservations
+       SET released_at = NOW(), release_reason = 'expired'
+       WHERE released_at IS NULL AND expires_at <= NOW()`
+    );
+
+    const deductedItems = [];
+
+    // 2. Nếu có reservation, ta nạp trước các reservation này
+    let reservations = [];
+    if (source_type && source_id) {
+      const [resRows] = await conn.query(
+        `SELECT id, batch_item_id, product_id, quantity 
+         FROM stock_reservations 
+         WHERE source_type = ? AND source_id = ? AND released_at IS NULL AND expires_at > NOW()
+         FOR UPDATE`,
+        [source_type, source_id]
+      );
+      reservations = resRows;
+    }
+
+    // 3. Xử lý từng item cần trừ
+    for (const item of items) {
+      const productId = Number(item.product_id);
+      let qtyToDeduct = Number(item.quantity);
+
+      if (qtyToDeduct <= 0) continue;
+
+      // 3.1. Xem có reservation cho sản phẩm này không
+      const itemReservations = reservations.filter(r => Number(r.product_id) === productId);
+      for (const resv of itemReservations) {
+        if (qtyToDeduct <= 0) break;
+
+        const deductQty = Math.min(qtyToDeduct, Number(resv.quantity));
+        
+        // Cập nhật batch item
+        const [[batch]] = await conn.query(
+          `SELECT quantity_remaining, lot_number, expiry_date 
+           FROM batch_items WHERE id = ? FOR UPDATE`,
+          [resv.batch_item_id]
+        );
+
+        if (!batch) {
+          await conn.query('ROLLBACK');
+          return res.status(409).json({ 
+            success: false, 
+            message: `Không tìm thấy lô hàng của reservation #${resv.id}` 
+          });
+        }
+
+        const newQty = Number(batch.quantity_remaining) - deductQty;
+        if (newQty < 0) {
+          await conn.query('ROLLBACK');
+          return res.status(409).json({ 
+            success: false, 
+            message: `Không đủ tồn kho trong lô hàng ${batch.lot_number} để thực hiện trừ từ reservation.` 
+          });
+        }
+
+        await conn.query(
+          `UPDATE batch_items SET quantity_remaining = ?, status = ? WHERE id = ?`,
+          [newQty, batchStatusByQuantity(batch.expiry_date, newQty), resv.batch_item_id]
+        );
+
+        // Đánh dấu reservation đã hoàn thành
+        await conn.query(
+          `UPDATE stock_reservations SET released_at = NOW(), release_reason = 'completed' WHERE id = ?`,
+          [resv.id]
+        );
+
+        deductedItems.push({
+          product_id: productId,
+          batch_item_id: resv.batch_item_id,
+          lot_number: batch.lot_number,
+          quantity: deductQty,
+          cost_price: 0
+        });
+
+        qtyToDeduct -= deductQty;
+      }
+
+      // 3.2. Nếu vẫn còn lượng hàng cần trừ (chưa được cover bởi reservation, hoặc không dùng reservation)
+      if (qtyToDeduct > 0) {
+        // Lấy danh sách lô hàng khả dụng theo FEFO
+        const [batches] = await conn.query(
+          `SELECT id, quantity_remaining, lot_number, expiry_date, cost_price 
+           FROM batch_items 
+           WHERE product_id = ? AND quantity_remaining > 0 AND status IN ('available', 'near_expiry')
+           ORDER BY expiry_date ASC
+           FOR UPDATE`,
+          [productId]
+        );
+
+        const totalAvailable = batches.reduce((sum, b) => sum + Number(b.quantity_remaining), 0);
+        if (totalAvailable < qtyToDeduct) {
+          await conn.query('ROLLBACK');
+          return res.status(409).json({
+            success: false,
+            message: `Không đủ tồn kho khả dụng cho sản phẩm #${productId} (Cần: ${qtyToDeduct}, khả dụng: ${totalAvailable})`
+          });
+        }
+
+        for (const batch of batches) {
+          if (qtyToDeduct <= 0) break;
+
+          const deductQty = Math.min(qtyToDeduct, Number(batch.quantity_remaining));
+          const newQty = Number(batch.quantity_remaining) - deductQty;
+
+          await conn.query(
+            `UPDATE batch_items SET quantity_remaining = ?, status = ? WHERE id = ?`,
+            [newQty, batchStatusByQuantity(batch.expiry_date, newQty), batch.id]
+          );
+
+          deductedItems.push({
+            product_id: productId,
+            batch_item_id: batch.id,
+            lot_number: batch.lot_number,
+            quantity: deductQty,
+            cost_price: Number(batch.cost_price || 0)
+          });
+
+          qtyToDeduct -= deductQty;
+        }
+      }
+    }
+
+    // 4. Ghi nhận biến động kho (stock_movements)
+    const mvtType = reference_type === 'pos_order' || reference_type === 'web_order' ? 'outbound_sale' : 'adjustment';
+    for (const d of deductedItems) {
+      const movementCode = `OUT-${reference_id || Date.now()}-${d.batch_item_id}`;
+      await conn.query(
+        `INSERT INTO stock_movements (
+          movement_code, batch_item_id, product_id, movement_type, quantity,
+          reference_type, reference_id, reason, created_by
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          movementCode,
+          d.batch_item_id,
+          d.product_id,
+          mvtType,
+          -d.quantity, // Số lượng âm đối với xuất kho
+          reference_type || null,
+          reference_id || null,
+          `Xuất kho đơn hàng #${reference_id || ''}`,
+          created_by || null
+        ]
+      );
+    }
+
+    await conn.query('COMMIT');
+    await cache.clearByPrefix('products:').catch(err => console.error('Cache clear error:', err));
+    res.json({
+      success: true,
+      message: 'Trừ kho thành công!',
+      data: {
+        deducted_items: deductedItems
+      }
+    });
+
+  } catch (err) {
+    await conn.query('ROLLBACK');
+    res.status(500).json({ success: false, message: err.message });
+  } finally {
+    conn.release();
+  }
+});
+
+// POST /inventory/restock — Hoàn kho về đúng lô ban đầu (GPP Lot Traceability)
+router.post('/restock', async (req, res) => {
+  const conn = await pool.getConnection();
+  try {
+    const {
+      items = [],
+      reference_type,
+      reference_id,
+      created_by
+    } = req.body || {};
+
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ success: false, message: 'Danh sách sản phẩm hoàn kho không hợp lệ' });
+    }
+
+    await conn.query('START TRANSACTION');
+
+    for (const item of items) {
+      const batchItemId = Number(item.batch_item_id);
+      const productId = Number(item.product_id);
+      const quantity = Number(item.quantity);
+
+      if (!batchItemId || !productId || quantity <= 0) {
+        await conn.query('ROLLBACK');
+        return res.status(400).json({ success: false, message: 'Thông tin hoàn kho của item không hợp lệ' });
+      }
+
+      // Lấy thông tin lô hàng hiện tại
+      const [[batch]] = await conn.query(
+        `SELECT expiry_date, quantity_remaining FROM batch_items WHERE id = ? FOR UPDATE`,
+        [batchItemId]
+      );
+
+      if (!batch) {
+        await conn.query('ROLLBACK');
+        return res.status(404).json({ success: false, message: `Không tìm thấy lô hàng #${batchItemId}` });
+      }
+
+      const newQty = Number(batch.quantity_remaining) + quantity;
+      const newStatus = batchStatusByQuantity(batch.expiry_date, newQty);
+
+      // Cập nhật tồn kho
+      await conn.query(
+        `UPDATE batch_items SET quantity_remaining = ?, status = ? WHERE id = ?`,
+        [newQty, newStatus, batchItemId]
+      );
+
+      // Ghi nhận biến động kho (stock_movements)
+      const movementCode = `RET-${reference_id || Date.now()}-${batchItemId}`;
+      await conn.query(
+        `INSERT INTO stock_movements (
+          movement_code, batch_item_id, product_id, movement_type, quantity,
+          reference_type, reference_id, reason, created_by
+        ) VALUES (?, ?, ?, 'inbound', ?, ?, ?, ?, ?)`,
+        [
+          movementCode,
+          batchItemId,
+          productId,
+          quantity, // Số lượng dương đối với hoàn kho
+          reference_type || 'return',
+          reference_id || null,
+          `Hoàn hàng/Hủy đơn về lô ban đầu`,
+          created_by || null
+        ]
+      );
+    }
+
+    await conn.query('COMMIT');
+    await cache.clearByPrefix('products:').catch(err => console.error('Cache clear error:', err));
+    res.json({ success: true, message: 'Hoàn kho thành công!' });
+
+  } catch (err) {
+    await conn.query('ROLLBACK');
+    res.status(500).json({ success: false, message: err.message });
+  } finally {
+    conn.release();
+  }
+});
+
 module.exports = router;
+

@@ -591,4 +591,104 @@ router.delete('/:id', canWrite, async (req, res) => {
   }
 });
 
+// POST /promotions/usage/increment — Tăng lượt sử dụng voucher/khuyến mãi (Internal)
+router.post('/usage/increment', async (req, res) => {
+  const isInternalService = Boolean(
+    req.headers['x-internal-token'] === process.env.INTERNAL_SERVICE_TOKEN
+  );
+  if (!isInternalService && process.env.NODE_ENV === 'production') {
+    return res.status(403).json({ success: false, message: 'Chỉ chấp nhận cuộc gọi nội bộ.' });
+  }
+
+  const { promotion_ids = [] } = req.body || {};
+  if (!Array.isArray(promotion_ids) || promotion_ids.length === 0) {
+    return res.status(400).json({ success: false, message: 'Thiếu promotion_ids' });
+  }
+
+  const ids = promotion_ids.map(Number).filter(id => !Number.isNaN(id));
+  if (ids.length === 0) {
+    return res.status(400).json({ success: false, message: 'Danh sách ID không hợp lệ' });
+  }
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.query('START TRANSACTION');
+
+    // Sử dụng FOR UPDATE để tránh race conditions (Lỗi 17)
+    const [promos] = await conn.query(
+      `SELECT id, usage_limit, usage_count 
+       FROM promotions 
+       WHERE id IN (?) 
+       FOR UPDATE`,
+      [ids]
+    );
+
+    for (const promo of promos) {
+      if (promo.usage_limit !== null && promo.usage_count >= promo.usage_limit) {
+        await conn.query('ROLLBACK');
+        return res.status(409).json({
+          success: false,
+          message: `Chương trình khuyến mãi #${promo.id} đã hết lượt sử dụng`
+        });
+      }
+    }
+
+    await conn.query(
+      `UPDATE promotions 
+       SET usage_count = usage_count + 1 
+       WHERE id IN (?)`,
+      [ids]
+    );
+
+    await conn.query('COMMIT');
+    res.json({ success: true, message: 'Đã tăng lượt sử dụng voucher thành công' });
+  } catch (err) {
+    await conn.query('ROLLBACK');
+    res.status(500).json({ success: false, message: err.message });
+  } finally {
+    conn.release();
+  }
+});
+
+// POST /promotions/usage/decrement — Giảm/hoàn lượt sử dụng voucher/khuyến mãi (Internal)
+router.post('/usage/decrement', async (req, res) => {
+  const isInternalService = Boolean(
+    req.headers['x-internal-token'] === process.env.INTERNAL_SERVICE_TOKEN
+  );
+  if (!isInternalService && process.env.NODE_ENV === 'production') {
+    return res.status(403).json({ success: false, message: 'Chỉ chấp nhận cuộc gọi nội bộ.' });
+  }
+
+  const { promotion_ids = [] } = req.body || {};
+  if (!Array.isArray(promotion_ids) || promotion_ids.length === 0) {
+    return res.status(400).json({ success: false, message: 'Thiếu promotion_ids' });
+  }
+
+  const ids = promotion_ids.map(Number).filter(id => !Number.isNaN(id));
+  if (ids.length === 0) {
+    return res.status(400).json({ success: false, message: 'Danh sách ID không hợp lệ' });
+  }
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.query('START TRANSACTION');
+
+    await conn.query(
+      `UPDATE promotions 
+       SET usage_count = GREATEST(0, CAST(usage_count AS SIGNED) - 1) 
+       WHERE id IN (?)`,
+      [ids]
+    );
+
+    await conn.query('COMMIT');
+    res.json({ success: true, message: 'Đã hoàn trả lượt sử dụng voucher thành công' });
+  } catch (err) {
+    await conn.query('ROLLBACK');
+    res.status(500).json({ success: false, message: err.message });
+  } finally {
+    conn.release();
+  }
+});
+
 module.exports = router;
+

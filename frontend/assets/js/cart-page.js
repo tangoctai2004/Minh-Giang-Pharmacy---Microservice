@@ -295,8 +295,15 @@ async function changeQty(itemId, newQty) {
         if (response.ok) {
             loadCartData();
             if (window.updateCartBadge) window.updateCartBadge();
+        } else {
+            const result = await response.json().catch(() => ({}));
+            alert(result.message || 'Không đủ tồn kho khả dụng.');
+            loadCartData();
         }
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+        console.error(e); 
+        loadCartData();
+    }
 }
 
 async function removeItem(itemId) {
@@ -355,6 +362,19 @@ function goToCheckout() {
         }
         return;
     }
+
+    const checkedBoxes = document.querySelectorAll('.cart-item .item-checkbox:checked');
+    if (checkedBoxes.length === 0) {
+        alert('Vui lòng chọn ít nhất một sản phẩm để tiến hành thanh toán.');
+        return;
+    }
+
+    const checkedIds = Array.from(checkedBoxes).map(cb => {
+        const row = cb.closest('.cart-item');
+        return parseInt(row.dataset.id);
+    });
+
+    localStorage.setItem('MG_CHECKOUT_ITEM_IDS', JSON.stringify(checkedIds));
     window.location.href = 'checkout.html';
 }
 

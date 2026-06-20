@@ -588,4 +588,83 @@ router.get('/export', canManagePromotions, async (_req, res) => {
   }
 });
 
+// POST /promotions/product-tag/increment-sold-qty — Tăng sold_qty của product tag promotions (Internal)
+router.post('/product-tag/increment-sold-qty', async (req, res) => {
+  const isInternalService = Boolean(
+    req.headers['x-internal-token'] === process.env.INTERNAL_SERVICE_TOKEN
+  );
+  if (!isInternalService && process.env.NODE_ENV === 'production') {
+    return res.status(403).json({ success: false, message: 'Chỉ chấp nhận cuộc gọi nội bộ.' });
+  }
+
+  const { product_id, quantity } = req.body || {};
+  if (!product_id || !quantity) {
+    return res.status(400).json({ success: false, message: 'Thiếu product_id hoặc quantity' });
+  }
+
+  try {
+    const [promos] = await pool.query(
+      `SELECT id FROM product_tag_promotions
+       WHERE product_id = ?
+         AND status = 'active'
+         AND start_time <= NOW()
+         AND end_time >= NOW()
+       ORDER BY FIELD(tag_name, 'flash-sale', 'deal', 'discount') ASC
+       LIMIT 1`,
+      [product_id]
+    );
+    if (promos.length > 0) {
+      await pool.query(
+        `UPDATE product_tag_promotions
+         SET sold_qty = sold_qty + ?
+         WHERE id = ?`,
+        [Number(quantity), promos[0].id]
+      );
+    }
+    res.json({ success: true, message: 'Đã cập nhật sold_qty' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// POST /promotions/product-tag/decrement-sold-qty — Giảm sold_qty của product tag promotions (Internal)
+router.post('/product-tag/decrement-sold-qty', async (req, res) => {
+  const isInternalService = Boolean(
+    req.headers['x-internal-token'] === process.env.INTERNAL_SERVICE_TOKEN
+  );
+  if (!isInternalService && process.env.NODE_ENV === 'production') {
+    return res.status(403).json({ success: false, message: 'Chỉ chấp nhận cuộc gọi nội bộ.' });
+  }
+
+  const { product_id, quantity } = req.body || {};
+  if (!product_id || !quantity) {
+    return res.status(400).json({ success: false, message: 'Thiếu product_id hoặc quantity' });
+  }
+
+  try {
+    const [promos] = await pool.query(
+      `SELECT id FROM product_tag_promotions
+       WHERE product_id = ?
+         AND status = 'active'
+         AND start_time <= NOW()
+         AND end_time >= NOW()
+       ORDER BY FIELD(tag_name, 'flash-sale', 'deal', 'discount') ASC
+       LIMIT 1`,
+      [product_id]
+    );
+    if (promos.length > 0) {
+      await pool.query(
+        `UPDATE product_tag_promotions
+         SET sold_qty = GREATEST(0, CAST(sold_qty AS SIGNED) - ?)
+         WHERE id = ?`,
+        [Number(quantity), promos[0].id]
+      );
+    }
+    res.json({ success: true, message: 'Đã cập nhật sold_qty' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 module.exports = router;
+

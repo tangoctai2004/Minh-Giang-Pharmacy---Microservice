@@ -8,8 +8,38 @@ const pool = require('../db/pool');
 router.post('/', async (req, res) => {
     try {
         const { order_id, reason, items, order_channel, refund_amount, refund_method } = req.body;
-        const returnCode = `RET-${Date.now()}`;
         
+        // 1. Kiểm tra đơn hàng có tồn tại không
+        const [[order]] = await pool.query('SELECT total_amount, discount_amount, subtotal FROM orders WHERE id = ? AND is_active = 1', [order_id]);
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
+        }
+
+        // 2. Kiểm tra tổng số tiền hoàn trả
+        const [[returnedSum]] = await pool.query("SELECT SUM(refund_amount) AS total_returned FROM returns WHERE order_id = ? AND status != 'rejected' AND is_active = 1", [order_id]);
+        const currentReturned = Number(returnedSum?.total_returned || 0);
+        const maxRefundAllowed = Number(order.total_amount) - currentReturned;
+        if (Number(refund_amount) > maxRefundAllowed) {
+            return res.status(400).json({ success: false, message: `Tiền hoàn trả không được vượt quá số tiền còn lại có thể hoàn (Tối đa: ${maxRefundAllowed}đ)` });
+        }
+
+        // 3. Kiểm tra số lượng từng item trả lại
+        if (items && items.length > 0) {
+            for (const item of items) {
+                const [[orderItem]] = await pool.query('SELECT product_name, quantity FROM order_items WHERE id = ? AND order_id = ? AND is_active = 1', [item.order_item_id, order_id]);
+                if (!orderItem) {
+                    return res.status(400).json({ success: false, message: `Không tìm thấy sản phẩm trong chi tiết đơn hàng` });
+                }
+                const [[alreadyReturned]] = await pool.query("SELECT SUM(quantity_returned) AS qty FROM return_items ri JOIN returns r ON ri.return_id = r.id WHERE ri.order_item_id = ? AND r.status != 'rejected' AND ri.is_active = 1 AND r.is_active = 1", [item.order_item_id]);
+                const currentReturnedQty = Number(alreadyReturned?.qty || 0);
+                const maxQtyAllowed = Number(orderItem.quantity) - currentReturnedQty;
+                if (Number(item.quantity) > maxQtyAllowed) {
+                    return res.status(400).json({ success: false, message: `Số lượng trả lại sản phẩm "${orderItem.product_name}" không được vượt quá số lượng đã mua còn lại (Tối đa: ${maxQtyAllowed})` });
+                }
+            }
+        }
+
+        const returnCode = `RET-${Date.now()}`;
         const [result] = await pool.query(
             'INSERT INTO returns (return_code, order_id, order_channel, reason, refund_amount, refund_method, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [returnCode, order_id, order_channel || 'pos', reason, refund_amount || 0, refund_method || 'cash', 'pending']
@@ -28,7 +58,7 @@ router.post('/', async (req, res) => {
         res.json({ success: true, message: 'Yêu cầu trả hàng đã được gửi', data: { return_id: returnId, return_code: returnCode } });
     } catch (error) {
         console.error('[Return POST Error]:', error);
-        res.status(500).json({ success: false, message: 'Lỗi khi yêu cầu trả hàng' });
+        res.status(500).json({ success: false, message: 'Lỗi khi yêu cầu trả hàng: ' + error.message });
     }
 });
 
@@ -167,7 +197,7 @@ router.put('/:id/status', async (req, res) => {
 
         // 1. Lấy thông tin phiếu trả hàng để kiểm tra
         const [returns] = await connection.query(
-            'SELECT id, status FROM returns WHERE return_code = ? AND is_active = 1 FOR UPDATE',
+            'SELECT id, status, refund_amount, order_id FROM returns WHERE return_code = ? AND is_active = 1 FOR UPDATE',
             [id]
         );
 
@@ -180,75 +210,83 @@ router.put('/:id/status', async (req, res) => {
         const oldStatus = returnRecord.status;
 
         // 2. Cập nhật trạng thái phiếu trả hàng
-        const [updateResult] = await connection.query(
+        await connection.query(
             'UPDATE returns SET status = ? WHERE id = ?',
             [status, returnRecord.id]
         );
 
         // 3. Nếu được duyệt thành công (completed) và trước đó chưa ở trạng thái completed
         if (status === 'completed' && oldStatus !== 'completed') {
-            // Lấy danh sách sản phẩm bị trả
+            // Lấy danh sách sản phẩm bị trả và lô gốc
             const [returnItems] = await connection.query(`
-                SELECT ri.id, ri.quantity_returned, oi.product_id 
+                SELECT ri.id, ri.quantity_returned, oi.product_id, oi.batch_item_id 
                 FROM return_items ri
                 JOIN order_items oi ON ri.order_item_id = oi.id
                 WHERE ri.return_id = ? AND ri.is_active = 1
             `, [returnRecord.id]);
 
+            const restockItems = [];
             for (const item of returnItems) {
-                // Tìm lô hàng (batch_item) gần nhất để hoàn lại số lượng
-                const [batches] = await connection.query(`
-                    SELECT id, quantity_remaining, expiry_date 
-                    FROM mg_catalog.batch_items 
-                    WHERE product_id = ? 
-                    ORDER BY status = 'available' DESC, status = 'near_expiry' DESC, expiry_date DESC 
-                    LIMIT 1
-                `, [item.product_id]);
-
-                if (batches.length > 0) {
-                    const batch = batches[0];
-                    const newQty = Number(batch.quantity_remaining) + Number(item.quantity_returned);
-
-                    // Xác định trạng thái mới của lô hàng sau khi cộng tồn
-                    let newBatchStatus = 'available';
-                    if (newQty <= 0) {
-                        newBatchStatus = 'depleted';
-                    } else {
-                        const expiry = new Date(batch.expiry_date);
-                        const today = new Date();
-                        today.setHours(0, 0, 0, 0);
-                        if (expiry < today) {
-                            newBatchStatus = 'expired';
-                        } else {
-                            const days = Math.ceil((expiry.getTime() - today.getTime()) / 86400000);
-                            if (days <= 90) {
-                                newBatchStatus = 'near_expiry';
-                            }
+                let batchItemId = item.batch_item_id;
+                if (!batchItemId) {
+                    const { callInternalService, CATALOG_SERVICE_URL } = require('../utils/internalApi');
+                    const batchRes = await callInternalService(`${CATALOG_SERVICE_URL}/inventory/${item.product_id}`);
+                    if (batchRes.ok) {
+                        const batchResult = await batchRes.json();
+                        if (batchResult.success && batchResult.data && batchResult.data.length > 0) {
+                            batchItemId = batchResult.data[0].id;
                         }
                     }
+                }
+                
+                if (batchItemId) {
+                    restockItems.push({
+                        batch_item_id: batchItemId,
+                        product_id: item.product_id,
+                        quantity: item.quantity_returned
+                    });
+                }
+            }
 
-                    // Cập nhật tồn kho
-                    await connection.query(`
-                        UPDATE mg_catalog.batch_items 
-                        SET quantity_remaining = ?, status = ? 
-                        WHERE id = ?
-                    `, [newQty, newBatchStatus, batch.id]);
+            if (restockItems.length > 0) {
+                const { callInternalService, CATALOG_SERVICE_URL } = require('../utils/internalApi');
+                const restockRes = await callInternalService(`${CATALOG_SERVICE_URL}/inventory/restock`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        items: restockItems,
+                        reference_type: 'return',
+                        reference_id: returnRecord.id,
+                        created_by: req.userId || null
+                    })
+                });
 
-                    // Ghi nhận biến động kho
-                    const movementCode = `RET-${returnRecord.id}-${item.id}`;
-                    await connection.query(`
-                        INSERT INTO mg_catalog.stock_movements (
-                            movement_code, batch_item_id, product_id, movement_type, quantity,
-                            reference_type, reference_id, reason, created_by
-                        ) VALUES (?, ?, ?, 'inbound', ?, 'return', ?, ?, NULL)
-                    `, [
-                        movementCode,
-                        batch.id,
-                        item.product_id,
-                        item.quantity_returned,
-                        returnRecord.id,
-                        `Khách trả hàng (Phiếu ${id}) - Nhập lại kho`
-                    ]);
+                if (!restockRes.ok) {
+                    throw new Error('Không thể hoàn kho tự động qua catalog-service: ' + (await restockRes.text()));
+                }
+            }
+
+            // 4. Thu hồi điểm loyalty tích lũy tương ứng
+            const [[orderInfo]] = await connection.query(`
+                SELECT o.customer_id, o.order_code
+                FROM orders o
+                WHERE o.id = ?
+            `, [returnRecord.order_id]);
+
+            if (orderInfo && orderInfo.customer_id && returnRecord.refund_amount > 0) {
+                const pointsToRecover = Math.floor(Number(returnRecord.refund_amount) / 1000);
+                if (pointsToRecover > 0) {
+                    const { callInternalService, IDENTITY_SERVICE_URL } = require('../utils/internalApi');
+                    const adjustRes = await callInternalService(`${IDENTITY_SERVICE_URL}/customers/${orderInfo.customer_id}/loyalty/adjust`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            points_change: -pointsToRecover,
+                            description: `Thu hồi điểm do trả hàng đơn ${orderInfo.order_code || ''} (Phiếu trả ${returnRecord.id})`,
+                            idempotency_key: `return:${returnRecord.id}:loyalty`
+                        })
+                    });
+                    if (!adjustRes.ok) {
+                        console.error('Không thể thu hồi điểm loyalty qua identity-service:', await adjustRes.text());
+                    }
                 }
             }
         }
@@ -258,7 +296,7 @@ router.put('/:id/status', async (req, res) => {
     } catch (error) {
         await connection.rollback();
         console.error('[Update Return Status Error]:', error);
-        res.status(500).json({ success: false, message: 'Lỗi cập nhật trạng thái phiếu và tồn kho' });
+        res.status(500).json({ success: false, message: 'Lỗi cập nhật trạng thái phiếu và tồn kho: ' + error.message });
     } finally {
         connection.release();
     }

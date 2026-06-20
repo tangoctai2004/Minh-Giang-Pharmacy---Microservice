@@ -1,36 +1,32 @@
 const router = require('express').Router();
 const pool = require('../db/pool');
+const { callInternalService, CATALOG_SERVICE_URL, IDENTITY_SERVICE_URL, CMS_SERVICE_URL } = require('../utils/internalApi');
 
-async function findProductForGift(connection, giftProductName) {
+async function findProductForGift(giftProductName) {
     const cleanName = giftProductName.trim().toLowerCase();
+    const response = await callInternalService(`${CATALOG_SERVICE_URL}/products?q=${encodeURIComponent(giftProductName)}&limit=50`);
+    if (!response.ok) return null;
+    const result = await response.json();
+    if (!result.success || !Array.isArray(result.data)) return null;
+    
+    const products = result.data;
     
     // 1. Exact match (case insensitive)
-    const [exactMatches] = await connection.query(
-        `SELECT id, name, base_unit FROM mg_catalog.products 
-         WHERE LOWER(name) = ? AND status = 'active' LIMIT 1`,
-        [cleanName]
-    );
-    if (exactMatches.length > 0) return exactMatches[0];
-
-    // 2. Fallback: replace space with %
-    const wildcardName = '%' + cleanName.replace(/\s+/g, '%') + '%';
-    const [likeMatches] = await connection.query(
-        `SELECT id, name, base_unit FROM mg_catalog.products 
-         WHERE LOWER(name) LIKE ? AND status = 'active' LIMIT 1`,
-        [wildcardName]
-    );
-    if (likeMatches.length > 0) return likeMatches[0];
-
-    // 3. Fallback: search with words > 2 chars
+    const exact = products.find(p => p.name.trim().toLowerCase() === cleanName);
+    if (exact) return { id: exact.id, name: exact.name, base_unit: exact.base_unit };
+    
+    // 2. Fallback: replace space with word matching
     const words = cleanName.split(/\s+/).filter(w => w.length > 2);
     if (words.length > 0) {
-        const componentWildcard = '%' + words.join('%') + '%';
-        const [componentMatches] = await connection.query(
-            `SELECT id, name, base_unit FROM mg_catalog.products 
-             WHERE LOWER(name) LIKE ? AND status = 'active' LIMIT 1`,
-            [componentWildcard]
-        );
-        if (componentMatches.length > 0) return componentMatches[0];
+        const match = products.find(p => {
+            const pName = p.name.toLowerCase();
+            return words.every(word => pName.includes(word));
+        });
+        if (match) return { id: match.id, name: match.name, base_unit: match.base_unit };
+    }
+    
+    if (products.length > 0) {
+        return { id: products[0].id, name: products[0].name, base_unit: products[0].base_unit };
     }
     
     return null;
@@ -39,85 +35,34 @@ async function findProductForGift(connection, giftProductName) {
 /**
  * Helper to find or automatically create a customer by phone number.
  */
-async function findOrCreateCustomerByPhone(connection, phone, name) {
+async function findOrCreateCustomerByPhone(phone, name) {
     if (!phone) return null;
-    
-    const normalizedPhone = String(phone).trim();
-    if (!normalizedPhone) return null;
-
-    // 1. Check if customer exists
-    const [customers] = await connection.query(
-        'SELECT id FROM mg_identity.customers WHERE phone = ? AND deleted_at IS NULL LIMIT 1',
-        [normalizedPhone]
-    );
-
-    if (customers.length > 0) {
-        return customers[0].id;
+    const response = await callInternalService(`${IDENTITY_SERVICE_URL}/customers/find-or-create`, {
+        method: 'POST',
+        body: JSON.stringify({ phone, name })
+    });
+    if (!response.ok) {
+        throw new Error('Không thể tra cứu hoặc tạo thông tin khách hàng từ identity-service');
     }
-
-    // 2. Not found -> Auto create
-    // Generate unique code KH-XXXX
-    const [[maxResult]] = await connection.query('SELECT MAX(id) AS maxId FROM mg_identity.customers');
-    const nextId = (maxResult && maxResult.maxId ? maxResult.maxId : 0) + 1;
-    const customerCode = `KH-${String(nextId).padStart(4, '0')}`;
-    
-    // Generate email placeholder
-    const placeholderEmail = `${normalizedPhone}@minhgiang.vn`;
-    
-    // Default hashed password (bcrypt of '123456')
-    const defaultPasswordHash = '$2a$12$BkyYpCpf7jQjc3.Bt/PLr.XKWCF0SJ6PDPN4keoR0qAoQ973tiWgy';
-    
-    const customerName = name || `Khách hàng ${normalizedPhone}`;
-
-    const [insertResult] = await connection.query(`
-        INSERT INTO mg_identity.customers (
-            full_name, email, phone, password_hash, code, is_active
-        ) VALUES (?, ?, ?, ?, ?, 1)
-    `, [customerName, placeholderEmail, normalizedPhone, defaultPasswordHash, customerCode]);
-
-    return insertResult.insertId;
+    const result = await response.json();
+    if (!result.success) {
+        throw new Error(result.message || 'Lỗi tra cứu/tạo khách hàng');
+    }
+    return result.data.id;
 }
 
-async function incrementPromotionSoldQty(connection, productId, quantity) {
-    const [promos] = await connection.query(
-        `SELECT id FROM mg_catalog.product_tag_promotions
-         WHERE product_id = ?
-           AND status = 'active'
-           AND start_time <= NOW()
-           AND end_time >= NOW()
-         ORDER BY FIELD(tag_name, 'flash-sale', 'deal', 'discount') ASC
-         LIMIT 1`,
-        [productId]
-    );
-    if (promos.length > 0) {
-        await connection.query(
-            `UPDATE mg_catalog.product_tag_promotions
-             SET sold_qty = sold_qty + ?
-             WHERE id = ?`,
-            [quantity, promos[0].id]
-        );
-    }
+async function incrementPromotionSoldQty(productId, quantity) {
+    await callInternalService(`${CATALOG_SERVICE_URL}/promotions/product-tag/increment-sold-qty`, {
+        method: 'POST',
+        body: JSON.stringify({ product_id: productId, quantity })
+    }).catch(e => console.error('Failed to increment promotion sold qty:', e));
 }
 
-async function decrementPromotionSoldQty(connection, productId, quantity) {
-    const [promos] = await connection.query(
-        `SELECT id FROM mg_catalog.product_tag_promotions
-         WHERE product_id = ?
-           AND status = 'active'
-           AND start_time <= NOW()
-           AND end_time >= NOW()
-         ORDER BY FIELD(tag_name, 'flash-sale', 'deal', 'discount') ASC
-         LIMIT 1`,
-        [productId]
-    );
-    if (promos.length > 0) {
-        await connection.query(
-            `UPDATE mg_catalog.product_tag_promotions
-             SET sold_qty = GREATEST(0, CAST(sold_qty AS SIGNED) - ?)
-             WHERE id = ?`,
-            [quantity, promos[0].id]
-        );
-    }
+async function decrementPromotionSoldQty(productId, quantity) {
+    await callInternalService(`${CATALOG_SERVICE_URL}/promotions/product-tag/decrement-sold-qty`, {
+        method: 'POST',
+        body: JSON.stringify({ product_id: productId, quantity })
+    }).catch(e => console.error('Failed to decrement promotion sold qty:', e));
 }
 
 /**
@@ -136,11 +81,49 @@ router.post('/', async (req, res) => {
             total_amount,
             payment_method,
             items,
-            voucher_code
+            voucher_code,
+            prescription_doctor,
+            prescription_number
         } = req.body;
 
         if (!items || !Array.isArray(items) || items.length === 0) {
             return res.status(400).json({ success: false, message: 'Danh sách sản phẩm không hợp lệ' });
+        }
+
+        // --- Cập nhật thông tin khách hàng ---
+        let activeCustomerId = customer_id || null;
+        let lookupPhone = customer_phone;
+        let lookupName = customer_name || 'Khách vãng lai';
+
+        if (!activeCustomerId) {
+            if (!lookupPhone || lookupPhone.trim() === 'Vãng lai' || lookupPhone.trim().length < 10) {
+                lookupPhone = '0900000000';
+                lookupName = 'Khách vãng lai';
+            }
+            activeCustomerId = await findOrCreateCustomerByPhone(lookupPhone, lookupName);
+        }
+
+        // --- Kiểm tra thuốc kê đơn (Rx) ---
+        const productIds = items.map(it => it.product_id);
+        const catalogRes = await callInternalService(`${CATALOG_SERVICE_URL}/products?ids=${productIds.join(',')}`);
+        if (!catalogRes.ok) {
+            return res.status(500).json({ success: false, message: 'Không thể kiểm tra thông tin thuốc từ catalog-service.' });
+        }
+        const catalogData = await catalogRes.json();
+        if (!catalogData.success || !Array.isArray(catalogData.data)) {
+            return res.status(500).json({ success: false, message: 'Dữ liệu sản phẩm từ catalog-service không hợp lệ.' });
+        }
+        const catalogProductsMap = {};
+        for (const p of catalogData.data) {
+            catalogProductsMap[p.id] = p;
+        }
+
+        const rxItems = [];
+        for (const item of items) {
+            const catalogProd = catalogProductsMap[item.product_id];
+            if (catalogProd && Number(catalogProd.requires_prescription) === 1) {
+                rxItems.push(item);
+            }
         }
 
         connection = await pool.getConnection();
@@ -151,95 +134,113 @@ router.post('/', async (req, res) => {
         const randomStr = Math.floor(1000 + Math.random() * 9000);
         const orderCode = `POS-${todayStr}-${randomStr}`;
 
-        let activeCustomerId = customer_id || null;
-        if (!activeCustomerId && customer_phone) {
-            activeCustomerId = await findOrCreateCustomerByPhone(connection, customer_phone, customer_name);
-        }
-
         // --- Xử lý Voucher & Quà tặng POS ---
         let calculatedDiscount = 0;
         const promotionsToInsert = [];
         const promoUsageIncrements = [];
-        const isPhoneValid = customer_phone && customer_phone.trim().length >= 10;
+        const isPhoneValid = lookupPhone && lookupPhone !== '0900000000' && lookupPhone.trim().length >= 10;
 
         if (voucher_code && isPhoneValid) {
             const normalizedCode = voucher_code.trim().toUpperCase();
-            const [promos] = await connection.query(
-                `SELECT id, name, code, type, discount_value, min_order_value, max_discount_amount, applicable_channel
-                 FROM mg_cms.promotions
-                 WHERE code = ?
-                   AND is_active = 1
-                   AND start_date <= NOW()
-                   AND end_date >= NOW()
-                   AND (usage_limit IS NULL OR usage_count < usage_limit)
-                 LIMIT 1`,
-                [normalizedCode]
-            );
-
-            if (promos.length > 0) {
-                const v = promos[0];
-                if (v.applicable_channel === 'all' || v.applicable_channel === 'pos') {
-                    let disc = 0;
-                    if (v.type === 'percent_discount' || v.type === 'percent') {
-                        disc = Math.round((subtotal * Number(v.discount_value)) / 100);
-                        if (v.max_discount_amount > 0) {
-                            disc = Math.min(disc, Number(v.max_discount_amount));
+            const promoRes = await callInternalService(`${CMS_SERVICE_URL}/promotions/validate/${encodeURIComponent(normalizedCode)}`);
+            if (promoRes.ok) {
+                const promoData = await promoRes.json();
+                if (promoData.success && promoData.data) {
+                    const v = promoData.data;
+                    if (v.applicable_channel === 'all' || v.applicable_channel === 'pos') {
+                        let disc = 0;
+                        if (v.type === 'percent_discount' || v.type === 'percent') {
+                            disc = Math.round((subtotal * Number(v.discount_value)) / 100);
+                            if (v.max_discount_amount > 0) {
+                                disc = Math.min(disc, Number(v.max_discount_amount));
+                            }
+                        } else {
+                            disc = Number(v.discount_value);
                         }
-                    } else {
-                        disc = Number(v.discount_value);
+                        calculatedDiscount = disc;
+                        promotionsToInsert.push({
+                            promotion_id: v.id,
+                            promo_code: v.code,
+                            promo_name: v.name,
+                            promo_type: v.type,
+                            discount_value: Number(v.discount_value),
+                            discount_applied: disc
+                        });
+                        promoUsageIncrements.push(v.id);
                     }
-                    calculatedDiscount = disc;
-                    promotionsToInsert.push({
-                        promotion_id: v.id,
-                        promo_code: v.code,
-                        promo_name: v.name,
-                        promo_type: v.type,
-                        discount_value: Number(v.discount_value),
-                        discount_applied: disc
-                    });
-                    promoUsageIncrements.push(v.id);
                 }
             }
         }
 
         if (isPhoneValid) {
-            const [activeGifts] = await connection.query(
-                `SELECT id, name, gift_product_name, gift_product_qty, min_order_value
-                 FROM mg_cms.promotions
-                 WHERE type = 'buy_x_get_y'
-                   AND is_active = 1
-                   AND start_date <= NOW()
-                   AND end_date >= NOW()
-                   AND (usage_limit IS NULL OR usage_count < usage_limit)
-                   AND (applicable_channel = 'all' OR applicable_channel = 'pos')
-                   AND min_order_value <= ?
-                 ORDER BY min_order_value DESC`,
-                [subtotal]
-            );
+            const activeRes = await callInternalService(`${CMS_SERVICE_URL}/promotions/active`);
+            if (activeRes.ok) {
+                const activeData = await activeRes.json();
+                if (activeData.success) {
+                    const activeGifts = activeData.data.filter(p =>
+                        p.type === 'buy_x_get_y' &&
+                        (p.applicable_channel === 'all' || p.applicable_channel === 'pos') &&
+                        Number(p.min_order_value || 0) <= subtotal
+                    ).sort((a, b) => Number(b.min_order_value || 0) - Number(a.min_order_value || 0));
 
-            for (const giftCampaign of activeGifts) {
-                const prod = await findProductForGift(connection, giftCampaign.gift_product_name);
+                    const bestGiftCampaign = activeGifts[0];
+                    if (bestGiftCampaign) {
+                        const prod = await findProductForGift(bestGiftCampaign.gift_product_name);
+                        if (prod) {
+                            const giftStockRes = await callInternalService(`${CATALOG_SERVICE_URL}/inventory/availability?product_ids=${prod.id}`);
+                            if (giftStockRes.ok) {
+                                const giftStockData = await giftStockRes.json();
+                                if (giftStockData.success && giftStockData.data && giftStockData.data.length > 0) {
+                                    const availableGiftStock = Number(giftStockData.data[0].available_stock || 0);
+                                    const requiredQty = bestGiftCampaign.gift_product_qty || 1;
+                                    if (availableGiftStock >= requiredQty) {
+                                        items.push({
+                                            product_id: prod.id,
+                                            product_name: `🎁 [Quà tặng] ${prod.name}`,
+                                            unit_name: prod.base_unit || 'Hộp',
+                                            quantity: requiredQty,
+                                            unit_price: 0
+                                        });
 
-                if (prod) {
-                    items.push({
-                        product_id: prod.id,
-                        product_name: `🎁 [Quà tặng] ${prod.name}`,
-                        unit_name: prod.base_unit || 'Hộp',
-                        quantity: giftCampaign.gift_product_qty || 1,
-                        unit_price: 0
-                    });
-
-                    promotionsToInsert.push({
-                        promotion_id: giftCampaign.id,
-                        promo_code: null,
-                        promo_name: giftCampaign.name,
-                        promo_type: 'buy_x_get_y',
-                        discount_value: 0,
-                        discount_applied: 0
-                    });
-                    promoUsageIncrements.push(giftCampaign.id);
+                                        promotionsToInsert.push({
+                                            promotion_id: bestGiftCampaign.id,
+                                            promo_code: null,
+                                            promo_name: bestGiftCampaign.name,
+                                            promo_type: 'buy_x_get_y',
+                                            discount_value: 0,
+                                            discount_applied: 0
+                                        });
+                                        promoUsageIncrements.push(bestGiftCampaign.id);
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
+        }
+
+        // --- Lưu Đơn thuốc Bác sĩ kê đơn (Rx) ---
+        let prescriptionId = null;
+        if (rxItems.length > 0) {
+            if (!prescription_doctor) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: 'Đơn hàng chứa thuốc kê đơn (Rx). Yêu cầu nhập thông tin Bác sĩ kê đơn.' });
+            }
+
+            const rxCode = prescription_number || `POS-RX-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+            const todayYMD = new Date().toISOString().slice(0, 10);
+            
+            const [rxInsertResult] = await connection.query(`
+                INSERT INTO prescriptions (
+                    prescription_code, order_id, customer_id, patient_name, patient_phone,
+                    doctor_name, hospital_name, issue_date, image_url, status, verified_at
+                ) VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, 'verified', NOW())
+            `, [
+                rxCode, activeCustomerId, lookupName, lookupPhone,
+                prescription_doctor, 'Bệnh viện Đa khoa', todayYMD, '/uploads/prescriptions/pos-rx-default.jpg'
+            ]);
+            prescriptionId = rxInsertResult.insertId;
         }
 
         // 2. Thêm đơn hàng vào bảng orders
@@ -250,62 +251,77 @@ router.post('/', async (req, res) => {
                 payment_method, payment_status, order_status, requires_vat_invoice
             ) VALUES (?, 'pos', ?, ?, ?, NULL, ?, 0, ?, ?, ?, 'paid', 'completed', 0)
         `, [
-            orderCode, activeCustomerId, customer_name || 'Khách vãng lai', customer_phone || null,
+            orderCode, activeCustomerId, lookupName, lookupPhone,
             subtotal, discount_amount || calculatedDiscount, total_amount, payment_method || 'cash'
         ]);
         const orderId = orderResult.insertId;
 
-        // 3. Thêm các chi tiết đơn hàng (order_items)
-        if (items.length > 0) {
-            const values = items.map(item => [
-                orderId, item.product_id, item.product_name, item.unit_name || 'Hộp',
-                item.quantity, item.unit_price, item.quantity * item.unit_price
+        // Cập nhật order_id cho đơn thuốc
+        if (prescriptionId) {
+            await connection.query('UPDATE prescriptions SET order_id = ? WHERE id = ?', [orderId, prescriptionId]);
+        }
+
+        // 3. Trừ tồn kho trong mg_catalog theo FEFO
+        const deductRes = await callInternalService(`${CATALOG_SERVICE_URL}/inventory/deduct`, {
+            method: 'POST',
+            body: JSON.stringify({
+                items: items.map(it => ({ product_id: it.product_id, quantity: it.quantity })),
+                reference_type: 'pos_order',
+                reference_id: orderId,
+                created_by: req.userId || null
+            })
+        });
+        if (!deductRes.ok) {
+            const errText = await deductRes.text();
+            throw new Error('Trừ kho thất bại: ' + errText);
+        }
+        const deductData = await deductRes.json();
+        if (!deductData.success || !deductData.data || !Array.isArray(deductData.data.deducted_items)) {
+            throw new Error('Dữ liệu trừ kho trả về từ catalog-service không hợp lệ.');
+        }
+        const deductedItems = deductData.data.deducted_items;
+
+        // 4. Thêm các chi tiết đơn hàng (order_items)
+        const orderItemsToInsert = [];
+        for (const d of deductedItems) {
+            const origItem = items.find(it => Number(it.product_id) === Number(d.product_id));
+            if (!origItem) continue;
+
+            const catalogProd = catalogProductsMap[d.product_id];
+            let itemPrescriptionId = null;
+            if (catalogProd && Number(catalogProd.requires_prescription) === 1) {
+                itemPrescriptionId = prescriptionId;
+            }
+
+            orderItemsToInsert.push([
+                orderId,
+                d.product_id,
+                origItem.product_name,
+                origItem.unit_name || 'Hộp',
+                d.quantity,
+                origItem.unit_price,
+                d.quantity * Number(origItem.unit_price),
+                d.batch_item_id,
+                d.lot_number,
+                itemPrescriptionId
             ]);
+        }
+
+        if (orderItemsToInsert.length > 0) {
             await connection.query(`
                 INSERT INTO order_items (
                     order_id, product_id, product_name, unit_name,
-                    quantity, unit_price, total_price
+                    quantity, unit_price, total_price, batch_item_id, lot_number, prescription_id
                 ) VALUES ?
-            `, [values]);
+            `, [orderItemsToInsert]);
         }
 
-        // Trừ tồn kho trong mg_catalog.batch_items theo FEFO
+        // Cập nhật sold_qty của promotion active
         for (const item of items) {
-            let remainingToDeduct = item.quantity;
-
-            const [batches] = await connection.query(`
-                SELECT id, quantity_remaining, lot_number, expiry_date 
-                FROM mg_catalog.batch_items 
-                WHERE product_id = ? AND quantity_remaining > 0 AND status IN ('available', 'near_expiry')
-                ORDER BY expiry_date ASC
-            `, [item.product_id]);
-
-            for (const batch of batches) {
-                if (remainingToDeduct <= 0) break;
-
-                const deductAmount = Math.min(remainingToDeduct, batch.quantity_remaining);
-                await connection.query(`
-                    UPDATE mg_catalog.batch_items 
-                    SET quantity_remaining = quantity_remaining - ? 
-                    WHERE id = ?
-                `, [deductAmount, batch.id]);
-
-                remainingToDeduct -= deductAmount;
-            }
-
-            if (remainingToDeduct > 0 && batches.length > 0) {
-                await connection.query(`
-                    UPDATE mg_catalog.batch_items 
-                    SET quantity_remaining = quantity_remaining - ? 
-                    WHERE id = ?
-                `, [remainingToDeduct, batches[0].id]);
-            }
-
-            // Cập nhật sold_qty của promotion active
-            await incrementPromotionSoldQty(connection, item.product_id, item.quantity);
+            await incrementPromotionSoldQty(item.product_id, item.quantity);
         }
 
-        // 3.5. Ghi nhận lịch sử khuyến mãi (order_promotions) & tăng lượt sử dụng trong CMS
+        // 5. Ghi nhận lịch sử khuyến mãi (order_promotions)
         if (promotionsToInsert.length > 0) {
             const values = promotionsToInsert.map(promo => [
                 orderId, promo.promotion_id, promo.promo_code, promo.promo_name,
@@ -319,56 +335,77 @@ router.post('/', async (req, res) => {
             `, [values]);
         }
 
-        for (const promoId of promoUsageIncrements) {
-            await connection.query(
-                `UPDATE mg_cms.promotions SET usage_count = usage_count + 1 WHERE id = ?`,
-                [promoId]
-            );
+        await connection.commit();
+
+        // --- Cập nhật bên ngoài transaction để tránh delay/block DB ---
+        
+        // Tăng lượt sử dụng khuyến mãi qua CMS service
+        if (promoUsageIncrements.length > 0) {
+            await callInternalService(`${CMS_SERVICE_URL}/promotions/usage/increment`, {
+                method: 'POST',
+                body: JSON.stringify({ promotion_ids: promoUsageIncrements })
+            }).catch(e => console.error('Failed to increment promo usage:', e));
         }
 
-        // 4. Tích lũy điểm & Khấu trừ điểm trong mg_identity.customers & ghi nhận lịch sử vào mg_identity.loyalty_points_transactions
+        // Tích lũy & khấu trừ điểm loyalty qua identity-service
         if (activeCustomerId) {
-            const pointsEarned = Math.floor(total_amount / 10);
+            const pointsEarned = Math.floor(total_amount / 1000);
             const voucherDiscountTotal = promotionsToInsert.reduce((sum, p) => sum + (p.discount_applied || 0), 0);
             const pointsRedeemed = Math.max(0, (discount_amount || 0) - voucherDiscountTotal);
-            const netPointsChange = pointsEarned - pointsRedeemed;
-
-            if (netPointsChange !== 0) {
-                await connection.query(`
-                    UPDATE mg_identity.customers 
-                    SET loyalty_points = loyalty_points + ? 
-                    WHERE id = ?
-                `, [netPointsChange, activeCustomerId]);
-            }
 
             if (pointsEarned > 0) {
-                await connection.query(`
-                    INSERT INTO mg_identity.loyalty_points_transactions (
-                        customer_id, transaction_type, points_change, description, reference_order_id
-                    ) VALUES (?, 'earn_purchase', ?, ?, ?)
-                `, [
-                    activeCustomerId,
-                    pointsEarned,
-                    `Tích điểm mua hàng tại POS - Đơn ${orderCode}`,
-                    orderId
-                ]);
+                await callInternalService(`${IDENTITY_SERVICE_URL}/customers/${activeCustomerId}/loyalty/earn`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        amount: total_amount,
+                        points: pointsEarned,
+                        order_id: orderId
+                    })
+                }).catch(e => console.error('Failed to earn loyalty points:', e));
             }
 
             if (pointsRedeemed > 0) {
-                await connection.query(`
-                    INSERT INTO mg_identity.loyalty_points_transactions (
-                        customer_id, transaction_type, points_change, description, reference_order_id
-                    ) VALUES (?, 'redeem', ?, ?, ?)
-                `, [
-                    activeCustomerId,
-                    -pointsRedeemed,
-                    `Quy đổi điểm giảm giá tại POS - Đơn ${orderCode}`,
-                    orderId
-                ]);
+                await callInternalService(`${IDENTITY_SERVICE_URL}/customers/${activeCustomerId}/loyalty/adjust`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        points_change: -pointsRedeemed,
+                        description: `Quy đổi điểm giảm giá tại POS - Đơn ${orderCode}`,
+                        idempotency_key: `order:${orderId}:redeem`
+                    })
+                }).catch(e => console.error('Failed to redeem loyalty points:', e));
             }
         }
 
-        await connection.commit();
+        // Cập nhật ca POS (Shift)
+        let activeShiftId = null;
+        if (req.userId) {
+            try {
+                const activeShiftRes = await callInternalService(`${IDENTITY_SERVICE_URL}/shifts/active/${req.userId}`);
+                if (activeShiftRes.ok) {
+                    const activeShiftData = await activeShiftRes.json();
+                    if (activeShiftData && activeShiftData.success && activeShiftData.data) {
+                        activeShiftId = activeShiftData.data.id;
+                    }
+                }
+            } catch (err) {
+                console.error('Error fetching active shift for user:', err);
+            }
+        }
+
+        if (activeShiftId) {
+            try {
+                await callInternalService(`${IDENTITY_SERVICE_URL}/shifts/${activeShiftId}/sales`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        payment_method: payment_method || 'cash',
+                        amount: total_amount
+                    })
+                });
+            } catch (err) {
+                console.error('Error updating shift sales:', err);
+            }
+        }
+
         res.json({
             success: true,
             message: 'Thanh toán & trừ kho thành công!',
@@ -573,67 +610,66 @@ router.put('/:id/status', async (req, res) => {
 
         await connection.query(updateQuery, updateParams);
 
-        // Xử lý Trừ kho và Cập nhật Promotion khi chuyển sang Completed (đối với Web order)
-        if (oldStatus !== 'completed' && status === 'completed') {
-            if (order.order_channel === 'web') {
-                const [orderItems] = await connection.query(
-                    'SELECT product_id, quantity FROM order_items WHERE order_id = ? AND is_active = 1',
-                    [realId]
-                );
+        // Xử lý Hoàn kho và Cập nhật Promotion khi đơn hàng bị Hủy (ở bất kỳ trạng thái nào trước đó)
+        if (oldStatus !== 'cancelled' && status === 'cancelled') {
+            const [orderItems] = await connection.query(
+                'SELECT product_id, quantity, batch_item_id FROM order_items WHERE order_id = ? AND is_active = 1',
+                [realId]
+            );
+
+            if (orderItems.length > 0) {
+                const restockItems = [];
                 for (const item of orderItems) {
-                    let remainingToDeduct = item.quantity;
-                    const [batches] = await connection.query(`
-                        SELECT id, quantity_remaining, lot_number, expiry_date 
-                        FROM mg_catalog.batch_items 
-                        WHERE product_id = ? AND quantity_remaining > 0 AND status IN ('available', 'near_expiry')
-                        ORDER BY expiry_date ASC
-                    `, [item.product_id]);
-
-                    for (const batch of batches) {
-                        if (remainingToDeduct <= 0) break;
-                        const deductAmount = Math.min(remainingToDeduct, batch.quantity_remaining);
-                        await connection.query(`
-                            UPDATE mg_catalog.batch_items 
-                            SET quantity_remaining = quantity_remaining - ? 
-                            WHERE id = ?
-                        `, [deductAmount, batch.id]);
-                        remainingToDeduct -= deductAmount;
+                    let batchItemId = item.batch_item_id;
+                    if (!batchItemId) {
+                        const batchRes = await callInternalService(`${CATALOG_SERVICE_URL}/inventory/${item.product_id}`);
+                        if (batchRes.ok) {
+                            const batchResult = await batchRes.json();
+                            if (batchResult.success && batchResult.data && batchResult.data.length > 0) {
+                                batchItemId = batchResult.data[0].id;
+                            }
+                        }
                     }
-
-                    if (remainingToDeduct > 0 && batches.length > 0) {
-                        await connection.query(`
-                            UPDATE mg_catalog.batch_items 
-                            SET quantity_remaining = quantity_remaining - ? 
-                            WHERE id = ?
-                        `, [remainingToDeduct, batches[0].id]);
+                    if (batchItemId) {
+                        restockItems.push({
+                            batch_item_id: batchItemId,
+                            product_id: item.product_id,
+                            quantity: item.quantity
+                        });
                     }
+                }
 
-                    await incrementPromotionSoldQty(connection, item.product_id, item.quantity);
+                if (restockItems.length > 0) {
+                    const restockRes = await callInternalService(`${CATALOG_SERVICE_URL}/inventory/restock`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            items: restockItems,
+                            reference_type: order.order_channel === 'web' ? 'web_order' : 'pos_order',
+                            reference_id: realId,
+                            created_by: req.userId || null
+                        })
+                    });
+                    if (!restockRes.ok) {
+                        throw new Error('Hoàn kho thất bại: ' + (await restockRes.text()));
+                    }
+                }
+
+                for (const item of orderItems) {
+                    await decrementPromotionSoldQty(item.product_id, item.quantity);
                 }
             }
-        }
-        // Xử lý Hoàn kho và Cập nhật Promotion khi chuyển từ Completed sang Cancelled (đối với Web order)
-        else if (oldStatus === 'completed' && status === 'cancelled') {
-            if (order.order_channel === 'web') {
-                const [orderItems] = await connection.query(
-                    'SELECT product_id, quantity FROM order_items WHERE order_id = ? AND is_active = 1',
-                    [realId]
-                );
-                for (const item of orderItems) {
-                    const [batches] = await connection.query(`
-                        SELECT id FROM mg_catalog.batch_items 
-                        WHERE product_id = ? AND status = 'available'
-                        LIMIT 1
-                    `, [item.product_id]);
-                    if (batches.length > 0) {
-                        await connection.query(`
-                            UPDATE mg_catalog.batch_items 
-                            SET quantity_remaining = quantity_remaining + ? 
-                            WHERE id = ?
-                        `, [item.quantity, batches[0].id]);
-                    }
-                    await decrementPromotionSoldQty(connection, item.product_id, item.quantity);
-                }
+
+            // Hoàn lại lượt sử dụng voucher khi hủy đơn hàng (Lỗi 23)
+            const [orderPromos] = await connection.query(
+                'SELECT promotion_id FROM order_promotions WHERE order_id = ?',
+                [realId]
+            );
+            const promoIdsToRefund = orderPromos.map(op => op.promotion_id).filter(Boolean);
+            if (promoIdsToRefund.length > 0) {
+                await callInternalService(`${CMS_SERVICE_URL}/promotions/usage/decrement`, {
+                    method: 'POST',
+                    body: JSON.stringify({ promotion_ids: promoIdsToRefund })
+                }).catch(e => console.error('Failed to decrement promo usage:', e));
             }
         }
 
@@ -641,17 +677,19 @@ router.put('/:id/status', async (req, res) => {
         let activeCustomerId = order.customer_id;
         if (activeCustomerId) {
             // Kiểm tra xem khách hàng có thực sự tồn tại trong mg_identity hay không
-            const [[custExists]] = await connection.query(
-                'SELECT id FROM mg_identity.customers WHERE id = ?',
-                [activeCustomerId]
-            );
+            const custRes = await callInternalService(`${IDENTITY_SERVICE_URL}/customers/${activeCustomerId}`);
+            let custExists = false;
+            if (custRes.ok) {
+                const custData = await custRes.json();
+                custExists = custData.success && custData.data;
+            }
             if (!custExists) {
                 activeCustomerId = null;
             }
         }
 
         if (!activeCustomerId && order.customer_phone) {
-            activeCustomerId = await findOrCreateCustomerByPhone(connection, order.customer_phone, order.customer_name);
+            activeCustomerId = await findOrCreateCustomerByPhone(order.customer_phone, order.customer_name);
             await connection.query('UPDATE orders SET customer_id = ? WHERE id = ?', [activeCustomerId, realId]);
         }
 
@@ -662,80 +700,55 @@ router.put('/:id/status', async (req, res) => {
                 [realId]
             );
             const voucherDiscountTotal = Number(promoSum?.total_promo_discount || 0);
-            const pointsEarned = Math.floor(order.total_amount / 10);
+            const pointsEarned = Math.floor(order.total_amount / 1000);
             const pointsRedeemed = Math.max(0, (order.discount_amount || 0) - voucherDiscountTotal);
-            const netPointsChange = pointsEarned - pointsRedeemed;
 
             // 1. Chuyển từ trạng thái khác sang completed -> Cộng điểm tích lũy
             if (oldStatus !== 'completed' && status === 'completed') {
-                if (netPointsChange !== 0) {
-                    await connection.query(`
-                        UPDATE mg_identity.customers 
-                        SET loyalty_points = loyalty_points + ? 
-                        WHERE id = ?
-                    `, [netPointsChange, activeCustomerId]);
-                }
-
                 if (pointsEarned > 0) {
-                    await connection.query(`
-                        INSERT INTO mg_identity.loyalty_points_transactions (
-                            customer_id, transaction_type, points_change, description, reference_order_id
-                        ) VALUES (?, 'earn_purchase', ?, ?, ?)
-                    `, [
-                        activeCustomerId,
-                        pointsEarned,
-                        `Tích điểm mua hàng - Đơn ${order.order_code}`,
-                        order.id
-                    ]);
+                    await callInternalService(`${IDENTITY_SERVICE_URL}/customers/${activeCustomerId}/loyalty/earn`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            amount: order.total_amount,
+                            points: pointsEarned,
+                            order_id: realId
+                        })
+                    }).catch(e => console.error('Failed to earn loyalty points:', e));
                 }
 
                 if (pointsRedeemed > 0) {
-                    await connection.query(`
-                        INSERT INTO mg_identity.loyalty_points_transactions (
-                            customer_id, transaction_type, points_change, description, reference_order_id
-                        ) VALUES (?, 'redeem', ?, ?, ?)
-                    `, [
-                        activeCustomerId,
-                        -pointsRedeemed,
-                        `Quy đổi điểm giảm giá - Đơn ${order.order_code}`,
-                        order.id
-                    ]);
+                    await callInternalService(`${IDENTITY_SERVICE_URL}/customers/${activeCustomerId}/loyalty/adjust`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            points_change: -pointsRedeemed,
+                            description: `Quy đổi điểm giảm giá - Đơn ${order.order_code}`,
+                            idempotency_key: `order:${realId}:redeem`
+                        })
+                    }).catch(e => console.error('Failed to redeem loyalty points:', e));
                 }
             }
             // 2. Chuyển từ completed sang cancelled -> Thu hồi/Hoàn trả điểm
             else if (oldStatus === 'completed' && status === 'cancelled') {
-                if (netPointsChange !== 0) {
-                    await connection.query(`
-                        UPDATE mg_identity.customers 
-                        SET loyalty_points = loyalty_points - ? 
-                        WHERE id = ?
-                    `, [netPointsChange, activeCustomerId]);
-                }
-
                 if (pointsEarned > 0) {
-                    await connection.query(`
-                        INSERT INTO mg_identity.loyalty_points_transactions (
-                            customer_id, transaction_type, points_change, description, reference_order_id
-                        ) VALUES (?, 'adjust_deduct', ?, ?, ?)
-                    `, [
-                        activeCustomerId,
-                        -pointsEarned,
-                        `Thu hồi điểm thưởng (Hủy đơn) - Đơn ${order.order_code}`,
-                        order.id
-                    ]);
+                    await callInternalService(`${IDENTITY_SERVICE_URL}/customers/${activeCustomerId}/loyalty/adjust`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            points_change: -pointsEarned,
+                            description: `Thu hồi điểm thưởng (Hủy đơn) - Đơn ${order.order_code}`,
+                            idempotency_key: `order:${realId}:cancel_earn`
+                        })
+                    }).catch(e => console.error('Failed to deduct loyalty points:', e));
                 }
 
                 if (pointsRedeemed > 0) {
-                    await connection.query(`
-                        INSERT INTO mg_identity.loyalty_points_transactions (
-                            customer_id, transaction_type, points_change, description, reference_order_id
-                        ) VALUES (?, 'adjust_add', ?, ?, ?)
-                    `, [
-                        activeCustomerId,
-                        pointsRedeemed,
-                        `Hoàn lại điểm đã tiêu (Hủy đơn) - Đơn ${order.order_code}`,
-                        order.id
-                    ]);
+                    await callInternalService(`${IDENTITY_SERVICE_URL}/customers/${activeCustomerId}/loyalty/adjust`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            points_change: pointsRedeemed,
+                            description: `Hoàn lại điểm đã tiêu (Hủy đơn) - Đơn ${order.order_code}`,
+                            idempotency_key: `order:${realId}:cancel_redeem`
+                        })
+                    }).catch(e => console.error('Failed to restore loyalty points:', e));
                 }
             }
         }
@@ -745,7 +758,7 @@ router.put('/:id/status', async (req, res) => {
     } catch (error) {
         if (connection) await connection.rollback();
         console.error('[Update Order Status Error]', error);
-        res.status(500).json({ success: false, message: 'Lỗi cập nhật trạng thái đơn hàng' });
+        res.status(500).json({ success: false, message: 'Lỗi cập nhật trạng thái đơn hàng: ' + error.message });
     } finally {
         if (connection) connection.release();
     }

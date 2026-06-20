@@ -264,11 +264,13 @@ router.put('/me', async (req, res) => {
 
 // GET /customers/phone/:phone — Tra cứu khách hàng theo SĐT (dùng cho POS)
 router.get('/phone/:phone', async (req, res) => {
-  if (!req.userId) {
-    return res.status(401).json({ success: false, message: 'Chưa đăng nhập' });
-  }
-  if (!canViewCustomers(req)) {
-    return res.status(403).json({ success: false, message: 'Không có quyền tra cứu thông tin khách hàng' });
+  if (!isTrustedServiceRequest(req)) {
+    if (!req.userId) {
+      return res.status(401).json({ success: false, message: 'Chưa đăng nhập' });
+    }
+    if (!canViewCustomers(req)) {
+      return res.status(403).json({ success: false, message: 'Không có quyền tra cứu thông tin khách hàng' });
+    }
   }
 
   try {
@@ -327,7 +329,7 @@ router.get('/loyalty/transactions', async (req, res) => {
 
 // GET /customers/:id — Chi tiết 1 khách hàng
 router.get('/:id', async (req, res) => {
-  if (!requireCanViewCustomer(req, res, req.params.id)) return;
+  if (!isTrustedServiceRequest(req) && !requireCanViewCustomer(req, res, req.params.id)) return;
 
   try {
     const { id } = req.params;
@@ -352,7 +354,7 @@ router.get('/:id', async (req, res) => {
 
 // GET /customers/:id/loyalty - Điểm tích luỹ Loyalty
 router.get('/:id/loyalty', async (req, res) => {
-  if (!requireCanViewCustomer(req, res, req.params.id)) return;
+  if (!isTrustedServiceRequest(req) && !requireCanViewCustomer(req, res, req.params.id)) return;
 
   try {
     const { id } = req.params;
@@ -412,7 +414,7 @@ router.post('/:id/loyalty/earn', async (req, res) => {
       return res.status(400).json({ success: false, message: 'ID khách hàng không hợp lệ' });
     }
 
-    const points = requestedPoints !== null ? requestedPoints : Math.floor(amount / 10000);
+    const points = requestedPoints !== null ? requestedPoints : Math.floor(amount / 1000);
     if (!Number.isInteger(points) || points <= 0) {
       return res.status(400).json({ success: false, message: 'Số điểm cộng phải là số nguyên dương' });
     }
@@ -494,7 +496,7 @@ router.post('/:id/loyalty/earn', async (req, res) => {
 
 // POST /customers/:id/loyalty/adjust — Admin/dược sĩ điều chỉnh điểm thủ công
 router.post('/:id/loyalty/adjust', async (req, res) => {
-  if (!canManageLoyalty(req)) {
+  if (!canManageLoyalty(req) && !isTrustedServiceRequest(req)) {
     return res.status(403).json({ success: false, message: 'Không có quyền điều chỉnh điểm khách hàng' });
   }
 
@@ -1121,6 +1123,59 @@ router.put('/:id/avatar', async (req, res) => {
       message: 'Cập nhật ảnh đại diện thành công',
       data: { id: Number(id), full_name: customer.full_name, avatar_url },
     });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// POST /customers/find-or-create — Tìm hoặc tự động tạo khách hàng bằng SĐT (Internal)
+router.post('/find-or-create', async (req, res) => {
+  if (!isTrustedServiceRequest(req)) {
+    return res.status(403).json({ success: false, message: 'Chỉ chấp nhận cuộc gọi từ service đáng tin cậy' });
+  }
+
+  const { phone, name } = req.body || {};
+  if (!phone) {
+    return res.status(400).json({ success: false, message: 'Thiếu số điện thoại' });
+  }
+
+  const normalizedPhone = String(phone).trim();
+  try {
+    // 1. Check if customer exists
+    const [customers] = await pool.query(
+      'SELECT id, full_name, phone, loyalty_points, loyalty_tier FROM customers WHERE phone = ? AND deleted_at IS NULL LIMIT 1',
+      [normalizedPhone]
+    );
+
+    if (customers.length > 0) {
+      return res.json({ success: true, data: customers[0] });
+    }
+
+    // 2. Not found -> Auto create
+    const [[maxResult]] = await pool.query('SELECT MAX(id) AS maxId FROM customers');
+    const nextId = (maxResult && maxResult.maxId ? maxResult.maxId : 0) + 1;
+    const customerCode = `KH-${String(nextId).padStart(4, '0')}`;
+    const placeholderEmail = `${normalizedPhone}@minhgiang.vn`;
+    const defaultPasswordHash = '$2a$12$BkyYpCpf7jQjc3.Bt/PLr.XKWCF0SJ6PDPN4keoR0qAoQ973tiWgy';
+    const customerName = name || `Khách hàng ${normalizedPhone}`;
+
+    const [insertResult] = await pool.query(`
+        INSERT INTO customers (
+            full_name, email, phone, password_hash, code, is_active
+        ) VALUES (?, ?, ?, ?, ?, 1)
+    `, [customerName, placeholderEmail, normalizedPhone, defaultPasswordHash, customerCode]);
+
+    res.json({
+      success: true,
+      data: {
+        id: insertResult.insertId,
+        full_name: customerName,
+        phone: normalizedPhone,
+        loyalty_points: 0,
+        loyalty_tier: 'member'
+      }
+    });
+
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

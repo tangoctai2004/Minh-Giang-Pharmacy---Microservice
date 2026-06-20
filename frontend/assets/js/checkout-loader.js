@@ -145,7 +145,7 @@ function recalculateTotals() {
 
     const total = Math.max(0, subtotal + shippingFee - discountAmount);
     const savings = discountAmount;
-    const points = Math.round(total / 2000);
+    const points = Math.floor(total / 1000);
 
     // Update details DOM
     const rows = document.querySelectorAll('.summary-details .summary-row');
@@ -273,18 +273,14 @@ async function handleOrderSubmit(e) {
         const result = await response.json();
         
         // Handle normal success or 501 fallback
-        if (response.status === 201 || (result && result.success)) {
+        if (result && result.success) {
             handleOrderSuccess(result.data || { code: 'MG-' + Math.floor(100000 + Math.random() * 900000) });
-        } else if (response.status === 501 || (result && result.message && result.message.includes('TODO'))) {
-            // Mock success fallback for 501 Unimplemented backend
-            console.warn('[Checkout] Backend returned 501/TODO, using mock checkout success fallback.');
-            handleOrderSuccess({ code: 'MOCK-WEB-' + Math.floor(100000 + Math.random() * 900000) });
         } else {
             alert(result.message || 'Lỗi xảy ra khi đặt hàng. Vui lòng thử lại.');
         }
     } catch (e) {
-        console.warn('[Checkout] Connection failed or API not ready. Falling back to local mock success:', e);
-        handleOrderSuccess({ code: 'MOCK-LOCAL-' + Math.floor(100000 + Math.random() * 900000) });
+        console.error('[Checkout] Connection failed:', e);
+        alert('Không kết nối được tới dịch vụ đặt hàng. Vui lòng thử lại sau.');
     }
 }
 

@@ -259,8 +259,51 @@ function handleProductClick(product) {
     addProductToCart(product);
 }
 
+function getQtyInBaseUnit(quantity, selected_unit, base_unit) {
+    const cleanUnit = (selected_unit || 'box').trim().toLowerCase();
+    const cleanBase = (base_unit || 'Hộp').trim().toLowerCase();
+    
+    if (cleanUnit === 'box' && (cleanBase === 'hộp' || cleanBase === 'box')) return quantity;
+    if (cleanUnit === 'blister' && (cleanBase === 'vỉ' || cleanBase === 'blister')) return quantity;
+    if (cleanUnit === 'pill' && (cleanBase === 'viên' || cleanBase === 'pill')) return quantity;
+
+    if (cleanBase === 'viên' || cleanBase === 'pill') {
+        if (cleanUnit === 'box' || cleanUnit === 'hộp') return quantity * 30;
+        if (cleanUnit === 'blister' || cleanUnit === 'vỉ') return quantity * 10;
+        return quantity;
+    }
+    
+    if (cleanBase === 'hộp' || cleanBase === 'box') {
+        if (cleanUnit === 'blister' || cleanUnit === 'vỉ') return quantity / 10;
+        if (cleanUnit === 'pill' || cleanUnit === 'viên') return quantity / 30;
+        return quantity;
+    }
+
+    return quantity;
+}
+
+function checkStockAvailability(item, targetQty) {
+    const baseQty = getQtyInBaseUnit(targetQty, item.selected_unit, item.base_unit);
+    if (baseQty > item.total_stock) {
+        alert(`Không đủ hàng khả dụng (Kho còn: ${item.total_stock} ${item.base_unit}).`);
+        return false;
+    }
+    return true;
+}
+
 function addProductToCart(product) {
     const existing = posCart.find(item => item.id === product.id);
+    const targetQty = existing ? existing.quantity + 1 : 1;
+    
+    const mockItem = {
+        selected_unit: existing ? existing.selected_unit : 'box',
+        base_unit: product.base_unit || 'Hộp',
+        total_stock: product.total_stock
+    };
+    if (!checkStockAvailability(mockItem, targetQty)) {
+        return;
+    }
+
     if (existing) {
         existing.quantity += 1;
     } else {
@@ -274,7 +317,8 @@ function addProductToCart(product) {
             selected_unit: 'box', // default
             base_unit: product.base_unit || 'Hộp',
             requires_prescription: product.requires_prescription || false,
-            batch_code: 'L-2026' // mockup batch code
+            batch_code: 'L-2026', // mockup batch code
+            total_stock: product.total_stock
         });
     }
     updateCartUI();
@@ -332,13 +376,26 @@ function updateCartUI() {
 
 function updateQty(index, delta) {
     const item = posCart[index];
-    item.quantity = Math.max(1, item.quantity + delta);
+    const targetQty = item.quantity + delta;
+    if (targetQty < 1) return;
+
+    if (!checkStockAvailability(item, targetQty)) {
+        return;
+    }
+
+    item.quantity = targetQty;
     updateCartUI();
 }
 
 function updateUOM(index, unit) {
     const item = posCart[index];
+    const originalUnit = item.selected_unit;
     item.selected_unit = unit;
+
+    if (!checkStockAvailability(item, item.quantity)) {
+        item.selected_unit = originalUnit;
+        return;
+    }
     
     // Scale pricing based on unit selection
     if (unit === 'box') {
@@ -669,7 +726,7 @@ async function completeSale() {
     console.log('[POS Checkout] Submitting payload:', orderPayload);
 
     try {
-        const response = await fetch(`${API_BASE}/order/checkout`, {
+        const response = await fetch(`${API_BASE}/order/orders`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -680,18 +737,14 @@ async function completeSale() {
 
         const result = await response.json();
 
-        if (response.status === 201 || (result && result.success)) {
-            showPosSuccessToast();
-        } else if (response.status === 501 || (result && result.message && result.message.includes('TODO'))) {
-            // Mock checkout fallback
-            console.warn('[POS Checkout] Checkout service returned 501/TODO, using mock success fallback.');
+        if (result && result.success) {
             showPosSuccessToast();
         } else {
             alert(result.message || 'Lỗi xảy ra khi thanh toán đơn hàng.');
         }
     } catch (e) {
-        console.warn('[POS Checkout] Connection failed, using mock success fallback:', e);
-        showPosSuccessToast();
+        console.error('[POS Checkout] Connection failed:', e);
+        alert('Không kết nối được tới dịch vụ thanh toán.');
     }
 }
 

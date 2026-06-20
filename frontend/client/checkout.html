@@ -1362,8 +1362,20 @@
                 });
                 const result = await response.json();
                 if (result.success && result.data && result.data.items && result.data.items.length > 0) {
-                    cartItems = result.data.items;
-                    activeSubtotal = result.data.summary.subtotal;
+                    const checkedIds = JSON.parse(localStorage.getItem('MG_CHECKOUT_ITEM_IDS') || '[]');
+                    if (checkedIds.length > 0) {
+                        cartItems = result.data.items.filter(item => checkedIds.includes(item.id));
+                    } else {
+                        cartItems = result.data.items;
+                    }
+                    
+                    if (cartItems.length === 0) {
+                        alert('Không có sản phẩm nào được chọn để thanh toán!');
+                        window.location.href = 'cart.html';
+                        return;
+                    }
+
+                    activeSubtotal = cartItems.reduce((sum, item) => sum + (parseFloat(item.subtotal) || 0), 0);
                     renderCartSummaryList();
                     recalculateSummary();
 
@@ -1737,7 +1749,8 @@
                 discount_amount: activeDiscount,
                 requires_vat_invoice: isVatRequested,
                 customer_notes: fullNotes,
-                applied_voucher_codes: [appliedDiscountVoucherCode, appliedShippingVoucherCode].filter(Boolean)
+                applied_voucher_codes: [appliedDiscountVoucherCode, appliedShippingVoucherCode].filter(Boolean),
+                cart_item_ids: JSON.parse(localStorage.getItem('MG_CHECKOUT_ITEM_IDS') || '[]')
             };
 
             if (paymentMethod === 'cod') {
@@ -1790,6 +1803,7 @@
                     if (window.updateCartBadge) window.updateCartBadge();
                     // Clear local storage cart state just in case
                     localStorage.removeItem('MG_CLIENT_CART');
+                    localStorage.removeItem('MG_CHECKOUT_ITEM_IDS');
                     
                     showSuccessToast('Đặt hàng thành công! Đang chuyển hướng...');
                     setTimeout(() => {

@@ -925,12 +925,23 @@ function renderMiniList(container, products) {
             ? `<div class="pd-mini-consult">Cần tư vấn từ dược sỹ</div>` 
             : `<div class="pd-mini-price">${new Intl.NumberFormat('vi-VN').format(Math.round(price))}đ</div>`;
 
+        const stockQty = Number(p.total_stock ?? p.available_stock ?? 0);
+        let stockHtml = '';
+        if (!p.requires_prescription) {
+            if (stockQty > 0) {
+                stockHtml = `<div class="pd-mini-stock" style="font-size: 11px; color: #ea580c; font-weight: 500; margin-top: 2px;">Còn lại: ${stockQty} ${escapeProductHtml(p.base_unit || 'sản phẩm')}</div>`;
+            } else {
+                stockHtml = `<div class="pd-mini-stock" style="font-size: 11px; color: #9ca3af; font-weight: 500; margin-top: 2px;">Hết hàng</div>`;
+            }
+        }
+
         return `
             <a href="product.html?id=${id}" class="pd-mini-item">
                 <img src="${image}" class="pd-mini-img" alt="${name}">
                 <div class="pd-mini-info">
                     <div class="pd-mini-name">${name}</div>
                     ${consultHtml}
+                    ${stockHtml}
                 </div>
             </a>
         `;

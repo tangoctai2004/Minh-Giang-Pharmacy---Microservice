@@ -350,4 +350,81 @@ router.put('/:id/reconcile/approve', async (req, res) => {
   }
 });
 
+// POST /shifts/:id/sales — Cộng doanh số đơn hàng vào ca POS (Internal)
+router.post('/:id/sales', async (req, res) => {
+  const isTrusted = Boolean(
+    process.env.INTERNAL_SERVICE_TOKEN &&
+    req.headers['x-internal-token'] === process.env.INTERNAL_SERVICE_TOKEN
+  );
+  if (!isTrusted && process.env.NODE_ENV === 'production') {
+    return res.status(403).json({ success: false, message: 'Chỉ chấp nhận cuộc gọi nội bộ.' });
+  }
+
+  try {
+    const { id } = req.params;
+    const { payment_method, amount } = req.body || {};
+
+    if (!payment_method || amount === undefined) {
+      return res.status(400).json({ success: false, message: 'Thiếu thông tin payment_method hoặc amount' });
+    }
+
+    const saleAmount = Number(amount);
+    if (isNaN(saleAmount) || saleAmount < 0) {
+      return res.status(400).json({ success: false, message: 'amount không hợp lệ' });
+    }
+
+    let fieldToUpdate = '';
+    const cleanMethod = String(payment_method).trim().toLowerCase();
+    if (cleanMethod === 'cash') {
+      fieldToUpdate = 'total_cash_sales';
+    } else if (cleanMethod === 'card_visa' || cleanMethod === 'card') {
+      fieldToUpdate = 'total_card_sales';
+    } else if (cleanMethod === 'qr_transfer' || cleanMethod === 'qr' || cleanMethod === 'momo' || cleanMethod === 'vnpay') {
+      fieldToUpdate = 'total_qr_sales';
+    } else {
+      fieldToUpdate = 'total_cash_sales'; // fallback
+    }
+
+    const [result] = await pool.query(
+      `UPDATE shifts 
+       SET ${fieldToUpdate} = ${fieldToUpdate} + ? 
+       WHERE id = ? AND status = 'open'`,
+      [saleAmount, id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy ca làm việc đang mở' });
+    }
+
+    res.json({ success: true, message: 'Đã cộng doanh số vào ca làm việc' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// GET /shifts/active/:userId — Tìm ca đang mở của nhân viên (Internal/Staff)
+router.get('/active/:userId', async (req, res) => {
+  const isTrusted = Boolean(
+    process.env.INTERNAL_SERVICE_TOKEN &&
+    req.headers['x-internal-token'] === process.env.INTERNAL_SERVICE_TOKEN
+  );
+  if (!isTrusted && !canViewShifts(req)) {
+    return res.status(req.userId ? 403 : 401).json({ success: false, message: 'Không có quyền truy cập.' });
+  }
+
+  try {
+    const userId = Number(req.params.userId);
+    const [[shift]] = await pool.query(
+      `SELECT id, user_id, kiosk_id, status FROM shifts WHERE user_id = ? AND status = 'open' LIMIT 1`,
+      [userId]
+    );
+    if (!shift) {
+      return res.status(404).json({ success: false, message: 'Không có ca làm việc nào đang mở cho nhân viên này' });
+    }
+    res.json({ success: true, data: shift });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 module.exports = router;
