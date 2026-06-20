@@ -52,17 +52,47 @@
         const image = escapeHtml(product.thumbnail || product.image_url || '../assets/images/product_frame.png');
         const price = Number(product.retail_price || product.price || 0);
         const priceText = price ? new Intl.NumberFormat('vi-VN').format(Math.round(price)) + 'đ' : 'Liên hệ';
+        const isRx = Boolean(Number(product.requires_prescription || 0));
+
+        let infoHtml = `
+            <div class="product-price"><span class="price-new">${priceText}</span></div>
+        `;
+        if (isRx) {
+            infoHtml = `
+                <div class="product-price">
+                    <span class="price-new" style="font-size:14px;color:#6b7280;font-style:italic;">Cần tư vấn từ dược sỹ</span>
+                </div>
+            `;
+        }
+
+        let actionHtml = `<button class="btn-add-cart" onclick="window.addToCart ? addToCart(${id}, event) : (window.location.href='product.html?id=${id}')">Thêm giỏ hàng</button>`;
+        if (isRx) {
+            actionHtml = `<button class="btn-add-cart btn-consult" onclick="event.preventDefault(); event.stopPropagation(); window.location.href='product.html?id=${id}'">Tư vấn ngay</button>`;
+        } else if (product.in_stock === false) {
+            actionHtml = '<button class="btn-add-cart" disabled>Hết hàng</button>';
+        }
+
+        const stockQty = Number(product.total_stock ?? product.available_stock ?? 0);
+        let stockHtml = '';
+        if (!isRx) {
+            if (stockQty > 0) {
+                stockHtml = `<div class="product-stock-badge" style="font-size: 11px; color: #ea580c; font-weight: 600; margin-top: 4px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-boxes-stacked"></i> Còn lại: ${stockQty} ${escapeHtml(product.base_unit || 'sản phẩm')}</div>`;
+            } else {
+                stockHtml = `<div class="product-stock-badge" style="font-size: 11px; color: #9ca3af; font-weight: 600; margin-top: 4px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-boxes-stacked"></i> Hết hàng</div>`;
+            }
+        }
 
         return `
             <div class="product-card" data-product-id="${id}">
-                <div class="product-image">
+                <div class="product-image" onclick="window.location.href='product.html?id=${id}'" style="cursor:pointer;">
                     <img src="${image}" alt="${name}" onerror="this.src='../assets/images/product_frame.png'">
                 </div>
                 <div class="product-info">
                     <h5><a href="product.html?id=${id}">${name}</a></h5>
-                    <div class="product-price"><span class="price-new">${priceText}</span></div>
-                    <button class="btn-add-cart" onclick="window.addToCart ? addToCart(${id}, event) : (window.location.href='product.html?id=${id}')">Thêm giỏ hàng</button>
+                    ${infoHtml}
+                    ${stockHtml}
                 </div>
+                ${actionHtml}
             </div>
         `;
     }

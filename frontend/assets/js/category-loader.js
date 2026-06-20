@@ -434,6 +434,16 @@ class CategoryPage {
             actionHtml = `<button class="btn-add-cart" onclick="window.addToCart ? addToCart(${id}, event) : (window.location.href='product.html?id=${id}')">Thêm giỏ hàng</button>`;
         }
 
+        const stockQty = Number(p.total_stock ?? p.available_stock ?? 0);
+        let stockHtml = '';
+        if (!p.requires_prescription) {
+            if (stockQty > 0) {
+                stockHtml = `<div class="product-stock-badge" style="font-size: 11px; color: #ea580c; font-weight: 600; margin-top: 4px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px; padding: 0 12px;"><i class="fa-solid fa-boxes-stacked"></i> Còn lại: ${stockQty} ${escapeHtml(p.base_unit || 'sản phẩm')}</div>`;
+            } else {
+                stockHtml = `<div class="product-stock-badge" style="font-size: 11px; color: #9ca3af; font-weight: 600; margin-top: 4px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px; padding: 0 12px;"><i class="fa-solid fa-boxes-stacked"></i> Hết hàng</div>`;
+            }
+        }
+
         // Tái sử dụng thẻ sản phẩm chuẩn của Minh Giang Pharmacy
         return `
             <div class="product-card" data-product-id="${id}">
@@ -444,6 +454,7 @@ class CategoryPage {
                     <h5><a href="product.html?id=${id}">${name}</a></h5>
                     ${infoHtml}
                 </div>
+                ${stockHtml}
                 ${actionHtml}
             </div>
         `;

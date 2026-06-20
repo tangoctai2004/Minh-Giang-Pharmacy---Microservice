@@ -897,15 +897,18 @@
             <div class="pd-sidebar-col">
                 <!-- Hộp mua hàng -->
                 <div class="pd-action-box">
-                    <div class="pd-action-row">
+                    <div class="pd-action-row" style="margin-bottom: 12px;">
                         <span class="pd-action-label" style="font-size: 18px;">Tạm tính</span>
-                        <div class="pd-action-label" style="display: flex; gap: 8px; align-items: center; font-size: 16px;">
-                            Số lượng:
-                            <div class="pd-qty-ctrl">
-                                <button class="pd-qty-btn" onclick="changeQty(-1)">−</button>
-                                <input type="text" value="1" class="pd-qty-input" id="pdQty">
-                                <button class="pd-qty-btn" onclick="changeQty(1)">+</button>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                            <div class="pd-action-label" style="display: flex; gap: 8px; align-items: center; font-size: 16px;">
+                                Số lượng:
+                                <div class="pd-qty-ctrl">
+                                    <button class="pd-qty-btn" onclick="changeQty(-1)">−</button>
+                                    <input type="text" value="1" class="pd-qty-input" id="pdQty" readonly>
+                                    <button class="pd-qty-btn" onclick="changeQty(1)">+</button>
+                                </div>
                             </div>
+                            <span id="pdStockText" style="font-size: 12px; color: #6b7280;">(Còn lại: <strong id="pdStockCount" style="color: #ea580c;">0</strong> <span id="pdStockUnit">sản phẩm</span>)</span>
                         </div>
                     </div>
                     
@@ -1091,6 +1094,13 @@
             let val = parseInt(input.value) || 1;
             val += delta;
             if (val < 1) val = 1;
+            
+            const maxStock = (window.currentProduct && window.currentProduct.total_stock !== undefined) ? Number(window.currentProduct.total_stock) : null;
+            if (maxStock !== null && val > maxStock) {
+                val = maxStock > 0 ? maxStock : 1;
+                alert(`Nhà thuốc hiện chỉ còn ${maxStock} sản phẩm này.`);
+            }
+            
             input.value = val;
         }
 

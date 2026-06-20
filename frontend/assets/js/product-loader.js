@@ -149,6 +149,15 @@ function updateProductUI(p) {
     document.getElementById('pdBrand').textContent = p.brand?.name || p.manufacturer || "Đang cập nhật";
     document.getElementById('pdName').textContent = p.name;
     
+    const stockCountEl = document.getElementById('pdStockCount');
+    if (stockCountEl) {
+        stockCountEl.textContent = p.total_stock !== undefined ? p.total_stock : 0;
+    }
+    const stockUnitEl = document.getElementById('pdStockUnit');
+    if (stockUnitEl) {
+        stockUnitEl.textContent = p.base_unit || 'sản phẩm';
+    }
+    
     // Specs
     const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || "—"; };
     setVal('pdSpecReg', p.registration_number);
@@ -1165,6 +1174,16 @@ function renderProductCard(p) {
         actionHtml = '<button class="btn-add-cart" disabled>Hết hàng</button>';
     }
 
+    const stockQty = Number(p.total_stock ?? p.available_stock ?? 0);
+    let stockHtml = '';
+    if (!isRx) {
+        if (stockQty > 0) {
+            stockHtml = `<div class="product-stock-badge" style="font-size: 11px; color: #ea580c; font-weight: 600; margin-top: 4px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-boxes-stacked"></i> Còn lại: ${stockQty} ${escapeProductHtml(p.base_unit || 'sản phẩm')}</div>`;
+        } else {
+            stockHtml = `<div class="product-stock-badge" style="font-size: 11px; color: #9ca3af; font-weight: 600; margin-top: 4px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-boxes-stacked"></i> Hết hàng</div>`;
+        }
+    }
+
     return `
         <div class="product-card" data-product-id="${id}">
             <div class="product-image" onclick="window.location.href='product.html?id=${id}'" style="cursor:pointer;">
@@ -1173,6 +1192,7 @@ function renderProductCard(p) {
             <div class="product-info">
                 <h5><a href="product.html?id=${id}">${name}</a></h5>
                 ${infoHtml}
+                ${stockHtml}
             </div>
             ${actionHtml}
         </div>

@@ -200,6 +200,16 @@ const homeCatalog = {
             ? '<span class="price-new catalog-rx-note">Cần tư vấn dược sĩ</span>'
             : `<span class="price-new">${price}<small>${unit}</small></span>`;
 
+        const stockQty = Number(product.total_stock ?? product.available_stock ?? 0);
+        let stockHtml = '';
+        if (!isRx) {
+            if (stockQty > 0) {
+                stockHtml = `<div class="product-stock-badge" style="font-size: 11px; color: #ea580c; font-weight: 600; margin-top: 4px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-boxes-stacked"></i> Còn lại: ${stockQty} ${this.escape(product.base_unit || 'sản phẩm')}</div>`;
+            } else {
+                stockHtml = `<div class="product-stock-badge" style="font-size: 11px; color: #9ca3af; font-weight: 600; margin-top: 4px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-boxes-stacked"></i> Hết hàng</div>`;
+            }
+        }
+
         return `
             <div class="product-card" data-product-id="${id}">
                 <div class="product-image">
@@ -209,6 +219,7 @@ const homeCatalog = {
                 <div class="product-info">
                     <h5><a href="product.html?id=${id}">${name}</a></h5>
                     <div class="product-price">${priceHtml}</div>
+                    ${stockHtml}
                     ${action}
                 </div>
             </div>

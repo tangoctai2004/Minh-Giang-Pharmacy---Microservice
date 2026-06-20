@@ -173,15 +173,26 @@ function renderProducts(products) {
         const name = escapeHtml(p.name || 'Sản phẩm');
         const image = escapeHtml(p.image_url || p.thumbnail || '../assets/images/product1.png');
         const price = p.price || p.retail_price;
+        const unit = p.base_unit ? ` / ${escapeHtml(p.base_unit)}` : '';
         const priceHtml = p.requires_prescription
             ? '<span class="price-new catalog-rx-note">Cần tư vấn dược sĩ</span>'
-            : `<span class="price-new">${price ? new Intl.NumberFormat('vi-VN').format(Math.round(price)) + 'đ' : 'Liên hệ'}</span>`;
+            : `<span class="price-new">${price ? new Intl.NumberFormat('vi-VN').format(Math.round(price)) + 'đ' : 'Liên hệ'}<small>${unit}</small></span>`;
 
         let actionHtml = `<button class="btn-add-cart" onclick="window.addToCart ? addToCart(${id}, event) : (window.location.href='product.html?id=${id}')">Thêm giỏ hàng</button>`;
         if (p.requires_prescription) {
             actionHtml = `<button class="btn-add-cart btn-consult" onclick="event.preventDefault(); event.stopPropagation(); window.location.href='product.html?id=${id}'">Tư vấn ngay</button>`;
         } else if (p.in_stock === false) {
             actionHtml = '<button class="btn-add-cart" disabled>Hết hàng</button>';
+        }
+
+        const stockQty = Number(p.total_stock ?? p.available_stock ?? 0);
+        let stockHtml = '';
+        if (!p.requires_prescription) {
+            if (stockQty > 0) {
+                stockHtml = `<div class="product-stock-badge" style="font-size: 11px; color: #ea580c; font-weight: 600; margin-top: 4px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-boxes-stacked"></i> Còn lại: ${stockQty} ${escapeHtml(p.base_unit || 'sản phẩm')}</div>`;
+            } else {
+                stockHtml = `<div class="product-stock-badge" style="font-size: 11px; color: #9ca3af; font-weight: 600; margin-top: 4px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-boxes-stacked"></i> Hết hàng</div>`;
+            }
         }
 
         return `
@@ -195,6 +206,7 @@ function renderProducts(products) {
                     <div class="product-price">
                         ${priceHtml}
                     </div>
+                    ${stockHtml}
                     ${actionHtml}
                 </div>
             </div>
