@@ -34,8 +34,6 @@ services:
   redis-db:
     image: redis:7.2-alpine
     container_name: minhgiang_redis
-    ports:
-      - "127.0.0.1:6379:6379"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
