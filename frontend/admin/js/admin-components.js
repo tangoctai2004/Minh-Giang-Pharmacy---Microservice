@@ -309,15 +309,66 @@ function renderAdminLayout(activePageId) {
     _bindSpaNavigation();
 }
 
+function _adminApiBase() {
+    return localStorage.getItem('MG_API_BASE') || (
+        (window.location.origin.includes('localhost:5500') ||
+         window.location.origin.includes('localhost:5501') ||
+         window.location.origin.includes('127.0.0.1:5500') ||
+         window.location.origin.includes('127.0.0.1:5501'))
+        ? 'http://localhost:8000/api'
+        : window.location.origin.replace(/\/+$/, '') + '/api'
+    );
+}
+
+function _decodeAdminJwtPayload(token) {
+    try {
+        const payload = token.split('.')[1];
+        const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+        return JSON.parse(decodeURIComponent(Array.prototype.map.call(atob(normalized), (c) =>
+            '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        ).join('')));
+    } catch (e) {
+        return null;
+    }
+}
+
+function _isAdminJwtExpired(token, skewSeconds = 30) {
+    const payload = _decodeAdminJwtPayload(token);
+    return !payload || !payload.exp || payload.exp * 1000 <= Date.now() + skewSeconds * 1000;
+}
+
+function getValidAdminAuth() {
+    try {
+        const parsed = JSON.parse(localStorage.getItem('MG_ADMIN_AUTH') || 'null');
+        if (!parsed || !parsed.accessToken) return null;
+        if (_isAdminJwtExpired(parsed.accessToken)) {
+            localStorage.removeItem('MG_ADMIN_AUTH');
+            return null;
+        }
+        return parsed;
+    } catch (e) {
+        localStorage.removeItem('MG_ADMIN_AUTH');
+        return null;
+    }
+}
+
+async function _revokeAdminRefreshToken(auth) {
+    if (!auth || !auth.refreshToken) return;
+    try {
+        await fetch(_adminApiBase() + '/identity/auth/logout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken: auth.refreshToken }),
+        });
+    } catch (e) {}
+}
+
 // ─── Admin Auth ─────────────────────────────────────────────────────────────
 function _applyAdminAuth() {
-    const authRaw = localStorage.getItem('MG_ADMIN_AUTH');
-    if (!authRaw) { window.location.href = 'login.html'; return; }
+    const parsed = getValidAdminAuth();
+    if (!parsed) { window.location.href = 'login.html'; return; }
 
     try {
-        const parsed = JSON.parse(authRaw);
-        if (!parsed.accessToken) { window.location.href = 'login.html'; return; }
-
         if (parsed.user && parsed.user.full_name) {
             const nameEl = document.querySelector('.header-user-name');
             if (nameEl) nameEl.textContent = parsed.user.full_name;
@@ -368,7 +419,9 @@ function _applyAdminAuth() {
     } catch (e) { /* ignore */ }
 }
 
-function adminLogout() {
+async function adminLogout() {
+    const auth = JSON.parse(localStorage.getItem('MG_ADMIN_AUTH') || 'null');
+    await _revokeAdminRefreshToken(auth);
     localStorage.removeItem('MG_ADMIN_AUTH');
     window.location.href = 'login.html';
 }

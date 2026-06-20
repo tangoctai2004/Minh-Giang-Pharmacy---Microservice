@@ -151,6 +151,49 @@ function _initMegaMenu() {
 
 // ─── Client Auth Header (dùng chung cho toàn bộ trang client) ─────────────────
 
+function _decodeClientJwtPayload(token) {
+    try {
+        const payload = token.split('.')[1];
+        const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+        return JSON.parse(decodeURIComponent(Array.prototype.map.call(atob(normalized), (c) =>
+            '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        ).join('')));
+    } catch (e) {
+        return null;
+    }
+}
+
+function _isClientJwtExpired(token, skewSeconds = 30) {
+    const payload = _decodeClientJwtPayload(token);
+    return !payload || !payload.exp || payload.exp * 1000 <= Date.now() + skewSeconds * 1000;
+}
+
+function _getClientAuth() {
+    try {
+        const parsed = JSON.parse(localStorage.getItem('MG_CLIENT_AUTH') || 'null');
+        if (!parsed || !parsed.accessToken) return null;
+        if (_isClientJwtExpired(parsed.accessToken)) {
+            localStorage.removeItem('MG_CLIENT_AUTH');
+            return null;
+        }
+        return parsed;
+    } catch (e) {
+        localStorage.removeItem('MG_CLIENT_AUTH');
+        return null;
+    }
+}
+
+async function _revokeClientRefreshToken(auth) {
+    if (!auth || !auth.refreshToken) return;
+    try {
+        await fetch(_clientIdentityBase() + '/auth/logout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken: auth.refreshToken }),
+        });
+    } catch (e) {}
+}
+
 function _initClientAuthHeader() {
     // Nếu không phải trang client thì bỏ qua
     if (!window.location.pathname.includes('/client/') &&
@@ -171,7 +214,7 @@ function _initClientAuthHeader() {
 
 function _applyClientAuthToHeader() {
     try {
-        const parsed = JSON.parse(localStorage.getItem('MG_CLIENT_AUTH') || 'null');
+        const parsed = _getClientAuth();
         const loginBtn = document.querySelector('.login-btn');
         if (!loginBtn) return;
 
@@ -318,7 +361,9 @@ function triggerToastAfterReload(message, type = 'success') {
     }
 })();
 
-function clientLogout() {
+async function clientLogout() {
+    const auth = JSON.parse(localStorage.getItem('MG_CLIENT_AUTH') || 'null');
+    await _revokeClientRefreshToken(auth);
     localStorage.removeItem('MG_CLIENT_AUTH');
     triggerToastAfterReload('Đăng xuất thành công!', 'info');
     if (window.location.pathname.includes('user-profile.html') || window.location.pathname.includes('profile')) {

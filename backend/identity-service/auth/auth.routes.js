@@ -372,25 +372,64 @@ async function findAccount(identifier) {
   return { user, customer };
 }
 
+function ttlToSeconds(value, fallback) {
+  const raw = String(value || fallback || '').trim();
+  const match = raw.match(/^(\d+)\s*([smhd])?$/i);
+  if (!match) return ttlToSeconds(fallback || '8h', '8h');
+  const amount = Number(match[1]);
+  const unit = (match[2] || 's').toLowerCase();
+  const multiplier = unit === 'd' ? 86400 : unit === 'h' ? 3600 : unit === 'm' ? 60 : 1;
+  return Math.max(60, amount * multiplier);
+}
+
+function sessionPolicy(kind) {
+  if (kind === 'admin') {
+    return {
+      accessTtl: process.env.ADMIN_ACCESS_TOKEN_TTL || '2h',
+      refreshTtl: process.env.ADMIN_REFRESH_TOKEN_TTL || '1d',
+    };
+  }
+  if (kind === 'pos') {
+    return {
+      accessTtl: process.env.POS_ACCESS_TOKEN_TTL || '8h',
+      refreshTtl: process.env.POS_REFRESH_TOKEN_TTL || '12h',
+    };
+  }
+  if (kind === 'customer') {
+    return {
+      accessTtl: process.env.CUSTOMER_ACCESS_TOKEN_TTL || process.env.JWT_EXPIRES_IN || '2h',
+      refreshTtl: process.env.CUSTOMER_REFRESH_TOKEN_TTL || '14d',
+    };
+  }
+  return {
+    accessTtl: process.env.JWT_EXPIRES_IN || '8h',
+    refreshTtl: process.env.REFRESH_TOKEN_TTL || '7d',
+  };
+}
+
 // ── Helper: tạo token pair + lưu refresh token ──
-async function generateTokens(payload) {
+async function generateTokens(payload, policyName) {
+  const policy = sessionPolicy(policyName || (payload.type === 'customer' ? 'customer' : 'staff'));
+  const sessionKind = policyName || (payload.type === 'customer' ? 'customer' : 'staff');
+  const refreshTtlSeconds = ttlToSeconds(policy.refreshTtl, '7d');
+  const refreshExpiresAt = new Date(Date.now() + refreshTtlSeconds * 1000);
   const jti = crypto.randomBytes(16).toString('hex');
-  const accessToken = jwt.sign({ ...payload, jti }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '8h',
+  const accessToken = jwt.sign({ ...payload, session_kind: sessionKind, jti }, process.env.JWT_SECRET, {
+    expiresIn: policy.accessTtl,
   });
   const refreshJti = crypto.randomBytes(16).toString('hex');
   const refreshToken = jwt.sign(
-    { id: payload.id, type: payload.type, jti: refreshJti },
+    { id: payload.id, type: payload.type, session_kind: sessionKind, jti: refreshJti },
     process.env.JWT_SECRET,
-    { expiresIn: '30d' }
+    { expiresIn: policy.refreshTtl }
   );
   const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
   await pool.query(
     `INSERT INTO refresh_tokens (user_id, user_type, token_hash, expires_at)
-     VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 30 DAY))`,
-    [payload.id, payload.type, tokenHash]
+     VALUES (?, ?, ?, ?)`,
+    [payload.id, payload.type, tokenHash, refreshExpiresAt]
   );
-  return { accessToken, refreshToken };
+  return { accessToken, refreshToken, expiresIn: policy.accessTtl, refreshExpiresIn: policy.refreshTtl };
 }
 
 // ── Helper: tự động sinh mã khách hàng KH-XXXX ──
@@ -761,7 +800,10 @@ router.post('/login', async (req, res) => {
       : { id: customer.id, role: 'customer', type: 'customer' };
 
     // 6. Tạo tokens
-    const { accessToken, refreshToken } = await generateTokens(tokenPayload);
+    const { accessToken, refreshToken, expiresIn, refreshExpiresIn } = await generateTokens(
+      tokenPayload,
+      isStaff ? 'staff' : 'customer'
+    );
 
     // 7. Cập nhật last_login (chỉ staff có field này)
     if (isStaff) {
@@ -772,6 +814,8 @@ router.post('/login', async (req, res) => {
     const responseData = {
       accessToken,
       refreshToken,
+      expires_in: expiresIn,
+      refresh_expires_in: refreshExpiresIn,
     };
 
     if (isStaff) {
@@ -846,7 +890,7 @@ router.post('/admin/login', async (req, res) => {
     }
 
     const tokenPayload = { id: user.id, role: user.role_name, type: 'staff', permissions: parsePermissions(user.permissions) };
-    const { accessToken, refreshToken } = await generateTokens(tokenPayload);
+    const { accessToken, refreshToken, expiresIn, refreshExpiresIn } = await generateTokens(tokenPayload, 'admin');
 
     pool.query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]).catch(() => { });
 
@@ -862,7 +906,8 @@ router.post('/admin/login', async (req, res) => {
           email: user.email,
           role: user.role_name,
         },
-        expires_in: process.env.JWT_EXPIRES_IN || '8h',
+        expires_in: expiresIn,
+        refresh_expires_in: refreshExpiresIn,
       },
     });
   } catch (err) {
@@ -919,7 +964,7 @@ router.post('/pos/verify-pin', async (req, res) => {
     }
 
     const tokenPayload = { id: user.id, role: user.role_name, type: 'staff', permissions: parsePermissions(user.permissions) };
-    const { accessToken, refreshToken } = await generateTokens(tokenPayload);
+    const { accessToken, refreshToken, expiresIn, refreshExpiresIn } = await generateTokens(tokenPayload, 'pos');
 
     pool.query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]).catch(() => { });
 
@@ -935,6 +980,8 @@ router.post('/pos/verify-pin', async (req, res) => {
           role: user.role_name,
         },
         kiosk_id,
+        expires_in: expiresIn,
+        refresh_expires_in: refreshExpiresIn,
       },
     });
   } catch (err) {
@@ -991,26 +1038,10 @@ router.post('/login-pos', async (req, res) => {
       });
     }
 
-    // 5. Tạo access token
-    const accessToken = jwt.sign(
+    // 5. Tạo token theo chính sách phiên POS
+    const { accessToken, refreshToken, expiresIn, refreshExpiresIn } = await generateTokens(
       { id: user.id, role: user.role_name, type: 'staff', permissions: parsePermissions(user.permissions) },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
-    );
-
-    // 6. Tạo refresh token
-    const refreshToken = jwt.sign(
-      { id: user.id, type: 'staff' },
-      process.env.JWT_SECRET,
-      { expiresIn: '30d' }
-    );
-
-    // 7. Lưu refresh token vào DB
-    const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
-    await pool.query(
-      `INSERT INTO refresh_tokens (user_id, user_type, token_hash, expires_at)
-       VALUES (?, 'staff', ?, DATE_ADD(NOW(), INTERVAL 30 DAY))`,
-      [user.id, tokenHash]
+      'pos'
     );
 
     // 8. Cập nhật last_login
@@ -1029,6 +1060,8 @@ router.post('/login-pos', async (req, res) => {
           role: user.role_name,
         },
         kiosk_id,
+        expires_in: expiresIn,
+        refresh_expires_in: refreshExpiresIn,
       },
     });
   } catch (err) {
@@ -1856,12 +1889,17 @@ router.post('/refresh', async (req, res) => {
       payload = { id: customer.id, role: 'customer', type: 'customer' };
     }
 
-    // 5. Tạo access token mới
-    const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES_IN || '8h',
+    // 5. Tạo access token mới theo đúng loại phiên ban đầu
+    const policy = sessionPolicy(decoded.session_kind || (decoded.type === 'customer' ? 'customer' : 'staff'));
+    const accessToken = jwt.sign({
+      ...payload,
+      session_kind: decoded.session_kind || payload.type,
+      jti: crypto.randomBytes(16).toString('hex'),
+    }, process.env.JWT_SECRET, {
+      expiresIn: policy.accessTtl,
     });
 
-    res.json({ success: true, data: { accessToken } });
+    res.json({ success: true, data: { accessToken, expires_in: policy.accessTtl } });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

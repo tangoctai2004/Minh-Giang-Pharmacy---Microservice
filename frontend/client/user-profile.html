@@ -1598,7 +1598,17 @@
         }
 
         // clientLogout dùng cho nút Đăng xuất trong sidebar
-        function clientLogout() {
+        async function clientLogout() {
+            const auth = JSON.parse(localStorage.getItem('MG_CLIENT_AUTH') || 'null');
+            if (auth && auth.refreshToken) {
+                try {
+                    await fetch(`${API_BASE}/auth/logout`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ refreshToken: auth.refreshToken })
+                    });
+                } catch (e) {}
+            }
             localStorage.removeItem('MG_CLIENT_AUTH');
             sessionStorage.setItem('MG_PENDING_TOAST', JSON.stringify({ message: 'Đăng xuất thành công!', type: 'info' }));
             window.location.href = 'index.html';

@@ -90,6 +90,11 @@ data/
 logs/
 *.log
 *.log.*
+.local-frontend.pid
+
+# ─── Runtime Uploads (local/demo/prod data, not source code) ───────
+frontend/uploads/
+backend/*/uploads/
 
 # ─── Test & Coverage ──────────────────────────────────────────────
 .cache/

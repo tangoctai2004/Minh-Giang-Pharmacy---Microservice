@@ -320,7 +320,9 @@
         // Nếu đã đăng nhập rồi thì vào thẳng index
         (function checkAuth() {
             try {
-                var auth = JSON.parse(localStorage.getItem('MG_ADMIN_AUTH') || '{}');
+                var auth = typeof getValidAdminAuth === 'function'
+                    ? getValidAdminAuth()
+                    : JSON.parse(localStorage.getItem('MG_ADMIN_AUTH') || 'null');
                 if (auth.accessToken) window.location.href = 'index.html';
             } catch (e) {}
         })();

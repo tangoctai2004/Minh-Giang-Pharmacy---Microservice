@@ -24,15 +24,66 @@
     };
 })();
 
+function _posApiBase() {
+    return localStorage.getItem('MG_API_BASE') || (
+        (window.location.origin.includes('localhost:5500') ||
+         window.location.origin.includes('localhost:5501') ||
+         window.location.origin.includes('127.0.0.1:5500') ||
+         window.location.origin.includes('127.0.0.1:5501'))
+        ? 'http://localhost:8000/api'
+        : window.location.origin.replace(/\/+$/, '') + '/api'
+    );
+}
+
+function _decodePosJwtPayload(token) {
+    try {
+        const payload = token.split('.')[1];
+        const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+        return JSON.parse(decodeURIComponent(Array.prototype.map.call(atob(normalized), (c) =>
+            '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        ).join('')));
+    } catch (e) {
+        return null;
+    }
+}
+
+function _isPosJwtExpired(token, skewSeconds = 30) {
+    const payload = _decodePosJwtPayload(token);
+    return !payload || !payload.exp || payload.exp * 1000 <= Date.now() + skewSeconds * 1000;
+}
+
+function _getValidPosAuth() {
+    try {
+        const parsed = JSON.parse(localStorage.getItem('MG_POS_AUTH') || 'null');
+        if (!parsed || !parsed.accessToken || !parsed.user) return null;
+        if (_isPosJwtExpired(parsed.accessToken)) {
+            localStorage.removeItem('MG_POS_AUTH');
+            return null;
+        }
+        return parsed;
+    } catch (e) {
+        localStorage.removeItem('MG_POS_AUTH');
+        return null;
+    }
+}
+
+async function _revokePosRefreshToken(auth) {
+    if (!auth || !auth.refreshToken) return;
+    try {
+        await fetch(_posApiBase() + '/identity/auth/logout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken: auth.refreshToken }),
+        });
+    } catch (e) {}
+}
+
 function _applyPosUserHeader() {
     // Auth guard
-    const authRaw = localStorage.getItem('MG_POS_AUTH');
-    if (!authRaw) { window.location.href = 'login.html'; return; }
+    const parsed = _getValidPosAuth();
+    if (!parsed) { window.location.href = 'login.html'; return; }
 
     try {
-        const parsed = JSON.parse(authRaw);
-        if (!parsed.accessToken || !parsed.user) { window.location.href = 'login.html'; return; }
-
         const fullName = parsed.user.full_name;
         if (!fullName) { window.location.href = 'login.html'; return; }
 
@@ -54,7 +105,9 @@ function _applyPosUserHeader() {
     }
 }
 
-function posLogout() {
+async function posLogout() {
+    const auth = JSON.parse(localStorage.getItem('MG_POS_AUTH') || 'null');
+    await _revokePosRefreshToken(auth);
     localStorage.removeItem('MG_POS_AUTH');
     window.location.href = 'login.html';
 }
