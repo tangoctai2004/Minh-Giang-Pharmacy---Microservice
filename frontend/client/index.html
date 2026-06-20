@@ -710,16 +710,75 @@
 
         <!-- San Pham Đang Thu Hut Section -->
         <section class="product-section container bg-white-container" data-home-section="trending" style="padding: 20px;">
-            <div class="pd-section-header">
-                <h2 class="pd-section-title">SẢN PHẨM ĐANG THU HÚT</h2>
-                <div class="carousel-nav">
-                    <button class="carousel-btn" id="btnPrevTrending" disabled><i class="fa-solid fa-arrow-left"></i></button>
-                    <button class="carousel-btn" id="btnNextTrending"><i class="fa-solid fa-arrow-right"></i></button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="font-size: 18px; font-weight: 700;">SẢN PHẨM ĐANG THU HÚT</h2>
+                <div style="display: flex; gap: 10px;">
+                    <button class="slider-btn" style="position: static; border: 1px solid #ddd;"><img
+                            src="../assets/images/icon_banner_arrow_left.png" alt="Prev" style="filter: brightness(0);"></button>
+                    <button class="slider-btn" style="position: static; border: 1px solid #ddd;"><img
+                            src="../assets/images/icon_banner_arrow_right.png" alt="Next" style="filter: brightness(0);"></button>
                 </div>
             </div>
-            <div class="carousel-container">
-                <div class="carousel-track" id="pdTrendingProducts" data-home-products="trending">
-                    <!-- Nạp bằng JS -->
+            <div class="product-grid" data-home-products="trending" style="padding: 0; background: none;">
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="../assets/images/product_frame.png" alt="Product">
+                    </div>
+                    <div class="product-info">
+                        <h5><a href="product.html">Sữa bột Abbott Glucerna bổ sung vitamin, khoáng chất</a></h5>
+                        <div class="product-price">
+                            <span class="price-new">419,000đ</span>
+                        </div>
+                        <button class="btn-add-cart">Thêm giỏ hàng</button>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="../assets/images/product_frame.png" alt="Product">
+                    </div>
+                    <div class="product-info">
+                        <h5><a href="product.html">Thực phẩm bảo vệ sức khoẻ Green Calcium (100 viên)</a></h5>
+                        <div class="product-price">
+                            <span class="price-new">550,000đ</span>
+                        </div>
+                        <button class="btn-add-cart">Thêm giỏ hàng</button>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="../assets/images/product_frame.png" alt="Product">
+                    </div>
+                    <div class="product-info">
+                        <h5><a href="product.html">Dầu gội trắng Trung Sơn Care (24ml)</a></h5>
+                        <div class="product-price">
+                            <span class="price-new">55,000đ</span>
+                        </div>
+                        <button class="btn-add-cart">Thêm giỏ hàng</button>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="../assets/images/product_frame.png" alt="Product">
+                    </div>
+                    <div class="product-info">
+                        <h5><a href="product.html">Thực phẩm bảo vệ sức khoẻ Robertia (60 viên)</a></h5>
+                        <div class="product-price">
+                            <span class="price-new">390,000đ</span>
+                        </div>
+                        <button class="btn-add-cart">Thêm giỏ hàng</button>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="../assets/images/product_frame.png" alt="Product">
+                    </div>
+                    <div class="product-info">
+                        <h5><a href="product.html">Sữa rửa mặt và toàn thân daphil Gentle Skin</a></h5>
+                        <div class="product-price">
+                            <span class="price-new">599,000đ</span>
+                        </div>
+                        <button class="btn-add-cart">Thêm giỏ hàng</button>
+                    </div>
                 </div>
             </div>
         </section>

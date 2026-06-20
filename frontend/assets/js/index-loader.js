@@ -106,7 +106,7 @@ const homeCatalog = {
         { selector: '[data-home-products="discount"]', params: { sort: 'price_desc', limit: 4, requires_prescription: '0' } },
         { selector: '[data-home-products="exclusive"]', params: { sort: 'newest', limit: 5, requires_prescription: '0' } },
         { selector: '[data-home-products="imported"]', params: { sort: 'popular', limit: 4, requires_prescription: '0' } },
-        { selector: '[data-home-products="trending"]', params: { sort: 'trending', limit: 15, requires_prescription: '0' } }
+        { selector: '[data-home-products="trending"]', params: { sort: 'trending', limit: 5, requires_prescription: '0' } }
     ],
 
     activePromotions: [],
@@ -251,7 +251,9 @@ const homeCatalog = {
                 return;
             }
             container.innerHTML = products.map((product) => this.renderProductCard(product)).join('');
-            if (section.selector === '[data-home-products="trending"]') {
+            
+            // Khởi tạo Carousel cho section trending
+            if (section.selector === '[data-home-products="trending"]' || section.selector.includes('trending')) {
                 new ProductCarousel('Trending', products.length);
             }
         } catch (error) {
@@ -422,7 +424,8 @@ const homeCatalog = {
                 'best-seller': config.layout_home_tag_best_seller ?? 'best-seller',
                 'discount': config.layout_home_tag_discount ?? 'discount',
                 'exclusive': config.layout_home_tag_exclusive ?? 'exclusive',
-                'imported': config.layout_home_tag_imported ?? 'imported'
+                'imported': config.layout_home_tag_imported ?? 'imported',
+                'trending': 'trending'
             };
 
             this.productSections.forEach(section => {
