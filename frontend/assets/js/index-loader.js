@@ -24,65 +24,6 @@ function catalogApi() {
     };
 }
 
-class ProductCarousel {
-    constructor(idPrefix, totalItems) {
-        this.track = document.getElementById(`pd${idPrefix}Products`) || document.getElementById(`pdRecently${idPrefix}`);
-        this.btnPrev = document.getElementById(`btnPrev${idPrefix}`);
-        this.btnNext = document.getElementById(`btnNext${idPrefix}`);
-        
-        if (!this.track || !this.btnPrev || !this.btnNext) return;
-
-        this.totalItems = totalItems;
-        this.itemsPerView = 5;
-        this.currentIndex = 0;
-        this.maxIndex = Math.max(0, this.totalItems - this.itemsPerView);
-        this.init();
-    }
-
-    init() {
-        this.updateButtons();
-        
-        this.btnPrev.addEventListener('click', () => {
-            this.currentIndex = Math.max(0, this.currentIndex - this.itemsPerView);
-            this.updateTrack();
-        });
-
-        this.btnNext.addEventListener('click', () => {
-            this.currentIndex = Math.min(this.maxIndex, this.currentIndex + this.itemsPerView);
-            this.updateTrack();
-        });
-
-        this.startAutoPlay();
-    }
-
-    updateTrack() {
-        const itemNode = this.track.children[0];
-        if (!itemNode) return;
-        const itemTotalWidth = itemNode.offsetWidth + 15; 
-        this.track.style.transform = `translateX(-${this.currentIndex * itemTotalWidth}px)`;
-        this.updateButtons();
-    }
-
-    updateButtons() {
-        this.btnPrev.disabled = this.currentIndex <= 0;
-        this.btnNext.disabled = this.currentIndex >= this.maxIndex;
-    }
-
-    startAutoPlay() {
-        this.interval = setInterval(() => {
-            if (this.currentIndex >= this.maxIndex) {
-                this.currentIndex = 0;
-            } else {
-                this.currentIndex = Math.min(this.maxIndex, this.currentIndex + this.itemsPerView);
-            }
-            this.updateTrack();
-        }, 5000);
-
-        this.track.parentElement.addEventListener('mouseenter', () => clearInterval(this.interval));
-        this.track.parentElement.addEventListener('mouseleave', () => this.startAutoPlay());
-    }
-}
-
 const homeCatalog = {
     iconPool: [
         '../assets/images/icon_category_than_kinh_nao.png',
@@ -170,9 +111,9 @@ const homeCatalog = {
         if (product.tags) {
             try {
                 tags = Array.isArray(product.tags) ? product.tags : JSON.parse(product.tags);
-            } catch(e) {}
+            } catch (e) { }
         }
-        
+
         let badge = product.discount_percent > 0
             ? `<span class="discount-badge">-${Number(product.discount_percent)}%</span>`
             : '';
@@ -204,7 +145,7 @@ const homeCatalog = {
             <div class="product-card" data-product-id="${id}">
                 <div class="product-image">
                     ${badge}
-                    <img src="${image}" alt="${name}" onerror="this.src='../assets/images/placeholder.png'">
+                    <img src="${image}" alt="${name}" loading="lazy" onerror="this.src='../assets/images/placeholder.png'">
                 </div>
                 <div class="product-info">
                     <h5><a href="product.html?id=${id}">${name}</a></h5>
@@ -251,11 +192,6 @@ const homeCatalog = {
                 return;
             }
             container.innerHTML = products.map((product) => this.renderProductCard(product)).join('');
-            
-            // Khởi tạo Carousel cho section trending
-            if (section.selector === '[data-home-products="trending"]' || section.selector.includes('trending')) {
-                new ProductCarousel('Trending', products.length);
-            }
         } catch (error) {
             console.error('[HomeCatalog] Product section error:', section.selector, error);
             container.innerHTML = '<div class="catalog-widget-loading">Chưa tải được sản phẩm.</div>';
@@ -306,7 +242,7 @@ const homeCatalog = {
         if (!container) return;
 
         try {
-            const result = await catalogApi().get('products/top-searches', { limit: 30, t: Date.now() });
+            const result = await catalogApi().get('products/top-searches', { limit: 30 });
             const keywords = result.data || [];
             if (keywords.length === 0) {
                 container.innerHTML = '<span class="catalog-widget-loading">Chưa có tìm kiếm hàng đầu.</span>';
@@ -326,7 +262,7 @@ const homeCatalog = {
     async loadBanners() {
         try {
             const gateway = ((window.MGClientApi && window.MGClientApi.gatewayOrigin) || window.MG_API_GATEWAY_ORIGIN || 'http://localhost:8000').replace(/\/+$/, '');
-            
+
             const resolveImg = (url) => {
                 if (!url) return '';
                 if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
@@ -347,18 +283,18 @@ const homeCatalog = {
                     const banners = res.data;
                     const sliderImages = document.getElementById('heroSliderImages');
                     const sliderDots = document.getElementById('heroSliderDots');
-                    
+
                     if (sliderImages && sliderDots) {
                         sliderImages.innerHTML = banners.map((b) => {
                             const url = b.link_url ? b.link_url : '#';
                             const resolvedImgUrl = resolveImg(b.image_url);
                             return `<img src="${resolvedImgUrl}" alt="${this.escape(b.title)}" class="main-slide" onclick="window.location.href='${url}'" style="cursor:pointer;" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;100&quot; height=&quot;100&quot; viewBox=&quot;0 0 100 100&quot;><rect width=&quot;100&quot; height=&quot;100&quot; fill=&quot;%23f1f5f9&quot;/><text x=&quot;50%&quot; y=&quot;50%&quot; dominant-baseline=&quot;middle&quot; text-anchor=&quot;middle&quot; font-family=&quot;sans-serif&quot; font-size=&quot;10&quot; fill=&quot;%2394a3b8&quot;>No Image</text></svg>';">`;
                         }).join('');
-                        
+
                         sliderDots.innerHTML = banners.map((_, index) => {
                             return `<span class="dot ${index === 0 ? 'active' : ''}" onclick="currentSlide(${index})"></span>`;
                         }).join('');
-                        
+
                         if (typeof window.initSlider === 'function') {
                             window.initSlider();
                         }
@@ -408,7 +344,7 @@ const homeCatalog = {
 
     async init() {
         this.setInitialLoadingState();
-        
+
         // Load dynamic configuration to map homepage sections to tag filters
         try {
             let config = {};
@@ -417,7 +353,7 @@ const homeCatalog = {
             } else if (window.MGClientApi && typeof window.MGClientApi.getStoreConfig === 'function') {
                 config = await window.MGClientApi.getStoreConfig();
             }
-            
+
             const tagMap = {
                 'flash-sale': config.layout_home_tag_flash_sale ?? 'flash-sale',
                 'deal': config.layout_home_tag_deal ?? 'deal',
@@ -520,7 +456,7 @@ function showPopupAdModal(ad) {
 
     const overlay = document.createElement('div');
     overlay.className = 'popup-ad-overlay';
-    
+
     const url = ad.link_url ? ad.link_url : '#';
     overlay.innerHTML = `
         <div class="popup-ad-container">
@@ -530,15 +466,15 @@ function showPopupAdModal(ad) {
             </a>
         </div>
     `;
-    
+
     document.body.appendChild(overlay);
     sessionStorage.setItem('mg_popup_ad_shown', 'true');
-    
+
     setTimeout(() => {
         overlay.classList.add('open');
     }, 1000);
 
-    window.closePopupAdModal = function(btn) {
+    window.closePopupAdModal = function (btn) {
         const modal = btn.closest('.popup-ad-overlay');
         if (modal) {
             modal.classList.remove('open');
