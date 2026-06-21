@@ -1766,6 +1766,7 @@ async function loadMediaLibrary() {
                         
                         <!-- Overlay options on hover -->
                         <div style="position:absolute;top:6px;right:6px;display:flex;gap:4px;">
+                            <button class="btn-icon" style="background:rgba(255,255,255,0.9);box-shadow:0 2px 4px rgba(0,0,0,0.1);width:24px;height:24px;color:#10b981;" onclick="downloadMedia('${resolvedUrl}', '${img.original_name.replace(/'/g, "\\'")}')" title="Tải ảnh về máy"><i class="fa-solid fa-download" style="font-size:11px;"></i></button>
                             <button class="btn-icon" style="background:rgba(255,255,255,0.9);box-shadow:0 2px 4px rgba(0,0,0,0.1);width:24px;height:24px;color:var(--admin-primary);" onclick="copyToClipboard('${resolvedUrl}')" title="Sao chép liên kết ảnh"><i class="fa-regular fa-copy" style="font-size:11px;"></i></button>
                             <button class="btn-icon" style="background:rgba(255,255,255,0.9);box-shadow:0 2px 4px rgba(0,0,0,0.1);width:24px;height:24px;color:#ef4444;" onclick="deleteMedia(${img.id})" title="Xóa ảnh"><i class="fa-regular fa-trash-can" style="font-size:11px;"></i></button>
                         </div>
@@ -1854,6 +1855,26 @@ window.copyToClipboard = function(text) {
     }).catch(err => {
         showToast('Lỗi copy: ' + err.message, 'error');
     });
+};
+
+window.downloadMedia = async function(url, originalName) {
+    try {
+        showToast('Đang chuẩn bị tải ảnh...', 'info');
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Không thể tải file từ server');
+        const blob = await res.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = originalName || 'downloaded_image';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(blobUrl);
+        showToast('Tải ảnh thành công!');
+    } catch (e) {
+        showToast('Lỗi khi tải ảnh: ' + e.message, 'error');
+    }
 };
 
 // ──────────────────────────────────────────────

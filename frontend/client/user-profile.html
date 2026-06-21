@@ -1127,6 +1127,12 @@
                         </a>
                     </li>
                     <li>
+                        <a href="javascript:void(0)" id="nav-returns"
+                            onclick="showSection('returns', this, 'Lịch sử đổi/trả hàng'); loadCustomerReturns();">
+                            <i class="fa-solid fa-arrow-rotate-left"></i> Đổi trả & hoàn tiền
+                        </a>
+                    </li>
+                    <li>
                         <a href="javascript:void(0)" id="nav-profile" class="active"
                             onclick="showSection('profile', this, 'Chỉnh sửa hồ sơ')">
                             <i class="fa-regular fa-user"></i> Thông tin cá nhân
@@ -1386,6 +1392,25 @@
                         <div class="empty-state" id="offlineEmptyState">
                             <i class="fa-solid fa-store"></i>
                             <p>Không tìm thấy đơn hàng</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION: Returns & Refunds -->
+                <div class="content-section" id="section-returns">
+                    <div class="content-card">
+                        <div class="orders-header">
+                            <div>
+                                <h2>Lịch sử đổi trả & hoàn tiền</h2>
+                                <p>Theo dõi trạng thái các yêu cầu đổi/trả hàng của bạn</p>
+                            </div>
+                        </div>
+
+                        <div id="returnsList" class="orders-list"></div>
+
+                        <div class="empty-state" id="returnsEmptyState">
+                            <i class="fa-solid fa-arrow-rotate-left"></i>
+                            <p>Không tìm thấy yêu cầu đổi trả nào</p>
                         </div>
                     </div>
                 </div>
@@ -2270,8 +2295,10 @@
                 activeClientOrder = order; // save order reference
                 const btnReqReturn = document.getElementById('btnRequestReturn');
                 if (btnReqReturn) {
-                    // Show return button only if the order status is 'completed'
-                    if (order.order_status === 'completed') {
+                    // Show return button only if the order status is 'completed' and there's remaining refund amount available
+                    const totalReturnedAmt = Number(order.total_returned || 0);
+                    const maxRefundAllowed = Math.max(0, Number(order.total_amount) - totalReturnedAmt);
+                    if (order.order_status === 'completed' && maxRefundAllowed > 0) {
                         btnReqReturn.style.display = 'inline-block';
                     } else {
                         btnReqReturn.style.display = 'none';
@@ -2357,15 +2384,28 @@
 
             const listDiv = document.getElementById('retModalItemsList');
             if (listDiv && Array.isArray(activeClientOrder.items)) {
-                listDiv.innerHTML = activeClientOrder.items.map(item => `
-                    <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 8px; cursor: pointer; user-select:none; width: 100%;">
-                        <input type="checkbox" class="client-return-check" data-item-id="${item.id}" data-unit-price="${item.unit_price}" onchange="recalculateClientReturnTotal()" style="width: 16px; height: 16px; accent-color:#ef4444; cursor:pointer;">
-                        <span style="font-weight: 500; font-size: 13px;">${item.product_name}</span>
-                        <span style="font-size: 12px; color: #6b7280; margin-left: 4px;">(${Number(item.unit_price).toLocaleString('vi-VN')}đ)</span>
-                        <input type="number" value="${item.quantity}" min="1" max="${item.quantity}" class="client-return-qty" data-item-id="${item.id}" data-unit-price="${item.unit_price}" oninput="validateClientReturnQty(${item.id}, ${item.quantity})"
-                            style="width: 50px; height: 26px; margin-left: auto; text-align: center; border: 1px solid #d1d5db; border-radius: 4px; outline: none; font-size:13px;">
-                    </label>
-                `).join('');
+                const returnableItems = activeClientOrder.items.filter(item => {
+                    const maxQty = Number(item.quantity) - Number(item.quantity_returned || 0);
+                    return maxQty > 0;
+                });
+                
+                if (returnableItems.length === 0) {
+                    listDiv.innerHTML = '<p style="font-size:13px;color:#ef4444;margin:0;">Tất cả sản phẩm trong đơn đã được đổi trả hết.</p>';
+                    return;
+                }
+
+                listDiv.innerHTML = returnableItems.map(item => {
+                    const maxQty = Number(item.quantity) - Number(item.quantity_returned || 0);
+                    return `
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 8px; cursor: pointer; user-select:none; width: 100%;">
+                            <input type="checkbox" class="client-return-check" data-item-id="${item.id}" data-unit-price="${item.unit_price}" onchange="recalculateClientReturnTotal()" style="width: 16px; height: 16px; accent-color:#ef4444; cursor:pointer;">
+                            <span style="font-weight: 500; font-size: 13px;">${item.product_name}</span>
+                            <span style="font-size: 12px; color: #6b7280; margin-left: 4px;">(${Number(item.unit_price).toLocaleString('vi-VN')}đ)</span>
+                            <input type="number" value="${maxQty}" min="1" max="${maxQty}" class="client-return-qty" data-item-id="${item.id}" data-unit-price="${item.unit_price}" oninput="validateClientReturnQty(${item.id}, ${maxQty})"
+                                style="width: 50px; height: 26px; margin-left: auto; text-align: center; border: 1px solid #d1d5db; border-radius: 4px; outline: none; font-size:13px;">
+                        </label>
+                    `;
+                }).join('');
             }
 
             document.getElementById('customerReturnModal').classList.add('active');
@@ -2473,6 +2513,129 @@
                 btnSubmit.disabled = false;
                 btnSubmit.innerHTML = 'Gửi yêu cầu';
             }
+        }
+
+        let allReturns = [];
+        async function loadCustomerReturns() {
+            const authRaw = localStorage.getItem('MG_CLIENT_AUTH');
+            if (!authRaw) return;
+            const auth = JSON.parse(authRaw);
+            const token = auth.accessToken;
+
+            try {
+                const resp = await fetch(`${GATEWAY}/api/order/returns?limit=100`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    allReturns = data.data || [];
+                    renderReturnsList();
+                }
+            } catch (err) {
+                console.error('Lỗi khi tải phiếu đổi trả:', err);
+            }
+        }
+
+        function renderReturnsList() {
+            const listDiv = document.getElementById('returnsList');
+            const emptyDiv = document.getElementById('returnsEmptyState');
+            if (allReturns.length === 0) {
+                if (listDiv) listDiv.style.display = 'none';
+                if (emptyDiv) emptyDiv.style.display = 'block';
+            } else {
+                if (emptyDiv) emptyDiv.style.display = 'none';
+                if (listDiv) {
+                    listDiv.style.display = 'flex';
+                    listDiv.innerHTML = allReturns.map(r => {
+                        const formattedRefund = Number(r.refund_amount).toLocaleString('vi-VN') + 'đ';
+                        const createdDate = new Date(r.created_at).toLocaleString('vi-VN');
+                        
+                        let statusText = 'Chờ duyệt';
+                        if (r.status === 'completed') statusText = 'Đã hoàn thành';
+                        else if (r.status === 'rejected') statusText = 'Từ chối';
+                        
+                        return `
+                            <div class="order-card">
+                                <div class="order-card-header">
+                                    <div class="order-card-title">
+                                        <span>🔄 ${r.return_code}</span>
+                                        <span class="status-badge status-${r.status}">${statusText}</span>
+                                    </div>
+                                    <div class="order-card-date">${createdDate}</div>
+                                </div>
+                                <div class="order-card-body">
+                                    <div class="order-card-info">
+                                        <div>Mã đơn gốc: <strong>${r.order_code || r.order_id}</strong></div>
+                                        <div>Lý do: <span>${r.reason || 'Không có'}</span></div>
+                                        <div class="order-card-total">Hoàn lại: <span style="color: #ef4444;">${formattedRefund}</span></div>
+                                    </div>
+                                    <button class="btn-order-detail" onclick="openReturnDetailModal('${r.return_code}')">Xem chi tiết</button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+        }
+
+        async function openReturnDetailModal(returnCode) {
+            const authRaw = localStorage.getItem('MG_CLIENT_AUTH');
+            if (!authRaw) return;
+            const auth = JSON.parse(authRaw);
+            const token = auth.accessToken;
+
+            try {
+                const resp = await fetch(`${GATEWAY}/api/order/returns/${returnCode}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await resp.json();
+                if (!data.success) {
+                    alert('Không lấy được chi tiết phiếu trả: ' + data.message);
+                    return;
+                }
+
+                const rma = data.data;
+                document.getElementById('retDetailCode').textContent = rma.return_code;
+                document.getElementById('retDetailOrderCode').textContent = rma.order_code;
+                document.getElementById('retDetailDate').textContent = new Date(rma.created_at).toLocaleString('vi-VN');
+                document.getElementById('retDetailReason').textContent = rma.reason || '-';
+                document.getElementById('retDetailRefundAmt').textContent = Number(rma.refund_amount).toLocaleString('vi-VN') + 'đ';
+                document.getElementById('retDetailMethod').textContent = rma.refund_method === 'cash' ? 'Tiền mặt' : (rma.refund_method === 'store_credit' ? 'Điểm / Store Credit' : 'Hình thức gốc');
+
+                const statusBadge = document.getElementById('retDetailStatus');
+                let statusText = 'Chờ duyệt';
+                if (rma.status === 'completed') statusText = 'Đã hoàn thành';
+                else if (rma.status === 'rejected') statusText = 'Từ chối';
+                statusBadge.textContent = statusText;
+                statusBadge.className = `status-badge status-${rma.status}`;
+
+                const tbody = document.getElementById('retDetailItemsBody');
+                if (rma.items && rma.items.length > 0) {
+                    tbody.innerHTML = rma.items.map(item => {
+                        const total = item.quantity_returned * item.unit_price;
+                        return `
+                            <tr>
+                                <td><strong>${item.product_name}</strong></td>
+                                <td>${item.unit_name || 'Hộp'}</td>
+                                <td style="text-align: right;">${item.quantity_returned}</td>
+                                <td style="text-align: right;">${Number(item.unit_price).toLocaleString('vi-VN')}đ</td>
+                                <td style="text-align: right;">${Number(total).toLocaleString('vi-VN')}đ</td>
+                            </tr>
+                        `;
+                    }).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#9ca3af;">Không có thông tin sản phẩm</td></tr>';
+                }
+
+                document.getElementById('returnDetailModal').classList.add('active');
+            } catch (err) {
+                console.error('Lỗi chi tiết phiếu trả:', err);
+                alert('Không thể kết nối máy chủ');
+            }
+        }
+
+        function closeReturnDetailModal() {
+            document.getElementById('returnDetailModal').classList.remove('active');
         }
     </script>
     
@@ -2646,6 +2809,53 @@
             <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:10px;">
                 <button class="btn-secondary" onclick="closeCustomerReturnModal()">Hủy bỏ</button>
                 <button class="btn-primary" id="btnSubmitCustomerReturn" disabled style="background:#10b981; border-color:#10b981; color:#fff;" onclick="submitCustomerReturnRequest()">Gửi yêu cầu</button>
+            </div>
+        </div>
+    <!-- MODAL: Return Detail -->
+    <div id="returnDetailModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Chi tiết yêu cầu đổi trả</h2>
+                <button class="modal-close" onclick="closeReturnDetailModal()">×</button>
+            </div>
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 13px; margin-bottom: 16px;">
+                    <div>
+                        <p><strong>Mã yêu cầu (RMA):</strong> <span id="retDetailCode"></span></p>
+                        <p><strong>Mã đơn hàng gốc:</strong> <span id="retDetailOrderCode"></span></p>
+                        <p><strong>Ngày tạo yêu cầu:</strong> <span id="retDetailDate"></span></p>
+                    </div>
+                    <div>
+                        <p><strong>Trạng thái yêu cầu:</strong> <span id="retDetailStatus" class="status-badge"></span></p>
+                        <p><strong>Hình thức hoàn tiền:</strong> <span id="retDetailMethod"></span></p>
+                        <p><strong>Tổng tiền hoàn trả:</strong> <strong id="retDetailRefundAmt" style="color: #ef4444;"></strong></p>
+                    </div>
+                </div>
+                
+                <div style="font-size: 13px; margin-bottom: 16px;">
+                    <p><strong>Lý do đổi trả:</strong> <span id="retDetailReason"></span></p>
+                </div>
+
+                <h3 style="font-size: 14px; font-weight: 600; margin: 16px 0 8px; color: #111827; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px;">Danh sách sản phẩm hoàn trả</h3>
+                <div style="overflow-x: auto;">
+                    <table class="order-detail-table">
+                        <thead>
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th>Đơn vị</th>
+                                <th style="text-align: right;">Số lượng trả</th>
+                                <th style="text-align: right;">Đơn giá</th>
+                                <th style="text-align: right;">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody id="retDetailItemsBody">
+                            <!-- Items loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer" style="display:flex; justify-content:flex-end;">
+                <button class="btn-secondary" onclick="closeReturnDetailModal()">Đóng</button>
             </div>
         </div>
     </div>

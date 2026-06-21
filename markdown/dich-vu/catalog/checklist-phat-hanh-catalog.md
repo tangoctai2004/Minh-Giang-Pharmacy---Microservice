@@ -1,7 +1,7 @@
 # Checklist phát hành Catalog Service
 
 ## 1) Cổng kiểm tra contract
-- [ ] `docs/FRONTEND_HANDOFF.md` đã cập nhật endpoint và field bắt buộc.
+- [ ] `markdown/dich-vu/catalog/ban-giao-frontend-catalog.md` đã cập nhật endpoint và field bắt buộc.
 - [ ] Response list có `pagination.total/page/limit/pages/total_pages`.
 - [ ] Không có endpoint trả thiếu `success`.
 

@@ -13,7 +13,7 @@ Scope:
 
 The database is good enough for a pharmacy microservice demo and backend integration work.
 The core business data is relationally consistent and passes the acceptance gate in
-`99_verify_seed_quality.sql`.
+`verify.sql`.
 
 Overall rating: **9/10**
 
@@ -25,7 +25,7 @@ Strong points:
   FEFO-style stock, return-to-stock control, delivery scope, loyalty, notification queues.
 - Delivery business scope is now clear: Minh Giang Pharmacy at
   `918 An Duong Vuong, Thanh pho Hoa Binh`, delivery within Hoa Binh, max 8km.
-- A clean rebuild using `run_all.sh` already passed all 14 active files and the final QA gate.
+- A clean rebuild using `run_all.sh` executes the active schema/seed set and the final QA gate.
 
 Main remaining risk:
 
@@ -34,8 +34,7 @@ Main remaining risk:
   image files first, then rewrite URLs.
 - A few backend routes were still behind the schema; Phase 10 fixed the order list/detail
   route mismatch discovered during smoke testing.
-- The seed phase files have been consolidated into a smaller active script set; the old
-  phase files are archived under `archive/seed_phases/` for traceability.
+- The seed phase files have been consolidated into `schemas/`, `seeds/`, and `verify.sql`.
 
 ## Current Totals
 

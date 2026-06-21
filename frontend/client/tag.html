@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sản phẩm — Nhà Thuốc Minh Giang</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #f3f4f6;
+        }
+        
+        .breadcrumb {
+            padding: 12px 0;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .breadcrumb a {
+            color: #0b7a3e;
+            text-decoration: none;
+        }
+
+        /* Customize tag layout page */
+        .tag-layout {
+            padding-bottom: 40px;
+        }
+
+        /* Toolbar inside the colored container wrapper */
+        .tag-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 0 10px 10px 10px;
+            padding: 12px 20px;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .tag-results-count {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .tag-toolbar-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .tag-toolbar-controls select {
+            padding: 8px 32px 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            background: #fff;
+            font-size: 14px;
+            color: #374151;
+            cursor: pointer;
+            outline: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23374151%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px top 50%;
+            background-size: 10px auto;
+        }
+
+        /* Product Grid wrapper 5-columns */
+        .product-section .product-grid {
+            grid-template-columns: repeat(5, 1fr) !important;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+        }
+
+        /* Pagination style */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 30px;
+        }
+
+        .page-btn {
+            min-width: 36px;
+            height: 36px;
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: #fff;
+            color: #6b7280;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .page-btn:hover, .page-btn.active {
+            background: #0b7a3e;
+            color: #fff;
+        }
+
+        .page-ellipsis {
+            color: #9ca3af;
+            font-weight: 700;
+            padding: 0 4px;
+        }
+
+        .top-searches {
+            margin-top: 30px;
+            padding: 20px 0;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .top-searches h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 14px;
+        }
+
+        .top-search-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .top-search-links a {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #4b5563;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+
+        .top-search-links a:hover {
+            border-color: #0b7a3e;
+            color: #0b7a3e;
+            background: #ecfdf5;
+        }
+
+        .catalog-widget-loading {
+            grid-column: span 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 250px;
+            color: #6b7280;
+            font-size: 15px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header Banner -->
+    <div mg-include="../components/header_banner.html"></div>
+
+    <!-- Top Bar -->
+    <div mg-include="../components/top_bar.html"></div>
+
+    <!-- Main Header -->
+    <div mg-include="../components/main_header.html"></div>
+
+    <!-- ====== TAG PAGE CONTENT ====== -->
+    <main class="container tag-layout">
+
+        <!-- Breadcrumb -->
+        <div class="breadcrumb" id="tagBreadcrumb">
+            <a href="index.html">Trang chủ</a> <span>›</span> <strong style="color:#1f2937;" id="breadcrumbTitle">Khuyến mãi</strong>
+        </div>
+
+        <!-- Section Container styled like home sections -->
+        <section class="product-section container bg-green-container" id="tagSectionContainer">
+            <div class="product-section-header" style="margin-bottom: 15px;">
+                <img id="tagBannerImg" src="" alt="Banner">
+            </div>
+
+            <!-- Toolbar inside the colored container -->
+            <div class="tag-toolbar">
+                <div class="tag-results-count">
+                    Tìm thấy <span id="productCount" style="color: #0b7a3e;">0</span> sản phẩm
+                </div>
+                <div class="tag-toolbar-controls">
+                    <select id="sortSelect">
+                        <option value="popular">Xếp theo phổ biến nhất</option>
+                        <option value="newest">Mới nhất</option>
+                        <option value="price_asc">Giá thấp đến cao</option>
+                        <option value="price_desc">Giá cao xuống thấp</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Product Grid -->
+            <div class="product-grid" id="productList">
+                <div class="catalog-widget-loading">
+                    <i class="fa-solid fa-spinner fa-spin fa-2x" style="color:#0b7a3e; margin-right: 8px;"></i> Đang tải danh sách sản phẩm...
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingProducts" style="display:none; text-align:center; padding:40px; background:#fff; margin:0 10px; border-radius:8px;">
+                <i class="fa-solid fa-spinner fa-spin fa-2x" style="color:#0b7a3e;"></i>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyProducts" style="display:none; text-align:center; padding:40px; color:#6b7280; background:#fff; margin:0 10px; border-radius:8px;">
+                <i class="fa-solid fa-box-open fa-3x" style="margin-bottom:16px;"></i>
+                <p>Không có sản phẩm nào phù hợp với bộ tag này.</p>
+            </div>
+        </section>
+
+        <!-- Pagination outside the colored section -->
+        <div class="pagination" id="paginationBox">
+            <!-- Loaded dynamically by JS -->
+        </div>
+
+        <!-- Top Searches -->
+        <div class="top-searches">
+            <h3>Tìm kiếm hàng đầu</h3>
+            <div class="top-search-links">
+                <span class="catalog-widget-loading">Đang tải tìm kiếm hàng đầu...</span>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Pre-Footer Promises -->
+    <div mg-include="../components/promises.html"></div>
+
+    <!-- Newsletter -->
+    <div mg-include="../components/newsletter.html"></div>
+
+    <!-- Main Footer -->
+    <div mg-include="../components/main_footer.html"></div>
+
+    <script src="../assets/js/dropdown-handler.js"></script>
+    <script src="../assets/js/mega-menu-loader.js"></script>
+    <script src="../assets/js/client-api.js"></script>
+    <script src="../assets/js/components.js"></script>
+    <script src="../assets/js/catalog-widgets.js"></script>
+    <script src="../assets/js/tag-loader.js"></script>
+</body>
+
+</html>

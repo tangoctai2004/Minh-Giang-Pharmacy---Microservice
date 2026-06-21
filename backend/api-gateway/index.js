@@ -86,7 +86,7 @@ for (const { prefix, target } of ROUTES) {
 app.use('/uploads/cms', createProxyMiddleware({
   target: SERVICES.CMS,
   changeOrigin: true,
-  pathRewrite: { '^/uploads/cms': '/uploads/cms' }
+  pathRewrite: { '^/': '/uploads/cms/' }
 }));
 
 // ── Health check ──────────────────────────────────────────────────────────────

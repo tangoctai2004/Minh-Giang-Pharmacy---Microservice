@@ -300,19 +300,19 @@ docs: cập nhật README hướng dẫn chạy Docker
 ### Chạy toàn bộ project
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Xem logs 1 service
 
 ```bash
-docker-compose logs -f catalog-service
+docker compose logs -f catalog-service
 ```
 
 ### Restart 1 service
 
 ```bash
-docker-compose restart catalog-service
+docker compose restart catalog-service
 ```
 
 ### Kết nối MySQL trực tiếp
@@ -329,7 +329,7 @@ Database: mg_catalog (hoặc mg_identity, mg_order, mg_cms, mg_notification)
 
 ## ✅ Checklist Trước Khi Push
 
-- [ ] Code chạy không lỗi (`docker-compose logs -f <service>` không có crash)
+- [ ] Code chạy không lỗi (`docker compose logs -f <service>` không có crash)
 - [ ] Test API bằng Postman — response đúng format `{ success, data }`
 - [ ] Dùng `?` placeholder cho SQL — không nối string
 - [ ] Soft delete (`is_active = 0`) — không `DELETE FROM`

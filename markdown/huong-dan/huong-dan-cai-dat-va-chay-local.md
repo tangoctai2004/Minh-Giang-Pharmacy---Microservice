@@ -2,9 +2,7 @@
 
 Tài liệu này hướng dẫn cách setup môi trường phát triển cho dự án Microservices quản lý nhà thuốc Minh Giang.
 
-**Người viết:** Thành viên Trư ở nhóm  
-**Cập nhật lần cuối:** 21/03/2026  
-**Phiên bản:** 1.0
+**Cập nhật:** hướng dẫn chạy local theo `docker compose` và `local-menu.sh`.
 
 ---
 
@@ -23,9 +21,9 @@ Tài liệu này hướng dẫn cách setup môi trường phát triển cho d�
 ## 🖥️ Yêu Cầu Hệ Thống
 
 ### Bắt buộc
-- **Docker Desktop** (Windows/Mac) hoặc **Docker Engine + Docker Compose** (Linux)
+- **Docker Desktop** (Windows/Mac) hoặc **Docker Engine + Docker Compose v2** (Linux)
   - Download: https://www.docker.com/products/docker-desktop
-  - Kiểm tra: `docker --version` và `docker-compose --version`
+  - Kiểm tra: `docker --version` và `docker compose version`
   
 - **Node.js 18 LTS** (để chạy service riêng lẻ - tùy chọn)
   - Download: https://nodejs.org/ (LTS version)
@@ -109,10 +107,10 @@ File `.env` chỉ tồn tại trên máy cá nhân, `.env.example` là template.
 cd "Minh Giang Pharmacy"
 
 # Khởi động tất cả services
-docker-compose up -d
+docker compose up -d --build
 
 # Kiểm tra status (chờ ~30 giây cho services startup)
-docker-compose ps
+docker compose ps
 ```
 
 **Nếu thấy:**
@@ -124,6 +122,12 @@ Up 1 minutes  minhgiang_catalog    (port 8002)
 Up 1 minutes  minhgiang_order      (port 8003)
 Up 1 minutes  minhgiang_cms        (port 8004)
 Up 1 minutes  minhgiang_notification (port 8005)
+```
+
+Nếu database chưa có dữ liệu demo, nạp lại DB bằng lệnh:
+
+```bash
+bash infrastructure/database/run_all.sh
 ```
 
 ✅ Setup thành công!
@@ -156,16 +160,16 @@ npm run dev
 
 ```bash
 # Từ thư mục project root
-docker-compose up -d
+docker compose up -d
 
 # Xem log theo dõi
-docker-compose logs -f
+docker compose logs -f
 
 # Dừng tất cả
-docker-compose down
+docker compose down
 
 # Dừng và xóa dữ liệu (reset database)
-docker-compose down -v
+docker compose down -v
 
 # LƯU Ý QUAN TRỌNG KHI CHẠY LẦN ĐẦU TIÊN:
 # Ở lần chạy đầu, MySQL cần nhiều thời gian để setup database. 
@@ -173,7 +177,7 @@ docker-compose down -v
 # BẠN CẦN LÀM THÊM BƯỚC NÀY:
 # 1. Chờ khoảng 15-20 giây sau khi up -d
 # 2. Khởi động lại tất cả các container API để kết nối lại thành công:
-docker-compose restart
+docker compose restart
 ```
 
 **Kiểm tra hoạt động:**
@@ -193,7 +197,7 @@ Dùng khi bạn muốn debug 1 service mà không cần start cả stack.
 
 ```bash
 # Terminal 1: Chạy MySQL qua Docker
-docker-compose up -d mysql-db rabbitmq
+docker compose up -d mysql-db rabbitmq
 
 # Terminal 2: Chạy service bạn đang code
 cd backend/identity-service
@@ -239,7 +243,7 @@ Minh Giang Pharmacy/
 ├── .env.example                      # Template biến môi trường
 ├── .gitignore                        # Các file không commit
 ├── test.sh                           # Công cụ chạy kiểm thử tự động
-└── README.md                         # Tài liệu chính
+└── markdown/                         # Toàn bộ tài liệu Markdown của project
 ```
 
 ---
@@ -298,16 +302,16 @@ Error: connect ECONNREFUSED 127.0.0.1:3306
 **Cách sửa:**
 ```bash
 # 1. Chắc chắn MySQL container chạy
-docker-compose ps | grep mysql
+docker compose ps | grep mysql
 
 # 2. Nếu chưa chạy
-docker-compose up -d mysql-db
+docker compose up -d mysql-db
 
 # 3. Chờ MySQL startup (kiểm tra logs)
-docker-compose logs mysql-db
+docker compose logs mysql-db
 
 # 4. Test kết nối
-docker-compose exec mysql-db mysql -uroot -proot -e "SELECT 1;"
+docker compose exec mysql-db mysql -uroot -proot -e "SELECT 1;"
 ```
 
 ---
@@ -344,13 +348,13 @@ Service tạm thời không khả dụng
 **Cách sửa:**
 ```bash
 # 1. Kiểm tra log service
-docker-compose logs identity-service
+docker compose logs identity-service
 
 # 2. Restart service
-docker-compose restart identity-service
+docker compose restart identity-service
 
 # 3. Nếu vẫn lỗi, rebuild image
-docker-compose up -d --build identity-service
+docker compose up -d --build identity-service
 ```
 
 ---

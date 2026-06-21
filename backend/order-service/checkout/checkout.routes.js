@@ -4,12 +4,33 @@ const { callInternalService, CATALOG_SERVICE_URL, CMS_SERVICE_URL, IDENTITY_SERV
 
 async function findProductForGift(giftProductName) {
     const cleanName = giftProductName.trim().toLowerCase();
-    const response = await callInternalService(`${CATALOG_SERVICE_URL}/products?q=${encodeURIComponent(giftProductName)}&limit=50`);
-    if (!response.ok) return null;
-    const result = await response.json();
-    if (!result.success || !Array.isArray(result.data)) return null;
     
-    const products = result.data;
+    const search = async (queryStr) => {
+        const response = await callInternalService(`${CATALOG_SERVICE_URL}/products?q=${encodeURIComponent(queryStr)}&limit=50`);
+        if (!response.ok) return [];
+        const result = await response.json();
+        return (result.success && Array.isArray(result.data)) ? result.data : [];
+    };
+
+    let products = await search(giftProductName);
+    
+    if (products.length === 0) {
+        if (cleanName.includes('listerine')) {
+            products = await search('Listerine');
+        } else if (cleanName.includes('bông y tế') || cleanName.includes('bông')) {
+            products = await search('Bông');
+        } else if (cleanName.includes('vitamin c') || cleanName.includes('vit c')) {
+            products = await search('Vitamin C');
+        } else {
+            const words = cleanName.split(/\s+/).filter(w => w.length > 3 && !['nước', 'miệng', 'thuốc', 'tổng', 'hợp', 'bằng', 'chứa'].includes(w));
+            if (words.length > 0) {
+                words.sort((a, b) => b.length - a.length);
+                products = await search(words[0]);
+            }
+        }
+    }
+    
+    if (products.length === 0) return null;
     
     // 1. Exact match (case insensitive)
     const exact = products.find(p => p.name.trim().toLowerCase() === cleanName);

@@ -541,9 +541,30 @@ router.get('/:id', async (req, res) => {
             orders[0] = ordersByCode[0];
         }
         const orderId = orders[0].id;
-        const [items] = await pool.query('SELECT * FROM order_items WHERE order_id = ? AND is_active = 1', [orderId]);
+        const [items] = await pool.query(`
+            SELECT oi.*, 
+                   COALESCE((
+                       SELECT SUM(ri.quantity_returned)
+                       FROM return_items ri
+                       JOIN returns r ON ri.return_id = r.id
+                       WHERE ri.order_item_id = oi.id
+                         AND r.status != 'rejected'
+                         AND ri.is_active = 1
+                         AND r.is_active = 1
+                   ), 0) AS quantity_returned
+            FROM order_items oi
+            WHERE oi.order_id = ? AND oi.is_active = 1
+        `, [orderId]);
         const [promotions] = await pool.query('SELECT * FROM order_promotions WHERE order_id = ?', [orderId]);
-        res.json({ success: true, data: { ...orders[0], items, promotions } });
+        
+        // Query total refunded amount from returns table
+        const [[returnedSum]] = await pool.query(
+            "SELECT SUM(refund_amount) AS total_returned FROM returns WHERE order_id = ? AND status != 'rejected' AND is_active = 1",
+            [orderId]
+        );
+        const totalReturned = Number(returnedSum?.total_returned || 0);
+
+        res.json({ success: true, data: { ...orders[0], items, promotions, total_returned: totalReturned } });
     } catch (error) {
         console.error('[Get Order Detail Error]', error);
         res.status(500).json({ success: false, message: 'Lỗi lấy chi tiết đơn hàng' });

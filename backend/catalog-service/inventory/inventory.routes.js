@@ -806,6 +806,41 @@ router.post('/deduct', async (req, res) => {
 
       if (qtyToDeduct <= 0) continue;
 
+      // 3.0. Nếu truyền cụ thể batch_item_id, trừ trực tiếp từ lô hàng đó
+      const batchItemId = item.batch_item_id ? Number(item.batch_item_id) : null;
+      if (batchItemId) {
+        const [[batch]] = await conn.query(
+          `SELECT id, quantity_remaining, lot_number, expiry_date, cost_price, product_id
+           FROM batch_items 
+           WHERE id = ? FOR UPDATE`,
+          [batchItemId]
+        );
+        if (!batch) {
+          await conn.query('ROLLBACK');
+          return res.status(404).json({ success: false, message: `Không tìm thấy lô hàng #${batchItemId}` });
+        }
+        const newQty = Number(batch.quantity_remaining) - qtyToDeduct;
+        if (newQty < 0) {
+          await conn.query('ROLLBACK');
+          return res.status(409).json({ 
+            success: false, 
+            message: `Không đủ tồn kho trong lô hàng ${batch.lot_number} (Cần trừ: ${qtyToDeduct}, hiện có: ${batch.quantity_remaining})` 
+          });
+        }
+        await conn.query(
+          `UPDATE batch_items SET quantity_remaining = ?, status = ? WHERE id = ?`,
+          [newQty, batchStatusByQuantity(batch.expiry_date, newQty), batchItemId]
+        );
+        deductedItems.push({
+          product_id: batch.product_id,
+          batch_item_id: batchItemId,
+          lot_number: batch.lot_number,
+          quantity: qtyToDeduct,
+          cost_price: Number(batch.cost_price || 0)
+        });
+        continue;
+      }
+
       // 3.1. Xem có reservation cho sản phẩm này không
       const itemReservations = reservations.filter(r => Number(r.product_id) === productId);
       for (const resv of itemReservations) {

@@ -76,7 +76,7 @@
         let stockHtml = '';
         if (!isRx) {
             if (stockQty > 0) {
-                stockHtml = `<div class="product-stock-badge" style="font-size: 11px; color: #ea580c; font-weight: 600; margin-top: 4px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-boxes-stacked"></i> Còn lại: ${stockQty} ${escapeHtml(product.base_unit || 'sản phẩm')}</div>`;
+                stockHtml = '';
             } else {
                 stockHtml = `<div class="product-stock-badge" style="font-size: 11px; color: #9ca3af; font-weight: 600; margin-top: 4px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-boxes-stacked"></i> Hết hàng</div>`;
             }

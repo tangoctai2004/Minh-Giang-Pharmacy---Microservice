@@ -91,6 +91,50 @@
             flex: 0 0 calc((100% - 60px) / 5);
         }
 
+        .carousel-wrapper {
+            position: relative;
+            margin: 0 10px;
+        }
+
+        .carousel-side-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .carousel-side-btn:hover:not(:disabled) {
+            background: #f3f4f6;
+            color: #1b8844;
+            border-color: #1b8844;
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .carousel-side-btn:disabled {
+            opacity: 0;
+            visibility: hidden;
+            cursor: not-allowed;
+        }
+
+        .carousel-side-btn.prev {
+            left: -20px;
+        }
+
+        .carousel-side-btn.next {
+            right: -20px;
+        }
+
         .carousel-track>.product-card {
             height: 100%;
             min-height: 365px;
@@ -233,73 +277,14 @@
             <div class="product-section-header">
                 <img src="../assets/images/banner_flash_sale.png" alt="Flash Sale" data-layout-img="header_flash_sale">
             </div>
-            <div class="product-grid" data-home-products="flash-sale">
-                <!-- Product 1 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Dung dịch vệ sinh Chilly Protect kháng khuẩn xanh</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">247,520đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
+            <div class="carousel-wrapper">
+                <button class="carousel-side-btn prev" id="btnPrevFlashSale"><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="carousel-container" style="overflow: hidden; padding: 15px; background-color: #fff; border-radius: 8px;">
+                    <div class="carousel-track" id="pdFlashSaleProducts" data-home-products="flash-sale">
+                        <!-- Nạp bằng JS -->
                     </div>
                 </div>
-                <!-- Product 2 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Thực phẩm bảo vệ sức khoẻ The Fucoidan (90 viên)</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">2,017,363đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
-                <!-- Product 3 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Thực phẩm bảo vệ sức khoẻ Women's MultiVitamin With Probiotics
-                                Henry</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">458,500đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
-                <!-- Product 4 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Nước uống dưỡng trắng, mờ nám, giảm viêm sưng</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">151,500đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
-                <!-- Product 5 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Viên uống hỗ trợ làm sáng da Glutathione White</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">270,580đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
+                <button class="carousel-side-btn next" id="btnNextFlashSale"><i class="fa-solid fa-chevron-right"></i></button>
             </div>
             <a href="category.html" class="view-all-btn">Xem tất cả ></a>
         </section>
@@ -310,73 +295,14 @@
                 <img src="../assets/images/banner_deal_sieu_khung.png" alt="Deal Siêu Khủng"
                     data-layout-img="header_deal">
             </div>
-            <div class="product-grid" data-home-products="deal">
-                <!-- Product 1 -->
-                <div class="product-card" data-product-id="1">
-                    <div class="product-image">
-                        <span class="discount-badge">-8%</span>
-                        <img src="../assets/images/product_frame_2.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html?id=1">Fess Children's Spray 2+ (Xịt rửa mũi cho trẻ em)</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">182,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
+            <div class="carousel-wrapper">
+                <button class="carousel-side-btn prev" id="btnPrevDeal"><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="carousel-container" style="overflow: hidden; padding: 15px; background-color: #fff; border-radius: 8px;">
+                    <div class="carousel-track" id="pdDealProducts" data-home-products="deal">
+                        <!-- Nạp bằng JS -->
                     </div>
                 </div>
-                <!-- Product 2 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame_2.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Nước uống dưỡng trắng, giúp đẹp da Beyou Lux</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">1,484,100đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
-                <!-- Product 3 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame_2.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Tăng cường sinh lý nam EziTake Manpower (30 viên)</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">252,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
-                <!-- Product 4 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame_2.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Viên nén Vitaday Ginkgo Biloba 120 Mg + Magnesium</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">290,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
-                <!-- Product 5 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame_2.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Tinh Dầu Khuynh Diệp & Tràm Trà Care (20ml)</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">30,380đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
+                <button class="carousel-side-btn next" id="btnNextDeal"><i class="fa-solid fa-chevron-right"></i></button>
             </div>
             <a href="category.html" class="view-all-btn">Xem tất cả ></a>
         </section>
@@ -387,72 +313,14 @@
                 <img src="../assets/images/banner_san_pham_ban_chay.png" alt="Sản Phẩm Bán Chạy"
                     data-layout-img="header_best_seller">
             </div>
-            <div class="product-grid" data-home-products="best-seller">
-                <!-- Product 1 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame_2.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Fess Children's Spray 2+ (Xịt rửa mũi cho trẻ em)</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">182,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
+            <div class="carousel-wrapper">
+                <button class="carousel-side-btn prev" id="btnPrevBestSeller"><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="carousel-container" style="overflow: hidden; padding: 15px; background-color: #fff; border-radius: 8px;">
+                    <div class="carousel-track" id="pdBestSellerProducts" data-home-products="best-seller">
+                        <!-- Nạp bằng JS -->
                     </div>
                 </div>
-                <!-- Product 2 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame_2.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Nước uống dưỡng trắng, giúp đẹp da Beyou Lux</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">1,484,100đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
-                <!-- Product 3 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame_2.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Tăng cường sinh lý nam EziTake Manpower (30 viên)</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">252,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
-                <!-- Product 4 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame_2.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Viên nén Vitaday Ginkgo Biloba 120 Mg + Magnesium</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">290,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
-                <!-- Product 5 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame_2.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Tinh Dầu Khuynh Diệp & Tràm Trà Care (20ml)</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">30,380đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
+                <button class="carousel-side-btn next" id="btnNextBestSeller"><i class="fa-solid fa-chevron-right"></i></button>
             </div>
             <a href="category.html" class="view-all-btn">Xem tất cả ></a>
         </section>
@@ -462,55 +330,14 @@
             <div class="product-section-header">
                 <img src="../assets/images/banner_giam_gia.png" alt="Giảm Giá 38%" data-layout-img="header_discount">
             </div>
-            <div class="product-grid" data-home-products="discount">
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Combo Phái Đẹp</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">545,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
+            <div class="carousel-wrapper">
+                <button class="carousel-side-btn prev" id="btnPrevDiscount"><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="carousel-container" style="overflow: hidden; padding: 15px; background-color: #fff; border-radius: 8px;">
+                    <div class="carousel-track" id="pdDiscountProducts" data-home-products="discount">
+                        <!-- Nạp bằng JS -->
                     </div>
                 </div>
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Combo Tỏa Sáng</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">639,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Combo Rạng Ngời</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">619,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Combo Bồng Bềnh</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">499,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
+                <button class="carousel-side-btn next" id="btnNextDiscount"><i class="fa-solid fa-chevron-right"></i></button>
             </div>
             <a href="category.html" class="view-all-btn">Xem tất cả ></a>
         </section>
@@ -521,72 +348,14 @@
                 <img src="../assets/images/banner_san_pham_doc_quyen.png" alt="Sản Phẩm Độc Quyền"
                     data-layout-img="header_exclusive">
             </div>
-            <div class="product-grid" data-home-products="exclusive">
-                <!-- Product 1 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame_2.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Fess Children's Spray 2+ (Xịt rửa mũi cho trẻ em)</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">182,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
+            <div class="carousel-wrapper">
+                <button class="carousel-side-btn prev" id="btnPrevExclusive"><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="carousel-container" style="overflow: hidden; padding: 15px; background-color: #fff; border-radius: 8px;">
+                    <div class="carousel-track" id="pdExclusiveProducts" data-home-products="exclusive">
+                        <!-- Nạp bằng JS -->
                     </div>
                 </div>
-                <!-- Product 2 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame_2.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Nước uống dưỡng trắng, giúp đẹp da Beyou Lux</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">1,484,100đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
-                <!-- Product 3 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame_2.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Tăng cường sinh lý nam EziTake Manpower (30 viên)</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">252,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
-                <!-- Product 4 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame_2.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Viên nén Vitaday Ginkgo Biloba 120 Mg + Magnesium</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">290,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
-                <!-- Product 5 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame_2.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Tinh Dầu Khuynh Diệp & Tràm Trà Care (20ml)</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">30,380đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
+                <button class="carousel-side-btn next" id="btnNextExclusive"><i class="fa-solid fa-chevron-right"></i></button>
             </div>
             <a href="category.html" class="view-all-btn">Xem tất cả ></a>
         </section>
@@ -597,59 +366,14 @@
                 <img src="../assets/images/banner_nhap_khau_100.png" alt="Nhập Khẩu 100%"
                     data-layout-img="header_imported">
             </div>
-            <div class="product-grid" data-home-products="imported">
-                <!-- Product 1 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Nước uống thảo mộc có ga Dongwha Gas Whal 75ml</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">300,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
+            <div class="carousel-wrapper">
+                <button class="carousel-side-btn prev" id="btnPrevImported"><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="carousel-container" style="overflow: hidden; padding: 15px; background-color: #fff; border-radius: 8px;">
+                    <div class="carousel-track" id="pdImportedProducts" data-home-products="imported">
+                        <!-- Nạp bằng JS -->
                     </div>
                 </div>
-                <!-- Product 2 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Nước Uống Hồng Sâm Dongwha</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">179,800đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
-                <!-- Product 3 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Dongwha Glutathione White Sublingual Orally Disintegrating</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">278,380đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
-                <!-- Product 4 -->
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="../assets/images/product_frame.png" alt="Product">
-                    </div>
-                    <div class="product-info">
-                        <h5><a href="product.html">Dongwha Wild Ginseng Cultured Root Gold Drink 20ml</a></h5>
-                        <div class="product-price">
-                            <span class="price-new">599,000đ</span>
-                        </div>
-                        <button class="btn-add-cart">Thêm giỏ hàng</button>
-                    </div>
-                </div>
+                <button class="carousel-side-btn next" id="btnNextImported"><i class="fa-solid fa-chevron-right"></i></button>
             </div>
             <a href="category.html" class="view-all-btn">Xem tất cả ></a>
         </section>

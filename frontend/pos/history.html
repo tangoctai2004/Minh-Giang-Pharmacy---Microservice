@@ -982,7 +982,7 @@
                 <button onclick="closeRefundModal()"
                     style="padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; border: 1px solid #cbd5e1; background: #fff; color: #475569;">Hủy
                     Bỏ</button>
-                <button onclick="confirmRefund()"
+                <button class="refund-modal-confirm" onclick="confirmRefund()"
                     style="padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; border: none; background: #ef4444; color: white;">Xác
                     Nhận Nhập Lại Kho</button>
             </div>
@@ -1485,7 +1485,17 @@
                     // Handle Refund button display
                     const refundBtn = document.querySelector('.detail-btn-refund');
                     if (refundBtn) {
+                        const totalReturned = parseFloat(order.total_returned || 0);
+                        const totalAmount = parseFloat(order.total_amount || 0);
+                        const isFullyReturned = (totalAmount - totalReturned) <= 0;
+
                         if (order.order_status === 'cancelled') {
+                            refundBtn.disabled = true;
+                            refundBtn.style.background = '#cbd5e1';
+                            refundBtn.style.cursor = 'not-allowed';
+                            refundBtn.style.boxShadow = 'none';
+                            refundBtn.innerHTML = '<i class="fa-solid fa-ban"></i> ĐÃ HỦY';
+                        } else if (isFullyReturned) {
                             refundBtn.disabled = true;
                             refundBtn.style.background = '#cbd5e1';
                             refundBtn.style.cursor = 'not-allowed';
@@ -1545,9 +1555,21 @@
                 const qty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
                 total += price * qty;
             });
+
+            const maxRefundAllowed = parseFloat(currentRefundOrder.total_amount || 0) - parseFloat(currentRefundOrder.total_returned || 0);
+            let isCapped = false;
+            if (total > maxRefundAllowed) {
+                total = maxRefundAllowed;
+                isCapped = true;
+            }
+
             const refundVal = document.getElementById('refundAmountDisplay');
             if (refundVal) {
-                refundVal.textContent = total.toLocaleString('vi-VN') + '₫';
+                if (isCapped) {
+                    refundVal.innerHTML = `${total.toLocaleString('vi-VN')}₫ <small style="display:block; font-size:11px; font-weight:normal; color:#6b7280; margin-top:2px;">(Tự động khấu trừ chiết khấu/khuyến mãi)</small>`;
+                } else {
+                    refundVal.textContent = total.toLocaleString('vi-VN') + '₫';
+                }
             }
         }
 
@@ -1557,14 +1579,28 @@
             
             const listDiv = document.getElementById('refundItemsList');
             if (listDiv && Array.isArray(order.items)) {
-                listDiv.innerHTML = order.items.map(item => `
-                    <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 8px; cursor: pointer;">
-                        <input type="checkbox" checked class="refund-item-check" data-item-id="${item.id}" data-unit-price="${item.unit_price}" onchange="recalculatePOSRefundTotal()" style="accent-color: #ef4444; width: 16px; height: 16px;">
-                        <span style="font-weight: 500;">${item.product_name}</span>
-                        <input type="number" value="${item.quantity}" min="1" max="${item.quantity}" class="refund-item-qty" data-item-id="${item.id}" data-unit-price="${item.unit_price}" oninput="validatePOSRefundQty(${item.id}, ${item.quantity})"
-                            style="width: 50px; height: 24px; margin-left: auto; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; outline: none;">
-                    </label>
-                `).join('');
+                const returnableItems = order.items.filter(item => {
+                    const maxQty = item.quantity - (item.quantity_returned || 0);
+                    return maxQty > 0;
+                });
+
+                if (returnableItems.length === 0) {
+                    listDiv.innerHTML = '<div style="font-size: 13px; color: #9ca3af; font-style: italic; text-align: center; padding: 8px;">Không có sản phẩm nào có thể hoàn trả</div>';
+                } else {
+                    listDiv.innerHTML = returnableItems.map(item => {
+                        const maxQty = item.quantity - (item.quantity_returned || 0);
+                        return `
+                            <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 8px;">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;">
+                                    <input type="checkbox" checked class="refund-item-check" data-item-id="${item.id}" data-unit-price="${item.unit_price}" onchange="recalculatePOSRefundTotal()" style="accent-color: #ef4444; width: 16px; height: 16px;">
+                                    <span style="font-weight: 500;">${item.product_name}</span>
+                                </label>
+                                <input type="number" value="${maxQty}" min="1" max="${maxQty}" class="refund-item-qty" data-item-id="${item.id}" data-unit-price="${item.unit_price}" oninput="validatePOSRefundQty(${item.id}, ${maxQty})"
+                                    style="width: 50px; height: 24px; margin-left: auto; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; outline: none;">
+                            </div>
+                        `;
+                    }).join('');
+                }
             }
 
             recalculatePOSRefundTotal();
@@ -1607,6 +1643,12 @@
                     quantity: qty
                 });
             });
+
+            // Cap the refund amount to prevent exceeding maxRefundAllowed
+            const maxRefundAllowed = parseFloat(currentRefundOrder.total_amount || 0) - parseFloat(currentRefundOrder.total_returned || 0);
+            if (refundAmount > maxRefundAllowed) {
+                refundAmount = maxRefundAllowed;
+            }
 
             const returnBody = {
                 order_id: currentRefundOrder.id,

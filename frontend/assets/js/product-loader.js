@@ -929,7 +929,7 @@ function renderMiniList(container, products) {
         let stockHtml = '';
         if (!p.requires_prescription) {
             if (stockQty > 0) {
-                stockHtml = `<div class="pd-mini-stock" style="font-size: 11px; color: #ea580c; font-weight: 500; margin-top: 2px;">Còn lại: ${stockQty} ${escapeProductHtml(p.base_unit || 'sản phẩm')}</div>`;
+                stockHtml = '';
             } else {
                 stockHtml = `<div class="pd-mini-stock" style="font-size: 11px; color: #9ca3af; font-weight: 500; margin-top: 2px;">Hết hàng</div>`;
             }
@@ -1189,7 +1189,7 @@ function renderProductCard(p) {
     let stockHtml = '';
     if (!isRx) {
         if (stockQty > 0) {
-            stockHtml = `<div class="product-stock-badge" style="font-size: 11px; color: #ea580c; font-weight: 600; margin-top: 4px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-boxes-stacked"></i> Còn lại: ${stockQty} ${escapeProductHtml(p.base_unit || 'sản phẩm')}</div>`;
+            stockHtml = '';
         } else {
             stockHtml = `<div class="product-stock-badge" style="font-size: 11px; color: #9ca3af; font-weight: 600; margin-top: 4px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-boxes-stacked"></i> Hết hàng</div>`;
         }

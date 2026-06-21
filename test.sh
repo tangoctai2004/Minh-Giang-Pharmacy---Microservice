@@ -292,7 +292,7 @@ run_promotions_tests() {
   fi
 
   # Add products to reach min subtotal (500k)
-  R=$(curl -s -X POST $ORDER_BASE/cart/items -H "Authorization: Bearer $CUST_TOKEN" -H 'Content-Type: application/json' -d '{"product_id":1, "product_name":"Sản phẩm mẫu 1", "quantity":2, "unit_name":"Hộp", "unit_price":300000}')
+  R=$(curl -s -X POST $ORDER_BASE/cart/items -H "Authorization: Bearer $CUST_TOKEN" -H 'Content-Type: application/json' -d '{"product_id":1, "product_name":"Sản phẩm mẫu 1", "quantity":4, "unit_name":"Hộp", "unit_price":300000}')
   chk "Thêm sản phẩm giá trị lớn vào giỏ hàng (600k)" "True" "$R"
 
   # Checkout with Vouchers

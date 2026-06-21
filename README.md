@@ -1,42 +1,32 @@
-# 🏥 Minh Giang Pharmacy - Hệ thống Quản lý Nhà thuốc (Microservices Stack)
+# ════════════════════════════════════════════════════════════════
+# Minh Giang Pharmacy — Hệ thống Quản lý Nhà thuốc Microservices
+# ════════════════════════════════════════════════════════════════
 
-[![Node.js](https://img.shields.io/badge/Node.js-v18+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Docker Compose](https://img.shields.io/badge/Docker_Compose-v2+-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
-[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![RabbitMQ](https://img.shields.io/badge/RabbitMQ-Message_Queue-FF6600?logo=rabbitmq&logoColor=white)](https://www.rabbitmq.com/)
-
-Dự án phát triển Hệ thống quản lý nhà thuốc **Minh Giang** theo kiến trúc Microservices — được xây dựng phục vụ cho môn học **Kiến trúc hướng dịch vụ (SOA 2026)**.
+Chào mừng bạn đến với hệ thống microservices của Nhà thuốc Minh Giang. Dự án này được thiết kế và vận hành dưới dạng kiến trúc microservices sử dụng Node.js, Express, MySQL, Redis, RabbitMQ và giao diện tĩnh (HTML/CSS/JS).
 
 ---
 
-## 🗺️ 1. Kiến Trúc Hệ Thống Tổng Quan
+## 🏗️ 1. Kiến Trúc & Phân Hệ Dịch Vụ
 
-Hệ thống được thiết kế theo mô hình Microservices phân lớp, giao tiếp qua API Gateway đồng thời trao đổi bất đồng bộ qua Message Broker (RabbitMQ).
+Hệ thống bao gồm các phân hệ chính sau:
 
 ```text
-       ┌────────────────────────────────────────────────────────┐
-       │             Browser / POS / Admin (Frontend)           │
-       └───────────────────────────┬────────────────────────────┘
-                                   │
-                                   ▼
-                   ┌──────────────────────────────┐
-                   │     API Gateway (Cổng 8000)   │ <─── JWT verify tập trung
-                   └───────────────┬──────────────┘
-                                   │
-         ┌───────────────┬─────────┼─────────┬───────────────┐
-         ▼               ▼         ▼         ▼               ▼
-     [Cổng 8001]    [Cổng 8002] [Cổng 8003] [Cổng 8004]     [Cổng 8005]
-    ┌───────────┐  ┌───────────┐┌──────────┐┌───────────┐  ┌───────────┐
-    │ Identity  │  │  Catalog  ││  Order   ││    CMS    │  │Notification
-    │  Service  │  │  Service  ││ Service  ││  Service  │  │  Service  │
-    └─────┬─────┘  └─────┬─────┘└────┬─────┘└─────┬─────┘  └─────┬─────┘
-          │              │           │            │              │
-          └──────────────┼───────────┼────────────┼──────────────┘
-                         ▼           ▼            ▼
-                   ┌──────────────────────────────────────┐
-                   │    MySQL 8.0 (Mỗi service 1 schema)   │
-                   │    RabbitMQ (Truyền tin bất đồng bộ)   │
-                   └──────────────────────────────────────┘
+                               ┌─────────────────┐
+                               │  Client Browser │
+                               └────────┬────────┘
+                                        │ (HTTP/WS)
+                                        ▼
+                               ┌─────────────────┐
+                               │   API Gateway   │ (Port 8000)
+                               └────────┬────────┘
+                                        │ (Routing & Auth)
+         ┌──────────────┬───────────────┼───────────────┬──────────────┐
+         ▼              ▼               ▼               ▼              ▼
+   ┌───────────┐  ┌───────────┐   ┌───────────┐   ┌───────────┐  ┌───────────┐
+   │ Identity  │  │  Catalog  │   │   Order   │   │    CMS    │  │Notification│
+   │  Service  │  │  Service  │   │  Service  │   │  Service  │  │  Service  │
+   │(Port 8001)│  │(Port 8002)│   │(Port 8003)│   │(Port 8004)│  │(Port 8005)│
+   └───────────┘  └───────────┘   └───────────┘   └───────────┘  └───────────┘
 ```
 
 ### Bản đồ Cổng Dịch vụ & Cơ sở dữ liệu
@@ -45,7 +35,7 @@ Hệ thống được thiết kế theo mô hình Microservices phân lớp, gia
 | :--- | :---: | :--- | :--- |
 | **API Gateway** | `8000` | — | Định tuyến yêu cầu, kiểm tra JWT tập trung |
 | **Identity Service** | `8001` | `mg_identity` | Quản lý tài khoản, phân quyền, ca làm việc (Shift) |
-| **Catalog Service** | `8002` | `mg_catalog` | Quản lý sản phẩm, danh mục, kho hàng, nhà cung cấp |
+| **Catalog Service** | `8002` | `mg_catalog` | Quản lý sản phẩm, danh mục, tồn kho, nhà cung cấp |
 | **Order Service** | `8003` | `mg_order` | Quản lý giỏ hàng, đặt hàng (Checkout), hóa đơn, trả hàng |
 | **CMS Service** | `8004` | `mg_cms` | Quản lý tin tức, chương trình khuyến mãi, cấu hình cửa hàng |
 | **Notification Service** | `8005` | `mg_notification` | Gửi Email thông báo (Nodemailer), stub SMS |
@@ -65,7 +55,7 @@ Hệ thống được thiết kế theo mô hình Microservices phân lớp, gia
 
 1. **Clone dự án và truy cập thư mục gốc**:
    ```bash
-   git clone <URL_REPOSITOY_CỦA_NHÓM>
+   git clone <URL_REPOSITORY>
    cd "Minh Giang Pharmacy"
    ```
 
@@ -76,7 +66,7 @@ Hệ thống được thiết kế theo mô hình Microservices phân lớp, gia
    ```
    *(Bạn có thể mở tệp `.env` vừa tạo để thay đổi mã bảo mật `JWT_SECRET` hoặc cấu hình SMTP gửi email nếu cần).*
 
-3. **Khởi chạy hệ thống**: Có 3 cách đơn giản để chạy toàn bộ hệ thống (Database, Services và Frontend):
+3. **Khởi chạy hệ thống**: Có 3 cách đơn giản để chạy toàn bộ hệ thống (Database, Services và Giao diện):
 
    * **👉 Cách 1: Sử dụng phím tắt trong VS Code (Khuyên dùng)**
      Mở dự án bằng VS Code, sau đó nhấn tổ hợp phím:
@@ -89,7 +79,7 @@ Hệ thống được thiết kế theo mô hình Microservices phân lớp, gia
        ```bash
        ./local-menu.sh
        ```
-     - **Trên Windows:** Chạy trực tiếp qua Git Bash hoặc chạy [local-menu.bat](file:///Users/tangoctai/StudySpace/SOA.2026/Minh%20Giang%20Pharmacy/local-menu.bat) bằng Command Prompt.
+     - **Trên Windows:** Chạy trực tiếp qua Git Bash hoặc chạy `local-menu.bat` bằng Command Prompt.
 
    * **👉 Cách 3: Chạy trực tiếp bằng Docker Compose CLI**
      ```bash
@@ -110,7 +100,7 @@ Sau khi hệ thống khởi chạy thành công, frontend tĩnh được host t�
 
 ## 🧪 4. Chạy Kiểm Thử Tự Động (Integration Tests)
 
-Dự án đã tích hợp kịch bản kiểm thử hợp nhất [test.sh](file:///Users/tangoctai/StudySpace/SOA.2026/Minh%20Giang%20Pharmacy/test.sh) ở thư mục gốc giúp kiểm tra nhanh xem các API Backend có hoạt động ổn định hay không:
+Dự án đã tích hợp kịch bản kiểm thử hợp nhất `test.sh` ở thư mục gốc giúp kiểm tra nhanh xem các API Backend có hoạt động ổn định hay không:
 
 * **Chạy toàn bộ kiểm thử hệ thống**:
   ```bash
@@ -133,11 +123,9 @@ Dự án đã tích hợp kịch bản kiểm thử hợp nhất [test.sh](file:
 ```text
 Client (Web/Admin/POS) ────► API Gateway (Port 8000) ────► Microservices (Port 800x)
                          [Xác thực JWT Token]         [Nhận thông tin qua Header]
-                         - Giải mã JWT token          - x-user-id
-                         - Gắn quyền vào Header       - x-user-role
-                                                      - x-user-type
+                         - x-user-id, x-user-role, x-user-type
 ```
-*Tất cả các route công khai (Public Routes) như lấy danh sách sản phẩm, tin tức sẽ được Gateway cho qua trực tiếp. Đối với các route bảo mật, Gateway sẽ chặn lại, xác thực JWT và chuyển thông tin giải mã xuống các service con qua Custom Headers để xử lý tiếp.*
+Tất cả các route công khai (Public Routes) như lấy danh sách sản phẩm, tin tức sẽ được Gateway cho qua trực tiếp. Đối với các route bảo mật, Gateway sẽ chặn lại, xác thực JWT và chuyển thông tin giải mã xuống các service con qua Custom Headers để xử lý tiếp.
 
 ---
 
@@ -150,18 +138,16 @@ Client (Web/Admin/POS) ────► API Gateway (Port 8000) ────► M
 - **Git Commit Message**:
   - Định dạng: `<type>: <mô tả ngắn bằng tiếng Việt>`
   - Ví dụ: `feat: tích hợp api thanh toán hóa đơn` hoặc `fix: sửa lỗi query tồn kho`
-- **Quy tắc Code (Coding Conventions)**: Mọi API trả về định dạng JSON đều bắt buộc tuân thủ quy tắc có trường `{ success: true/false, data: ... }`. Đọc kĩ tài liệu chi tiết tại [docs/CODING_CONVENTIONS.md](file:///Users/tangoctai/StudySpace/SOA.2026/Minh%20Giang%20Pharmacy/docs/CODING_CONVENTIONS.md).
+- **Quy tắc Code & Bảo mật**: Chi tiết về cách viết code sạch và bảo mật, xem thêm tại [Quy ước lập trình](./markdown/huong-dan/quy-uoc-lap-trinh.md) và [Quy tắc bảo mật](./markdown/huong-dan/quy-tac-bao-mat.md).
 
 ---
 
 ## 📚 7. Mục Lục Tài Liệu Kỹ Thuật (Docs)
 
-Để tìm hiểu chi tiết hơn về từng phân hệ, vui lòng truy cập các tài liệu tương ứng nằm trong thư mục [docs/](file:///Users/tangoctai/StudySpace/SOA.2026/Minh%20Giang%20Pharmacy/docs):
+Tất cả tài liệu kỹ thuật chi tiết đã được chuyển về thư mục `/markdown` tại gốc dự án. Bạn có thể xem toàn bộ tại [Mục lục tài liệu](./markdown/00-muc-luc-tai-lieu.md) hoặc truy cập nhanh các mục sau:
 
-1. 🚀 **Hướng dẫn Thiết lập chi tiết**: [docs/SETUP.md](file:///Users/tangoctai/StudySpace/SOA.2026/Minh%20Giang%20Pharmacy/docs/SETUP.md) — Hướng dẫn cài đặt chi tiết trên Windows/Mac, sửa các lỗi cổng bị bận.
-2. 🔒 **Chính sách & Quy chuẩn Bảo mật**: [docs/SECURITY.md](file:///Users/tangoctai/StudySpace/SOA.2026/Minh%20Giang%20Pharmacy/docs/SECURITY.md) — Cách quản lý mã bảo mật, tránh rò rỉ file cấu hình `.env` lên Git.
-3. 📐 **Quy chuẩn Code & API**: [docs/CODING_CONVENTIONS.md](file:///Users/tangoctai/StudySpace/SOA.2026/Minh%20Giang%20Pharmacy/docs/CODING_CONVENTIONS.md) — Chi tiết về MySQL query patterns, soft delete, và định dạng JSON response.
-4. ⛓️ **Hướng dẫn sử dụng Git**: [docs/GIT_GUIDE.md](file:///Users/tangoctai/StudySpace/SOA.2026/Minh%20Giang%20Pharmacy/docs/GIT_GUIDE.md) — Lộ trình phối hợp kéo code, đẩy code và mở PR cho nhóm.
-5. 🤖 **Quy tắc làm việc với AI**: [docs/AI_RULES.md](file:///Users/tangoctai/StudySpace/SOA.2026/Minh%20Giang%20Pharmacy/docs/AI_RULES.md) — Định hướng khi sử dụng các mô hình AI hỗ trợ sinh code.
-6. 📋 **Danh sách Phân công Công việc**: [docs/tasks/TASK_ASSIGNMENTS.md](file:///Users/tangoctai/StudySpace/SOA.2026/Minh%20Giang%20Pharmacy/docs/tasks/TASK_ASSIGNMENTS.md) — Nhiệm vụ và phân rã các sprint cho từng thành viên.
-7. 🔌 **Bản đồ Ánh xạ API (API Mappings)**: [docs/api-mapping/](file:///Users/tangoctai/StudySpace/SOA.2026/Minh%20Giang%20Pharmacy/docs/api-mapping/) — Bản đồ mô tả UI HTML gọi API cụ thể nào ở Backend.
+1. 🚀 **Hướng dẫn cài đặt chi tiết**: [Hướng dẫn chạy local](./markdown/huong-dan/huong-dan-cai-dat-va-chay-local.md)
+2. 🔒 **Chính sách bảo mật**: [Quy tắc bảo mật](./markdown/huong-dan/quy-tac-bao-mat.md)
+3. 📐 **Quy chuẩn lập trình**: [Quy ước lập trình](./markdown/huong-dan/quy-uoc-lap-trinh.md)
+4. 💾 **Hướng dẫn Database**: [Cài đặt database](./markdown/co-so-du-lieu/huong-dan-cai-dat-database.md)
+5. 🔌 **Tài liệu API**: [Danh mục API Catalog](./markdown/api/catalog/api-catalog-hien-tai.md) | [Tài liệu API CMS](./markdown/dich-vu/cms/tai-lieu-api-cms-service.md)

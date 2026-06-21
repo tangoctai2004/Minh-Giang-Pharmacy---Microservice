@@ -174,6 +174,12 @@
             border-bottom: 1px dashed #e2e8f0;
             vertical-align: top;
         }
+        .suggestion-item {
+            transition: background-color 0.2s ease;
+        }
+        .suggestion-item:hover {
+            background-color: #f1f5f9 !important;
+        }
     </style>
 </head>
 
@@ -398,13 +404,28 @@
             </div>
             
             <div class="standard-modal-body" style="padding: 24px; max-height: calc(100vh - 200px); overflow-y: auto;">
+                <!-- Type Selection -->
+                <div style="margin-bottom: 20px; display: flex; gap: 24px; align-items: center; background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <span style="font-size:13px; font-weight:600; color:#475569;">Loại phiếu đổi trả:</span>
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500; cursor:pointer; color:#0f172a;">
+                        <input type="radio" name="returnType" value="customer" checked onchange="toggleReturnType()" style="width:16px; height:16px; accent-color:#4f46e5;">
+                        Khách hàng trả hàng
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500; cursor:pointer; color:#0f172a;">
+                        <input type="radio" name="returnType" value="supplier" onchange="toggleReturnType()" style="width:16px; height:16px; accent-color:#4f46e5;">
+                        Trả hàng cho Nhà cung cấp
+                    </label>
+                </div>
+
                 <!-- Step 1: Search Order -->
-                <div id="searchOrderSection" style="margin-bottom: 20px;">
-                    <label style="display:block; font-size:13px; font-weight:600; color:#475569; margin-bottom:8px;">Nhập Mã Đơn Hàng Gốc (POS hoặc Web)</label>
+                <div id="searchOrderSection" style="margin-bottom: 20px; position: relative;">
+                    <label id="lookupLabel" style="display:block; font-size:13px; font-weight:600; color:#475569; margin-bottom:8px;">Nhập Mã Đơn Hàng Gốc (POS hoặc Web)</label>
                     <div style="display:flex; gap:12px;">
-                        <input type="text" id="orderLookupCode" class="filter-control" placeholder="Ví dụ: POS-260610-1234 hoặc PH5-WEB-00010" style="flex:1; height:42px; padding: 0 14px; border:1px solid #cbd5e1; border-radius:8px;">
+                        <input type="text" id="orderLookupCode" class="filter-control" placeholder="Ví dụ: POS-260610-1234 hoặc PH5-WEB-00010" autocomplete="off" oninput="handleLookupInput(this.value)" style="flex:1; height:42px; padding: 0 14px; border:1px solid #cbd5e1; border-radius:8px;">
                         <button class="btn-primary" onclick="lookupOrder()" style="height:42px; padding: 0 20px;"><i class="fa-solid fa-magnifying-glass"></i> Tra cứu</button>
                     </div>
+                    <!-- Autocomplete Suggestions List -->
+                    <div id="lookupSuggestions" style="position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 1010; display: none; max-height: 200px; overflow-y: auto; margin-top: 4px;"></div>
                     <div id="lookupError" style="color:#ef4444; font-size:13px; margin-top:8px; display:none;"></div>
                 </div>
 
@@ -412,20 +433,28 @@
                 <div id="orderReturnDetailsSection" style="display:none; border-top:1px solid #e2e8f0; padding-top:20px;">
                     <div style="background:#f8fafc; border-radius:8px; padding:16px; margin-bottom:20px; display:grid; grid-template-columns: 1fr 1fr; gap:12px; font-size:13px;">
                         <div>
-                            <span style="color:#64748b; display:block;">Khách hàng:</span>
+                            <span id="lblCustName" style="color:#64748b; display:block;">Khách hàng:</span>
                             <strong id="retCustName" style="color:#0f172a;"></strong>
                         </div>
                         <div>
-                            <span style="color:#64748b; display:block;">Số điện thoại:</span>
+                            <span id="lblCustPhone" style="color:#64748b; display:block;">Số điện thoại:</span>
                             <strong id="retCustPhone" style="color:#0f172a;"></strong>
                         </div>
                         <div>
-                            <span style="color:#64748b; display:block;">Kênh bán hàng:</span>
+                            <span id="lblOrderChannel" style="color:#64748b; display:block;">Kênh bán hàng:</span>
                             <strong id="retOrderChannel" style="color:#0f172a; text-transform: uppercase;"></strong>
                         </div>
                         <div>
-                            <span style="color:#64748b; display:block;">Tổng giá trị đơn:</span>
+                            <span id="lblOrderTotal" style="color:#64748b; display:block;">Tổng giá trị đơn:</span>
                             <strong id="retOrderTotal" style="color:#0f172a;"></strong>
+                        </div>
+                        <div>
+                            <span style="color:#64748b; display:block;">Đã hoàn trả trước đó:</span>
+                            <strong id="retTotalReturned" style="color:#b45309;">0₫</strong>
+                        </div>
+                        <div>
+                            <span style="color:#64748b; display:block;">Còn lại có thể hoàn tối đa:</span>
+                            <strong id="retMaxRefundAllowed" style="color:#10b981;">0₫</strong>
                         </div>
                     </div>
 
@@ -436,7 +465,7 @@
                                 <tr>
                                     <th width="8%">Chọn</th>
                                     <th width="47%">Tên sản phẩm</th>
-                                    <th width="20%" style="text-align:center;">SL mua</th>
+                                    <th id="lblQtyPurchased" width="20%" style="text-align:center;">SL mua</th>
                                     <th width="25%" style="text-align:center;">SL trả</th>
                                 </tr>
                             </thead>
@@ -467,9 +496,19 @@
                         </div>
                     </div>
 
-                    <div style="background:#fffbeb; border:1px solid #fef3c7; border-radius:8px; padding:16px; text-align:right;">
-                        <span style="font-size:13px; color:#b45309;">Ước tính giá trị hoàn lại:</span>
-                        <h3 id="estimatedRefundAmt" style="font-size:24px; color:#ef4444; margin:4px 0 0 0; font-weight:700;">0₫</h3>
+                    <div style="background:#fffbeb; border:1px solid #fef3c7; border-radius:8px; padding:16px; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <span style="font-size:13px; color:#b45309; display:block; text-align:left;">Ước tính giá trị hoàn trả: <strong id="estimatedRefundAmt" style="color:#ef4444;">0₫</strong></span>
+                            <span style="font-size:11px; color:#6b7280; display:block; text-align:left; margin-top:2px;">(Bạn có thể chỉnh sửa số tiền hoàn thực tế bên cạnh)</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:13px; font-weight:600; color:#475569;">Tiền hoàn thực tế:</span>
+                            <input type="number" id="actualRefundAmtInput" value="0" min="0" oninput="validateActualRefund()" style="font-size:18px; color:#ef4444; font-weight:700; width:130px; text-align:right; border:1px solid #cbd5e1; border-radius:6px; padding:6px 10px;">
+                            <span style="font-size:16px; color:#ef4444; font-weight:700;">đ</span>
+                        </div>
+                    </div>
+                    <div id="refundAmtWarning" style="color:#ef4444; font-size:12px; text-align:right; margin-top:6px; display:none;">
+                        Cảnh báo: Tiền hoàn thực tế vượt quá số tiền còn lại có thể hoàn!
                     </div>
                 </div>
             </div>
@@ -716,6 +755,12 @@
 
                 if (response.success && response.data) {
                     var record = response.data;
+                    var isSupplier = record.order_channel === 'supplier';
+                    var approvalLabel = isSupplier ? 'Duyệt & Xuất Kho' : 'Duyệt & Nhập Lại Kho';
+                    var statusLabel = isSupplier ? 'Đã hoàn thành (Xuất kho)' : 'Đã hoàn thành (Nhập kho)';
+                    var approvalConfirmMsg = isSupplier 
+                        ? `Bạn có chắc chắn muốn DUYỆT phiếu trả hàng ${returnCode}?\nHành động này sẽ trừ tồn kho và giảm công nợ NCC.`
+                        : `Bạn có chắc chắn muốn DUYỆT phiếu trả hàng ${returnCode}?\nHành động này sẽ cộng lại tồn kho thuốc và xác nhận hoàn tiền.`;
                     
                     if (record.status === 'pending') {
                         statusBadge.className = 'badge';
@@ -724,7 +769,7 @@
                         
                         footer.innerHTML = `
                             <button class="btn-secondary" style="flex:1; border-color:#cbd5e1; color:#ef4444;" onclick="processReject('${record.return_code}')">Từ chối duyệt</button>
-                            <button class="btn-primary" style="flex:2; background:#10b981; border-color:#10b981;" onclick="processApproval('${record.return_code}')">Duyệt & Nhập Lại Kho</button>
+                            <button class="btn-primary" style="flex:2; background:#10b981; border-color:#10b981;" onclick="processApproval('${record.return_code}', \`${approvalConfirmMsg}\`)">${approvalLabel}</button>
                         `;
                     } else if (record.status === 'rejected') {
                         statusBadge.className = 'badge';
@@ -737,14 +782,14 @@
                     } else {
                         statusBadge.className = 'badge';
                         statusBadge.style.cssText = 'background: #dcfce7; color: #15803d; margin-top: 6px; display: inline-block;';
-                        statusBadge.innerHTML = '<i class="fa-solid fa-check"></i> Đã hoàn thành (Nhập kho)';
+                        statusBadge.innerHTML = `<i class="fa-solid fa-check"></i> ${statusLabel}`;
                         
                         footer.innerHTML = `
                             <button class="btn-secondary" style="flex:1;" onclick="closeRMADetail()">Đóng</button>
                         `;
                     }
 
-                    var custName = record.customer_name || 'Khách vãng lai';
+                    var custName = record.customer_name || (isSupplier ? 'Nhà cung cấp' : 'Khách vãng lai');
                     var custPhone = record.customer_phone ? ` (${record.customer_phone})` : '';
                     
                     var itemsHtml = '';
@@ -766,17 +811,24 @@
                         itemsHtml = `<tr><td colspan="3" style="text-align:center; color:#94a3b8;">Không có sản phẩm</td></tr>`;
                     }
 
+                    var labelOrderCode = isSupplier ? 'Mã Lô Hàng' : 'Mã Đơn Hàng';
+                    var labelCust = isSupplier ? 'Nhà Cung Cấp' : 'Khách Hàng';
+                    var labelTitle = isSupplier ? 'Thông Tin Lô Nhập Gốc' : 'Thông Tin Đơn Gốc';
+                    var labelQtyReturnedHeader = isSupplier ? 'SL Xuất' : 'SL Trả';
+                    var labelRefundHeader = isSupplier ? 'Hoàn Tiền (Giảm nợ)' : 'Hoàn Tiền';
+                    var labelRefundTotal = isSupplier ? 'Tổng Tiền NCC Hoàn (Giảm nợ):' : 'Tổng Tiền Khách Rút / Trả Lại Hàng:';
+
                     body.innerHTML = `
-                        <h4 style="font-size: 14px; margin-bottom: 12px; color: #1e293b;">Thông Tin Đơn Gốc</h4>
+                        <h4 style="font-size: 14px; margin-bottom: 12px; color: #1e293b;">${labelTitle}</h4>
                         <div class="rma-info-block">
                             <div class="rma-info-row">
-                                <span class="rma-info-label">Mã Đơn Hàng</span>
-                                <span class="rma-info-value" style="color: #4f46e5; font-weight:600; cursor:pointer;" onclick="viewOrder('${record.order_code}')">
+                                <span class="rma-info-label">${labelOrderCode}</span>
+                                <span class="rma-info-value" style="color: #4f46e5; font-weight:600; cursor:pointer;" onclick="viewOrder('${record.order_code}', '${record.order_channel}')">
                                     ${record.order_code} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:10px;"></i>
                                 </span>
                             </div>
                             <div class="rma-info-row">
-                                <span class="rma-info-label">Khách Hàng</span>
+                                <span class="rma-info-label">${labelCust}</span>
                                 <span class="rma-info-value">${custName}${custPhone}</span>
                             </div>
                             <div class="rma-info-row">
@@ -794,8 +846,8 @@
                             <thead>
                                 <tr>
                                     <th>Sản phẩm bị trả</th>
-                                    <th style="text-align:center;">SL Trả</th>
-                                    <th style="text-align:right;">Hoàn Tiền</th>
+                                    <th style="text-align:center;">${labelQtyReturnedHeader}</th>
+                                    <th style="text-align:right;">${labelRefundHeader}</th>
                                 </tr>
                             </thead>
                             <tbody id="rmaItemsTbody">
@@ -804,7 +856,7 @@
                         </table>
 
                         <div style="margin-top: 24px; text-align: right; border-top: 1px solid #e2e8f0; padding-top: 16px;">
-                            <p style="font-size:13px; color:#64748b;">Tổng Tiền Khách Rút / Trả Lại Hàng:</p>
+                            <p style="font-size:13px; color:#64748b;">${labelRefundTotal}</p>
                             <h3 style="font-size:22px; color:#ef4444; margin-top:4px;">${formatVND(record.refund_amount)}</h3>
                         </div>
                     `;
@@ -822,8 +874,9 @@
             document.getElementById('rmaPanel').classList.remove('active');
         }
 
-        async function processApproval(returnCode) {
-            if (!confirm(`Bạn có chắc chắn muốn DUYỆT phiếu trả hàng ${returnCode}?\nHành động này sẽ cộng lại tồn kho thuốc và xác nhận hoàn tiền.`)) return;
+        async function processApproval(returnCode, confirmMsg) {
+            var msg = confirmMsg || `Bạn có chắc chắn muốn DUYỆT phiếu trả hàng ${returnCode}?\nHành động này sẽ cộng lại tồn kho thuốc và xác nhận hoàn tiền.`;
+            if (!confirm(msg)) return;
             try {
                 var res = await fetch(`${API_BASE}/${returnCode}/status`, {
                     method: 'PUT',
@@ -876,15 +929,126 @@
             window.location.href = `orders.html?search=${orderCode}`;
         }
 
-        function openNewRmaModal() {
-            document.getElementById('orderLookupCode').value = '';
+        function getSelectedReturnType() {
+            var selectedRadio = document.querySelector('input[name="returnType"]:checked');
+            return selectedRadio ? selectedRadio.value : 'customer';
+        }
+
+        function toggleReturnType() {
+            var type = getSelectedReturnType();
+            var label = document.getElementById('lookupLabel');
+            var input = document.getElementById('orderLookupCode');
+            
+            input.value = '';
             document.getElementById('lookupError').style.display = 'none';
+            document.getElementById('lookupSuggestions').style.display = 'none';
             document.getElementById('orderReturnDetailsSection').style.display = 'none';
             document.getElementById('orderItemsLookupTbody').innerHTML = '';
             document.getElementById('estimatedRefundAmt').textContent = formatVND(0);
+            document.getElementById('actualRefundAmtInput').value = 0;
+            document.getElementById('refundAmtWarning').style.display = 'none';
             document.getElementById('btnSubmitReturn').disabled = true;
             activeLookupOrder = null;
 
+            if (type === 'supplier') {
+                label.textContent = 'Nhập Mã Lô Nhập Hàng Gốc (PO-xxxxx)';
+                input.placeholder = 'Ví dụ: PO-260621-1234';
+                document.getElementById('lblCustName').textContent = 'Nhà cung cấp:';
+                document.getElementById('lblCustPhone').textContent = 'Người giao hàng:';
+                document.getElementById('lblOrderChannel').textContent = 'Kênh nhập kho:';
+                document.getElementById('lblOrderTotal').textContent = 'Tổng giá trị lô:';
+                document.getElementById('lblQtyPurchased').textContent = 'SL nhận';
+            } else {
+                label.textContent = 'Nhập Mã Đơn Hàng Gốc (POS hoặc Web)';
+                input.placeholder = 'Ví dụ: POS-260610-1234 hoặc PH5-WEB-00010';
+                document.getElementById('lblCustName').textContent = 'Khách hàng:';
+                document.getElementById('lblCustPhone').textContent = 'Số điện thoại:';
+                document.getElementById('lblOrderChannel').textContent = 'Kênh bán hàng:';
+                document.getElementById('lblOrderTotal').textContent = 'Tổng giá trị đơn:';
+                document.getElementById('lblQtyPurchased').textContent = 'SL mua';
+            }
+        }
+
+        var lookupDebounceTimer;
+        function handleLookupInput(val) {
+            clearTimeout(lookupDebounceTimer);
+            var suggestionsDiv = document.getElementById('lookupSuggestions');
+            val = val.trim();
+            if (!val) {
+                suggestionsDiv.style.display = 'none';
+                return;
+            }
+
+            lookupDebounceTimer = setTimeout(async () => {
+                var type = getSelectedReturnType();
+                var url = '';
+                if (type === 'supplier') {
+                    var apiBaseUrl = ORDERS_API_BASE.replace('/order/orders', '/catalog/batches');
+                    url = `${apiBaseUrl}?status=completed&q=${encodeURIComponent(val)}`;
+                } else {
+                    url = `${ORDERS_API_BASE}?search=${encodeURIComponent(val)}&limit=10`;
+                }
+
+                try {
+                    var res = await fetch(url, { headers: getAuthHeader() });
+                    var response = await res.json();
+                    if (response.success && response.data && response.data.length > 0) {
+                        var list = response.data;
+                        var html = '';
+                        list.forEach(item => {
+                            if (type === 'supplier') {
+                                html += `
+                                    <div onclick="selectSuggestion('${item.batch_code}')" style="padding: 10px 14px; border-bottom: 1px solid #f1f5f9; cursor: pointer;" class="suggestion-item">
+                                        <strong style="color: #4f46e5;">${item.batch_code}</strong>
+                                        <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
+                                            NCC: ${item.supplier_name || 'Chưa rõ'} | Giá trị: ${formatVND(item.total_amount)}
+                                        </div>
+                                    </div>
+                                `;
+                            } else {
+                                html += `
+                                    <div onclick="selectSuggestion('${item.order_code}')" style="padding: 10px 14px; border-bottom: 1px solid #f1f5f9; cursor: pointer;" class="suggestion-item">
+                                        <strong style="color: #4f46e5;">${item.order_code}</strong>
+                                        <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
+                                            KH: ${item.customer_name || 'Khách vãng lai'} | Thực trả: ${formatVND(item.total_amount)}
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        });
+                        suggestionsDiv.innerHTML = html;
+                        suggestionsDiv.style.display = 'block';
+                    } else {
+                        suggestionsDiv.style.display = 'none';
+                    }
+                } catch (e) {
+                    console.error('Lookup suggestions error:', e);
+                    suggestionsDiv.style.display = 'none';
+                }
+            }, 300);
+        }
+
+        function selectSuggestion(code) {
+            document.getElementById('orderLookupCode').value = code;
+            document.getElementById('lookupSuggestions').style.display = 'none';
+            lookupOrder();
+        }
+
+        // Hide suggestions on click outside
+        document.addEventListener('click', (e) => {
+            var suggestionsDiv = document.getElementById('lookupSuggestions');
+            if (suggestionsDiv && !document.getElementById('searchOrderSection').contains(e.target)) {
+                suggestionsDiv.style.display = 'none';
+            }
+        });
+
+        function openNewRmaModal() {
+            // Reset returnType radio buttons to customer
+            var customerRadio = document.querySelector('input[name="returnType"][value="customer"]');
+            if (customerRadio) {
+                customerRadio.checked = true;
+            }
+            toggleReturnType();
             document.getElementById('createReturnModal').classList.add('open');
         }
 
@@ -902,7 +1066,7 @@
             code = code.replace(/^#+/, '').trim();
 
             if (!code) {
-                errorDiv.textContent = 'Vui lòng nhập mã đơn hàng.';
+                errorDiv.textContent = 'Vui lòng nhập mã để tra cứu.';
                 errorDiv.style.display = 'block';
                 return;
             }
@@ -911,7 +1075,29 @@
             detailsSection.style.display = 'none';
 
             try {
-                var res = await fetch(`${ORDERS_API_BASE}/${encodeURIComponent(code)}`, {
+                var isSupplier = getSelectedReturnType() === 'supplier';
+                var url = '';
+                var searchData = null;
+
+                if (isSupplier) {
+                    var apiBaseUrl = ORDERS_API_BASE.replace('/order/orders', '/catalog/batches');
+                    var searchRes = await fetch(`${apiBaseUrl}?q=${encodeURIComponent(code)}`, {
+                        headers: getAuthHeader()
+                    });
+                    searchData = await searchRes.json();
+                    if (searchData.success && searchData.data && searchData.data.length > 0) {
+                        var batchId = searchData.data[0].id;
+                        url = `${apiBaseUrl}/${batchId}`;
+                    } else {
+                        errorDiv.textContent = 'Không tìm thấy lô hàng nhập tương ứng.';
+                        errorDiv.style.display = 'block';
+                        return;
+                    }
+                } else {
+                    url = `${ORDERS_API_BASE}/${encodeURIComponent(code)}`;
+                }
+
+                var res = await fetch(url, {
                     headers: getAuthHeader()
                 });
                 var response = await res.json();
@@ -919,16 +1105,60 @@
                 if (response.success && response.data && !Array.isArray(response.data)) {
                     activeLookupOrder = response.data;
                     
-                    document.getElementById('retCustName').textContent = activeLookupOrder.customer_name || 'Khách vãng lai';
-                    document.getElementById('retCustPhone').textContent = activeLookupOrder.customer_phone || 'Mua trực tiếp';
-                    document.getElementById('retOrderChannel').textContent = activeLookupOrder.order_channel;
+                    if (isSupplier) {
+                        activeLookupOrder.supplier_name = searchData.data[0].supplier_name;
+                        activeLookupOrder.customer_name = activeLookupOrder.supplier_name;
+                        activeLookupOrder.customer_phone = activeLookupOrder.delivery_person || 'Không có';
+                        activeLookupOrder.order_channel = 'supplier';
+                        
+                        var totalReturned = 0;
+                        try {
+                            var retRes = await fetch(`${API_BASE}?channel=supplier&search=${encodeURIComponent(code)}`, {
+                                headers: getAuthHeader()
+                            });
+                            var retData = await retRes.json();
+                            if (retData.success && retData.data) {
+                                retData.data.forEach(r => {
+                                    if (r.status !== 'rejected') {
+                                        totalReturned += Number(r.refund_amount || 0);
+                                    }
+                                });
+                            }
+                        } catch (err) {
+                            console.error('Failed to load supplier return stats:', err);
+                        }
+                        activeLookupOrder.total_returned = totalReturned;
+                    }
+                    
+                    document.getElementById('retCustName').textContent = isSupplier ? (activeLookupOrder.supplier_name || 'Nhà cung cấp') : (activeLookupOrder.customer_name || 'Khách vãng lai');
+                    document.getElementById('retCustPhone').textContent = isSupplier ? (activeLookupOrder.delivery_person || 'Không có') : (activeLookupOrder.customer_phone || 'Mua trực tiếp');
+                    document.getElementById('retOrderChannel').textContent = isSupplier ? 'Nhập NCC' : activeLookupOrder.order_channel;
                     document.getElementById('retOrderTotal').textContent = formatVND(activeLookupOrder.total_amount);
+                    
+                    var totalReturnedAmt = Number(activeLookupOrder.total_returned || 0);
+                    var maxRefundAllowed = Math.max(0, Number(activeLookupOrder.total_amount) - totalReturnedAmt);
+                    if (maxRefundAllowed <= 0) {
+                        errorDiv.textContent = isSupplier 
+                            ? 'Lô hàng này đã được hoàn trả toàn bộ, không thể tạo thêm phiếu.' 
+                            : 'Đơn hàng này đã được hoàn trả toàn bộ, không thể tạo thêm phiếu.';
+                        errorDiv.style.display = 'block';
+                        detailsSection.style.display = 'none';
+                        return;
+                    }
+                    document.getElementById('retTotalReturned').textContent = formatVND(totalReturnedAmt);
+                    document.getElementById('retMaxRefundAllowed').textContent = formatVND(maxRefundAllowed);
 
                     var tbody = document.getElementById('orderItemsLookupTbody');
                     tbody.innerHTML = '';
 
                     if (activeLookupOrder.items && activeLookupOrder.items.length > 0) {
                         activeLookupOrder.items.forEach(item => {
+                            var unitPrice = isSupplier ? item.cost_price : item.unit_price;
+                            var maxQty = isSupplier ? item.quantity_remaining : item.quantity;
+                            var maxQtyLabel = isSupplier ? `Tồn hiện tại lô: ${item.quantity_remaining}` : `Đã mua: ${item.quantity}`;
+                            var displayQty = isSupplier ? item.quantity_received : item.quantity;
+                            var unitName = isSupplier ? (item.base_unit || 'Hộp') : (item.unit_name || 'Hộp');
+
                             tbody.innerHTML += `
                                 <tr>
                                     <td style="text-align:center;">
@@ -936,23 +1166,23 @@
                                     </td>
                                     <td>
                                         <div style="font-weight:600; color:#1e293b;">${item.product_name}</div>
-                                        <div style="font-size:11px; color:#64748b;">Đơn giá: ${formatVND(item.unit_price)}</div>
+                                        <div style="font-size:11px; color:#64748b;">Đơn giá: ${formatVND(unitPrice)} | <span style="color:#d97706; font-weight:500;">${maxQtyLabel}</span></div>
                                     </td>
-                                    <td style="text-align:center; font-weight:500;">${item.quantity} ${item.unit_name || 'Hộp'}</td>
+                                    <td style="text-align:center; font-weight:500;">${displayQty} ${unitName}</td>
                                     <td style="text-align:center;">
-                                        <input type="number" id="qtyToReturn_${item.id}" min="1" max="${item.quantity}" value="1" oninput="validateAndRecalculate(${item.id}, ${item.quantity})" style="width:60px; height:32px; border:1px solid #cbd5e1; border-radius:4px; text-align:center; padding:0 4px;">
+                                        <input type="number" id="qtyToReturn_${item.id}" min="1" max="${maxQty}" value="1" oninput="validateAndRecalculate(${item.id}, ${maxQty})" style="width:60px; height:32px; border:1px solid #cbd5e1; border-radius:4px; text-align:center; padding:0 4px;">
                                     </td>
                                 </tr>
                             `;
                         });
                     } else {
-                        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#94a3b8;">Đơn hàng không có sản phẩm nào.</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#94a3b8;">Đơn hàng/lô hàng không có sản phẩm nào.</td></tr>`;
                     }
 
                     detailsSection.style.display = 'block';
                     recalculateReturnTotal();
                 } else {
-                    errorDiv.textContent = response.message || 'Không tìm thấy đơn hàng tương ứng.';
+                    errorDiv.textContent = response.message || 'Không tìm thấy đơn hàng/lô hàng tương ứng.';
                     errorDiv.style.display = 'block';
                 }
             } catch (e) {
@@ -978,6 +1208,7 @@
             
             var totalRefund = 0;
             var checkedAny = false;
+            var isSupplier = getSelectedReturnType() === 'supplier';
 
             var checkboxes = document.querySelectorAll('input[name="returnItemCheck"]:checked');
             checkboxes.forEach(cb => {
@@ -987,12 +1218,41 @@
                 if (item) {
                     var inputQty = document.getElementById(`qtyToReturn_${orderItemId}`);
                     var qty = parseInt(inputQty.value) || 1;
-                    totalRefund += qty * item.unit_price;
+                    var price = isSupplier ? item.cost_price : item.unit_price;
+                    totalRefund += qty * price;
                 }
             });
 
             document.getElementById('estimatedRefundAmt').textContent = formatVND(totalRefund);
+            
+            var totalReturned = Number(activeLookupOrder.total_returned || 0);
+            var maxRefundAllowed = Math.max(0, Number(activeLookupOrder.total_amount) - totalReturned);
+            document.getElementById('actualRefundAmtInput').value = Math.min(totalRefund, maxRefundAllowed);
+
+            validateActualRefund();
             document.getElementById('btnSubmitReturn').disabled = !checkedAny;
+        }
+
+        function validateActualRefund() {
+            if (!activeLookupOrder) return;
+            var input = document.getElementById('actualRefundAmtInput');
+            var val = parseFloat(input.value) || 0;
+            
+            var totalReturned = Number(activeLookupOrder.total_returned || 0);
+            var maxRefundAllowed = Math.max(0, Number(activeLookupOrder.total_amount) - totalReturned);
+            
+            var warning = document.getElementById('refundAmtWarning');
+            var btnSubmit = document.getElementById('btnSubmitReturn');
+            
+            if (val > maxRefundAllowed) {
+                warning.style.display = 'block';
+                warning.textContent = `Cảnh báo: Tiền hoàn thực tế vượt quá số tiền còn lại có thể hoàn (Tối đa: ${formatVND(maxRefundAllowed)})!`;
+                btnSubmit.disabled = true;
+            } else {
+                warning.style.display = 'none';
+                var checkedAny = document.querySelectorAll('input[name="returnItemCheck"]:checked').length > 0;
+                btnSubmit.disabled = !checkedAny;
+            }
         }
 
         async function submitReturnRequest() {
@@ -1005,8 +1265,9 @@
             var reason = document.getElementById('returnReason').value;
             var refundMethod = document.getElementById('returnRefundMethod').value;
             
-            var refundAmount = 0;
+            var refundAmount = parseFloat(document.getElementById('actualRefundAmtInput').value) || 0;
             var items = [];
+            var isSupplier = getSelectedReturnType() === 'supplier';
 
             var checkboxes = document.querySelectorAll('input[name="returnItemCheck"]:checked');
             checkboxes.forEach(cb => {
@@ -1015,7 +1276,6 @@
                 if (item) {
                     var inputQty = document.getElementById(`qtyToReturn_${orderItemId}`);
                     var qty = parseInt(inputQty.value) || 1;
-                    refundAmount += qty * item.unit_price;
                     items.push({
                         order_item_id: orderItemId,
                         quantity: qty
@@ -1025,7 +1285,7 @@
 
             var body = {
                 order_id: activeLookupOrder.id,
-                order_channel: activeLookupOrder.order_channel,
+                order_channel: isSupplier ? 'supplier' : activeLookupOrder.order_channel,
                 reason,
                 refund_method: refundMethod,
                 refund_amount: refundAmount,

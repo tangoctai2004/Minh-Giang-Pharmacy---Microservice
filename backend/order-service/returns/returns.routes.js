@@ -9,16 +9,40 @@ router.post('/', async (req, res) => {
     try {
         const { order_id, reason, items, order_channel, refund_amount, refund_method } = req.body;
         
-        // 1. Kiểm tra đơn hàng có tồn tại không
-        const [[order]] = await pool.query('SELECT total_amount, discount_amount, subtotal FROM orders WHERE id = ? AND is_active = 1', [order_id]);
-        if (!order) {
-            return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
+        let total_amount = 0;
+        let batch = null;
+
+        if (order_channel === 'supplier') {
+            const { callInternalService, CATALOG_SERVICE_URL } = require('../utils/internalApi');
+            const batchRes = await callInternalService(`${CATALOG_SERVICE_URL}/batches/${order_id}`);
+            if (!batchRes.ok) {
+                return res.status(404).json({ success: false, message: 'Không tìm thấy thông tin lô hàng nhập gốc' });
+            }
+            const batchData = await batchRes.json();
+            if (!batchData.success || !batchData.data) {
+                return res.status(404).json({ success: false, message: 'Không tìm thấy thông tin lô hàng nhập gốc' });
+            }
+            batch = batchData.data;
+            total_amount = Number(batch.total_amount || 0);
+        } else {
+            // 1. Kiểm tra đơn hàng có tồn tại không
+            const [[order]] = await pool.query('SELECT total_amount, discount_amount, subtotal FROM orders WHERE id = ? AND is_active = 1', [order_id]);
+            if (!order) {
+                return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
+            }
+            total_amount = Number(order.total_amount || 0);
         }
 
         // 2. Kiểm tra tổng số tiền hoàn trả
-        const [[returnedSum]] = await pool.query("SELECT SUM(refund_amount) AS total_returned FROM returns WHERE order_id = ? AND status != 'rejected' AND is_active = 1", [order_id]);
+        const [[returnedSum]] = await pool.query(
+            "SELECT SUM(refund_amount) AS total_returned FROM returns WHERE order_id = ? AND order_channel = ? AND status != 'rejected' AND is_active = 1", 
+            [order_id, order_channel || 'pos']
+        );
         const currentReturned = Number(returnedSum?.total_returned || 0);
-        const maxRefundAllowed = Number(order.total_amount) - currentReturned;
+        const maxRefundAllowed = total_amount - currentReturned;
+        if (maxRefundAllowed <= 0) {
+            return res.status(400).json({ success: false, message: 'Đơn hàng/lô hàng này đã được hoàn trả toàn bộ, không thể tạo thêm yêu cầu đổi trả.' });
+        }
         if (Number(refund_amount) > maxRefundAllowed) {
             return res.status(400).json({ success: false, message: `Tiền hoàn trả không được vượt quá số tiền còn lại có thể hoàn (Tối đa: ${maxRefundAllowed}đ)` });
         }
@@ -26,15 +50,34 @@ router.post('/', async (req, res) => {
         // 3. Kiểm tra số lượng từng item trả lại
         if (items && items.length > 0) {
             for (const item of items) {
-                const [[orderItem]] = await pool.query('SELECT product_name, quantity FROM order_items WHERE id = ? AND order_id = ? AND is_active = 1', [item.order_item_id, order_id]);
-                if (!orderItem) {
-                    return res.status(400).json({ success: false, message: `Không tìm thấy sản phẩm trong chi tiết đơn hàng` });
-                }
-                const [[alreadyReturned]] = await pool.query("SELECT SUM(quantity_returned) AS qty FROM return_items ri JOIN returns r ON ri.return_id = r.id WHERE ri.order_item_id = ? AND r.status != 'rejected' AND ri.is_active = 1 AND r.is_active = 1", [item.order_item_id]);
-                const currentReturnedQty = Number(alreadyReturned?.qty || 0);
-                const maxQtyAllowed = Number(orderItem.quantity) - currentReturnedQty;
-                if (Number(item.quantity) > maxQtyAllowed) {
-                    return res.status(400).json({ success: false, message: `Số lượng trả lại sản phẩm "${orderItem.product_name}" không được vượt quá số lượng đã mua còn lại (Tối đa: ${maxQtyAllowed})` });
+                if (order_channel === 'supplier') {
+                    const batchItem = batch.items.find(it => it.id === item.order_item_id);
+                    if (!batchItem) {
+                        return res.status(400).json({ success: false, message: `Không tìm thấy sản phẩm trong chi tiết lô hàng nhập` });
+                    }
+                    const [[alreadyReturned]] = await pool.query(
+                        "SELECT SUM(quantity_returned) AS qty FROM return_items ri JOIN returns r ON ri.return_id = r.id WHERE ri.order_item_id = ? AND r.order_channel = 'supplier' AND r.status != 'rejected' AND ri.is_active = 1 AND r.is_active = 1",
+                        [item.order_item_id]
+                    );
+                    const currentReturnedQty = Number(alreadyReturned?.qty || 0);
+                    const maxQtyAllowed = Number(batchItem.quantity_received) - currentReturnedQty;
+                    if (Number(item.quantity) > maxQtyAllowed) {
+                        return res.status(400).json({ success: false, message: `Số lượng trả lại sản phẩm "${batchItem.product_name}" không được vượt quá số lượng còn lại của lô hàng (Tối đa: ${maxQtyAllowed})` });
+                    }
+                } else {
+                    const [[orderItem]] = await pool.query('SELECT product_name, quantity FROM order_items WHERE id = ? AND order_id = ? AND is_active = 1', [item.order_item_id, order_id]);
+                    if (!orderItem) {
+                        return res.status(400).json({ success: false, message: `Không tìm thấy sản phẩm trong chi tiết đơn hàng` });
+                    }
+                    const [[alreadyReturned]] = await pool.query(
+                        "SELECT SUM(quantity_returned) AS qty FROM return_items ri JOIN returns r ON ri.return_id = r.id WHERE ri.order_item_id = ? AND r.order_channel != 'supplier' AND r.status != 'rejected' AND ri.is_active = 1 AND r.is_active = 1",
+                        [item.order_item_id]
+                    );
+                    const currentReturnedQty = Number(alreadyReturned?.qty || 0);
+                    const maxQtyAllowed = Number(orderItem.quantity) - currentReturnedQty;
+                    if (Number(item.quantity) > maxQtyAllowed) {
+                        return res.status(400).json({ success: false, message: `Số lượng trả lại sản phẩm "${orderItem.product_name}" không được vượt quá số lượng đã mua còn lại (Tối đa: ${maxQtyAllowed})` });
+                    }
                 }
             }
         }
@@ -105,6 +148,11 @@ router.get('/', async (req, res) => {
         `;
         let params = [];
 
+        if (req.userType === 'customer') {
+            query += ' AND o.customer_id = ?';
+            params.push(req.userId);
+        }
+
         if (channel) {
             query += ' AND r.order_channel = ?';
             params.push(channel);
@@ -136,6 +184,47 @@ router.get('/', async (req, res) => {
         params.push(parseInt(limit), parseInt(offset));
 
         const [returns] = await pool.query(query, params);
+
+        // Enrich supplier returns with supplier name and batch code from catalog-service
+        const supplierReturns = returns.filter(r => r.order_channel === 'supplier');
+        if (supplierReturns.length > 0) {
+            try {
+                const { callInternalService, CATALOG_SERVICE_URL } = require('../utils/internalApi');
+                const uniqueBatchIds = [...new Set(supplierReturns.map(r => r.order_id))];
+                const batchPromises = uniqueBatchIds.map(async (id) => {
+                    const res = await callInternalService(`${CATALOG_SERVICE_URL}/batches/${id}`);
+                    if (res.ok) {
+                        const resData = await res.json();
+                        return { id, data: resData.data };
+                    }
+                    return { id, data: null };
+                });
+                const batchResults = await Promise.all(batchPromises);
+                const batchMap = {};
+                batchResults.forEach(r => {
+                    if (r.data) batchMap[r.id] = r.data;
+                });
+
+                const supplierRes = await callInternalService(`${CATALOG_SERVICE_URL}/suppliers?limit=100`);
+                let suppliers = [];
+                if (supplierRes.ok) {
+                    const supData = await supplierRes.json();
+                    suppliers = supData.data || [];
+                }
+
+                supplierReturns.forEach(r => {
+                    const batch = batchMap[r.order_id];
+                    if (batch) {
+                        r.order_code = batch.batch_code;
+                        const supplier = suppliers.find(s => s.id === batch.supplier_id);
+                        r.customer_name = supplier ? supplier.name : `Nhà cung cấp #${batch.supplier_id}`;
+                        r.customer_phone = supplier ? supplier.phone : '';
+                    }
+                });
+            } catch (err) {
+                console.error('Enrich supplier returns error:', err);
+            }
+        }
 
         res.json({
             success: true,
@@ -169,12 +258,61 @@ router.get('/:id', async (req, res) => {
 
         const returnRecord = returns[0];
 
-        const [items] = await pool.query(`
-            SELECT ri.*, oi.product_name, oi.unit_price, oi.unit_name
-            FROM return_items ri
-            JOIN order_items oi ON ri.order_item_id = oi.id
-            WHERE ri.return_id = ? AND ri.is_active = 1
-        `, [returnRecord.id]);
+        if (req.userType === 'customer') {
+            const [[orderCheck]] = await pool.query('SELECT customer_id FROM orders WHERE id = ?', [returnRecord.order_id]);
+            if (!orderCheck || orderCheck.customer_id !== req.userId) {
+                return res.status(403).json({ success: false, message: 'Bạn không có quyền xem phiếu trả hàng này' });
+            }
+        }
+
+        let items = [];
+
+        if (returnRecord.order_channel === 'supplier') {
+            try {
+                const { callInternalService, CATALOG_SERVICE_URL } = require('../utils/internalApi');
+                const batchRes = await callInternalService(`${CATALOG_SERVICE_URL}/batches/${returnRecord.order_id}`);
+                if (batchRes.ok) {
+                    const batchData = await batchRes.json();
+                    const batch = batchData.data;
+                    
+                    returnRecord.order_code = batch.batch_code;
+                    
+                    const supplierRes = await callInternalService(`${CATALOG_SERVICE_URL}/suppliers/${batch.supplier_id}`);
+                    if (supplierRes.ok) {
+                        const supData = await supplierRes.json();
+                        const supplier = supData.data;
+                        returnRecord.customer_name = supplier ? supplier.name : `Nhà cung cấp #${batch.supplier_id}`;
+                        returnRecord.customer_phone = supplier ? supplier.phone : '';
+                    }
+
+                    const [returnItems] = await pool.query(`
+                        SELECT ri.*
+                        FROM return_items ri
+                        WHERE ri.return_id = ? AND ri.is_active = 1
+                    `, [returnRecord.id]);
+
+                    items = returnItems.map(item => {
+                        const batchItem = batch.items.find(bi => bi.id === item.order_item_id);
+                        return {
+                            ...item,
+                            product_name: batchItem ? batchItem.product_name : `Sản phẩm #${item.order_item_id}`,
+                            unit_price: batchItem ? batchItem.cost_price : 0,
+                            unit_name: batchItem ? (batchItem.base_unit || 'Hộp') : 'Hộp'
+                        };
+                    });
+                }
+            } catch (err) {
+                console.error('Enrich supplier return detail error:', err);
+            }
+        } else {
+            const [orderItems] = await pool.query(`
+                SELECT ri.*, oi.product_name, oi.unit_price, oi.unit_name
+                FROM return_items ri
+                JOIN order_items oi ON ri.order_item_id = oi.id
+                WHERE ri.return_id = ? AND ri.is_active = 1
+            `, [returnRecord.id]);
+            items = orderItems;
+        }
 
         res.json({ success: true, data: { ...returnRecord, items } });
     } catch (error) {
@@ -197,7 +335,7 @@ router.put('/:id/status', async (req, res) => {
 
         // 1. Lấy thông tin phiếu trả hàng để kiểm tra
         const [returns] = await connection.query(
-            'SELECT id, status, refund_amount, order_id FROM returns WHERE return_code = ? AND is_active = 1 FOR UPDATE',
+            'SELECT id, status, refund_amount, order_id, order_channel FROM returns WHERE return_code = ? AND is_active = 1 FOR UPDATE',
             [id]
         );
 
@@ -217,75 +355,136 @@ router.put('/:id/status', async (req, res) => {
 
         // 3. Nếu được duyệt thành công (completed) và trước đó chưa ở trạng thái completed
         if (status === 'completed' && oldStatus !== 'completed') {
-            // Lấy danh sách sản phẩm bị trả và lô gốc
-            const [returnItems] = await connection.query(`
-                SELECT ri.id, ri.quantity_returned, oi.product_id, oi.batch_item_id 
-                FROM return_items ri
-                JOIN order_items oi ON ri.order_item_id = oi.id
-                WHERE ri.return_id = ? AND ri.is_active = 1
-            `, [returnRecord.id]);
-
-            const restockItems = [];
-            for (const item of returnItems) {
-                let batchItemId = item.batch_item_id;
-                if (!batchItemId) {
-                    const { callInternalService, CATALOG_SERVICE_URL } = require('../utils/internalApi');
-                    const batchRes = await callInternalService(`${CATALOG_SERVICE_URL}/inventory/${item.product_id}`);
-                    if (batchRes.ok) {
-                        const batchResult = await batchRes.json();
-                        if (batchResult.success && batchResult.data && batchResult.data.length > 0) {
-                            batchItemId = batchResult.data[0].id;
-                        }
-                    }
-                }
-                
-                if (batchItemId) {
-                    restockItems.push({
-                        batch_item_id: batchItemId,
-                        product_id: item.product_id,
-                        quantity: item.quantity_returned
-                    });
-                }
-            }
-
-            if (restockItems.length > 0) {
+            if (returnRecord.order_channel === 'supplier') {
+                // 1. Lấy thông tin lô nhập hàng từ catalog-service
                 const { callInternalService, CATALOG_SERVICE_URL } = require('../utils/internalApi');
-                const restockRes = await callInternalService(`${CATALOG_SERVICE_URL}/inventory/restock`, {
+                const batchRes = await callInternalService(`${CATALOG_SERVICE_URL}/batches/${returnRecord.order_id}`);
+                if (!batchRes.ok) {
+                    throw new Error('Không thể lấy thông tin lô nhập hàng gốc từ catalog-service');
+                }
+                const batchData = await batchRes.json();
+                if (!batchData.success || !batchData.data) {
+                    throw new Error('Dữ liệu lô hàng gốc từ catalog-service không hợp lệ');
+                }
+                const batch = batchData.data;
+
+                // 2. Lấy danh sách sản phẩm cần xuất trả kho
+                const [returnItems] = await connection.query(`
+                    SELECT ri.id, ri.quantity_returned, ri.order_item_id AS batch_item_id
+                    FROM return_items ri
+                    WHERE ri.return_id = ? AND ri.is_active = 1
+                `, [returnRecord.id]);
+
+                const deductItems = returnItems.map(item => {
+                    const batchItem = batch.items.find(bi => bi.id === item.batch_item_id);
+                    return {
+                        batch_item_id: item.batch_item_id,
+                        product_id: batchItem ? batchItem.product_id : null,
+                        quantity: item.quantity_returned
+                    };
+                });
+
+                // 3. Trực tiếp trừ tồn kho của lô hàng trong catalog-service
+                const deductRes = await callInternalService(`${CATALOG_SERVICE_URL}/inventory/deduct`, {
                     method: 'POST',
                     body: JSON.stringify({
-                        items: restockItems,
-                        reference_type: 'return',
+                        items: deductItems,
+                        reference_type: 'supplier_return',
                         reference_id: returnRecord.id,
                         created_by: req.userId || null
                     })
                 });
 
-                if (!restockRes.ok) {
-                    throw new Error('Không thể hoàn kho tự động qua catalog-service: ' + (await restockRes.text()));
+                if (!deductRes.ok) {
+                    throw new Error('Lỗi trừ kho khi trả hàng NCC: ' + (await deductRes.text()));
                 }
-            }
 
-            // 4. Thu hồi điểm loyalty tích lũy tương ứng
-            const [[orderInfo]] = await connection.query(`
-                SELECT o.customer_id, o.order_code
-                FROM orders o
-                WHERE o.id = ?
-            `, [returnRecord.order_id]);
-
-            if (orderInfo && orderInfo.customer_id && returnRecord.refund_amount > 0) {
-                const pointsToRecover = Math.floor(Number(returnRecord.refund_amount) / 1000);
-                if (pointsToRecover > 0) {
-                    const { callInternalService, IDENTITY_SERVICE_URL } = require('../utils/internalApi');
-                    const adjustRes = await callInternalService(`${IDENTITY_SERVICE_URL}/customers/${orderInfo.customer_id}/loyalty/adjust`, {
+                // 4. Giảm công nợ NCC tương ứng số tiền hoàn nhận được
+                if (returnRecord.refund_amount > 0) {
+                    const payDebtRes = await callInternalService(`${CATALOG_SERVICE_URL}/suppliers/${batch.supplier_id}/pay-debt`, {
                         method: 'POST',
+                        headers: {
+                            'x-user-role': 'admin'
+                        },
                         body: JSON.stringify({
-                            points_change: -pointsToRecover,
-                            description: `Thu hồi điểm do trả hàng đơn ${orderInfo.order_code || ''} (Phiếu trả ${returnRecord.id})`,
-                            idempotency_key: `return:${returnRecord.id}:loyalty`
+                            amount: returnRecord.refund_amount
                         })
                     });
-                    if (!adjustRes.ok) {
-                        console.error('Không thể thu hồi điểm loyalty qua identity-service:', await adjustRes.text());
+                    if (!payDebtRes.ok) {
+                        console.error('Không thể giảm công nợ NCC qua catalog-service:', await payDebtRes.text());
+                    }
+                }
+            } else {
+                // Lấy danh sách sản phẩm bị trả và lô gốc
+                const [returnItems] = await connection.query(`
+                    SELECT ri.id, ri.quantity_returned, oi.product_id, oi.batch_item_id 
+                    FROM return_items ri
+                    JOIN order_items oi ON ri.order_item_id = oi.id
+                    WHERE ri.return_id = ? AND ri.is_active = 1
+                `, [returnRecord.id]);
+
+                const restockItems = [];
+                for (const item of returnItems) {
+                    let batchItemId = item.batch_item_id;
+                    if (!batchItemId) {
+                        const { callInternalService, CATALOG_SERVICE_URL } = require('../utils/internalApi');
+                        const batchRes = await callInternalService(`${CATALOG_SERVICE_URL}/inventory/${item.product_id}`);
+                        if (batchRes.ok) {
+                            const batchResult = await batchRes.json();
+                            if (batchResult.success && batchResult.data && batchResult.data.length > 0) {
+                                batchItemId = batchResult.data[0].id;
+                            }
+                        }
+                    }
+                    
+                    if (batchItemId) {
+                        restockItems.push({
+                            batch_item_id: batchItemId,
+                            product_id: item.product_id,
+                            quantity: item.quantity_returned
+                        });
+                    }
+                }
+
+                if (restockItems.length > 0) {
+                    const { callInternalService, CATALOG_SERVICE_URL } = require('../utils/internalApi');
+                    const restockRes = await callInternalService(`${CATALOG_SERVICE_URL}/inventory/restock`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            items: restockItems,
+                            reference_type: 'return',
+                            reference_id: returnRecord.id,
+                            created_by: req.userId || null
+                        })
+                    });
+
+                    if (!restockRes.ok) {
+                        throw new Error('Không thể hoàn kho tự động qua catalog-service: ' + (await restockRes.text()));
+                    }
+                }
+
+                // 4. Thu hồi điểm loyalty tích lũy tương ứng
+                const [[orderInfo]] = await connection.query(`
+                    SELECT o.customer_id, o.order_code
+                    FROM orders o
+                    WHERE o.id = ?
+                `, [returnRecord.order_id]);
+
+                if (orderInfo && orderInfo.customer_id && returnRecord.refund_amount > 0) {
+                    const pointsToRecover = Math.floor(Number(returnRecord.refund_amount) / 1000);
+                    if (pointsToRecover > 0) {
+                        const { callInternalService, IDENTITY_SERVICE_URL } = require('../utils/internalApi');
+                        const adjustRes = await callInternalService(`${IDENTITY_SERVICE_URL}/customers/${orderInfo.customer_id}/loyalty/adjust`, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                points_change: -pointsToRecover,
+                                description: `Thu hồi điểm do trả hàng đơn ${orderInfo.order_code || ''} (Phiếu trả ${returnRecord.id})`,
+                                idempotency_key: `return:${returnRecord.id}:loyalty`
+                            })
+                        });
+                        if (!adjustRes.ok) {
+                            console.error('Không thể thu hồi điểm loyalty qua identity-service:', await adjustRes.text());
+                        }
                     }
                 }
             }
