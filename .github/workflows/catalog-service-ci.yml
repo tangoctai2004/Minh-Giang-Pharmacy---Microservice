@@ -70,6 +70,7 @@ jobs:
           DB_NAME: mg_catalog
           PORT: 8002
           ALLOW_DEV_RBAC_BYPASS: "false"
+          GATEWAY_INTERNAL_TOKEN: ci-test-gateway-token
 
       - name: Wait for health
         run: |
@@ -86,7 +87,11 @@ jobs:
       - name: Run smoke test
         run: ./smoke_test_catalog.sh
         working-directory: backend/catalog-service
+        env:
+          CI_GATEWAY_TOKEN: ci-test-gateway-token
 
       - name: Run integration test
         run: ./integration_test_catalog.sh
         working-directory: backend/catalog-service
+        env:
+          CI_GATEWAY_TOKEN: ci-test-gateway-token
